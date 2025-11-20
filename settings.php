@@ -24,6 +24,17 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+// Create the tag management external page.
+$ADMIN->add(
+    'courses',
+    new admin_externalpage(
+        'format_minimoodlewall_tags',
+        get_string('tagmanagement', 'format_minimoodlewall'),
+        new moodle_url('/course/format/minimoodlewall/tag_management.php'),
+        'moodle/site:config'
+    )
+);
+
 if ($ADMIN->fulltree) {
     // Theme selection.
     $settings->add(new admin_setting_configselect(
