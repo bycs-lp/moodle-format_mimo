@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="400" height="250">
+  <rect width="400" height="250" fill="#ff9800"/>
+  <g transform="translate(200,125)">
+    <rect x="-40" y="-40" width="80" height="60" fill="#fff" opacity="0.9"/>
+    <line x1="-30" y1="-20" x2="30" y2="-20" stroke="#ff9800" stroke-width="3"/>
+    <line x1="-30" y1="-5" x2="30" y2="-5" stroke="#ff9800" stroke-width="3"/>
+    <line x1="-30" y1="10" x2="20" y2="10" stroke="#ff9800" stroke-width="3"/>
+  </g>
+  <text x="200" y="230" font-family="Arial, sans-serif" font-size="24" fill="#fff" text-anchor="middle" font-weight="bold">✍️ Writing</text>
+</svg>

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Cache definitions for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -24,6 +24,19 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025112000;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2024100700;        // Requires this Moodle version (4.5).
-$plugin->component = 'format_minimoodlewall';    // Full name of the plugin (used for diagnostics).
+$definitions = [
+    'tagconfigurations' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => false,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 10,
+    ],
+    'activitytagmappings' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => true,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 100,
+    ],
+];

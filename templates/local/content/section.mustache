@@ -29,60 +29,65 @@
             <div class="row g-3">
                 {{#cms}}
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                    <div class="card h-100">
-                        <div class="card-body">
+                    <div class="minimoodlewall-card card h-100" data-cmid="{{id}}">
+                        {{! Tag Image at top }}
+                        <div class="minimoodlewall-card-image">
                             {{#cmitem}}
                             {{#cmformat}}
-                            
-                            {{! Activity Name/Link - using activityname and url since cmname.displayvalue is empty }}
-                            {{#hasname}}
-                            <div class="activity-name mb-3">
+                            {{#tagimage}}
+                            <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
+                            {{/tagimage}}
+                            {{^tagimage}}
+                            <div class="minimoodlewall-card-placeholder"></div>
+                            {{/tagimage}}
+                            {{/cmformat}}
+                            {{/cmitem}}
+                        </div>
+                        
+                        {{! Completion indicator overlay (top-right) }}
+                        <div class="minimoodlewall-completion-badge">
+                            {{#cmitem}}
+                            {{#cmformat}}
+                            {{#completion}}
+                            {{#hascompletion}}
+                            {{#iscomplete}}
+                            <span class="badge-complete" title="{{#str}}completed, format_minimoodlewall{{/str}}">
+                                <i class="fa fa-check-circle"></i>
+                            </span>
+                            {{/iscomplete}}
+                            {{^iscomplete}}
+                            <span class="badge-incomplete" title="{{#str}}notcompleted, format_minimoodlewall{{/str}}">
+                                <i class="fa fa-circle"></i>
+                            </span>
+                            {{/iscomplete}}
+                            {{/hascompletion}}
+                            {{/completion}}
+                            {{/cmformat}}
+                            {{/cmitem}}
+                        </div>
+                        
+                        {{! Card body with description }}
+                        <div class="card-body minimoodlewall-card-body">
+                            {{#cmitem}}
+                            {{#cmformat}}
+                            {{! Activity title (visible on hover via CSS) }}
+                            <div class="minimoodlewall-card-title">
                                 {{#url}}
-                                <a href="{{url}}" class="activity-link">
-                                    <strong>{{activityname}}</strong>
+                                <a href="{{url}}" class="activity-link stretched-link">
+                                    {{activityname}}
                                 </a>
                                 {{/url}}
                                 {{^url}}
-                                <strong>{{activityname}}</strong>
+                                {{activityname}}
                                 {{/url}}
                             </div>
-                            {{/hasname}}
                             
-                            {{! Module type badge }}
-                            <div class="activity-type mb-2">
-                                <span class="badge bg-secondary">{{modname}}</span>
+                            {{! Description preview (3 lines max) }}
+                            {{#description}}
+                            <div class="minimoodlewall-card-description text-muted small">
+                                {{{description}}}
                             </div>
-                            
-                            {{! Activity Badge (e.g. file type for resources) }}
-                            {{#activitybadge}}
-                            <div class="activity-badge mb-2">
-                                <span class="badge {{badgestyle}}">{{badgecontent}}</span>
-                            </div>
-                            {{/activitybadge}}
-                            
-                            {{! Description/Alt content }}
-                            {{#altcontent}}
-                            <div class="activity-description text-muted small mt-2">
-                                {{{altcontent}}}
-                            </div>
-                            {{/altcontent}}
-                            
-                            {{! After link info (e.g. file size, dates) }}
-                            {{#afterlink}}
-                            <div class="activity-afterlink text-muted small mt-2">
-                                {{{afterlink}}}
-                            </div>
-                            {{/afterlink}}
-                            
-                            {{! Completion status }}
-                            {{#completion}}
-                            {{#hascompletion}}
-                            <div class="activity-completion mt-2">
-                                {{> core_courseformat/local/content/cm/activity_info}}
-                            </div>
-                            {{/hascompletion}}
-                            {{/completion}}
-                            
+                            {{/description}}
                             {{/cmformat}}
                             {{/cmitem}}
                         </div>

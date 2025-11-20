@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="400" height="250">
+  <rect width="400" height="250" fill="#3f51b5"/>
+  <g transform="translate(200,125)">
+    <path d="M-40,-50 L-40,50 L-30,50 L-30,-40 L30,-40 L30,-50 Z M-20,-30 L-20,40 L20,40 L20,-30 Z M10,-20 L10,30 L-10,30 L-10,-20 Z" fill="#fff" opacity="0.9"/>
+  </g>
+  <text x="200" y="230" font-family="Arial, sans-serif" font-size="24" fill="#fff" text-anchor="middle" font-weight="bold">📖 Reading</text>
+</svg>
