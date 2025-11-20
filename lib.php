@@ -119,7 +119,23 @@ class format_minimoodlewall extends core_courseformat\base {
                     'default' => 1,
                     'type' => PARAM_INT,
                 ],
+                'enablefiltering' => [
+                    'default' => 1,
+                    'type' => PARAM_BOOL,
+                ],
             ];
+        }
+        if ($forupdate) {
+            // Add form elements for course settings.
+            $courseformatoptionsedit = [
+                'enablefiltering' => [
+                    'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
+                    'help' => 'setting_enablefiltering',
+                    'help_component' => 'format_minimoodlewall',
+                    'element_type' => 'advcheckbox',
+                ],
+            ];
+            $courseformatoptions = array_merge_recursive($courseformatoptions, $courseformatoptionsedit);
         }
         return $courseformatoptions;
     }

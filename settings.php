@@ -38,31 +38,6 @@ if ($ADMIN->fulltree) {
         ]
     ));
 
-    // Items per page for pagination.
-    $settings->add(new admin_setting_configtext(
-        'format_minimoodlewall/itemsperpage',
-        get_string('setting_itemsperpage', 'format_minimoodlewall'),
-        get_string('setting_itemsperpage_desc', 'format_minimoodlewall'),
-        8,
-        PARAM_INT
-    ));
-
-    // Enable tag filtering.
-    $settings->add(new admin_setting_configcheckbox(
-        'format_minimoodlewall/enablefiltering',
-        get_string('setting_enablefiltering', 'format_minimoodlewall'),
-        get_string('setting_enablefiltering_desc', 'format_minimoodlewall'),
-        1
-    ));
-
-    // Enable activity reordering via drag-drop.
-    $settings->add(new admin_setting_configcheckbox(
-        'format_minimoodlewall/enablereordering',
-        get_string('setting_enablereordering', 'format_minimoodlewall'),
-        get_string('setting_enablereordering_desc', 'format_minimoodlewall'),
-        1
-    ));
-
     // Link to tag management page.
     $tagmanageurl = new moodle_url('/course/format/minimoodlewall/tag_management.php');
     $settings->add(new admin_setting_heading(
