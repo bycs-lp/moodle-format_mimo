@@ -33,8 +33,15 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // Automatically created Moodle v4.5.0 release upgrade line.
+    // Automatically generated Moodle v4.5.0 release upgrade line.
     // Put any upgrade step following this.
+
+    if ($oldversion < 2025112001) {
+        // Initialize default tags if they don't exist.
+        \format_minimoodlewall\tag_manager::initialize_default_tags();
+
+        upgrade_plugin_savepoint(true, 2025112001, 'format', 'minimoodlewall');
+    }
 
     return true;
 }

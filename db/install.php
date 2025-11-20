@@ -15,15 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Post-installation script for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version   = 2025112001;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2024100700;        // Requires this Moodle version (4.5).
-$plugin->component = 'format_minimoodlewall';    // Full name of the plugin (used for diagnostics).
+/**
+ * Post installation procedure.
+ */
+function xmldb_format_minimoodlewall_install() {
+    // Initialize default tags.
+    \format_minimoodlewall\tag_manager::initialize_default_tags();
+}

@@ -119,6 +119,10 @@ class format_minimoodlewall extends core_courseformat\base {
                     'default' => 1,
                     'type' => PARAM_INT,
                 ],
+                'tagsetid' => [
+                    'default' => 0,
+                    'type' => PARAM_INT,
+                ],
                 'enablefiltering' => [
                     'default' => 1,
                     'type' => PARAM_BOOL,
@@ -126,8 +130,29 @@ class format_minimoodlewall extends core_courseformat\base {
             ];
         }
         if ($forupdate) {
+            // Get available tagsets.
+            $tagsets = \format_minimoodlewall\tag_manager::get_tagsets();
+            $tagsetchoices = [0 => get_string('selecttagset', 'format_minimoodlewall')];
+            foreach ($tagsets as $tagset) {
+                $tagsetchoices[$tagset->id] = $tagset->name;
+            }
+            
+            // Check if this is an existing course.
+            $course = $this->get_course();
+            $iscreating = empty($course->id) || $course->id == SITEID;
+            
             // Add form elements for course settings.
             $courseformatoptionsedit = [
+                'tagsetid' => [
+                    'label' => get_string('setting_tagsetid', 'format_minimoodlewall'),
+                    'help' => 'setting_tagsetid',
+                    'help_component' => 'format_minimoodlewall',
+                    'element_type' => 'select',
+                    'element_attributes' => [
+                        $tagsetchoices,
+                        ['disabled' => !$iscreating],
+                    ],
+                ],
                 'enablefiltering' => [
                     'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
                     'help' => 'setting_enablefiltering',
