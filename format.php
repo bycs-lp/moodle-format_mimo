@@ -31,8 +31,8 @@ require_once($CFG->libdir . '/completionlib.php');
 $format = course_get_format($course);
 $course = $format->get_course();
 
-// Make sure section 0 exists.
-course_create_sections_if_missing($course, 0);
+// Make sure sections 0 and 1 exist.
+course_create_sections_if_missing($course, [0, 1]);
 
 $renderer = $PAGE->get_renderer('format_minimoodlewall');
 

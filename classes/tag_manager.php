@@ -65,7 +65,7 @@ class tag_manager {
 
         $record = new \stdClass();
         $record->name = $name;
-        $record->description = $description;
+        $record->description = empty($description) ? null : $description;
         $record->timecreated = time();
         $record->timemodified = time();
 
@@ -159,7 +159,7 @@ class tag_manager {
         // Get next sort order.
         $maxsort = $DB->get_field('format_minimoodlewall_tags', 'MAX(sortorder)',
             ['tagsetid' => $tagsetid]);
-        $sortorder = $maxsort ? $maxsort + 1 : 0;
+        $sortorder = $maxsort ? (int)$maxsort + 1 : 0;
 
         $record = new \stdClass();
         $record->tagsetid = $tagsetid;
@@ -261,7 +261,7 @@ class tag_manager {
      *
      * @param int $cmid Course module ID
      * @param int $tagid Tag ID
-     * @return int|bool ID of the created mapping or false
+     * @return bool Success
      */
     public static function assign_tag_to_cm($cmid, $tagid) {
         global $DB;
@@ -271,8 +271,7 @@ class tag_manager {
             // Update existing mapping.
             $record = $DB->get_record('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
             $record->tagid = $tagid;
-            $DB->update_record('format_minimoodlewall_cmtags', $record);
-            $result = $record->id;
+            $result = $DB->update_record('format_minimoodlewall_cmtags', $record);
         } else {
             // Create new mapping.
             $record = new \stdClass();
@@ -280,9 +279,25 @@ class tag_manager {
             $record->tagid = $tagid;
             $record->timecreated = time();
             $result = $DB->insert_record('format_minimoodlewall_cmtags', $record);
+            $result = !empty($result);
         }
 
         self::clear_mapping_cache();
+        return $result;
+    }
+
+    /**
+     * Unassign a tag from a course module.
+     *
+     * @param int $cmid Course module ID
+     * @return bool Success
+     */
+    public static function unassign_tag_from_cm($cmid) {
+        global $DB;
+
+        $result = $DB->delete_records('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+        self::clear_mapping_cache();
+
         return $result;
     }
 

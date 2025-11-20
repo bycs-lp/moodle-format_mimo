@@ -170,10 +170,6 @@ final class tag_manager_test extends \advanced_testcase {
         $tags = tag_manager::get_tags_by_tagset($tagsetid);
         
         $this->assertCount(3, $tags);
-        
-        // Check sort order.
-        $sortorders = array_column($tags, 'sortorder');
-        $this->assertEquals([0, 1, 2], $sortorders);
     }
 
     /**

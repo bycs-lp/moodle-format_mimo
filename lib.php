@@ -112,23 +112,17 @@ class format_minimoodlewall extends core_courseformat\base {
      * @return array of options
      */
     public function course_format_options($forupdate = false) {
-        static $courseformatoptions = false;
-        if ($courseformatoptions === false) {
-            $courseformatoptions = [
-                'numsections' => [
-                    'default' => 1,
-                    'type' => PARAM_INT,
-                ],
-                'tagsetid' => [
-                    'default' => 0,
-                    'type' => PARAM_INT,
-                ],
-                'enablefiltering' => [
-                    'default' => 1,
-                    'type' => PARAM_BOOL,
-                ],
-            ];
-        }
+        $courseformatoptions = [
+            'tagsetid' => [
+                'default' => 0,
+                'type' => PARAM_INT,
+            ],
+            'enablefiltering' => [
+                'default' => 1,
+                'type' => PARAM_BOOL,
+            ],
+        ];
+        
         if ($forupdate) {
             // Get available tagsets.
             $tagsets = \format_minimoodlewall\tag_manager::get_tagsets();
@@ -142,25 +136,22 @@ class format_minimoodlewall extends core_courseformat\base {
             $iscreating = empty($course->id) || $course->id == SITEID;
             
             // Add form elements for course settings.
-            $courseformatoptionsedit = [
-                'tagsetid' => [
-                    'label' => get_string('setting_tagsetid', 'format_minimoodlewall'),
-                    'help' => 'setting_tagsetid',
-                    'help_component' => 'format_minimoodlewall',
-                    'element_type' => 'select',
-                    'element_attributes' => [
-                        $tagsetchoices,
-                        ['disabled' => !$iscreating],
-                    ],
-                ],
-                'enablefiltering' => [
-                    'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
-                    'help' => 'setting_enablefiltering',
-                    'help_component' => 'format_minimoodlewall',
-                    'element_type' => 'advcheckbox',
+            $courseformatoptions['tagsetid'] += [
+                'label' => get_string('setting_tagsetid', 'format_minimoodlewall'),
+                'help' => 'setting_tagsetid',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'select',
+                'element_attributes' => [
+                    $tagsetchoices,
+                    $iscreating ? [] : ['disabled' => 'disabled'],
                 ],
             ];
-            $courseformatoptions = array_merge_recursive($courseformatoptions, $courseformatoptionsedit);
+            $courseformatoptions['enablefiltering'] += [
+                'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
+                'help' => 'setting_enablefiltering',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'advcheckbox',
+            ];
         }
         return $courseformatoptions;
     }
