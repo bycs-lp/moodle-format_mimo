@@ -25,6 +25,7 @@ import ModalFactory from 'core/modal_factory';
 import Notification from 'core/notification';
 import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';
+import Templates from 'core/templates';
 
 /**
  * Initialize the tag chooser button handlers.
@@ -73,34 +74,20 @@ const showActivityTypeModal = async(tagId, tagName, activityType1, activityType2
             activityType2 && activityType2 !== 'null' ? getActivityTypeLabel(activityType2) : Promise.resolve(''),
         ]);
 
-        // Build modal body HTML with 3 options
-        let bodyHtml = '<div class="format-minimoodlewall-activity-options">';
-        bodyHtml += `<p>${selectActivityTypeStr}</p>`;
-        bodyHtml += '<div class="list-group">';
+        // Prepare template context
+        const context = {
+            selectactivitytype: selectActivityTypeStr,
+            activityorresource: activityOrResourceStr,
+            hasactivitytype1: activityType1 && activityType1 !== 'null',
+            activitytype1: activityType1,
+            activitytype1label: type1Label,
+            hasactivitytype2: activityType2 && activityType2 !== 'null',
+            activitytype2: activityType2,
+            activitytype2label: type2Label,
+        };
 
-        // Option 1: Activity type 1 (if exists)
-        if (activityType1 && activityType1 !== 'null') {
-            bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
-                            data-activity-type="${activityType1}">
-                            ${type1Label}
-                         </a>`;
-        }
-
-        // Option 2: Activity type 2 (if exists)
-        if (activityType2 && activityType2 !== 'null') {
-            bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
-                            data-activity-type="${activityType2}">
-                            ${type2Label}
-                         </a>`;
-        }
-
-        // Option 3: Open activity chooser
-        bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
-                        data-activity-type="chooser">
-                        <i class="icon fa fa-plus fa-fw"></i> ${activityOrResourceStr}
-                     </a>`;
-
-        bodyHtml += '</div></div>';
+        // Render template
+        const bodyHtml = await Templates.render('format_minimoodlewall/activitytype_chooser_modal', context);
 
         const modal = await ModalFactory.create({
             type: ModalFactory.types.CANCEL,
