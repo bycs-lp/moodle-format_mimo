@@ -52,44 +52,63 @@ class cmitem extends cmitem_base {
      * @return \stdClass data context for a mustache template
      */
     public function export_for_template(\renderer_base $output): \stdClass {
+        global $DB;
+        
         $data = parent::export_for_template($output);
         
         // Get the course module.
         $mod = $this->mod;
         $cmid = $mod->id;
         
+        // Get the full cm_info object for more details.
+        $modinfo = get_fast_modinfo($mod->course);
+        $cm = $modinfo->get_cm($cmid);
+        
+        // Initialize cmformat if not set.
+        if (!isset($data->cmformat)) {
+            $data->cmformat = new \stdClass();
+        }
+        
+        // Add activity name and URL from cm_info.
+        $data->cmformat->activityname = $cm->get_formatted_name();
+        $data->cmformat->url = $cm->url ? $cm->url->out(false) : null;
+        
         // Get tag information for this activity.
         $tag = tag_manager::get_cm_tag($cmid);
         
         if ($tag) {
-            // Add tag data to cmformat.
-            if (!isset($data->cmformat)) {
-                $data->cmformat = new \stdClass();
-            }
-            
             $data->cmformat->tagname = $tag->name;
             $data->cmformat->tagid = $tag->id;
             
-            // Use output API to construct image URLs.
-            $data->cmformat->tagimage = $output->image_url('tags/' . $tag->cardimage, 'format_minimoodlewall')->out(false);
-            $data->cmformat->filterimage = $output->image_url('tags/' . $tag->filterimage, 'format_minimoodlewall')->out(false);
+            // Construct image URLs - files are in pluginfile.php accessible location.
+            global $CFG;
+            $data->cmformat->tagimage = $CFG->wwwroot . '/course/format/minimoodlewall/pix/tags/' . $tag->cardimage;
+            $data->cmformat->filterimage = $CFG->wwwroot . '/course/format/minimoodlewall/pix/tags/' . $tag->filterimage;
         }
         
         // Add activity description (truncated to 3 lines).
-        $description = '';
-        if (!empty($mod->intro)) {
+        $intro = $cm->get_formatted_content(['overflowdiv' => false, 'noclean' => false]);
+        if (empty($intro)) {
+            // Try getting intro from the module table directly.
+            $modulename = $cm->modname;
+            $instance = $DB->get_record($modulename, ['id' => $cm->instance], 'intro', IGNORE_MISSING);
+            if ($instance && !empty($instance->intro)) {
+                $intro = format_text($instance->intro, FORMAT_HTML, ['noclean' => false]);
+            }
+        }
+        
+        if (!empty($intro)) {
             // Strip HTML tags and get plain text.
-            $description = strip_tags($mod->intro);
+            $description = trim(strip_tags($intro));
             // Truncate to approximately 150 characters (about 3 lines).
             if (strlen($description) > 150) {
                 $description = substr($description, 0, 147) . '...';
             }
+            // Only set description if it's not empty (for Mustache conditionals).
+            if (!empty($description)) {
+                $data->cmformat->description = $description;
+            }
         }
-        
-        if (!isset($data->cmformat)) {
-            $data->cmformat = new \stdClass();
-        }
-        $data->cmformat->description = $description;
         
         // Add completion status.
         if (isset($data->cmformat->completion)) {
