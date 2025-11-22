@@ -34,6 +34,11 @@
     }
 }
 
+// Activity wrapper with navigation.
+.minimoodlewall-activities-wrapper {
+    position: relative; // Positioning context for navigation buttons.
+}
+
 // Card container styling.
 .minimoodlewall-card {
     border-radius: 8px;
@@ -80,15 +85,27 @@
     justify-content: center;
     font-size: 18px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    background: #fff;
 
-    &.badge-complete {
-        color: #28a745;
+    .badge-complete {
+        background: #28a745;
+        color: #fff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
     }
 
-    &.badge-incomplete {
-        color: #dc3545;
-        font-weight: bold;
+    .badge-incomplete {
+        background: rgba(220, 53, 69, 0.3);
+        color: #fff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
     }
 }
 
@@ -252,6 +269,10 @@
 // Navigation buttons.
 .minimoodlewall-navigation {
     display: none; // Hidden by default until JavaScript loads.
+    position: absolute;
+    bottom: 10px; // Position from bottom of activities container.
+    right: 10px; // Position from right edge.
+    z-index: 100; // Ensure buttons are above cards.
     
     // When visible, use flex layout.
     &.is-visible {

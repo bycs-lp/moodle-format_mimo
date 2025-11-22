@@ -26,9 +26,10 @@
     {{$ core_courseformat/local/content/section/cmlist }}
         {{#cmlist}}
         <div class="minimoodlewall-activities">
-            <div class="row g-3">
-                {{#cms}}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="minimoodlewall-activities-wrapper">
+                <div class="row g-3">
+                    {{#cms}}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="minimoodlewall-card card h-100" data-cmid="{{id}}">
                         {{! Tag Image at top }}
                         <div class="minimoodlewall-card-image">
@@ -45,26 +46,25 @@
                         </div>
                         
                         {{! Completion indicator overlay (top-right) }}
+                        {{#cmitem}}
+                        {{#cmformat}}
+                        {{#completion}}
+                        {{#hascompletion}}
                         <div class="minimoodlewall-completion-badge">
-                            {{#cmitem}}
-                            {{#cmformat}}
-                            {{#completion}}
-                            {{#hascompletion}}
                             {{#iscomplete}}
                             <span class="badge-complete" title="{{#str}}completed, format_minimoodlewall{{/str}}">
-                                <i class="fa fa-check-circle"></i>
+                                <i class="fa fa-check"></i>
                             </span>
                             {{/iscomplete}}
                             {{^iscomplete}}
                             <span class="badge-incomplete" title="{{#str}}notcompleted, format_minimoodlewall{{/str}}">
-                                <i class="fa fa-circle"></i>
                             </span>
                             {{/iscomplete}}
-                            {{/hascompletion}}
-                            {{/completion}}
-                            {{/cmformat}}
-                            {{/cmitem}}
                         </div>
+                        {{/hascompletion}}
+                        {{/completion}}
+                        {{/cmformat}}
+                        {{/cmitem}}
                         
                         {{! Card body with description }}
                         <div class="card-body minimoodlewall-card-body">
@@ -73,7 +73,14 @@
                             {{#description}}
                             {{! Description preview (3 lines max) }}
                             <div class="minimoodlewall-card-description text-muted small">
+                                {{#url}}
+                                <a href="{{url}}" class="activity-link stretched-link">
+                                    {{{description}}}
+                                </a>
+                                {{/url}}
+                                {{^url}}
                                 {{{description}}}
+                                {{/url}}
                             </div>
                             {{/description}}
                             {{^description}}
@@ -96,15 +103,16 @@
                 </div>
                 {{/cms}}
             </div>
+            {{! Pagination navigation }}
+            <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3">
+                <button id="minimoodlewall-prev" class="minimoodlewall-nav-btn" aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                <button id="minimoodlewall-next" class="minimoodlewall-nav-btn" aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
-        {{! Pagination navigation }}
-        <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3 mt-3">
-            <button id="minimoodlewall-prev" class="minimoodlewall-nav-btn" aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}">
-                <i class="fa fa-chevron-left"></i>
-            </button>
-            <button id="minimoodlewall-next" class="minimoodlewall-nav-btn" aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}">
-                <i class="fa fa-chevron-right"></i>
-            </button>
         </div>
         {{#js}}
         require(['format_minimoodlewall/activity_pagination'], function(pagination) {

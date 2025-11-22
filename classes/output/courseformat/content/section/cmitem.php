@@ -110,11 +110,17 @@ class cmitem extends cmitem_base {
             }
         }
         
-        // Add completion status.
-        if (isset($data->cmformat->completion)) {
-            $completiondata = $data->cmformat->completion;
+        // Add completion status - get from cm_info object.
+        $completioninfo = new \completion_info($cm->get_course());
+        if ($completioninfo->is_enabled($cm)) {
+            if (!isset($data->cmformat->completion)) {
+                $data->cmformat->completion = new \stdClass();
+            }
+            $data->cmformat->completion->hascompletion = true;
+            
             // Check if activity is completed.
-            if (isset($completiondata->completionstate)) {
+            $completiondata = $completioninfo->get_data($cm, false);
+            if ($completiondata) {
                 $data->cmformat->completion->iscomplete = (
                     $completiondata->completionstate == COMPLETION_COMPLETE ||
                     $completiondata->completionstate == COMPLETION_COMPLETE_PASS
