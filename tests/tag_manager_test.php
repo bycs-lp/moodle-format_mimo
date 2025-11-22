@@ -33,15 +33,63 @@ namespace format_minimoodlewall;
  * @covers     \format_minimoodlewall\tag_manager
  */
 final class tag_manager_test extends \advanced_testcase {
+
+    /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest();
+        $this->setAdminUser();
+    }
+
+    /**
+     * Clean up after each test.
+     */
+    protected function tearDown(): void {
+        global $SESSION;
+
+        // Clear caches to prevent cross-test contamination.
+        \cache::make('format_minimoodlewall', 'tagconfigurations')->purge();
+        \cache::make('format_minimoodlewall', 'activitytagmappings')->purge();
+        tag_manager::clear_mapping_cache();
+
+        // Ensure session is clean for next test.
+        unset($SESSION->format_minimoodlewall_pending_tag);
+
+        parent::tearDown();
+    }
+
+    /**
+     * Data provider for tagset creation tests.
+     *
+     * @return array
+     */
+    public static function tagset_data_provider(): array {
+        return [
+            'basic tagset' => [
+                'name' => 'Test Tagset',
+                'description' => 'Test description',
+            ],
+            'tagset with special characters' => [
+                'name' => 'Tagset & Co.',
+                'description' => 'Description with <html> & "quotes"',
+            ],
+            'tagset with empty description' => [
+                'name' => 'Empty Description',
+                'description' => '',
+            ],
+        ];
+    }
+
     /**
      * Test creating a tagset.
+     *
+     * @dataProvider tagset_data_provider
+     * @param string $name
+     * @param string $description
      */
-    public function test_create_tagset(): void {
-        $this->resetAfterTest();
-
-        $name = 'Test Tagset';
-        $description = 'Test description';
-        
+    public function test_create_tagset(string $name, string $description): void {
         $id = tag_manager::create_tagset($name, $description);
         
         $this->assertNotEmpty($id);
@@ -60,8 +108,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test getting all tagsets.
      */
     public function test_get_tagsets(): void {
-        $this->resetAfterTest();
-
         // Create multiple tagsets.
         tag_manager::create_tagset('Tagset 1', 'Description 1');
         tag_manager::create_tagset('Tagset 2', 'Description 2');
@@ -80,8 +126,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tagset.
      */
     public function test_update_tagset(): void {
-        $this->resetAfterTest();
-
         $id = tag_manager::create_tagset('Original Name', 'Original Description');
         
         // Update the tagset.
@@ -99,8 +143,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test deleting a tagset.
      */
     public function test_delete_tagset(): void {
-        $this->resetAfterTest();
-
         $id = tag_manager::create_tagset('To Delete', 'Will be deleted');
         
         // Create a tag in this tagset.
@@ -124,8 +166,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test creating a tag.
      */
     public function test_create_tag(): void {
-        $this->resetAfterTest();
-
         $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
         
         $id = tag_manager::create_tag(
@@ -158,8 +198,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test getting tags by tagset.
      */
     public function test_get_tags_by_tagset(): void {
-        $this->resetAfterTest();
-
         $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
         
         // Create multiple tags.
@@ -176,8 +214,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tag.
      */
     public function test_update_tag(): void {
-        $this->resetAfterTest();
-
         $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
         $id = tag_manager::create_tag($tagsetid, 'Original', '', 'orig.svg', 'orig-small.svg', 'page');
         
@@ -207,8 +243,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test deleting a tag.
      */
     public function test_delete_tag(): void {
-        $this->resetAfterTest();
-
         $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
         $id = tag_manager::create_tag($tagsetid, 'To Delete', '', 'test.svg', 'test-small.svg', 'page');
         
@@ -226,9 +260,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test assigning a tag to a course module.
      */
     public function test_assign_tag_to_cm(): void {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
         // Create course and module.
         $course = $this->getDataGenerator()->create_course();
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
@@ -253,9 +284,6 @@ final class tag_manager_test extends \advanced_testcase {
      * Test unassigning a tag from a course module.
      */
     public function test_unassign_tag_from_cm(): void {
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
         // Create course and module.
         $course = $this->getDataGenerator()->create_course();
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
@@ -276,11 +304,27 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
+     * Data provider for default tag names.
+     *
+     * @return array
+     */
+    public static function default_tag_names_provider(): array {
+        return [
+            ['Reading'],
+            ['Video'],
+            ['Writing'],
+            ['Quiz'],
+            ['Discussion'],
+            ['Data'],
+            ['Lab'],
+            ['Practice'],
+        ];
+    }
+
+    /**
      * Test initializing default tags.
      */
     public function test_initialize_default_tags(): void {
-        $this->resetAfterTest();
-
         tag_manager::initialize_default_tags();
         
         // Verify default tagset was created.
@@ -296,22 +340,16 @@ final class tag_manager_test extends \advanced_testcase {
         
         // Verify tag names.
         $tagnames = array_column($tags, 'name');
-        $this->assertContains('Reading', $tagnames);
-        $this->assertContains('Video', $tagnames);
-        $this->assertContains('Writing', $tagnames);
-        $this->assertContains('Quiz', $tagnames);
-        $this->assertContains('Discussion', $tagnames);
-        $this->assertContains('Data', $tagnames);
-        $this->assertContains('Lab', $tagnames);
-        $this->assertContains('Practice', $tagnames);
+        $expectednames = ['Reading', 'Video', 'Writing', 'Quiz', 'Discussion', 'Data', 'Lab', 'Practice'];
+        foreach ($expectednames as $expected) {
+            $this->assertContains($expected, $tagnames);
+        }
     }
 
     /**
      * Test that initialize_default_tags is idempotent.
      */
     public function test_initialize_default_tags_idempotent(): void {
-        $this->resetAfterTest();
-
         // Call twice.
         tag_manager::initialize_default_tags();
         tag_manager::initialize_default_tags();
