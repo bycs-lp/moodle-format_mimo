@@ -15,49 +15,58 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains the content output class.
+ * Contains the course module output class.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat;
+namespace format_minimoodlewall\output\courseformat\content;
 
-use core_courseformat\output\local\content as content_base;
+use core_courseformat\output\local\content\cm as cm_base;
+use renderer_base;
+use stdClass;
 
 /**
- * Base class to render the course content.
+ * Base class to render a course module.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class content extends content_base {
+class cm extends cm_base {
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
-     * @param \renderer_base $output typically, the renderer that's calling this function
-     * @return \stdClass data context for a mustache template
+     * @param renderer_base $output typically, the renderer that's calling this function
+     * @return stdClass data context for a mustache template
      */
-    public function export_for_template(\renderer_base $output): \stdClass {
+    public function export_for_template(renderer_base $output): stdClass {
         global $PAGE;
         
         $data = parent::export_for_template($output);
         
-        // Get the course format options.
-        $course = $this->format->get_course();
-        $tagsetid = $course->tagsetid ?? 0;
+        // Pass tag information if we're editing and have tags configured.
+        $options = $this->format->get_format_options();
+        $tagsetid = $options['tagsetid'] ?? 0;
         
-        // Initialize the tag chooser button JavaScript if editing is on and tagset is configured.
         if ($PAGE->user_is_editing() && $tagsetid > 0) {
-            $PAGE->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
-            
-            // Pass tag data to the template.
+            // Get tags for this tagset.
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+            
+            // Add tag data and section info to the activity chooser button context.
+            if (isset($data->activitychooserbutton)) {
+                $data->activitychooserbutton->tags = array_values($tags);
+                $data->activitychooserbutton->hastags = !empty($tags);
+                $data->activitychooserbutton->tagsetid = $tagsetid;
+                $data->activitychooserbutton->sectionnum = $this->mod->sectionnum;
+                $data->activitychooserbutton->uniqid = uniqid();
+            }
+            
+            // Also add to the top level for the cm template.
             $data->tags = array_values($tags);
             $data->hastags = !empty($tags);
-            $data->tagsetid = $tagsetid;
         }
         
         return $data;
@@ -66,10 +75,10 @@ class content extends content_base {
     /**
      * Returns the output class template path.
      *
-     * @param \renderer_base $renderer typically, the renderer that's calling this function
+     * @param renderer_base $renderer typically, the renderer that's calling this function
      * @return string
      */
-    public function get_template_name(\renderer_base $renderer): string {
-        return 'format_minimoodlewall/local/content';
+    public function get_template_name(renderer_base $renderer): string {
+        return 'format_minimoodlewall/local/content/cm';
     }
 }

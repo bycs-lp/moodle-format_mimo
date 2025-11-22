@@ -1,0 +1,213 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Tag chooser button handler for format_minimoodlewall.
+ *
+ * @module     format_minimoodlewall/tagchooserbutton
+ * @copyright  2025 Your Name
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+import ModalFactory from 'core/modal_factory';
+import Notification from 'core/notification';
+import Ajax from 'core/ajax';
+import {get_string as getString} from 'core/str';
+
+/**
+ * Initialize the tag chooser button handlers.
+ */
+export const init = () => {
+    // Listen for clicks on tag links in the dropdown
+    document.addEventListener('click', async(e) => {
+        const tagLink = e.target.closest('.format-minimoodlewall-tag-link');
+        if (!tagLink) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const tagId = tagLink.dataset.tagId;
+        const tagName = tagLink.dataset.tagName;
+        const activityType1 = tagLink.dataset.activityType1;
+        const activityType2 = tagLink.dataset.activityType2;
+        const sectionNum = tagLink.dataset.sectionnum;
+        const beforeMod = tagLink.dataset.beforemod;
+        const sectionReturnNum = tagLink.dataset.sectionreturnnum;
+
+        // Show modal with 3 options
+        await showActivityTypeModal(tagId, tagName, activityType1, activityType2, sectionNum, beforeMod, sectionReturnNum);
+    });
+};
+
+/**
+ * Show a modal with activity type selection options.
+ *
+ * @param {string} tagId The tag ID
+ * @param {string} tagName The tag name
+ * @param {string} activityType1 First activity type
+ * @param {string} activityType2 Second activity type (or null)
+ * @param {string} sectionNum Section number
+ * @param {string} beforeMod Module ID to insert before (optional)
+ * @param {string} sectionReturnNum Section return number (optional)
+ */
+const showActivityTypeModal = async(tagId, tagName, activityType1, activityType2, sectionNum, beforeMod, sectionReturnNum) => {
+    try {
+        // Get strings
+        const [selectActivityTypeStr, activityOrResourceStr, type1Label, type2Label] = await Promise.all([
+            getString('selectactivitytype', 'format_minimoodlewall'),
+            getString('activityorresource', 'core'),
+            activityType1 && activityType1 !== 'null' ? getActivityTypeLabel(activityType1) : Promise.resolve(''),
+            activityType2 && activityType2 !== 'null' ? getActivityTypeLabel(activityType2) : Promise.resolve(''),
+        ]);
+
+        // Build modal body HTML with 3 options
+        let bodyHtml = '<div class="format-minimoodlewall-activity-options">';
+        bodyHtml += `<p>${selectActivityTypeStr}</p>`;
+        bodyHtml += '<div class="list-group">';
+
+        // Option 1: Activity type 1 (if exists)
+        if (activityType1 && activityType1 !== 'null') {
+            bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
+                            data-activity-type="${activityType1}">
+                            ${type1Label}
+                         </a>`;
+        }
+
+        // Option 2: Activity type 2 (if exists)
+        if (activityType2 && activityType2 !== 'null') {
+            bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
+                            data-activity-type="${activityType2}">
+                            ${type2Label}
+                         </a>`;
+        }
+
+        // Option 3: Open activity chooser
+        bodyHtml += `<a href="#" class="list-group-item list-group-item-action activity-type-option"
+                        data-activity-type="chooser">
+                        <i class="icon fa fa-plus fa-fw"></i> ${activityOrResourceStr}
+                     </a>`;
+
+        bodyHtml += '</div></div>';
+
+        const modal = await ModalFactory.create({
+            type: ModalFactory.types.CANCEL,
+            title: tagName,
+            body: bodyHtml,
+            large: false,
+        });
+
+        // Handle option selection
+        modal.getRoot().on('click', '.activity-type-option', (e) => {
+            e.preventDefault();
+            const activityType = e.currentTarget.dataset.activityType;
+
+            modal.destroy();
+
+            if (activityType === 'chooser') {
+                // Open the standard activity chooser
+                openActivityChooser(sectionNum, beforeMod, sectionReturnNum, tagId);
+            } else {
+                // Navigate directly to the activity creation page
+                navigateToActivityCreation(activityType, sectionNum, beforeMod, sectionReturnNum, tagId);
+            }
+        });
+
+        modal.show();
+
+    } catch (error) {
+        Notification.exception(error);
+    }
+};
+
+/**
+ * Get a human-readable label for an activity type.
+ *
+ * @param {string} activityType The activity type (e.g., 'assign', 'resource')
+ * @return {Promise<string>} Promise resolving to the label
+ */
+const getActivityTypeLabel = async(activityType) => {
+    try {
+        return await getString('modulename', 'mod_' + activityType);
+    } catch (error) {
+        // Fallback to capitalized activity type if string not found
+        return activityType.charAt(0).toUpperCase() + activityType.slice(1);
+    }
+};
+
+/**
+ * Navigate to the activity creation page.
+ *
+ * @param {string} activityType The activity module type
+ * @param {string} sectionNum Section number
+ * @param {string} beforeMod Module ID to insert before (optional)
+ * @param {string} sectionReturnNum Section return number (optional)
+ * @param {string} tagId The tag ID to assign
+ */
+const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, sectionReturnNum, tagId) => {
+    try {
+        // Store tag ID in session via AJAX call
+        await Ajax.call([{
+            methodname: 'format_minimoodlewall_store_pending_tag',
+            args: {tagid: parseInt(tagId)},
+        }])[0];
+
+        // Build URL for modedit.php
+        const url = new URL(M.cfg.wwwroot + '/course/modedit.php');
+        url.searchParams.set('add', activityType);
+        url.searchParams.set('type', '');
+        url.searchParams.set('course', M.cfg.courseId);
+        url.searchParams.set('section', sectionNum);
+        if (beforeMod) {
+            url.searchParams.set('beforemod', beforeMod);
+        }
+        if (sectionReturnNum) {
+            url.searchParams.set('sr', sectionReturnNum);
+        }
+
+        window.location.href = url.toString();
+    } catch (error) {
+        Notification.exception(error);
+    }
+};
+
+/**
+ * Open the standard Moodle activity chooser.
+ *
+ * @param {string} sectionNum Section number
+ * @param {string} beforeMod Module ID to insert before (optional)
+ * @param {string} sectionReturnNum Section return number (optional)
+ * @param {string} tagId The tag ID to assign (stored for later)
+ */
+const openActivityChooser = async(sectionNum, beforeMod, sectionReturnNum, tagId) => {
+    try {
+        // Store tag ID in session via AJAX call
+        await Ajax.call([{
+            methodname: 'format_minimoodlewall_store_pending_tag',
+            args: {tagid: parseInt(tagId)},
+        }])[0];
+
+        // Trigger the standard activity chooser
+        const chooserButton = document.querySelector(
+            `button[data-action="open-chooser"][data-sectionnum="${sectionNum}"]`
+        );
+
+        if (chooserButton) {
+            chooserButton.click();
+        }
+    } catch (error) {
+        Notification.exception(error);
+    }
+};

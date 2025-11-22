@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Event observers for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -24,6 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025112203;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2024100700;        // Requires this Moodle version (4.5).
-$plugin->component = 'format_minimoodlewall';    // Full name of the plugin (used for diagnostics).
+$observers = [
+    [
+        'eventname' => '\core\event\course_module_created',
+        'callback' => '\format_minimoodlewall\observer::course_module_created',
+    ],
+];

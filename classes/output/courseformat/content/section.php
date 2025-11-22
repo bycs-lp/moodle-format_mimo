@@ -35,6 +35,38 @@ use core_courseformat\output\local\content\section as section_base;
  */
 class section extends section_base {
     /**
+     * Export this data so it can be used as the context for a mustache template.
+     *
+     * @param \renderer_base $output typically, the renderer that's calling this function
+     * @return \stdClass data context for a mustache template
+     */
+    public function export_for_template(\renderer_base $output): \stdClass {
+        global $PAGE;
+        
+        $data = parent::export_for_template($output);
+        
+        // Pass tag information to all CMs if we're editing and have tags configured.
+        $course = $this->format->get_course();
+        
+        // Get tagsetid from format options.
+        $options = $this->format->get_format_options();
+        $tagsetid = $options['tagsetid'] ?? 0;
+        
+        if ($PAGE->user_is_editing() && $tagsetid > 0) {
+            // Get tags for this tagset.
+            $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+            
+            // Add tag data to the template context.
+            $data->tags = array_values($tags);
+            $data->hastags = !empty($tags);
+            $data->tagsetid = $tagsetid;
+            $data->sectionnum = $this->section->section;
+        }
+        
+        return $data;
+    }
+    
+    /**
      * Returns the output class template path.
      *
      * @param \renderer_base $renderer typically, the renderer that's calling this function
