@@ -72,6 +72,7 @@ class cmitem extends cmitem_base {
         // Add activity name and URL from cm_info.
         $data->cmformat->activityname = $cm->get_formatted_name();
         $data->cmformat->url = $cm->url ? $cm->url->out(false) : null;
+        $data->cmformat->sectionid = $cm->sectionid;
         
         // Get tag information for this activity.
         $tag = tag_manager::get_cm_tag($cmid);

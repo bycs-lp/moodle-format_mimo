@@ -69,7 +69,10 @@ export const init = () => {
         const startIndex = currentPage * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
 
-        activityCards.forEach((card, index) => {
+        // Re-query activity cards to get fresh list after reordering.
+        const currentCards = Array.from(container.querySelectorAll('.col-12'));
+
+        currentCards.forEach((card, index) => {
             if (index >= startIndex && index < endIndex) {
                 card.style.display = 'block';
             } else {
@@ -157,5 +160,10 @@ export const init = () => {
             }
             showPage();
         }, 250);
+    });
+
+    // Listen for drag-drop reordering to refresh pagination.
+    window.addEventListener('minimoodlewall:reorder', () => {
+        showPage();
     });
 };

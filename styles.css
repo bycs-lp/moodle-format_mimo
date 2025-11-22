@@ -37,6 +37,18 @@
   transform: translateY(-4px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
+.minimoodlewall-card[draggable=true] {
+  cursor: move;
+}
+
+.col-12.dragging {
+  opacity: 0.5;
+}
+
+.col-12.drag-over .minimoodlewall-card {
+  border: 2px dashed #007bff;
+  background: rgba(0, 123, 255, 0.05);
+}
 
 .minimoodlewall-card-image {
   position: relative;
