@@ -1,5 +1,39 @@
 // Base styles for minimoodlewall card layout.
 
+// Activity container.
+.minimoodlewall-activities {
+    // Hide activities beyond the first page by default (prevents flash on page load).
+    // JavaScript will manage visibility based on screen size.
+    
+    // XL/LG: Hide beyond 8 (4 columns × 2 rows).
+    @media (min-width: 992px) {
+        .col-12:nth-child(n+9) {
+            display: none;
+        }
+    }
+    
+    // MD: Hide beyond 6 (3 columns × 2 rows).
+    @media (min-width: 768px) and (max-width: 991px) {
+        .col-12:nth-child(n+7) {
+            display: none;
+        }
+    }
+    
+    // SM: Hide beyond 4 (2 columns × 2 rows).
+    @media (min-width: 576px) and (max-width: 767px) {
+        .col-12:nth-child(n+5) {
+            display: none;
+        }
+    }
+    
+    // XS: Hide beyond 3 (1 column × 3 rows).
+    @media (max-width: 575px) {
+        .col-12:nth-child(n+4) {
+            display: none;
+        }
+    }
+}
+
 // Card container styling.
 .minimoodlewall-card {
     border-radius: 8px;
@@ -212,6 +246,45 @@
     .page-info {
         font-weight: 600;
         color: #333;
+    }
+}
+
+// Navigation buttons.
+.minimoodlewall-navigation {
+    display: none; // Hidden by default until JavaScript loads.
+    
+    // When visible, use flex layout.
+    &.is-visible {
+        display: flex;
+    }
+
+    .minimoodlewall-nav-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        background: #007bff;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+
+        i {
+            font-size: 20px;
+        }
+
+        &:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
     }
 }
 

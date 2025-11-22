@@ -70,7 +70,14 @@
                         <div class="card-body minimoodlewall-card-body">
                             {{#cmitem}}
                             {{#cmformat}}
-                            {{! Activity title (visible on hover via CSS) }}
+                            {{#description}}
+                            {{! Description preview (3 lines max) }}
+                            <div class="minimoodlewall-card-description text-muted small">
+                                {{{description}}}
+                            </div>
+                            {{/description}}
+                            {{^description}}
+                            {{! Activity title (only shown if no description) }}
                             <div class="minimoodlewall-card-title">
                                 {{#url}}
                                 <a href="{{url}}" class="activity-link stretched-link">
@@ -81,12 +88,6 @@
                                 {{activityname}}
                                 {{/url}}
                             </div>
-                            
-                            {{! Description preview (3 lines max) }}
-                            {{#description}}
-                            <div class="minimoodlewall-card-description text-muted small">
-                                {{{description}}}
-                            </div>
                             {{/description}}
                             {{/cmformat}}
                             {{/cmitem}}
@@ -96,6 +97,20 @@
                 {{/cms}}
             </div>
         </div>
+        {{! Pagination navigation }}
+        <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3 mt-3">
+            <button id="minimoodlewall-prev" class="minimoodlewall-nav-btn" aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <button id="minimoodlewall-next" class="minimoodlewall-nav-btn" aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}">
+                <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+        {{#js}}
+        require(['format_minimoodlewall/activity_pagination'], function(pagination) {
+            pagination.init();
+        });
+        {{/js}}
         {{/cmlist}}
     {{/ core_courseformat/local/content/section/cmlist }}
 {{/ core_courseformat/local/content/section }}
