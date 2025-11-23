@@ -1,3 +1,10 @@
+.minimoodlewall-activities {
+  margin-bottom: 1rem;
+}
+.minimoodlewall-activities > .col-12, .minimoodlewall-activities > li.col-12 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
 @media (min-width: 992px) {
   .minimoodlewall-activities .col-12:nth-child(n+9),
   .minimoodlewall-activities li.col-12:nth-child(n+9) {
@@ -25,6 +32,10 @@
 
 .minimoodlewall-activities-wrapper {
   position: relative;
+}
+
+.minimoodlewall-activities li.activity {
+  border: none !important;
 }
 
 .minimoodlewall-card {
@@ -233,6 +244,10 @@
 .minimoodlewall-pagination .page-info {
   font-weight: 600;
   color: #333;
+}
+
+.minimoodlewall-navigation-wrapper {
+  position: relative;
 }
 
 .minimoodlewall-navigation {

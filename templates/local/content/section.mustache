@@ -34,7 +34,6 @@
             {{/cmitem}}
             {{/cms}}
         </ul>
-        {{/cmlist}}
         <div class="minimoodlewall-navigation-wrapper">
             {{! Pagination navigation }}
             <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3">
@@ -46,16 +45,18 @@
                 </button>
             </div>
         </div>
-        {{#js}}
-        require(['format_minimoodlewall/activity_pagination'], function(pagination) {
-            pagination.init();
-        });
-        require(['format_minimoodlewall/activity_dragdrop'], function(dragdrop) {
-            dragdrop.init();
-        });
-        require(['format_minimoodlewall/bulk_debug'], function(debug) {
-            debug.init();
-        });
-        {{/js}}
+        {{/cmlist}}
     {{/ core_courseformat/local/content/section/cmlist }}
 {{/ core_courseformat/local/content/section }}
+
+{{#js}}
+require(['format_minimoodlewall/activity_pagination'], function(pagination) {
+    pagination.init();
+});
+require(['format_minimoodlewall/activity_dragdrop'], function(dragdrop) {
+    dragdrop.init();
+});
+require(['format_minimoodlewall/bulk_debug'], function(debug) {
+    debug.init();
+});
+{{/js}}

@@ -2,6 +2,15 @@
 
 // Activity container.
 .minimoodlewall-activities {
+    margin-bottom: 1rem; // Add space after the activities list
+    
+    // Ensure proper row spacing for Bootstrap grid
+    & > .col-12,
+    & > li.col-12 {
+        margin-top: 0;
+        margin-bottom: 1rem; // Add bottom margin to each activity card
+    }
+    
     // Hide activities beyond the first page by default (prevents flash on page load).
     // JavaScript will manage visibility based on screen size.
     
@@ -41,6 +50,13 @@
 // Activity wrapper with navigation.
 .minimoodlewall-activities-wrapper {
     position: relative; // Positioning context for navigation buttons.
+}
+
+// Override default activity styling.
+.minimoodlewall-activities {
+    li.activity {
+        border: none !important; // Remove any default borders
+    }
 }
 
 // Card container styling.
@@ -285,6 +301,11 @@
         font-weight: 600;
         color: #333;
     }
+}
+
+// Navigation wrapper - needs relative positioning as parent for absolute nav buttons.
+.minimoodlewall-navigation-wrapper {
+    position: relative;
 }
 
 // Navigation buttons.
