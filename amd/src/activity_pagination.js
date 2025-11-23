@@ -21,6 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
+
 export const init = () => {
     const container = document.querySelector('.minimoodlewall-activities');
     if (!container) {
@@ -36,6 +38,57 @@ export const init = () => {
     let isAnimating = false;
     let touchStartX = 0;
     let touchEndX = 0;
+    let paginationEnabled = true;
+
+    /**
+     * Check if bulk mode is active via reactive state.
+     * @returns {boolean}
+     */
+    const isBulkMode = () => {
+        try {
+            const reactiveEditor = getCurrentCourseEditor();
+            if (reactiveEditor) {
+                const bulkState = reactiveEditor.get('bulk');
+                return bulkState && bulkState.enabled === true;
+            }
+        } catch (e) {
+            // Fallback: check if bulk checkboxes are visible.
+            const bulkSelect = document.querySelector('.bulkselect:not(.d-none)');
+            return bulkSelect !== null;
+        }
+        return false;
+    };
+
+    /**
+     * Show all activities (disable pagination).
+     */
+    const showAllActivities = () => {
+        const currentCards = Array.from(container.querySelectorAll('.col-12'));
+        currentCards.forEach((card) => {
+            card.style.transition = 'none';
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+            card.style.display = 'block';
+        });
+
+        // Hide navigation controls.
+        const navContainer = document.querySelector('.minimoodlewall-navigation');
+        if (navContainer) {
+            navContainer.style.display = 'none';
+        }
+    };
+
+    /**
+     * Enable pagination and show current page.
+     */
+    const enablePagination = () => {
+        const navContainer = document.querySelector('.minimoodlewall-navigation');
+        if (navContainer) {
+            navContainer.style.display = '';
+        }
+        showPageDirect();
+        updateNavigationButtons();
+    };
 
     /**
      * Get items per page based on screen size.
@@ -65,11 +118,37 @@ export const init = () => {
     };
 
     /**
+     * Show activities for current page without animation (for resizing/initial load).
+     */
+    const showPageDirect = () => {
+        if (!paginationEnabled) {
+            return;
+        }
+
+        const itemsPerPage = getItemsPerPage();
+        const startIndex = currentPage * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const currentCards = Array.from(container.querySelectorAll('.col-12'));
+
+        currentCards.forEach((card, index) => {
+            card.style.transition = 'none';
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+            if (index >= startIndex && index < endIndex) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        updateNavigationButtons();
+    };
+
+    /**
      * Show activities for current page with carousel animation.
      * @param {string} direction - 'next' or 'prev' for animation direction
      */
     const showPage = (direction = 'next') => {
-        if (isAnimating) {
+        if (isAnimating || !paginationEnabled) {
             return;
         }
         isAnimating = true;
@@ -218,7 +297,8 @@ export const init = () => {
         }
     };
 
-    // Initial page load without animation.
+    // Initial setup - start with pagination enabled.
+    paginationEnabled = true;
     const itemsPerPage = getItemsPerPage();
     const startIndex = 0;
     const endIndex = startIndex + itemsPerPage;
@@ -232,53 +312,70 @@ export const init = () => {
     });
     updateNavigationButtons();
 
+    // Watch for bulk mode changes via reactive state.
+    try {
+        const reactiveEditor = getCurrentCourseEditor();
+        if (reactiveEditor) {
+            // Add state watcher for bulk mode.
+            reactiveEditor.addStateWatch('bulk.enabled', (state) => {
+                const bulkEnabled = state?.bulk?.enabled;
+                if (bulkEnabled && paginationEnabled) {
+                    // Bulk mode activated - disable pagination.
+                    paginationEnabled = false;
+                    showAllActivities();
+                } else if (!bulkEnabled && !paginationEnabled) {
+                    // Bulk mode deactivated - enable pagination.
+                    paginationEnabled = true;
+                    currentPage = 0;
+                    enablePagination();
+                }
+            });
+        }
+    } catch (e) {
+        // Fallback: watch for class changes on bulkselect elements.
+        const observer = new MutationObserver(() => {
+            const bulkNow = isBulkMode();
+            if (bulkNow && paginationEnabled) {
+                paginationEnabled = false;
+                showAllActivities();
+            } else if (!bulkNow && !paginationEnabled) {
+                paginationEnabled = true;
+                currentPage = 0;
+                enablePagination();
+            }
+        });
+
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class'],
+            subtree: true,
+            childList: true,
+        });
+    }
+
     // Handle window resize.
     let resizeTimeout;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
+            if (!paginationEnabled) {
+                return;
+            }
             // Recalculate and stay on current page if possible.
             const totalPages = getTotalPages();
             if (currentPage >= totalPages) {
                 currentPage = Math.max(0, totalPages - 1);
             }
-            // No animation on resize.
-            isAnimating = false;
-            const itemsPerPage = getItemsPerPage();
-            const startIndex = currentPage * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const currentCards = Array.from(container.querySelectorAll('.col-12'));
-            currentCards.forEach((card, index) => {
-                card.style.transition = 'none';
-                card.style.opacity = '1';
-                card.style.transform = 'translateX(0)';
-                if (index >= startIndex && index < endIndex) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            updateNavigationButtons();
+            showPageDirect();
         }, 250);
     });
 
     // Listen for drag-drop reordering to refresh pagination.
     window.addEventListener('minimoodlewall:reorder', () => {
+        if (!paginationEnabled) {
+            return;
+        }
         isAnimating = false;
-        const itemsPerPage = getItemsPerPage();
-        const startIndex = currentPage * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const currentCards = Array.from(container.querySelectorAll('.col-12'));
-        currentCards.forEach((card, index) => {
-            card.style.transition = 'none';
-            card.style.opacity = '1';
-            card.style.transform = 'translateX(0)';
-            if (index >= startIndex && index < endIndex) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        updateNavigationButtons();
+        showPageDirect();
     });
 };
