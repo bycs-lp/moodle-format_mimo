@@ -21,9 +21,37 @@
 
     This template extends the core content template.
 }}
+{{!
+    MDL-87236 workaround: Intercept component.init() to delay until reactive is ready.
+    This prevents the parent template's immediate init() call from executing before
+    the CourseEditor reactive instance is fully initialized.
+}}
+{{#js}}
+require(['core_courseformat/local/content', 'core_courseformat/courseeditor'], function(component, courseEditor) {
+    const originalInit = component.init;
+
+    component.init = function(...args) {
+        const reactive = courseEditor.getCurrentCourseEditor();
+        if (reactive && reactive.state) {
+            return originalInit.apply(this, args);
+        } else {
+            setTimeout(() => {
+                component.init(...args);
+            }, 50);
+            return null;
+        }
+    };
+});
+{{/js}}
 {{< core_courseformat/local/content }}
     {{! Override the section block to use our custom section template. }}
     {{$ core_courseformat/local/content/section }}
         {{> format_minimoodlewall/local/content/section }}
     {{/ core_courseformat/local/content/section }}
 {{/ core_courseformat/local/content }}
+
+{{!
+    The parent template's JS block will call component.init(), but we've
+    wrapped it above to delay until reactive.state is ready (MDL-87236).
+    No additional JS needed here - the wrapper handles everything.
+}}

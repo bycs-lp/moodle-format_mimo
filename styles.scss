@@ -7,28 +7,32 @@
     
     // XL/LG: Hide beyond 8 (4 columns × 2 rows).
     @media (min-width: 992px) {
-        .col-12:nth-child(n+9) {
+        .col-12:nth-child(n+9),
+        li.col-12:nth-child(n+9) {
             display: none;
         }
     }
     
     // MD: Hide beyond 6 (3 columns × 2 rows).
     @media (min-width: 768px) and (max-width: 991px) {
-        .col-12:nth-child(n+7) {
+        .col-12:nth-child(n+7),
+        li.col-12:nth-child(n+7) {
             display: none;
         }
     }
     
     // SM: Hide beyond 4 (2 columns × 2 rows).
     @media (min-width: 576px) and (max-width: 767px) {
-        .col-12:nth-child(n+5) {
+        .col-12:nth-child(n+5),
+        li.col-12:nth-child(n+5) {
             display: none;
         }
     }
     
     // XS: Hide beyond 3 (1 column × 3 rows).
     @media (max-width: 575px) {
-        .col-12:nth-child(n+4) {
+        .col-12:nth-child(n+4),
+        li.col-12:nth-child(n+4) {
             display: none;
         }
     }
@@ -443,6 +447,62 @@ body.format-minimoodlewall-theme-colorful {
             &.active {
                 background: rgba(255, 255, 255, 0.4);
                 border-color: rgba(255, 255, 255, 0.6);
+            }
+        }
+    }
+}
+
+// Bulk selection styles for minimoodlewall cards.
+[data-for="cmitem"] {
+    // When bulk mode is enabled, make the entire wrapper clickable.
+    &[data-action="toggleSelectionCm"] {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    // Selected state styling.
+    &.selected {
+        .minimoodlewall-card {
+            outline: 3px solid #0d6efd;
+            outline-offset: 2px;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+    }
+}
+
+.minimoodlewall-card {
+    position: relative;
+
+    // Bulk select checkbox container.
+    .bulkselect {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 4px;
+        padding: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin: 0;
+        }
+    }
+
+    // Add subtle hover effect for the card when bulk selection is active.
+    [data-action="toggleSelectionCm"] & {
+        &:hover {
+            outline: 2px solid rgba(13, 110, 253, 0.3);
+            outline-offset: 2px;
+        }
+    }
+}
+
+// Ensure bulk actions don't interfere with dragging.
+.editing {
+    [data-for="cmitem"] {
+        &.dragging {
+            .bulkselect {
+                display: none !important;
             }
         }
     }

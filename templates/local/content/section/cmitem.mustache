@@ -21,6 +21,90 @@
 
     This template extends the core cmitem template.
 }}
-{{< core_courseformat/local/content/section/cmitem }}
-    {{! Use the default cmitem rendering from core. }}
-{{/ core_courseformat/local/content/section/cmitem }}
+<li
+    class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}}"
+    id="module-{{id}}"
+    data-for="cmitem"
+    data-id="{{id}}"
+    style="list-style: none;"
+>
+{{#cmformat}}
+<div class="minimoodlewall-card card h-100">
+    {{! Bulk selection checkbox }}
+    {{#cmbulk}}
+    <div class="bulkselect d-none position-absolute top-0 start-0 m-2" data-for="cmBulkSelect" style="z-index: 10;">
+        <input
+            id="cmCheckbox{{cmid}}"
+            type="checkbox"
+            data-id="{{cmid}}"
+            data-action="toggleSelectionCm"
+            data-bulkcheckbox="1"
+            class="form-check-input"
+        >
+        <label class="visually-hidden" for="cmCheckbox{{cmid}}">
+            {{#str}} selectcm, core_courseformat, {{activityname}}{{/str}}
+        </label>
+    </div>
+    {{/cmbulk}}
+    {{! Activity card region for drag-drop }}
+    <div data-region="activity-card" class="minimoodlewall-card-content">
+    {{! Tag Image at top }}
+    <div class="minimoodlewall-card-image">
+        {{#tagimage}}
+        <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
+        {{/tagimage}}
+        {{^tagimage}}
+        <div class="minimoodlewall-card-placeholder"></div>
+        {{/tagimage}}
+    </div>
+    
+    {{! Completion indicator overlay (top-right) }}
+    {{#completion}}
+    {{#hascompletion}}
+    <div class="minimoodlewall-completion-badge">
+        {{#iscomplete}}
+        <span class="badge-complete" title="{{#str}}completed, format_minimoodlewall{{/str}}">
+            <i class="fa fa-check"></i>
+        </span>
+        {{/iscomplete}}
+        {{^iscomplete}}
+        <span class="badge-incomplete" title="{{#str}}notcompleted, format_minimoodlewall{{/str}}">
+        </span>
+        {{/iscomplete}}
+    </div>
+    {{/hascompletion}}
+    {{/completion}}
+    
+    {{! Card body with description }}
+    <div class="card-body minimoodlewall-card-body">
+        {{#description}}
+        {{! Description preview (3 lines max) }}
+        <div class="minimoodlewall-card-description text-muted small">
+            {{#url}}
+            <a href="{{url}}" class="activity-link stretched-link">
+                {{{description}}}
+            </a>
+            {{/url}}
+            {{^url}}
+            {{{description}}}
+            {{/url}}
+        </div>
+        {{/description}}
+        {{^description}}
+        {{! Activity title (only shown if no description) }}
+        <div class="minimoodlewall-card-title">
+            {{#url}}
+            <a href="{{url}}" class="activity-link stretched-link">
+                {{activityname}}
+            </a>
+            {{/url}}
+            {{^url}}
+            {{activityname}}
+            {{/url}}
+        </div>
+        {{/description}}
+    </div>
+    </div>
+</div>
+{{/cmformat}}
+</li>

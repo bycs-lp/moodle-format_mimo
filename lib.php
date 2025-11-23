@@ -61,6 +61,17 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Returns the information about the ajax support.
+     *
+     * @return stdClass
+     */
+    public function supports_ajax() {
+        $ajaxsupport = new stdClass();
+        $ajaxsupport->capable = true;
+        return $ajaxsupport;
+    }
+
+    /**
      * Enable the component based content for Moodle 4.0+.
      *
      * @return bool
