@@ -179,4 +179,34 @@ class format_minimoodlewall extends core_courseformat\base {
             BLOCK_POS_RIGHT => [],
         ];
     }
+
+    /**
+     * Extend course navigation to hide section nodes from breadcrumb on activity pages.
+     *
+     * @param global_navigation $navigation
+     * @param navigation_node $node The course node within the navigation
+     */
+    public function extend_course_navigation($navigation, navigation_node $node) {
+        global $PAGE;
+
+        // First, call parent to load sections normally.
+        parent::extend_course_navigation($navigation, $node);
+
+        // If we're viewing an activity (module context), hide section nodes.
+        // This prevents them from appearing in the breadcrumb.
+        if ($PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->cm) {
+            // Find the active section node and mark it to not show in breadcrumb.
+            $sectionnode = $node->find($PAGE->cm->sectionnum, navigation_node::TYPE_SECTION);
+            if ($sectionnode) {
+                $sectionnode->mainnavonly = true; // This prevents it from showing in breadcrumb.
+            } else {
+                // Try to find it by searching all children.
+                foreach ($node->children as $child) {
+                    if ($child->type == navigation_node::TYPE_SECTION) {
+                        $child->mainnavonly = true;
+                    }
+                }
+            }
+        }
+    }
 }
