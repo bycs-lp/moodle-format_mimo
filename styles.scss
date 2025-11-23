@@ -3,7 +3,8 @@
 // Activity container.
 .minimoodlewall-activities {
     margin-bottom: 1rem; // Add space after the activities list
-    
+    transition: height 0.3s ease;
+
     // Ensure proper row spacing for Bootstrap grid
     & > .col-12,
     & > li.col-12 {
@@ -185,6 +186,8 @@
 // Grid layout.
 .format-minimoodlewall {
     .course-content {
+        transition: height 0.3s ease;
+
         .section {
             .content {
                 .section-summary {
