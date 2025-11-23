@@ -125,15 +125,18 @@ if ($action === 'createtag' || $action === 'edittag') {
     
     if ($tag) {
         $tag->cardimagefile = tag_manager::prepare_cardimage_draft($tag->id);
+        $tag->filterimagefile = tag_manager::prepare_filterimage_draft($tag->id);
         $mform->set_data($tag);
     } else if ($tagsetid) {
         $mform->set_data([
             'tagsetid' => $tagsetid,
             'cardimagefile' => tag_manager::prepare_cardimage_draft(null),
+            'filterimagefile' => tag_manager::prepare_filterimage_draft(null),
         ]);
     } else {
         $mform->set_data([
             'cardimagefile' => tag_manager::prepare_cardimage_draft(null),
+            'filterimagefile' => tag_manager::prepare_filterimage_draft(null),
         ]);
     }
     
@@ -151,6 +154,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                 ]
             );
             tag_manager::save_cardimage_from_draft($data->tagid, $data->cardimagefile);
+            tag_manager::save_filterimage_from_draft($data->tagid, $data->filterimagefile);
             $message = get_string('edittag', 'format_minimoodlewall');
         } else {
             $newtagid = tag_manager::create_tag(
@@ -163,6 +167,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->activitytype2
             );
             tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
+            tag_manager::save_filterimage_from_draft($newtagid, (int)$data->filterimagefile);
             $message = get_string('createtag', 'format_minimoodlewall');
         }
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);

@@ -98,6 +98,16 @@ class tag_form extends \moodleform {
         );
         $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
 
+        // Filter image upload (optional).
+        $mform->addElement(
+            'filemanager',
+            'filterimagefile',
+            get_string('filterimage', 'format_minimoodlewall'),
+            null,
+            tag_manager::get_image_filemanager_options()
+        );
+        $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
+
         // Action buttons.
         $this->add_action_buttons();
     }

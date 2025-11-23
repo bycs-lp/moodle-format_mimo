@@ -210,3 +210,60 @@ class format_minimoodlewall extends core_courseformat\base {
         }
     }
 }
+
+/**
+ * Serve files from the minimoodlewall course format.
+ *
+ * Supports the tag card/filter image file areas stored in the system context.
+ *
+ * @param stdClass $course Course object (unused for system-context files)
+ * @param stdClass $cm Course module (unused)
+ * @param context $context Context the file belongs to
+ * @param string $filearea File area name
+ * @param array $args Remaining file path arguments
+ * @param bool $forcedownload Whether the user must download the file
+ * @param array $options Additional options passed to send_stored_file
+ * @return void|false
+ */
+function format_minimoodlewall_pluginfile(
+    $course,
+    $cm,
+    $context,
+    $filearea,
+    $args,
+    $forcedownload,
+    array $options = []
+) {
+    require_login();
+
+    if ($context->contextlevel !== CONTEXT_SYSTEM) {
+        return false;
+    }
+
+    $allowedareas = [
+        \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
+        \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
+    ];
+    if (!in_array($filearea, $allowedareas, true)) {
+        return false;
+    }
+
+    if (count($args) < 2) {
+        return false;
+    }
+
+    $itemid = (int)array_shift($args);
+    $filename = array_pop($args);
+    $filepath = '/';
+    if (!empty($args)) {
+        $filepath .= implode('/', $args) . '/';
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'format_minimoodlewall', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false;
+    }
+
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}

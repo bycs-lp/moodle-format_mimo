@@ -81,24 +81,66 @@ class tag_manager {
     }
 
     /**
+     * Prepare a draft area for the filter image filemanager field.
+     *
+     * @param int|null $tagid Tag id when editing, null when creating
+     * @return int Draft item id populated with existing files (if any)
+     */
+    public static function prepare_filterimage_draft(?int $tagid = null): int {
+        $draftitemid = file_get_submitted_draft_itemid('filterimagefile');
+        file_prepare_draft_area(
+            $draftitemid,
+            context_system::instance()->id,
+            'format_minimoodlewall',
+            self::FILEAREA_FILTERIMAGE,
+            $tagid ?? 0,
+            self::get_image_filemanager_options()
+        );
+
+        return $draftitemid;
+    }
+
+    /**
      * Persist the uploaded card image stored in a draft area.
      *
      * @param int $tagid Tag id
      * @param int $draftitemid Draft area identifier
      */
     public static function save_cardimage_from_draft(int $tagid, int $draftitemid): void {
+        self::save_image_from_draft($tagid, $draftitemid, self::FILEAREA_CARDIMAGE, 'cardimage');
+    }
+
+    /**
+     * Persist the uploaded filter image stored in a draft area.
+     *
+     * @param int $tagid Tag id
+     * @param int $draftitemid Draft area identifier
+     */
+    public static function save_filterimage_from_draft(int $tagid, int $draftitemid): void {
+        self::save_image_from_draft($tagid, $draftitemid, self::FILEAREA_FILTERIMAGE, 'filterimage');
+    }
+
+    /**
+     * Shared helper to move files from a draft area into storage and persist the filename.
+     *
+     * @param int $tagid Tag id
+     * @param int $draftitemid Draft area identifier
+     * @param string $filearea Target file area constant
+     * @param string $dbfield Database column to update
+     */
+    private static function save_image_from_draft(int $tagid, int $draftitemid, string $filearea, string $dbfield): void {
         file_save_draft_area_files(
             $draftitemid,
             context_system::instance()->id,
             'format_minimoodlewall',
-            self::FILEAREA_CARDIMAGE,
+            $filearea,
             $tagid,
             self::get_image_filemanager_options()
         );
 
-        $file = self::get_image_file($tagid, self::FILEAREA_CARDIMAGE);
+        $file = self::get_image_file($tagid, $filearea);
         $filename = $file ? $file->get_filename() : null;
-        self::update_tag($tagid, ['cardimage' => $filename]);
+        self::update_tag($tagid, [$dbfield => $filename]);
     }
 
     /**
