@@ -34,6 +34,8 @@ export const init = () => {
 
     let currentPage = 0;
     let isAnimating = false;
+    let touchStartX = 0;
+    let touchEndX = 0;
 
     /**
      * Get items per page based on screen size.
@@ -179,6 +181,42 @@ export const init = () => {
             showPage('next');
         }
     });
+
+    // Touch gesture support for swipe navigation.
+    container.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+
+    container.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: true});
+
+    /**
+     * Handle swipe gesture.
+     */
+    const handleSwipe = () => {
+        const swipeThreshold = 50; // Minimum distance for a swipe.
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) < swipeThreshold) {
+            return; // Not a swipe, ignore.
+        }
+
+        if (diff > 0) {
+            // Swiped left - go to next page.
+            if (currentPage < getTotalPages() - 1 && !isAnimating) {
+                currentPage++;
+                showPage('next');
+            }
+        } else {
+            // Swiped right - go to previous page.
+            if (currentPage > 0 && !isAnimating) {
+                currentPage--;
+                showPage('prev');
+            }
+        }
+    };
 
     // Initial page load without animation.
     const itemsPerPage = getItemsPerPage();
