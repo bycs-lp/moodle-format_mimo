@@ -26,7 +26,10 @@ namespace format_minimoodlewall\form;
 
 defined('MOODLE_INTERNAL') || die();
 
+use format_minimoodlewall\tag_manager;
+
 require_once($CFG->libdir . '/formslib.php');
+require_once($CFG->libdir . '/filelib.php');
 
 /**
  * Tag edit form.
@@ -85,29 +88,15 @@ class tag_form extends \moodleform {
         );
         $mform->setType('activitytype2', PARAM_TEXT);
 
-        // Card image filename.
+        // Card image upload.
         $mform->addElement(
-            'text',
-            'cardimage',
+            'filemanager',
+            'cardimagefile',
             get_string('cardimage', 'format_minimoodlewall'),
-            ['size' => 40]
+            null,
+            tag_manager::get_image_filemanager_options()
         );
-        $mform->setType('cardimage', PARAM_FILE);
-        $mform->addRule('cardimage', get_string('required'), 'required', null, 'client');
-        $mform->addHelpButton('cardimage', 'cardimage', 'format_minimoodlewall');
-        $mform->setDefault('cardimage', 'default.svg');
-
-        // Filter image filename.
-        $mform->addElement(
-            'text',
-            'filterimage',
-            get_string('filterimage', 'format_minimoodlewall'),
-            ['size' => 40]
-        );
-        $mform->setType('filterimage', PARAM_FILE);
-        $mform->addRule('filterimage', get_string('required'), 'required', null, 'client');
-        $mform->addHelpButton('filterimage', 'filterimage', 'format_minimoodlewall');
-        $mform->setDefault('filterimage', 'default-small.svg');
+        $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
 
         // Action buttons.
         $this->add_action_buttons();
@@ -145,5 +134,28 @@ class tag_form extends \moodleform {
             'wiki' => get_string('pluginname', 'mod_wiki'),
             'workshop' => get_string('pluginname', 'mod_workshop'),
         ];
+    }
+
+    /**
+     * Ensure a card image is always provided.
+     *
+     * @param array $data Form data
+     * @param array $files Files
+     * @return array
+     */
+    public function validation($data, $files): array {
+        $errors = parent::validation($data, $files);
+
+        $draftid = $data['cardimagefile'] ?? 0;
+        $tagid = $this->_customdata['tagid'] ?? 0;
+        $hasexisting = $tagid ? tag_manager::has_cardimage((int)$tagid) : false;
+
+        $fileinfo = \file_get_draft_area_info($draftid);
+        $hasdraftfiles = !empty($fileinfo['filecount']);
+        if ((!$hasdraftfiles) && !$hasexisting) {
+            $errors['cardimagefile'] = get_string('required');
+        }
+
+        return $errors;
     }
 }

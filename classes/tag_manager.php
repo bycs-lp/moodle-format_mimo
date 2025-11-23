@@ -24,6 +24,10 @@
 
 namespace format_minimoodlewall;
 
+use context_system;
+use core_component;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -35,11 +39,189 @@ defined('MOODLE_INTERNAL') || die();
  */
 class tag_manager {
 
+    /** File area for the large card image associated with a tag. */
+    public const FILEAREA_CARDIMAGE = 'tagcard';
+
+    /** File area reserved for future filter bar imagery. */
+    public const FILEAREA_FILTERIMAGE = 'tagfilter';
+
     /** @var \cache_application Cache for tag configurations */
     private static $tagcache = null;
 
     /** @var \cache_application Cache for activity-tag mappings */
     private static $mappingcache = null;
+
+    /**
+     * Retrieve the shared filemanager options for tag image uploads.
+     *
+     * @return array
+     */
+    public static function get_image_filemanager_options(): array {
+        return self::FILEMANAGER_OPTIONS;
+    }
+
+    /**
+     * Prepare a draft area for the card image filemanager field.
+     *
+     * @param int|null $tagid Tag id when editing, null when creating
+     * @return int Draft item id populated with existing files (if any)
+     */
+    public static function prepare_cardimage_draft(?int $tagid = null): int {
+        $draftitemid = file_get_submitted_draft_itemid('cardimagefile');
+        file_prepare_draft_area(
+            $draftitemid,
+            context_system::instance()->id,
+            'format_minimoodlewall',
+            self::FILEAREA_CARDIMAGE,
+            $tagid ?? 0,
+            self::get_image_filemanager_options()
+        );
+
+        return $draftitemid;
+    }
+
+    /**
+     * Persist the uploaded card image stored in a draft area.
+     *
+     * @param int $tagid Tag id
+     * @param int $draftitemid Draft area identifier
+     */
+    public static function save_cardimage_from_draft(int $tagid, int $draftitemid): void {
+        file_save_draft_area_files(
+            $draftitemid,
+            context_system::instance()->id,
+            'format_minimoodlewall',
+            self::FILEAREA_CARDIMAGE,
+            $tagid,
+            self::get_image_filemanager_options()
+        );
+
+        $file = self::get_image_file($tagid, self::FILEAREA_CARDIMAGE);
+        $filename = $file ? $file->get_filename() : null;
+        self::update_tag($tagid, ['cardimage' => $filename]);
+    }
+
+    /**
+     * Whether a stored card image already exists for the given tag.
+     *
+     * @param int $tagid Tag id
+     * @return bool
+     */
+    public static function has_cardimage(int $tagid): bool {
+        return (bool)self::get_image_file($tagid, self::FILEAREA_CARDIMAGE);
+    }
+
+    /**
+     * Build the display URL for the card image.
+     *
+     * @param \stdClass $tag Tag record
+     * @return moodle_url|null
+     */
+    public static function get_cardimage_url(\stdClass $tag): ?moodle_url {
+        return self::get_image_url($tag, self::FILEAREA_CARDIMAGE);
+    }
+
+    /**
+     * Build the display URL for the filter image area.
+     *
+     * @param \stdClass $tag Tag record
+     * @return moodle_url|null
+     */
+    public static function get_filterimage_url(\stdClass $tag): ?moodle_url {
+        return self::get_image_url($tag, self::FILEAREA_FILTERIMAGE);
+    }
+
+    /**
+     * Resolve the pluginfile URL for a stored file in the given file area.
+     *
+     * @param \stdClass $tag Tag record
+     * @param string $filearea File area constant
+     * @return moodle_url|null
+     */
+    private static function get_image_url(\stdClass $tag, string $filearea): ?moodle_url {
+        $file = self::get_image_file($tag->id, $filearea);
+        if (!$file) {
+            return null;
+        }
+
+        return moodle_url::make_pluginfile_url(
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename()
+        );
+    }
+
+    /**
+     * Fetch the stored file object for a tag image.
+     *
+     * @param int $tagid Tag id
+     * @param string $filearea File area constant
+     * @return \stored_file|null
+     */
+    private static function get_image_file(int $tagid, string $filearea): ?\stored_file {
+        $files = get_file_storage()->get_area_files(
+            context_system::instance()->id,
+            'format_minimoodlewall',
+            $filearea,
+            $tagid,
+            '',
+            false
+        );
+
+        if (empty($files)) {
+            return null;
+        }
+
+        return reset($files);
+    }
+
+    /**
+     * Copy a bundled pix/tags asset into the managed file area.
+     *
+     * @param int $tagid Tag id
+     * @param string|null $filename Bundled filename
+     * @param string $filearea Destination file area constant
+     */
+    private static function copy_default_image(int $tagid, ?string $filename, string $filearea): void {
+        if (empty($filename)) {
+            return;
+        }
+
+        $context = context_system::instance();
+        $fs = get_file_storage();
+        if ($fs->file_exists($context->id, 'format_minimoodlewall', $filearea, $tagid, '/', $filename)) {
+            return;
+        }
+
+        $componentdir = core_component::get_component_directory('format_minimoodlewall');
+        $source = $componentdir . '/pix/tags/' . $filename;
+        if (!file_exists($source)) {
+            return;
+        }
+
+        $filerecord = [
+            'contextid' => $context->id,
+            'component' => 'format_minimoodlewall',
+            'filearea' => $filearea,
+            'itemid' => $tagid,
+            'filepath' => '/',
+            'filename' => $filename,
+        ];
+        $fs->create_file_from_pathname($filerecord, $source);
+    }
+
+    /**
+     * Options shared by all tag image filemanager instances.
+     */
+    private const FILEMANAGER_OPTIONS = [
+        'subdirs' => 0,
+        'maxfiles' => 1,
+        'maxbytes' => 0,
+        'accepted_types' => ['.svg', 'image/svg+xml'],
+    ];
 
     /**
      * Initialize caches.
@@ -399,8 +581,18 @@ class tag_manager {
         ];
 
         foreach ($defaulttags as $tag) {
-            self::create_tag($tagsetid, $tag['name'], null, $tag['cardimage'],
-                $tag['filterimage'], $tag['activitytype1'], $tag['activitytype2']);
+            $tagid = self::create_tag(
+                $tagsetid,
+                $tag['name'],
+                null,
+                $tag['cardimage'],
+                $tag['filterimage'],
+                $tag['activitytype1'],
+                $tag['activitytype2']
+            );
+
+            self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
+            self::copy_default_image($tagid, $tag['filterimage'], self::FILEAREA_FILTERIMAGE);
         }
 
         return true;

@@ -121,12 +121,20 @@ if ($action === 'createtag' || $action === 'edittag') {
     
     // Pass the current URL with action parameter to the form.
     $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagsetid' => $tagsetid, 'tagid' => $tagid]);
-    $mform = new tag_form($formurl);
+    $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
     
     if ($tag) {
+        $tag->cardimagefile = tag_manager::prepare_cardimage_draft($tag->id);
         $mform->set_data($tag);
     } else if ($tagsetid) {
-        $mform->set_data(['tagsetid' => $tagsetid]);
+        $mform->set_data([
+            'tagsetid' => $tagsetid,
+            'cardimagefile' => tag_manager::prepare_cardimage_draft(null),
+        ]);
+    } else {
+        $mform->set_data([
+            'cardimagefile' => tag_manager::prepare_cardimage_draft(null),
+        ]);
     }
     
     if ($mform->is_cancelled()) {
@@ -138,23 +146,23 @@ if ($action === 'createtag' || $action === 'edittag') {
                 [
                     'name' => $data->name,
                     'description' => $data->description,
-                    'cardimage' => $data->cardimage,
-                    'filterimage' => $data->filterimage,
                     'activitytype1' => $data->activitytype1,
                     'activitytype2' => $data->activitytype2,
                 ]
             );
+            tag_manager::save_cardimage_from_draft($data->tagid, $data->cardimagefile);
             $message = get_string('edittag', 'format_minimoodlewall');
         } else {
-            tag_manager::create_tag(
+            $newtagid = tag_manager::create_tag(
                 $data->tagsetid,
                 $data->name,
                 $data->description,
-                $data->cardimage,
-                $data->filterimage,
+                null,
+                null,
                 $data->activitytype1,
                 $data->activitytype2
             );
+            tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
             $message = get_string('createtag', 'format_minimoodlewall');
         }
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
@@ -268,9 +276,13 @@ if (empty($tagsets)) {
                 echo html_writer::start_tag('tr');
                 
                 // Card image preview.
-                $cardimgurl = new moodle_url('/course/format/minimoodlewall/pix/tags/' . $tag->cardimage);
+                $cardimgurl = tag_manager::get_cardimage_url($tag);
                 echo html_writer::start_tag('td');
-                echo html_writer::img($cardimgurl, $tag->name, ['style' => 'width: 80px; height: 50px; object-fit: cover;']);
+                if ($cardimgurl) {
+                    echo html_writer::img($cardimgurl, $tag->name, ['style' => 'width: 80px; height: 50px; object-fit: cover;']);
+                } else {
+                    echo html_writer::span('-', 'text-muted');
+                }
                 echo html_writer::end_tag('td');
                 
                 echo html_writer::tag('td', format_string($tag->name));

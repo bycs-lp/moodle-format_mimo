@@ -80,11 +80,16 @@ class cmitem extends cmitem_base {
         if ($tag) {
             $data->cmformat->tagname = $tag->name;
             $data->cmformat->tagid = $tag->id;
-            
-            // Construct image URLs - files are in pluginfile.php accessible location.
-            global $CFG;
-            $data->cmformat->tagimage = $CFG->wwwroot . '/course/format/minimoodlewall/pix/tags/' . $tag->cardimage;
-            $data->cmformat->filterimage = $CFG->wwwroot . '/course/format/minimoodlewall/pix/tags/' . $tag->filterimage;
+
+            $cardurl = tag_manager::get_cardimage_url($tag);
+            if ($cardurl) {
+                $data->cmformat->tagimage = $cardurl->out(false);
+            }
+
+            $filterurl = tag_manager::get_filterimage_url($tag);
+            if ($filterurl) {
+                $data->cmformat->filterimage = $filterurl->out(false);
+            }
         }
         
         // Add activity description (truncated to 3 lines).
