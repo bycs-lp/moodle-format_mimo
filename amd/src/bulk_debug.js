@@ -36,11 +36,25 @@ export const init = () => {
     document.addEventListener('click', (e) => {
         const cmItem = e.target.closest('[data-for="cmitem"]');
         if (cmItem) {
-            console.log('Click on cmitem', cmItem.dataset.id, '- action:', cmItem.dataset.action, '- preventDefault:', cmItem.dataset.preventDefault);
+            console.log(
+                'Click on cmitem',
+                cmItem.dataset.id,
+                '- action:',
+                cmItem.dataset.action,
+                '- preventDefault:',
+                cmItem.dataset.preventDefault
+            );
         }
         const checkbox = e.target.closest('[data-bulkcheckbox]');
         if (checkbox) {
-            console.log('Click on checkbox', checkbox.dataset.id, '- checked:', checkbox.checked, '- action:', checkbox.dataset.action);
+            console.log(
+                'Click on checkbox',
+                checkbox.dataset.id,
+                '- checked:',
+                checkbox.checked,
+                '- action:',
+                checkbox.dataset.action
+            );
         }
     }, true);
 
@@ -93,20 +107,25 @@ export const init = () => {
             const reactiveEditor = getCurrentCourseEditor();
             if (reactiveEditor) {
                 console.log('✓ Reactive editor:', reactiveEditor.name);
-                
+
                 // Check registered components
                 if (reactiveEditor.components) {
                     const compList = reactiveEditor.components.map(c => c.name).join(', ');
                     console.log('Registered components:', compList);
-                    
+
                     // Find actions component
                     const actionsComp = reactiveEditor.components.find(c => c.name === 'content_actions');
                     console.log('Actions component:', actionsComp ? '✓ FOUND' : '✗ NOT FOUND');
                 }
-                
+
                 // Check bulk state
                 const bulkState = reactiveEditor.get('bulk');
-                console.log('Bulk:', `enabled=${bulkState.enabled}, selectedType=${bulkState.selectedType}, selection=[${bulkState.selection}]`);
+                console.log(
+                    'Bulk:',
+                    `enabled=${bulkState.enabled}`,
+                    `selectedType=${bulkState.selectedType}`,
+                    `selection=[${bulkState.selection}]`
+                );
             }
         } catch (e) {
             console.log('✗ Error:', e.message);

@@ -39,6 +39,7 @@ export const init = () => {
     let touchStartX = 0;
     let touchEndX = 0;
     let paginationEnabled = true;
+    const animationDuration = 400; // Duration (ms) for slide and height transitions.
 
     /**
      * Check if bulk mode is active via reactive state.
@@ -118,6 +119,43 @@ export const init = () => {
     };
 
     /**
+     * Measure the height the container needs for a given page without affecting the live DOM.
+     * @param {number} startIndex
+     * @param {number} endIndex
+     * @returns {number}
+     */
+    const measurePageHeight = (startIndex, endIndex) => {
+        const containerRect = container.getBoundingClientRect();
+        const clone = container.cloneNode(true);
+        clone.style.position = 'absolute';
+        clone.style.visibility = 'hidden';
+        clone.style.pointerEvents = 'none';
+        clone.style.left = '-9999px';
+        clone.style.width = `${containerRect.width}px`;
+        clone.style.height = 'auto';
+        clone.style.overflow = 'visible';
+        clone.style.transform = 'none';
+        clone.style.transition = 'none';
+
+        const cloneCards = Array.from(clone.querySelectorAll('.col-12'));
+        cloneCards.forEach((card, index) => {
+            card.style.transition = 'none';
+            card.style.transform = 'none';
+            card.style.opacity = '1';
+            if (index >= startIndex && index < endIndex) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        document.body.appendChild(clone);
+        const height = clone.scrollHeight;
+        document.body.removeChild(clone);
+        return height;
+    };
+
+    /**
      * Show activities for current page without animation (for resizing/initial load).
      */
     const showPageDirect = () => {
@@ -157,45 +195,131 @@ export const init = () => {
         const startIndex = currentPage * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
 
+        const containerRect = container.getBoundingClientRect();
+        container.style.overflow = 'hidden';
+        container.style.height = `${containerRect.height}px`;
+        const slideDistance = containerRect.width;
+        const initialHeight = containerRect.height;
+
+        let targetHeight = measurePageHeight(startIndex, endIndex);
+        if (!Number.isFinite(targetHeight) || targetHeight <= 0) {
+            targetHeight = initialHeight;
+        }
+
+        let heightTransitionDone = Math.abs(targetHeight - initialHeight) < 1;
+        let cardsReset = false;
+        let heightFallbackId;
+
+        const finalizeAnimation = () => {
+            if (!heightTransitionDone || !cardsReset) {
+                return;
+            }
+            container.style.height = '';
+            container.style.overflow = '';
+            isAnimating = false;
+            updateNavigationButtons();
+        };
+
+        const startHeightTransition = () => {
+            if (heightTransitionDone) {
+                return;
+            }
+
+            const onHeightTransitionEnd = (event) => {
+                if (event.target !== container || event.propertyName !== 'height') {
+                    return;
+                }
+                container.removeEventListener('transitionend', onHeightTransitionEnd);
+                clearTimeout(heightFallbackId);
+                heightTransitionDone = true;
+                finalizeAnimation();
+            };
+
+            container.addEventListener('transitionend', onHeightTransitionEnd);
+            heightFallbackId = setTimeout(() => {
+                container.removeEventListener('transitionend', onHeightTransitionEnd);
+                heightTransitionDone = true;
+                finalizeAnimation();
+            }, animationDuration + 200);
+
+            requestAnimationFrame(() => {
+                container.style.height = `${targetHeight}px`;
+            });
+        };
+
+        startHeightTransition();
+
         // Re-query activity cards to get fresh list after reordering.
         const currentCards = Array.from(container.querySelectorAll('.col-12'));
 
-        // Animate out current cards.
-        const visibleCards = currentCards.filter(card => card.style.display !== 'none');
-        visibleCards.forEach((card) => {
-            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            card.style.opacity = '0';
-            card.style.transform = direction === 'next' ? 'translateX(-30px)' : 'translateX(30px)';
+        // Identify old (currently visible) and new cards.
+        const oldCards = currentCards.filter(card => card.style.display !== 'none');
+        const newCards = currentCards.filter((card, index) => index >= startIndex && index < endIndex);
+
+        // Make new cards visible so we can measure their offset before sliding them in.
+        newCards.forEach((card) => {
+            card.style.display = 'block';
+            card.style.transition = 'none';
+            card.style.opacity = '1';
+            card.style.transform = 'none';
+            card.style.zIndex = '10';
         });
 
-        // After fade out, show new cards.
+        // Determine how far below the container the next batch currently sits and shift it up.
+        let verticalOffset = 0;
+        if (newCards.length) {
+            const firstRect = newCards[0].getBoundingClientRect();
+            verticalOffset = firstRect.top - containerRect.top;
+        }
+
+        const enteringX = direction === 'next' ? slideDistance : -slideDistance;
+        const exitingX = direction === 'next' ? -slideDistance : slideDistance;
+
+        newCards.forEach((card) => {
+            card.style.transform = `translate(${enteringX}px, ${-verticalOffset}px)`;
+        });
+
+        // Keep old cards at their current position.
+        oldCards.forEach((card) => {
+            card.style.zIndex = '1';
+        });
+
+        // Trigger reflow.
+        void container.offsetHeight;
+
+        // Start animation - move both simultaneously.
+        requestAnimationFrame(() => {
+            oldCards.forEach((card) => {
+                card.style.transition = 'transform 0.4s ease-in-out, opacity 0.4s ease-in-out';
+                card.style.transform = `translateX(${exitingX}px)`;
+                card.style.opacity = '0.3';
+            });
+
+            newCards.forEach((card) => {
+                card.style.transition = 'transform 0.4s ease-in-out, opacity 0.4s ease-in-out';
+                card.style.transform = `translate(0px, ${-verticalOffset}px)`;
+                card.style.opacity = '1';
+            });
+        });
+
+        // After animation completes, hide old cards and reset visibility.
         setTimeout(() => {
             currentCards.forEach((card, index) => {
-                if (index >= startIndex && index < endIndex) {
-                    card.style.display = 'block';
-                    card.style.opacity = '0';
-                    card.style.transform = direction === 'next' ? 'translateX(30px)' : 'translateX(-30px)';
+                card.style.transition = '';
+                card.style.transform = '';
+                card.style.zIndex = '';
+                card.style.opacity = '1';
 
-                    // Trigger reflow to ensure animation works.
-                    void card.offsetHeight;
-
-                    // Animate in.
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateX(0)';
-                    }, 10);
-                } else {
+                if (index < startIndex || index >= endIndex) {
                     card.style.display = 'none';
+                } else {
+                    card.style.display = 'block';
                 }
             });
 
-            // Clear animation flag after animation completes.
-            setTimeout(() => {
-                isAnimating = false;
-            }, 300);
-
-            updateNavigationButtons();
-        }, 300);
+            cardsReset = true;
+            finalizeAnimation();
+        }, animationDuration);
     };
 
     /**
