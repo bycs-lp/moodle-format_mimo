@@ -43,5 +43,9 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112001, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112302) {
+        upgrade_plugin_savepoint(true, 2025112302, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

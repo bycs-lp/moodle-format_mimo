@@ -24,6 +24,30 @@
 {{< core_courseformat/local/content/section }}
     {{! Override the cmlist block to display activities in a custom wall format. }}
     {{$ core_courseformat/local/content/section/cmlist }}
+        {{#filterbar.hasitems}}
+        <div class="minimoodlewall-filterbar" data-region="minimoodlewall-filterbar" role="toolbar" aria-label="{{filterbar.label}}">
+            {{#filterbar.tags}}
+            <button
+                type="button"
+                    class="minimoodlewall-filterbar-button is-empty"
+                data-action="tag-filter"
+                data-tagid="{{id}}"
+                    data-hasactivities="{{#hasactivities}}1{{/hasactivities}}{{^hasactivities}}0{{/hasactivities}}"
+                aria-pressed="false"
+                title="{{name}}{{^hasactivities}}{{#filterbar.isediting}} · {{filterbar.emptylabel}}{{/filterbar.isediting}}{{/hasactivities}}"
+                    disabled
+            >
+                <span class="sr-only">{{#str}}filterby, format_minimoodlewall{{/str}} {{name}}</span>
+                {{#imageurl}}
+                <img src="{{imageurl}}" alt="{{name}}">
+                {{/imageurl}}
+                {{^imageurl}}
+                <span class="minimoodlewall-filterbar-label">{{name}}</span>
+                {{/imageurl}}
+            </button>
+            {{/filterbar.tags}}
+        </div>
+        {{/filterbar.hasitems}}
         {{#cmlist}}
         <ul class="section m-0 p-0 minimoodlewall-activities row g-3" data-for="cmlist" style="list-style: none;">
             {{#cms}}
@@ -58,5 +82,8 @@ require(['format_minimoodlewall/activity_dragdrop'], function(dragdrop) {
 });
 require(['format_minimoodlewall/bulk_debug'], function(debug) {
     debug.init();
+});
+require(['format_minimoodlewall/tag_filter'], function(filter) {
+    filter.init();
 });
 {{/js}}

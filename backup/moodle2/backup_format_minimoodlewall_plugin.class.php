@@ -68,6 +68,8 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         // Tagset + tag IDs are annotated so other plugins (modules) can map references later.
         $tagset->annotate_ids('format_minimoodlewall_tagset', 'id');
         $tag->annotate_ids('format_minimoodlewall_tag', 'id');
+        $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE, 'id');
+        $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE, 'id');
 
         // Only export tagsets actually used in the course to keep backups lean.
         $tagset->set_source_sql(

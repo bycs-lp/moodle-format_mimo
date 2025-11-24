@@ -354,6 +354,78 @@
     }
 }
 
+// Compact filter bar rendered above the wall.
+.minimoodlewall-filterbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .minimoodlewall-filterbar-button {
+        background: #fff;
+        border: 2px solid transparent;
+        border-radius: 999px;
+        padding: 0.35rem;
+        min-width: 3rem;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+        transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+
+        img {
+            max-height: 2.5rem;
+            width: auto;
+        }
+
+        &.is-active {
+            border-color: var(--bs-primary, #0f6cbf);
+            box-shadow: 0 2px 8px rgba(15, 108, 191, 0.25);
+            transform: translateY(-1px);
+        }
+
+        &.is-empty {
+            opacity: 0.45;
+        }
+
+        &.is-muted {
+            opacity: 0.3;
+        }
+
+        &:focus-visible {
+            outline: 3px solid var(--bs-primary, #0f6cbf);
+            outline-offset: 2px;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+    }
+
+    .minimoodlewall-filterbar-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .minimoodlewall-filterbar-reset {
+        background: none;
+        border: none;
+        color: var(--bs-link-color, #0f6cbf);
+        font-weight: 600;
+        text-decoration: underline;
+        padding: 0;
+    }
+}
+
+.minimoodlewall-activities {
+    .is-filtered-out {
+        display: none !important;
+    }
+}
+
 // Dark mode theme.
 body.format-minimoodlewall-theme-dark {
     .minimoodlewall-card {

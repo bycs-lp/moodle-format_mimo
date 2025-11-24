@@ -290,6 +290,66 @@
   transform: scale(0.95);
 }
 
+.minimoodlewall-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button {
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 0.35rem;
+  min-width: 3rem;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button img {
+  max-height: 2.5rem;
+  width: auto;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button.is-active {
+  border-color: var(--bs-primary, #0f6cbf);
+  box-shadow: 0 2px 8px rgba(15, 108, 191, 0.25);
+  transform: translateY(-1px);
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button.is-empty {
+  opacity: 0.45;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button.is-muted {
+  opacity: 0.3;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button:focus-visible {
+  outline: 3px solid var(--bs-primary, #0f6cbf);
+  outline-offset: 2px;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.minimoodlewall-filterbar .minimoodlewall-filterbar-reset {
+  background: none;
+  border: none;
+  color: var(--bs-link-color, #0f6cbf);
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.minimoodlewall-activities .is-filtered-out {
+  display: none !important;
+}
+
 body.format-minimoodlewall-theme-dark .minimoodlewall-card {
   background: #2d3748;
   color: #e2e8f0;

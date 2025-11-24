@@ -28,6 +28,8 @@ require_once($CFG->libdir . '/adminlib.php');
 use format_minimoodlewall\tag_manager;
 use format_minimoodlewall\form\tagset_form;
 use format_minimoodlewall\form\tag_form;
+use html_writer;
+use moodle_url;
 
 admin_externalpage_setup('format_minimoodlewall_tags');
 

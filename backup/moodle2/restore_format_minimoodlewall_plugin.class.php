@@ -132,6 +132,22 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
+     * Reattach tag card/filter files after the course structure has been recreated.
+     */
+    public function after_execute_course() {
+        $this->add_related_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
+            'format_minimoodlewall_tag'
+        );
+        $this->add_related_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
+            'format_minimoodlewall_tag'
+        );
+    }
+
+    /**
      * Clear caches when the restore finishes to expose the imported data immediately.
      */
     public function after_restore_course() {

@@ -24,6 +24,7 @@
 
 namespace format_minimoodlewall\output\courseformat\content;
 
+use context_course;
 use core_courseformat\output\local\content\section as section_base;
 
 /**
@@ -45,25 +46,72 @@ class section extends section_base {
         
         $data = parent::export_for_template($output);
         
-        // Pass tag information to all CMs if we're editing and have tags configured.
         $course = $this->format->get_course();
-        
-        // Get tagsetid from format options.
         $options = $this->format->get_format_options();
         $tagsetid = $options['tagsetid'] ?? 0;
-        
-        if ($PAGE->user_is_editing() && $tagsetid > 0) {
-            // Get tags for this tagset.
+        $enablefiltering = !empty($options['enablefiltering']);
+        $isediting = $PAGE->user_is_editing();
+
+        if ($tagsetid > 0) {
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
-            
-            // Add tag data to the template context.
-            $data->tags = array_values($tags);
-            $data->hastags = !empty($tags);
-            $data->tagsetid = $tagsetid;
-            $data->sectionnum = $this->section->section;
+
+            if ($isediting) {
+                $data->tags = array_values($tags);
+                $data->hastags = !empty($tags);
+                $data->tagsetid = $tagsetid;
+                $data->sectionnum = $this->section->section;
+            }
+
+            if ($enablefiltering) {
+                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting);
+                if (!empty($filtertags)) {
+                    $data->filterbar = (object) [
+                        'tags' => $filtertags,
+                        'hasitems' => true,
+                        'label' => get_string('filterbarlabel', 'format_minimoodlewall'),
+                        'emptylabel' => get_string('filterbarnoactivities', 'format_minimoodlewall'),
+                        'isediting' => $isediting,
+                    ];
+                }
+            }
         }
         
         return $data;
+    }
+
+    /**
+     * Build template data for the filter bar.
+     *
+     * @param array $tags Tag records keyed by id
+     * @param bool $isediting Whether editing mode is enabled
+     * @return array
+     */
+    private function build_filterbar_data(array $tags, int $courseid, bool $isediting): array {
+        if (empty($tags)) {
+            return [];
+        }
+
+        $tagids = array_map('intval', array_keys($tags));
+        $usage = \format_minimoodlewall\tag_manager::get_tag_usage_counts($courseid, $tagids);
+        $context = context_course::instance($courseid);
+
+        $filtertags = [];
+        foreach ($tags as $tag) {
+            $filterurl = \format_minimoodlewall\tag_manager::get_filterimage_url($tag);
+            $hasactivities = !empty($usage[$tag->id]);
+            if (!$isediting && !$hasactivities) {
+                continue;
+            }
+
+            $filtertags[] = [
+                'id' => $tag->id,
+                'name' => format_string($tag->name, true, ['context' => $context]),
+                'imageurl' => $filterurl ? $filterurl->out(false) : null,
+                'hasactivities' => $hasactivities,
+            ];
+        }
+
+        return $filtertags;
     }
     
     /**

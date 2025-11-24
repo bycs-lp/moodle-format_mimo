@@ -23,6 +23,8 @@
 
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
 
+const FILTER_EVENT = 'minimoodlewall:filterchange';
+
 export const init = () => {
     const container = document.querySelector('.minimoodlewall-activities');
     if (!container) {
@@ -382,6 +384,18 @@ export const init = () => {
         if (currentPage < getTotalPages() - 1 && !isAnimating) {
             currentPage++;
             showPage('next');
+        }
+    });
+
+    // React when the filter bar toggles a filter on/off.
+    document.addEventListener(FILTER_EVENT, (event) => {
+        const filterActive = !!(event && event.detail && event.detail.active);
+        if (filterActive) {
+            paginationEnabled = false;
+            showAllActivities();
+        } else {
+            paginationEnabled = true;
+            enablePagination();
         }
     });
 

@@ -121,6 +121,16 @@ class tag_manager {
     }
 
     /**
+     * Whether a stored filter image already exists for the given tag.
+     *
+     * @param int $tagid Tag id
+     * @return bool
+     */
+    public static function has_filterimage(int $tagid): bool {
+        return (bool)self::get_image_file($tagid, self::FILEAREA_FILTERIMAGE);
+    }
+
+    /**
      * Shared helper to move files from a draft area into storage and persist the filename.
      *
      * @param int $tagid Tag id
@@ -218,6 +228,33 @@ class tag_manager {
         }
 
         return reset($files);
+    }
+
+    /**
+     * Return how many course modules reference each tag within a course.
+     *
+     * @param int $courseid Course id
+     * @param int[] $tagids List of tag ids
+     * @return array tagid => usage count
+     */
+    public static function get_tag_usage_counts(int $courseid, array $tagids): array {
+        global $DB;
+
+        if (empty($tagids)) {
+            return [];
+        }
+
+        $tagids = array_map('intval', $tagids);
+        [$insql, $params] = $DB->get_in_or_equal($tagids, SQL_PARAMS_NAMED);
+        $params['courseid'] = $courseid;
+
+        $sql = "SELECT cmt.tagid, COUNT(1) AS usecount
+                  FROM {format_minimoodlewall_cmtags} cmt
+                  JOIN {course_modules} cm ON cm.id = cmt.cmid
+                 WHERE cm.course = :courseid AND cmt.tagid $insql
+              GROUP BY cmt.tagid";
+
+        return $DB->get_records_sql_menu($sql, $params);
     }
 
     /**
