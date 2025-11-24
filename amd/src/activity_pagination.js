@@ -258,16 +258,20 @@ export const init = () => {
         const oldCards = currentCards.filter(card => card.style.display !== 'none');
         const newCards = currentCards.filter((card, index) => index >= startIndex && index < endIndex);
 
+        const oldCardPositions = new Map();
+        oldCards.forEach((card) => {
+            oldCardPositions.set(card, card.getBoundingClientRect());
+        });
+
         // Make new cards visible so we can measure their offset before sliding them in.
         newCards.forEach((card) => {
             card.style.display = 'block';
             card.style.transition = 'none';
             card.style.opacity = '1';
             card.style.transform = 'none';
-            card.style.zIndex = '10';
         });
 
-        // Determine how far below the container the next batch currently sits and shift it up.
+        // Determine how far below/above the container the next batch currently sits.
         let verticalOffset = 0;
         if (newCards.length) {
             const firstRect = newCards[0].getBoundingClientRect();
@@ -275,7 +279,7 @@ export const init = () => {
         }
 
         const enteringX = direction === 'next' ? slideDistance : -slideDistance;
-        const exitingX = direction === 'next' ? -slideDistance : slideDistance;
+        const exitingX = -enteringX;
 
         newCards.forEach((card) => {
             card.style.transform = `translate(${enteringX}px, ${-verticalOffset}px)`;
@@ -283,7 +287,23 @@ export const init = () => {
 
         // Keep old cards at their current position.
         oldCards.forEach((card) => {
-            card.style.zIndex = '1';
+            const beforeRect = oldCardPositions.get(card);
+            if (!beforeRect) {
+                return;
+            }
+            const afterRect = card.getBoundingClientRect();
+            const offsetX = afterRect.left - beforeRect.left;
+            const offsetY = afterRect.top - beforeRect.top;
+            const needsOffset = Math.abs(offsetX) > 1 || Math.abs(offsetY) > 1;
+            if (needsOffset) {
+                card.dataset.mmwOffsetX = offsetX.toString();
+                card.dataset.mmwOffsetY = offsetY.toString();
+                card.style.transition = 'none';
+                card.style.transform = `translate(${-offsetX}px, ${-offsetY}px)`;
+            } else {
+                delete card.dataset.mmwOffsetX;
+                delete card.dataset.mmwOffsetY;
+            }
         });
 
         // Trigger reflow.
@@ -293,7 +313,11 @@ export const init = () => {
         requestAnimationFrame(() => {
             oldCards.forEach((card) => {
                 card.style.transition = 'transform 0.4s ease-in-out, opacity 0.4s ease-in-out';
-                card.style.transform = `translateX(${exitingX}px)`;
+                const offsetX = parseFloat(card.dataset.mmwOffsetX || '0');
+                const offsetY = parseFloat(card.dataset.mmwOffsetY || '0');
+                const targetX = exitingX - offsetX;
+                const targetY = -offsetY;
+                card.style.transform = `translate(${targetX}px, ${targetY}px)`;
                 card.style.opacity = '0.3';
             });
 
@@ -309,8 +333,9 @@ export const init = () => {
             currentCards.forEach((card, index) => {
                 card.style.transition = '';
                 card.style.transform = '';
-                card.style.zIndex = '';
                 card.style.opacity = '1';
+                delete card.dataset.mmwOffsetX;
+                delete card.dataset.mmwOffsetY;
 
                 if (index < startIndex || index >= endIndex) {
                     card.style.display = 'none';
