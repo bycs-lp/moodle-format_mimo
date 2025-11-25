@@ -36,6 +36,10 @@ use core_courseformat\output\local\content\section as section_base;
  */
 class section extends section_base {
     /**
+     * Number of activities we assume fit on the first screen before JS adapts to viewport size.
+     */
+    private const INITIAL_PAGINATION_THRESHOLD = 8;
+    /**
      * Export this data so it can be used as the context for a mustache template.
      *
      * @param \renderer_base $output typically, the renderer that's calling this function
@@ -51,6 +55,17 @@ class section extends section_base {
         $tagsetid = $options['tagsetid'] ?? 0;
         $enablefiltering = !empty($options['enablefiltering']);
         $isediting = $PAGE->user_is_editing();
+
+        if (!empty($data->cmlist) && isset($data->cmlist->cms)) {
+            $activitycount = 0;
+            if (is_countable($data->cmlist->cms)) {
+                $activitycount = count($data->cmlist->cms);
+            }
+
+            $data->cmlist->activitycount = $activitycount;
+            $data->cmlist->initialpaginationthreshold = self::INITIAL_PAGINATION_THRESHOLD;
+            $data->cmlist->hasinitialnext = ($activitycount > self::INITIAL_PAGINATION_THRESHOLD);
+        }
 
         if ($tagsetid > 0) {
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);

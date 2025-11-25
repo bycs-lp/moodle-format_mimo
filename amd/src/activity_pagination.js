@@ -36,6 +36,10 @@ export const init = () => {
         return;
     }
 
+    const navContainer = document.querySelector('.minimoodlewall-navigation');
+    const prevBtn = document.getElementById('minimoodlewall-prev');
+    const nextBtn = document.getElementById('minimoodlewall-next');
+
     let currentPage = 0;
     let isAnimating = false;
     let touchStartX = 0;
@@ -75,9 +79,17 @@ export const init = () => {
         });
 
         // Hide navigation controls.
-        const navContainer = document.querySelector('.minimoodlewall-navigation');
         if (navContainer) {
-            navContainer.style.display = 'none';
+            navContainer.classList.remove('is-visible');
+            navContainer.dataset.hasNext = '0';
+        }
+        if (prevBtn) {
+            prevBtn.disabled = true;
+            prevBtn.setAttribute('aria-disabled', 'true');
+        }
+        if (nextBtn) {
+            nextBtn.disabled = true;
+            nextBtn.setAttribute('aria-disabled', 'true');
         }
     };
 
@@ -85,10 +97,6 @@ export const init = () => {
      * Enable pagination and show current page.
      */
     const enablePagination = () => {
-        const navContainer = document.querySelector('.minimoodlewall-navigation');
-        if (navContainer) {
-            navContainer.style.display = '';
-        }
         showPageDirect();
         updateNavigationButtons();
     };
@@ -354,8 +362,6 @@ export const init = () => {
      */
     const updateNavigationButtons = () => {
         const totalPages = getTotalPages();
-        const prevBtn = document.getElementById('minimoodlewall-prev');
-        const nextBtn = document.getElementById('minimoodlewall-next');
 
         if (prevBtn) {
             if (currentPage === 0) {
@@ -363,6 +369,9 @@ export const init = () => {
             } else {
                 prevBtn.style.display = '';
             }
+            const disablePrev = (currentPage === 0) || !paginationEnabled;
+            prevBtn.disabled = disablePrev;
+            prevBtn.setAttribute('aria-disabled', disablePrev ? 'true' : 'false');
         }
         if (nextBtn) {
             if (currentPage >= totalPages - 1) {
@@ -370,15 +379,20 @@ export const init = () => {
             } else {
                 nextBtn.style.display = '';
             }
+            const disableNext = (currentPage >= totalPages - 1) || !paginationEnabled;
+            nextBtn.disabled = disableNext;
+            nextBtn.setAttribute('aria-disabled', disableNext ? 'true' : 'false');
         }
 
         // Hide navigation if only one page.
-        const navContainer = document.querySelector('.minimoodlewall-navigation');
         if (navContainer) {
-            if (totalPages <= 1) {
+            navContainer.classList.remove('is-booting');
+            if (!paginationEnabled || totalPages <= 1) {
                 navContainer.classList.remove('is-visible');
+                navContainer.dataset.hasNext = '0';
             } else {
                 navContainer.classList.add('is-visible');
+                navContainer.dataset.hasNext = '1';
             }
         }
     };
@@ -398,14 +412,14 @@ export const init = () => {
     createNavigation();
 
     // Add event listeners to navigation buttons.
-    document.getElementById('minimoodlewall-prev')?.addEventListener('click', () => {
+    prevBtn?.addEventListener('click', () => {
         if (currentPage > 0 && !isAnimating) {
             currentPage--;
             showPage('prev');
         }
     });
 
-    document.getElementById('minimoodlewall-next')?.addEventListener('click', () => {
+    nextBtn?.addEventListener('click', () => {
         if (currentPage < getTotalPages() - 1 && !isAnimating) {
             currentPage++;
             showPage('next');

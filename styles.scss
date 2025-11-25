@@ -473,9 +473,27 @@
     right: 10px; // Position from right edge.
     z-index: 100; // Ensure buttons are above cards.
     
-    // When visible, use flex layout.
-    &.is-visible {
+    // When visible or booting, use flex layout.
+    &.is-visible,
+    &.is-booting {
         display: flex;
+    }
+
+    &.is-booting {
+        pointer-events: none;
+        gap: 0.75rem;
+    }
+
+    &.is-booting .minimoodlewall-nav-btn--prev {
+        display: none;
+    }
+
+    &.is-booting[data-has-next='0'] {
+        display: none;
+    }
+
+    &.is-booting[data-has-next='1'] .minimoodlewall-nav-btn--next {
+        opacity: 0.4;
     }
 
     .minimoodlewall-nav-btn {
@@ -505,13 +523,19 @@
         &:active {
             transform: scale(0.95);
         }
+
+        &:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
     }
 }
 
 .minimoodlewall-navigation-wrapper.minimoodlewall-design-starters {
     .minimoodlewall-navigation {
         position: static;
-        display: flex;
         justify-content: flex-end;
         margin-top: 1rem;
     }

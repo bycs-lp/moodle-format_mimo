@@ -393,8 +393,21 @@
   right: 10px;
   z-index: 100;
 }
-.minimoodlewall-navigation.is-visible {
+.minimoodlewall-navigation.is-visible, .minimoodlewall-navigation.is-booting {
   display: flex;
+}
+.minimoodlewall-navigation.is-booting {
+  pointer-events: none;
+  gap: 0.75rem;
+}
+.minimoodlewall-navigation.is-booting .minimoodlewall-nav-btn--prev {
+  display: none;
+}
+.minimoodlewall-navigation.is-booting[data-has-next="0"] {
+  display: none;
+}
+.minimoodlewall-navigation.is-booting[data-has-next="1"] .minimoodlewall-nav-btn--next {
+  opacity: 0.4;
 }
 .minimoodlewall-navigation .minimoodlewall-nav-btn {
   width: 48px;
@@ -421,10 +434,15 @@
 .minimoodlewall-navigation .minimoodlewall-nav-btn:active {
   transform: scale(0.95);
 }
+.minimoodlewall-navigation .minimoodlewall-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
 
 .minimoodlewall-navigation-wrapper.minimoodlewall-design-starters .minimoodlewall-navigation {
   position: static;
-  display: flex;
   justify-content: flex-end;
   margin-top: 1rem;
 }

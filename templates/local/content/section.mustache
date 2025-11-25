@@ -63,12 +63,31 @@
         </ul>
         <div class="minimoodlewall-navigation-wrapper {{designclass}}" data-design="{{designvariant}}">
             {{! Pagination navigation }}
-            <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3">
-                <button id="minimoodlewall-prev" class="minimoodlewall-nav-btn" aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}">
-                    <i class="fa fa-chevron-left"></i>
+            <div
+                class="minimoodlewall-navigation justify-content-end align-items-center gap-3 is-booting"
+                data-activity-count="{{activitycount}}"
+                data-placeholder-threshold="{{initialpaginationthreshold}}"
+                data-has-next="{{#hasinitialnext}}1{{/hasinitialnext}}{{^hasinitialnext}}0{{/hasinitialnext}}"
+            >
+                <button
+                    type="button"
+                    id="minimoodlewall-prev"
+                    class="minimoodlewall-nav-btn minimoodlewall-nav-btn--prev"
+                    aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}"
+                    aria-disabled="true"
+                    disabled
+                >
+                    <i class="fa fa-chevron-left" aria-hidden="true"></i>
                 </button>
-                <button id="minimoodlewall-next" class="minimoodlewall-nav-btn" aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}">
-                    <i class="fa fa-chevron-right"></i>
+                <button
+                    type="button"
+                    id="minimoodlewall-next"
+                    class="minimoodlewall-nav-btn minimoodlewall-nav-btn--next"
+                    aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}"
+                    aria-disabled="true"
+                    disabled
+                >
+                    <i class="fa fa-chevron-right" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
