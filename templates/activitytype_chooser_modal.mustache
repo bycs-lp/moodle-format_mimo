@@ -42,27 +42,42 @@
     }
 }}
 <div class="format-minimoodlewall-activity-options">
-    <p class="mb-3">{{selectactivitytype}}</p>
-    <div class="row g-2 mb-2">
+    <p class="mb-3 fw-bold">{{selectactivitytype}}</p>
+    <p class="mb-4 text-muted">{{selectactivitytypedesc}}</p>
+    <div class="row g-3 mb-3">
         {{#hasactivitytype1}}
         <div class="col-6">
-            <a href="#" class="list-group-item list-group-item-action activity-type-option h-100 d-flex align-items-center justify-content-center text-center p-4" data-activity-type="{{activitytype1}}">
-                <strong>{{activitytype1label}}</strong>
+            <a href="#" class="mmw-activity-card" data-activity-type="{{activitytype1}}">
+                <div class="mmw-activity-card-content">
+                    <h3 class="mmw-activity-card-title">{{activitytype1label}}</h3>
+                    <p class="mmw-activity-card-description">{{activitytype1description}}</p>
+                    <p class="mmw-activity-card-type">{{activitytype1type}}</p>
+                    <div class="mmw-activity-card-icon">
+                        {{{activitytype1icon}}}
+                    </div>
+                </div>
             </a>
         </div>
         {{/hasactivitytype1}}
         {{#hasactivitytype2}}
         <div class="col-6">
-            <a href="#" class="list-group-item list-group-item-action activity-type-option h-100 d-flex align-items-center justify-content-center text-center p-4" data-activity-type="{{activitytype2}}">
-                <strong>{{activitytype2label}}</strong>
+            <a href="#" class="mmw-activity-card" data-activity-type="{{activitytype2}}">
+                <div class="mmw-activity-card-content">
+                    <h3 class="mmw-activity-card-title">{{activitytype2label}}</h3>
+                    <p class="mmw-activity-card-description">{{activitytype2description}}</p>
+                    <p class="mmw-activity-card-type">{{activitytype2type}}</p>
+                    <div class="mmw-activity-card-icon">
+                        {{{activitytype2icon}}}
+                    </div>
+                </div>
             </a>
         </div>
         {{/hasactivitytype2}}
     </div>
     <div class="row">
         <div class="col-12">
-            <a href="#" class="list-group-item list-group-item-action activity-type-option d-flex align-items-center justify-content-center p-3" data-activity-type="chooser">
-                <i class="icon fa fa-plus fa-fw me-2"></i> <strong>{{activityorresource}}</strong>
+            <a href="#" class="mmw-activity-chooser-link" data-activity-type="chooser">
+                {{activityorresource}}
             </a>
         </div>
     </div>
