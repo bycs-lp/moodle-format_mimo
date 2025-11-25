@@ -158,6 +158,7 @@
     }
 
     .minimoodlewall-card-content {
+        position: relative;
         border-radius: 1.2rem;
         background: #fff;
         overflow: hidden;
@@ -226,7 +227,6 @@
                 a {
                     color: inherit;
                     text-decoration: none;
-                    pointer-events: none;
 
                     &:hover {
                         text-decoration: none;
