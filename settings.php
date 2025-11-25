@@ -24,20 +24,16 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Create the tag management external page.
-$ADMIN->add(
-    'courses',
-    new admin_externalpage(
-        'format_minimoodlewall_tags',
-        get_string('tagmanagement', 'format_minimoodlewall'),
-        new moodle_url('/course/format/minimoodlewall/tag_management.php'),
-        'moodle/site:config'
-    )
-);
+$categoryname = 'format_minimoodlewall_settings';
+
+// We overwrite $settings here that is defined in format\plugininfo\format::load_settings().
+$settings = new admin_category($categoryname, new lang_string('pluginname', 'format_minimoodlewall'));
+
+$settingspage = new admin_settingpage('format_minimoodlewall', new lang_string('pluginname', 'format_minimoodlewall'));
 
 if ($ADMIN->fulltree) {
     // Theme selection.
-    $settings->add(new admin_setting_configselect(
+    $settingspage->add(new admin_setting_configselect(
         'format_minimoodlewall/defaulttheme',
         get_string('setting_defaulttheme', 'format_minimoodlewall'),
         get_string('setting_defaulttheme_desc', 'format_minimoodlewall'),
@@ -51,9 +47,30 @@ if ($ADMIN->fulltree) {
 
     // Link to tag management page.
     $tagmanageurl = new moodle_url('/course/format/minimoodlewall/tag_management.php');
-    $settings->add(new admin_setting_heading(
+    $activitydescurl = new moodle_url('/course/format/minimoodlewall/activity_descriptions.php');
+    $links = html_writer::link($tagmanageurl, get_string('setting_tagmanagement_link', 'format_minimoodlewall')) .
+        '<br>' .
+        html_writer::link($activitydescurl, get_string('setting_activitydescriptions_link', 'format_minimoodlewall'));
+    
+    $settingspage->add(new admin_setting_heading(
         'format_minimoodlewall/tagmanagement',
         get_string('setting_tagmanagement', 'format_minimoodlewall'),
-        html_writer::link($tagmanageurl, get_string('setting_tagmanagement_link', 'format_minimoodlewall'))
+        $links
     ));
 }
+
+$settings->add($categoryname, $settingspage);
+
+$settings->add($categoryname, new admin_externalpage(
+    'format_minimoodlewall_tags',
+    get_string('tagmanagement', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/tag_management.php'),
+    'moodle/site:config'
+));
+
+$settings->add($categoryname, new admin_externalpage(
+    'format_minimoodlewall_activitydescriptions',
+    get_string('activitydescriptions', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/activity_descriptions.php'),
+    'moodle/site:config'
+));

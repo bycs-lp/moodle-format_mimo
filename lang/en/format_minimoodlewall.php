@@ -22,14 +22,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['activitydescription_placeholder'] = 'Enter a short description for the modal...';
+$string['activitydescriptiondeleted'] = 'Activity description deleted successfully.';
+$string['activitydescriptions'] = 'Activity Descriptions';
+$string['activitydescriptions_help'] = 'Add short descriptions for activity types that will be shown in the tag chooser modal.';
+$string['activitydescriptionsaved'] = 'Activity description saved successfully.';
+$string['activitytype'] = 'Activity Type';
 $string['activitytype1'] = 'First Suggested Activity Type';
 $string['activitytype2'] = 'Second Suggested Activity Type';
 $string['addactivity'] = 'Add activity';
+$string['cachedef_activity_descriptions'] = 'Activity type descriptions cache';
 $string['cachedef_activitytagmappings'] = 'Activity-tag mappings cache';
 $string['cachedef_tagconfigurations'] = 'Tag configurations cache';
 $string['cardimage'] = 'Card Image';
 $string['cardimage_help'] = 'Upload the SVG that should appear at the top of the activity card.';
 $string['completed'] = 'Completed';
+$string['confirmdelete'] = 'Are you sure you want to delete this?';
 $string['createtag'] = 'Create Tag';
 $string['createtagset'] = 'Create Tag Set';
 $string['currentsection'] = 'This section';
@@ -70,6 +78,7 @@ $string['selectactivitytype'] = 'Select activity type...';
 $string['selecttag'] = 'Select a tag';
 $string['selecttaghelp'] = 'Choose a tag that describes this activity. The tag determines which icon and category the activity will have.';
 $string['selecttagset'] = 'Select a tag set...';
+$string['setting_activitydescriptions_link'] = 'Manage activity descriptions';
 $string['setting_defaulttheme'] = 'Default theme';
 $string['setting_defaulttheme_desc'] = 'Select the default theme for displaying activity cards';
 $string['setting_design'] = 'Design';

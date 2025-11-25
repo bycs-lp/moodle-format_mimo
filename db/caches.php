@@ -39,4 +39,11 @@ $definitions = [
         'staticacceleration' => true,
         'staticaccelerationsize' => 100,
     ],
+    'activity_descriptions' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => false,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 50,
+    ],
 ];

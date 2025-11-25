@@ -70,5 +70,30 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112500, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112501) {
+        // Define table format_minimoodlewall_actdesc to be created.
+        $table = new xmldb_table('format_minimoodlewall_actdesc');
+
+        // Adding fields to table format_minimoodlewall_actdesc.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('activitytype', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table format_minimoodlewall_actdesc.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Adding indexes to table format_minimoodlewall_actdesc.
+        $table->add_index('activitytype_unique', XMLDB_INDEX_UNIQUE, ['activitytype']);
+
+        // Conditionally launch create table for format_minimoodlewall_actdesc.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2025112501, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

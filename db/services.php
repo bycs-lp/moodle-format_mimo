@@ -49,4 +49,12 @@ $functions = [
         'ajax'        => true,
         'loginrequired' => true,
     ],
+    'format_minimoodlewall_get_activity_descriptions' => [
+        'classname'   => 'format_minimoodlewall\external\get_activity_descriptions',
+        'methodname'  => 'execute',
+        'description' => 'Get descriptions for activity types',
+        'type'        => 'read',
+        'ajax'        => true,
+        'loginrequired' => true,
+    ],
 ];

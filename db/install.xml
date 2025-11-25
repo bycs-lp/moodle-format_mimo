@@ -56,5 +56,20 @@
         <INDEX NAME="tagid" UNIQUE="false" FIELDS="tagid"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="format_minimoodlewall_actdesc" COMMENT="Activity type descriptions for tag chooser modal">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="activitytype" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Activity module name (e.g., assign, quiz)"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Short description for modal"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="activitytype_unique" UNIQUE="true" FIELDS="activitytype"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

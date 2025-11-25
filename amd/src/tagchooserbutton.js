@@ -96,13 +96,32 @@ const showActivityTypeModal = async(
     sectionReturnId
 ) => {
     try {
-        // Get strings
-        const [selectActivityTypeStr, activityOrResourceStr, type1Label, type2Label] = await Promise.all([
+        // Collect activity types to fetch descriptions for.
+        const typesToFetch = [];
+        if (activityType1 && activityType1 !== 'null') {
+            typesToFetch.push(activityType1);
+        }
+        if (activityType2 && activityType2 !== 'null') {
+            typesToFetch.push(activityType2);
+        }
+
+        // Fetch descriptions and labels in parallel.
+        const [selectActivityTypeStr, activityOrResourceStr, type1Label, type2Label, descriptions] = await Promise.all([
             getString('selectactivitytype', 'format_minimoodlewall'),
             getString('activityorresource', 'core'),
             activityType1 && activityType1 !== 'null' ? getActivityTypeLabel(activityType1) : Promise.resolve(''),
             activityType2 && activityType2 !== 'null' ? getActivityTypeLabel(activityType2) : Promise.resolve(''),
+            typesToFetch.length > 0 ? Ajax.call([{
+                methodname: 'format_minimoodlewall_get_activity_descriptions',
+                args: {activitytypes: typesToFetch},
+            }])[0] : Promise.resolve([]),
         ]);
+
+        // Map descriptions by activity type.
+        const descMap = {};
+        descriptions.forEach(desc => {
+            descMap[desc.activitytype] = desc.description;
+        });
 
         // Prepare template context
         const context = {
@@ -111,9 +130,11 @@ const showActivityTypeModal = async(
             hasactivitytype1: activityType1 && activityType1 !== 'null',
             activitytype1: activityType1,
             activitytype1label: type1Label,
+            activitytype1description: descMap[activityType1] || '',
             hasactivitytype2: activityType2 && activityType2 !== 'null',
             activitytype2: activityType2,
             activitytype2label: type2Label,
+            activitytype2description: descMap[activityType2] || '',
         };
 
         // Render template
