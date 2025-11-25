@@ -626,6 +626,6 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   margin-top: 0.5rem !important;
 }
 #page-course-view-minimoodlewall .section .activity:first-child {
-  padding-top: 0.25rem;
+  padding-top: 0;
   margin-top: 0;
 }

@@ -283,7 +283,9 @@ export const init = () => {
         let verticalOffset = 0;
         if (newCards.length) {
             const firstRect = newCards[0].getBoundingClientRect();
-            verticalOffset = firstRect.top - containerRect.top;
+            // Get the computed padding-top of the container to align properly
+            const containerPaddingTop = parseFloat(getComputedStyle(container).paddingTop) || 0;
+            verticalOffset = firstRect.top - containerRect.top - containerPaddingTop;
         }
 
         const enteringX = direction === 'next' ? slideDistance : -slideDistance;
