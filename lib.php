@@ -133,7 +133,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'type' => PARAM_BOOL,
             ],
             'designvariant' => [
-                'default' => 'default',
+                'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
         ];
@@ -173,9 +173,9 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
                 'element_attributes' => [[
-                    'default' => get_string('design_default', 'format_minimoodlewall'),
-                    'starters' => get_string('design_starters', 'format_minimoodlewall'),
-                    'colorful' => get_string('design_colorful', 'format_minimoodlewall'),
+                    'classic' => get_string('design_classic', 'format_minimoodlewall'),
+                    'light' => get_string('design_light', 'format_minimoodlewall'),
+                    'dark' => get_string('design_dark', 'format_minimoodlewall'),
                 ]],
             ];
         }

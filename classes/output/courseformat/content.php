@@ -48,10 +48,10 @@ class content extends content_base {
         // Get the course format options.
         $course = $this->format->get_course();
         $tagsetid = $course->tagsetid ?? 0;
-        $designvariant = $course->designvariant ?? 'default';
-        $allowedvariants = ['default', 'starters', 'colorful'];
+        $designvariant = $course->designvariant ?? 'classic';
+        $allowedvariants = ['classic', 'light', 'dark'];
         if (!in_array($designvariant, $allowedvariants, true)) {
-            $designvariant = 'default';
+            $designvariant = 'classic';
         }
 
         $data->designvariant = $designvariant;

@@ -22,7 +22,7 @@
 - **Rendering** (`format.php`, `classes/output/courseformat/*`, `templates/local/content/*.mustache`)
   - Modern Moodle 4.x component-based stack: base content → section → `cmitem` templates.
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
-  - `styles.scss` hosts shared wall styles + design variants (`default`, `starters`, `colorful`).
+  - `styles.scss` hosts shared wall styles + design variants (`classic`, `light`, `dark`).
 - **Caching** (`cache/definitions.php`)
   - `tagconfigurations`: tag + artwork metadata per tagset.
   - `activitytagmappings`: cm→tag lookup.
