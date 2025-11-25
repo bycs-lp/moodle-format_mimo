@@ -715,6 +715,13 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   color: #333;
 }
 
+.modal.format_minimoodlewall-activitytype_modal .modal-dialog {
+  max-width: 900px;
+}
+.modal.format_minimoodlewall-activitytype_modal .modal-footer {
+  display: none;
+}
+
 #page-course-view-minimoodlewall .bulkenabled .activity:first-child {
   margin-top: 0.5rem !important;
 }

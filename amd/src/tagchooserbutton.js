@@ -25,13 +25,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import ModalFactory from 'core/modal_factory';
 import Notification from 'core/notification';
 import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';
 import Templates from 'core/templates';
 import * as Repository from 'core_courseformat/local/activitychooser/repository';
 import * as ChooserDialogue from 'core_courseformat/local/activitychooser/dialogue';
+import Modal from 'core/modal';
 
 /**
  * Initialize the tag chooser button handlers.
@@ -140,11 +140,11 @@ const showActivityTypeModal = async(
         // Render template
         const bodyHtml = await Templates.render('format_minimoodlewall/activitytype_chooser_modal', context);
 
-        const modal = await ModalFactory.create({
-            type: ModalFactory.types.CANCEL,
+        const modal = await Modal.create({
             title: tagName,
             body: bodyHtml,
-            large: false,
+            large: true,
+            removeOnClose: true,
         });
 
         // Handle option selection (updated selector for new template structure)

@@ -900,6 +900,17 @@ body.format-minimoodlewall-theme-colorful {
     }
 }
 
+// Custom modal styling for activity type chooser.
+.modal.format_minimoodlewall-activitytype_modal {
+    .modal-dialog {
+        max-width: 900px;
+    }
+
+    .modal-footer {
+        display: none;
+    }
+}
+
 #page-course-view-minimoodlewall {
     // Adapt bulk editing fix.
     .bulkenabled .activity:first-child {
