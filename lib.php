@@ -183,6 +183,24 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Require to pick a tag set when creating a course with this format.
+     *
+     * @param array $data Submitted form data
+     * @param array $files Uploaded files
+     * @param array $errors Existing validation errors
+     * @return array
+     */
+    public function edit_form_validation($data, $files, $errors) {
+        $errors = parent::edit_form_validation($data, $files, $errors);
+
+        if (empty((int)($data['tagsetid'] ?? 0))) {
+            $errors['tagsetid'] = get_string('error_required_tagset', 'format_minimoodlewall');
+        }
+
+        return $errors;
+    }
+
+    /**
      * Returns the list of blocks to be automatically added for the newly created course.
      *
      * @return array of default blocks, must contain two keys BLOCK_POS_LEFT and BLOCK_POS_RIGHT

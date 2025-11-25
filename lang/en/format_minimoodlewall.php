@@ -42,6 +42,7 @@ $string['design_default'] = 'Default';
 $string['design_starters'] = 'Starters';
 $string['edittag'] = 'Edit Tag';
 $string['edittagset'] = 'Edit Tag Set';
+$string['error_required_tagset'] = 'Please select a tag set before creating the course.';
 $string['filteractive'] = 'Filter active';
 $string['filterbarlabel'] = 'Filter activities';
 $string['filterbarnoactivities'] = 'No activities use this tag yet';
