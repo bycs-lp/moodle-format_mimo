@@ -30,6 +30,8 @@ import Notification from 'core/notification';
 import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';
 import Templates from 'core/templates';
+import * as Repository from 'core_courseformat/local/activitychooser/repository';
+import * as ChooserDialogue from 'core_courseformat/local/activitychooser/dialogue';
 
 /**
  * Initialize the tag chooser button handlers.
@@ -124,8 +126,8 @@ const showActivityTypeModal = async(
             large: false,
         });
 
-        // Handle option selection
-        modal.getRoot().on('click', '.activity-type-option', (e) => {
+        // Handle option selection (updated selector for new template structure)
+        modal.getRoot().on('click', '.mmw-activity-card, .mmw-activity-chooser-link', (e) => {
             e.preventDefault();
             const activityType = e.currentTarget.dataset.activityType;
 
@@ -201,7 +203,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
 /**
  * Open the standard Moodle activity chooser.
  *
- * Supports both Moodle 5.1+ (data-section-id) and 5.0 and earlier (data-sectionnum).
+ * Supports both Moodle 5.1+ (sectionid) and 5.0 and earlier (section parameter).
  *
  * @param {string} sectionNum Section number
  * @param {string} sectionId Section ID (Moodle 5.1+)
@@ -218,23 +220,30 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
             args: {tagid: parseInt(tagId)},
         }])[0];
 
-        // Trigger the standard activity chooser
-        // Try with section-id first (Moodle 5.1+), fall back to sectionnum (5.0 and earlier)
-        let chooserButton = null;
-        if (sectionId) {
-            chooserButton = document.querySelector(
-                `button[data-action="open-chooser"][data-section-id="${sectionId}"]`
+        // Open the core activity chooser modal
+        const courseId = M.cfg.courseId;
+        const footerDataPromise = Repository.getModalFooterData(courseId, sectionNum);
+
+        let modulesDataPromise;
+        if (sectionId && sectionId !== '') {
+            // Moodle 5.1+ with section ID
+            modulesDataPromise = Repository.getSectionModulesData(
+                courseId,
+                sectionId,
+                sectionReturnNum,
+                beforeMod
             );
-        }
-        if (!chooserButton) {
-            chooserButton = document.querySelector(
-                `button[data-action="open-chooser"][data-sectionnum="${sectionNum}"]`
+        } else {
+            // Moodle 5.0 and earlier with section number
+            modulesDataPromise = Repository.getModulesData(
+                courseId,
+                sectionNum,
+                sectionReturnNum,
+                beforeMod
             );
         }
 
-        if (chooserButton) {
-            chooserButton.click();
-        }
+        ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {
         Notification.exception(error);
     }
