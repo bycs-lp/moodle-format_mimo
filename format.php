@@ -31,6 +31,13 @@ require_once($CFG->libdir . '/completionlib.php');
 $format = course_get_format($course);
 $course = $format->get_course();
 
+// Redirect section URLs to the main course page since this format only uses one section.
+$sectionnum = optional_param('section', null, PARAM_INT);
+if ($sectionnum !== null && $sectionnum != 1) {
+    // Redirect to the main course page (section 1).
+    redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
+}
+
 // Make sure sections 0 and 1 exist.
 course_create_sections_if_missing($course, [0, 1]);
 

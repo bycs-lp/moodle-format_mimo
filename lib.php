@@ -115,6 +115,21 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Returns the URL to view a section. Always returns the main course URL.
+     *
+     * Since this format displays all activities in a single wall view,
+     * section-specific URLs don't make sense - always redirect to the main course page.
+     *
+     * @param int|stdClass $section Section object from database or section number
+     * @return null|moodle_url
+     */
+    public function get_view_url($section, $options = []) {
+        $course = $this->get_course();
+        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
+        return $url;
+    }
+
+    /**
      * Definitions of the additional options that this course format uses for course.
      *
      * This format only uses one section.
