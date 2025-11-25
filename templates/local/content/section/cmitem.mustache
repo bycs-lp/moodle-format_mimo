@@ -27,7 +27,7 @@
     data-for="cmitem"
     data-id="{{id}}"
     {{#cmformat.tagid}}data-tagid="{{cmformat.tagid}}"{{/cmformat.tagid}}
-    style="list-style: none;"
+    style="list-style: none;{{#cmformat.tagcolor}} --mmw-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
 >
 {{#cmformat}}
 <div class="minimoodlewall-card card h-100" data-cmid="{{cmid}}" data-sectionid="{{sectionid}}">

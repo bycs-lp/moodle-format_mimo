@@ -51,6 +51,54 @@ class tag_manager {
     /** @var \cache_application Cache for activity-tag mappings */
     private static $mappingcache = null;
 
+    /** Pastel accents used by the "starters" design when no custom colour is set. */
+    private const STARTER_ACCENT_COLORS = [
+        '#dcecff',
+        '#fde9c9',
+        '#f8ddff',
+        '#dff5d1',
+        '#ffe1db',
+        '#e0f0ff',
+        '#fff3c9',
+        '#fddaea',
+    ];
+
+    /**
+     * Public accessor to the default accent palette (used by upgrade/install routines).
+     *
+     * @return array
+     */
+    public static function get_default_accent_palette(): array {
+        return self::STARTER_ACCENT_COLORS;
+    }
+
+    /**
+     * Normalise an incoming colour value to the #rrggbb format or null when invalid.
+     *
+     * @param string|null $color Raw user input
+     * @return string|null
+     */
+    private static function normalize_hex_color(?string $color): ?string {
+        if ($color === null) {
+            return null;
+        }
+
+        $trimmed = trim($color);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if ($trimmed[0] !== '#') {
+            $trimmed = '#' . $trimmed;
+        }
+
+        if (!preg_match('/^#([0-9a-fA-F]{6})$/', $trimmed, $matches)) {
+            return null;
+        }
+
+        return '#' . strtolower($matches[1]);
+    }
+
     /**
      * Retrieve the shared filemanager options for tag image uploads.
      *
@@ -413,8 +461,8 @@ class tag_manager {
      * @param string|null $activitytype2 Second suggested activity type
      * @return int ID of the created tag
      */
-    public static function create_tag($tagsetid, $name, $description = null, $cardimage = null,
-            $filterimage = null, $activitytype1 = null, $activitytype2 = null) {
+        public static function create_tag($tagsetid, $name, $description = null, $cardimage = null,
+            $filterimage = null, $activitytype1 = null, $activitytype2 = null, $bgcolor = null) {
         global $DB;
 
         // Get next sort order.
@@ -430,6 +478,7 @@ class tag_manager {
         $record->filterimage = $filterimage;
         $record->activitytype1 = $activitytype1;
         $record->activitytype2 = $activitytype2;
+        $record->bgcolor = self::normalize_hex_color($bgcolor);
         $record->sortorder = $sortorder;
         $record->timecreated = time();
         $record->timemodified = time();
@@ -489,6 +538,9 @@ class tag_manager {
         $record->timemodified = time();
 
         foreach ($data as $key => $value) {
+            if ($key === 'bgcolor') {
+                $value = self::normalize_hex_color($value);
+            }
             $record->$key = $value;
         }
 
@@ -589,6 +641,28 @@ class tag_manager {
     }
 
     /**
+     * Return the accent colour for a tag (stored colour first, palette fallback).
+     *
+     * @param \stdClass $tag Tag record
+     * @return string
+     */
+    public static function get_tag_accent_color(\stdClass $tag): string {
+        if (!empty($tag->bgcolor)) {
+            return $tag->bgcolor;
+        }
+
+        $palette = self::STARTER_ACCENT_COLORS;
+        if (empty($palette)) {
+            return '#dcecff';
+        }
+
+        $indexsource = isset($tag->sortorder) ? (int)$tag->sortorder : (int)$tag->id;
+        $index = $indexsource % count($palette);
+
+        return $palette[$index];
+    }
+
+    /**
      * Remove tag assignment from a course module.
      *
      * @param int $cmid Course module ID
@@ -659,7 +733,12 @@ class tag_manager {
                 'activitytype1' => 'quiz', 'activitytype2' => 'lesson'],
         ];
 
+        $palette = self::STARTER_ACCENT_COLORS;
+        $palettecount = count($palette);
+        $index = 0;
+
         foreach ($defaulttags as $tag) {
+            $bgcolor = $palettecount ? $palette[$index % $palettecount] : null;
             $tagid = self::create_tag(
                 $tagsetid,
                 $tag['name'],
@@ -667,8 +746,11 @@ class tag_manager {
                 $tag['cardimage'],
                 $tag['filterimage'],
                 $tag['activitytype1'],
-                $tag['activitytype2']
+                $tag['activitytype2'],
+                $bgcolor
             );
+
+            $index++;
 
             self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
             self::copy_default_image($tagid, $tag['filterimage'], self::FILEAREA_FILTERIMAGE);

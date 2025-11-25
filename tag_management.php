@@ -28,8 +28,6 @@ require_once($CFG->libdir . '/adminlib.php');
 use format_minimoodlewall\tag_manager;
 use format_minimoodlewall\form\tagset_form;
 use format_minimoodlewall\form\tag_form;
-use html_writer;
-use moodle_url;
 
 admin_externalpage_setup('format_minimoodlewall_tags');
 
@@ -153,6 +151,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                     'description' => $data->description,
                     'activitytype1' => $data->activitytype1,
                     'activitytype2' => $data->activitytype2,
+                    'bgcolor' => $data->bgcolor,
                 ]
             );
             tag_manager::save_cardimage_from_draft($data->tagid, $data->cardimagefile);
@@ -166,7 +165,8 @@ if ($action === 'createtag' || $action === 'edittag') {
                 null,
                 null,
                 $data->activitytype1,
-                $data->activitytype2
+                $data->activitytype2,
+                $data->bgcolor
             );
             tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
             tag_manager::save_filterimage_from_draft($newtagid, (int)$data->filterimagefile);
@@ -272,6 +272,7 @@ if (empty($tagsets)) {
             echo html_writer::start_tag('tr');
             echo html_writer::tag('th', get_string('cardimage', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('tagname', 'format_minimoodlewall'));
+            echo html_writer::tag('th', get_string('tagbgcolor', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('activitytype1', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('activitytype2', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('actions'));
@@ -293,6 +294,15 @@ if (empty($tagsets)) {
                 echo html_writer::end_tag('td');
                 
                 echo html_writer::tag('td', format_string($tag->name));
+
+                $accentcolor = tag_manager::get_tag_accent_color($tag);
+                $swatch = html_writer::span('', null, [
+                    'style' => 'display:inline-block;width:32px;height:20px;border-radius:6px;background:' .
+                        $accentcolor . ';border:1px solid rgba(0,0,0,0.1);'
+                ]);
+                $colorlabel = html_writer::span($accentcolor, 'ms-2 text-muted small fw-semibold');
+                echo html_writer::tag('td', $swatch . $colorlabel, ['class' => 'align-middle']);
+
                 echo html_writer::tag('td', $tag->activitytype1);
                 echo html_writer::tag('td', $tag->activitytype2 ?: '-');
                 

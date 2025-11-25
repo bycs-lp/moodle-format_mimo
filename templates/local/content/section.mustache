@@ -25,31 +25,34 @@
     {{! Override the cmlist block to display activities in a custom wall format. }}
     {{$ core_courseformat/local/content/section/cmlist }}
         {{#filterbar.hasitems}}
-        <div class="minimoodlewall-filterbar" data-region="minimoodlewall-filterbar" role="toolbar" aria-label="{{filterbar.label}}">
+        <div class="minimoodlewall-filterbar {{designclass}}" data-region="minimoodlewall-filterbar" role="toolbar" aria-label="{{filterbar.label}}" data-design="{{designvariant}}">
             {{#filterbar.tags}}
             <button
                 type="button"
-                    class="minimoodlewall-filterbar-button is-empty"
+                class="minimoodlewall-filterbar-button is-empty"
                 data-action="tag-filter"
                 data-tagid="{{id}}"
-                    data-hasactivities="{{#hasactivities}}1{{/hasactivities}}{{^hasactivities}}0{{/hasactivities}}"
+                data-hasactivities="{{#hasactivities}}1{{/hasactivities}}{{^hasactivities}}0{{/hasactivities}}"
                 aria-pressed="false"
                 title="{{name}}{{^hasactivities}}{{#filterbar.isediting}} · {{filterbar.emptylabel}}{{/filterbar.isediting}}{{/hasactivities}}"
-                    disabled
+                style="{{#bgcolor}}--mmw-filter-accent: {{bgcolor}};{{/bgcolor}}"
+                disabled
             >
                 <span class="sr-only">{{#str}}filterby, format_minimoodlewall{{/str}} {{name}}</span>
-                {{#imageurl}}
-                <img src="{{imageurl}}" alt="{{name}}">
-                {{/imageurl}}
-                {{^imageurl}}
-                <span class="minimoodlewall-filterbar-label">{{name}}</span>
-                {{/imageurl}}
+                <span class="minimoodlewall-filterbar-symbol">
+                    {{#imageurl}}
+                    <img src="{{imageurl}}" alt="{{name}}">
+                    {{/imageurl}}
+                    {{^imageurl}}
+                    <span class="minimoodlewall-filterbar-label">{{name}}</span>
+                    {{/imageurl}}
+                </span>
             </button>
             {{/filterbar.tags}}
         </div>
         {{/filterbar.hasitems}}
         {{#cmlist}}
-        <ul class="section m-0 p-0 minimoodlewall-activities row g-3" data-for="cmlist" style="list-style: none;">
+        <ul class="section m-0 p-0 minimoodlewall-activities row g-3 {{designclass}}" data-for="cmlist" data-design="{{designvariant}}" style="list-style: none;">
             {{#cms}}
             {{#cmitem}}
                 {{$ core_courseformat/local/content/section/cmitem}}
@@ -58,7 +61,7 @@
             {{/cmitem}}
             {{/cms}}
         </ul>
-        <div class="minimoodlewall-navigation-wrapper">
+        <div class="minimoodlewall-navigation-wrapper {{designclass}}" data-design="{{designvariant}}">
             {{! Pagination navigation }}
             <div class="minimoodlewall-navigation justify-content-end align-items-center gap-3">
                 <button id="minimoodlewall-prev" class="minimoodlewall-nav-btn" aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}">

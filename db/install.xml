@@ -24,6 +24,7 @@
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description of the tag"/>
         <FIELD NAME="cardimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for card image"/>
         <FIELD NAME="filterimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for filter bar image"/>
+        <FIELD NAME="bgcolor" TYPE="char" LENGTH="7" NOTNULL="false" SEQUENCE="false" COMMENT="Hex card background colour"/>
         <FIELD NAME="activitytype1" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="First suggested activity type"/>
         <FIELD NAME="activitytype2" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Second suggested activity type"/>
         <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Display order within tag set"/>

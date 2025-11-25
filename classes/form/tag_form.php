@@ -108,6 +108,17 @@ class tag_form extends \moodleform {
         );
         $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
 
+        $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
+        $mform->addElement(
+            'text',
+            'bgcolor',
+            get_string('tagbgcolor', 'format_minimoodlewall'),
+            ['size' => 8, 'type' => 'color']
+        );
+        $mform->setType('bgcolor', PARAM_TEXT);
+        $mform->setDefault('bgcolor', $defaultcolor);
+        $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
+
         // Action buttons.
         $this->add_action_buttons();
     }
@@ -164,6 +175,11 @@ class tag_form extends \moodleform {
         $hasdraftfiles = !empty($fileinfo['filecount']);
         if ((!$hasdraftfiles) && !$hasexisting) {
             $errors['cardimagefile'] = get_string('required');
+        }
+
+        $color = $data['bgcolor'] ?? '';
+        if (!empty($color) && !preg_match('/^#([0-9a-fA-F]{6})$/', $color)) {
+            $errors['bgcolor'] = get_string('invalidcolor', 'format_minimoodlewall');
         }
 
         return $errors;

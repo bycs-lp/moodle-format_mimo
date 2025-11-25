@@ -195,6 +195,18 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
+     * Ensure custom colours are normalised when creating a tag.
+     */
+    public function test_create_tag_with_bgcolor(): void {
+        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+
+        $id = tag_manager::create_tag($tagsetid, 'Colourful', '', null, null, null, null, 'a1b2c3');
+        $tag = tag_manager::get_tag($id);
+
+        $this->assertEquals('#a1b2c3', $tag->bgcolor);
+    }
+
+    /**
      * Test getting tags by tagset.
      */
     public function test_get_tags_by_tagset(): void {
@@ -225,6 +237,7 @@ final class tag_manager_test extends \advanced_testcase {
             'filterimage' => 'updated-small.svg',
             'activitytype1' => 'quiz',
             'activitytype2' => 'choice',
+            'bgcolor' => '#123456',
         ]);
         
         $this->assertTrue($result);
@@ -237,6 +250,30 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertEquals('updated-small.svg', $tag->filterimage);
         $this->assertEquals('quiz', $tag->activitytype1);
         $this->assertEquals('choice', $tag->activitytype2);
+        $this->assertEquals('#123456', $tag->bgcolor);
+    }
+
+    /**
+     * The accent resolver should prefer stored colours.
+     */
+    public function test_get_tag_accent_color_prefers_custom_colour(): void {
+        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $id = tag_manager::create_tag($tagsetid, 'Colourful', '', null, null, null, null, '#445566');
+        $tag = tag_manager::get_tag($id);
+
+        $this->assertSame('#445566', tag_manager::get_tag_accent_color($tag));
+    }
+
+    /**
+     * The accent resolver should fall back to the starters palette.
+     */
+    public function test_get_tag_accent_color_fallback_uses_palette(): void {
+        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $id = tag_manager::create_tag($tagsetid, 'Default Colour');
+        $tag = tag_manager::get_tag($id);
+
+        $palette = tag_manager::get_default_accent_palette();
+        $this->assertContains(tag_manager::get_tag_accent_color($tag), $palette);
     }
 
     /**

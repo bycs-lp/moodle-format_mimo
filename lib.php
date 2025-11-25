@@ -132,6 +132,10 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 1,
                 'type' => PARAM_BOOL,
             ],
+            'designvariant' => [
+                'default' => 'default',
+                'type' => PARAM_ALPHANUMEXT,
+            ],
         ];
         
         if ($forupdate) {
@@ -162,6 +166,17 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help' => 'setting_enablefiltering',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
+            ];
+            $courseformatoptions['designvariant'] += [
+                'label' => get_string('setting_design', 'format_minimoodlewall'),
+                'help' => 'setting_design',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'select',
+                'element_attributes' => [[
+                    'default' => get_string('design_default', 'format_minimoodlewall'),
+                    'starters' => get_string('design_starters', 'format_minimoodlewall'),
+                    'colorful' => get_string('design_colorful', 'format_minimoodlewall'),
+                ]],
             ];
         }
         return $courseformatoptions;

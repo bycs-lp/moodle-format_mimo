@@ -48,6 +48,14 @@ class content extends content_base {
         // Get the course format options.
         $course = $this->format->get_course();
         $tagsetid = $course->tagsetid ?? 0;
+        $designvariant = $course->designvariant ?? 'default';
+        $allowedvariants = ['default', 'starters', 'colorful'];
+        if (!in_array($designvariant, $allowedvariants, true)) {
+            $designvariant = 'default';
+        }
+
+        $data->designvariant = $designvariant;
+        $data->designclass = 'minimoodlewall-design-' . $designvariant;
         
         // Initialize the tag chooser button JavaScript if editing is on and tagset is configured.
         if ($PAGE->user_is_editing() && $tagsetid > 0) {

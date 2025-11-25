@@ -108,6 +108,7 @@ class section extends section_base {
                 'name' => format_string($tag->name, true, ['context' => $context]),
                 'imageurl' => $filterurl ? $filterurl->out(false) : null,
                 'hasactivities' => $hasactivities,
+                'bgcolor' => \format_minimoodlewall\tag_manager::get_tag_accent_color($tag),
             ];
         }
 

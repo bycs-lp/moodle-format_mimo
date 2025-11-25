@@ -47,5 +47,28 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112302, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112500) {
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('bgcolor', XMLDB_TYPE_CHAR, '7', null, null, null, null, 'filterimage');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $palette = \format_minimoodlewall\tag_manager::get_default_accent_palette();
+        if (!empty($palette)) {
+            $tags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder ASC, id ASC');
+            $index = 0;
+            $count = count($palette);
+            foreach ($tags as $tag) {
+                $color = $palette[$index % $count];
+                $DB->set_field('format_minimoodlewall_tags', 'bgcolor', $color, ['id' => $tag->id]);
+                $index++;
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2025112500, 'format', 'minimoodlewall');
+    }
+
     return true;
 }
