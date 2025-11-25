@@ -52,6 +52,13 @@
     }
 }
 
+// Tag chooser dropdown styling
+.course-content .section-item .format-minimoodlewall-tagchooser {
+    ul.dropdown-menu {
+        list-style: none;
+    }
+}
+
 .minimoodlewall-activities {
     &.minimoodlewall-design-default {
         background: var(--bs-body-bg, #fff);

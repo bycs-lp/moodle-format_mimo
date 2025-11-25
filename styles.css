@@ -35,6 +35,10 @@
   }
 }
 
+.course-content .section-item .format-minimoodlewall-tagchooser ul.dropdown-menu {
+  list-style: none;
+}
+
 .minimoodlewall-activities.minimoodlewall-design-default {
   background: var(--bs-body-bg, #fff);
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);

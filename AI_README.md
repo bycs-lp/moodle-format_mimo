@@ -36,7 +36,13 @@
    - Admin page handles create/edit/delete for tag sets and tags, including SVG uploads.
    - SVGs must be `.svg` (enforced via filemanager options).
 3. **Course editing**
-  - The core activity-adder Mustache is overridden. Teachers first see a grid of tag tiles; selecting one fires a modal that shows two pre-aligned quick-create activity shortcuts plus a link into the standard activity chooser. This keeps tagging mandatory and nudges teachers into curated combos.
+  - Teachers see a tag-based activity chooser: clicking the "+" button reveals a dropdown of configured tags.
+  - Selecting a tag opens a modal with three options: two quick-create shortcuts (pre-configured activity types) and a link to the full activity chooser.
+  - This workflow ensures mandatory tagging and guides teachers toward recommended activity combinations.
+  - **Version Support:** The plugin supports both Moodle 5.0 and earlier, and 5.1+ with automatic version detection:
+    - **Moodle 5.1+**: Uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class that extends the new `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
+    - **Moodle 5.0 and earlier**: Falls back to template overrides in `cm.php` export method with backward compatibility checks.
+    - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 4. **Learner view**
    - Wall shows all activities from section 0 in a responsive grid.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
@@ -61,15 +67,43 @@
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` helpers to avoid orphans.
 - Update caches after any tag/tagset change; otherwise wall rendering will show stale logos/colors.
 - Keep AI-facing docs (this file + README) updated when adding new options or data flows to minimize forgotten invariants.
+- **Version Compatibility**: The plugin automatically detects Moodle version and uses appropriate classes/templates. The split is at Moodle 5.1 (branch 501) where MDL-86337 moved activity chooser to core_courseformat. Test changes in both 5.0 and 5.1+ environments.
+
+## Version Compatibility Details
+
+### Moodle 5.1+ Implementation (MDL-86337)
+- Activity chooser uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class
+- Extends `core_courseformat\output\local\content\activitychooserbutton` (moved from core_course in 5.1)
+- Uses template: `format_minimoodlewall/local/content/activitychooserbutton.mustache`
+- Data attributes: `data-section-id`, `data-sectionreturnid` (alongside legacy attributes)
+- Hook support: Compatible with `\core_course\hook\before_activitychooserbutton_exported`
+- Commit: MDL-86337 (August 18, 2025)
+
+### Moodle 5.0 and Earlier Fallback
+- Uses `cm.php` export method to inject tag data into activitychooserbutton context
+- Uses legacy template: `format_minimoodlewall/tagchooserbutton.mustache` (via cm.mustache)
+- Data attributes: `data-sectionnum`, `data-sectionreturnnum`
+- Version detection: `$CFG->branch < 501`
+
+### JavaScript Version Agnostic
+- `amd/src/tagchooserbutton.js` supports both attribute sets
+- Tries `data-section-id` first, falls back to `data-sectionnum`
+- Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
 - `lib.php` – course options, validation, navigation tweaks, pluginfile hook.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes.
 - `tag_management.php` – admin UI controller.
 - `classes/form/tag*_form.php` – mform definitions for UI.
+- `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.0+ tag chooser button** (extends core class).
+- `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates.
+- `templates/local/content/activitychooserbutton.mustache` – **Moodle 5.0+ tag chooser template**.
+- `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
+- `templates/tagchooserbutton.mustache` – **Legacy Moodle 4.x tag chooser template**.
 - `templates/local/content/*.mustache` – Mustache templates for wall, sections, cards.
 - `styles.scss` / `styles.css` – wall styling + design variants.
+- `amd/src/tagchooserbutton.js` – tag chooser modal handler (version-agnostic).
 - `amd/` – placeholder for JS (filter bar, quick create, etc.).
 
 ## Open Questions / TODO Hooks

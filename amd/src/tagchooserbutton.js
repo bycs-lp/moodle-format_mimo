@@ -16,6 +16,10 @@
 /**
  * Tag chooser button handler for format_minimoodlewall.
  *
+ * Handles tag selection in the activity chooser dropdown. Supports both:
+ * - Moodle 5.1+ with data-section-id attributes (MDL-86337)
+ * - Moodle 5.0 and earlier with data-sectionnum attributes
+ *
  * @module     format_minimoodlewall/tagchooserbutton
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -45,11 +49,23 @@ export const init = () => {
         const activityType1 = tagLink.dataset.activityType1;
         const activityType2 = tagLink.dataset.activityType2;
         const sectionNum = tagLink.dataset.sectionnum;
+        const sectionId = tagLink.dataset.sectionId;
         const beforeMod = tagLink.dataset.beforemod;
         const sectionReturnNum = tagLink.dataset.sectionreturnnum;
+        const sectionReturnId = tagLink.dataset.sectionreturnid;
 
         // Show modal with 3 options
-        await showActivityTypeModal(tagId, tagName, activityType1, activityType2, sectionNum, beforeMod, sectionReturnNum);
+        await showActivityTypeModal(
+            tagId,
+            tagName,
+            activityType1,
+            activityType2,
+            sectionNum,
+            sectionId,
+            beforeMod,
+            sectionReturnNum,
+            sectionReturnId
+        );
     });
 };
 
@@ -61,10 +77,22 @@ export const init = () => {
  * @param {string} activityType1 First activity type
  * @param {string} activityType2 Second activity type (or null)
  * @param {string} sectionNum Section number
+ * @param {string} sectionId Section ID (Moodle 5.1+)
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
+ * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
  */
-const showActivityTypeModal = async(tagId, tagName, activityType1, activityType2, sectionNum, beforeMod, sectionReturnNum) => {
+const showActivityTypeModal = async(
+    tagId,
+    tagName,
+    activityType1,
+    activityType2,
+    sectionNum,
+    sectionId,
+    beforeMod,
+    sectionReturnNum,
+    sectionReturnId
+) => {
     try {
         // Get strings
         const [selectActivityTypeStr, activityOrResourceStr, type1Label, type2Label] = await Promise.all([
@@ -105,7 +133,7 @@ const showActivityTypeModal = async(tagId, tagName, activityType1, activityType2
 
             if (activityType === 'chooser') {
                 // Open the standard activity chooser
-                openActivityChooser(sectionNum, beforeMod, sectionReturnNum, tagId);
+                openActivityChooser(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId);
             } else {
                 // Navigate directly to the activity creation page
                 navigateToActivityCreation(activityType, sectionNum, beforeMod, sectionReturnNum, tagId);
@@ -173,12 +201,16 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
 /**
  * Open the standard Moodle activity chooser.
  *
+ * Supports both Moodle 5.1+ (data-section-id) and 5.0 and earlier (data-sectionnum).
+ *
  * @param {string} sectionNum Section number
+ * @param {string} sectionId Section ID (Moodle 5.1+)
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
+ * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
  * @param {string} tagId The tag ID to assign (stored for later)
  */
-const openActivityChooser = async(sectionNum, beforeMod, sectionReturnNum, tagId) => {
+const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId) => {
     try {
         // Store tag ID in session via AJAX call
         await Ajax.call([{
@@ -187,9 +219,18 @@ const openActivityChooser = async(sectionNum, beforeMod, sectionReturnNum, tagId
         }])[0];
 
         // Trigger the standard activity chooser
-        const chooserButton = document.querySelector(
-            `button[data-action="open-chooser"][data-sectionnum="${sectionNum}"]`
-        );
+        // Try with section-id first (Moodle 5.1+), fall back to sectionnum (5.0 and earlier)
+        let chooserButton = null;
+        if (sectionId) {
+            chooserButton = document.querySelector(
+                `button[data-action="open-chooser"][data-section-id="${sectionId}"]`
+            );
+        }
+        if (!chooserButton) {
+            chooserButton = document.querySelector(
+                `button[data-action="open-chooser"][data-sectionnum="${sectionNum}"]`
+            );
+        }
 
         if (chooserButton) {
             chooserButton.click();
