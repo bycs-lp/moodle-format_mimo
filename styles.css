@@ -726,7 +726,7 @@ body.format-minimoodlewall .bulkenabled .activity:first-child {
   margin-top: 0.5rem !important;
 }
 body.format-minimoodlewall .section .activity:first-child {
-  padding-top: 0;
+  padding-top: 0.25rem;
   margin-top: 0;
 }
 body.format-minimoodlewall .course-content .divider .divider-content,
