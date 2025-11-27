@@ -24,10 +24,10 @@ Feature: Drag and drop activity reordering in minimoodlewall format
       | assign   | Assignment 1 | First assignment | TC1    | 1       |
       | quiz     | Quiz 1       | First quiz       | TC1    | 1       |
     And the following "format_minimoodlewall > cmtags" exist:
-      | cm           | tag      |
-      | Page 1       | Reading  |
-      | Assignment 1 | Practice |
-      | Quiz 1       | Practice |
+      | cm           | course | tag      |
+      | Page 1       | TC1    | Reading  |
+      | Assignment 1 | TC1    | Practice |
+      | Quiz 1       | TC1    | Practice |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |

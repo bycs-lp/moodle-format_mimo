@@ -22,18 +22,18 @@ Feature: Tag filtering in minimoodlewall format
       | Test Course 1 | TC1       | minimoodlewall | Default Tags | 1               |
     And the following "activities" exist:
       | activity | name         | intro            | course | section |
-      | assign   | Assignment 1 | First assignment | TC1    | 0       |
-      | quiz     | Quiz 1       | First quiz       | TC1    | 0       |
-      | page     | Page 1       | First page       | TC1    | 0       |
-      | forum    | Forum 1      | First forum      | TC1    | 0       |
-      | book     | Book 1       | First book       | TC1    | 0       |
+      | assign   | Assignment 1 | First assignment | TC1    | 1       |
+      | quiz     | Quiz 1       | First quiz       | TC1    | 1       |
+      | page     | Page 1       | First page       | TC1    | 1       |
+      | forum    | Forum 1      | First forum      | TC1    | 1       |
+      | book     | Book 1       | First book       | TC1    | 1       |
     And the following "format_minimoodlewall > cmtags" exist:
-      | cm           | tag      |
-      | Assignment 1 | Practice |
-      | Quiz 1       | Practice |
-      | Page 1       | Reading  |
-      | Forum 1      | Discuss  |
-      | Book 1       | Reading  |
+      | cm           | course | tag      |
+      | Assignment 1 | TC1    | Practice |
+      | Quiz 1       | TC1    | Practice |
+      | Page 1       | TC1    | Reading  |
+      | Forum 1      | TC1    | Discuss  |
+      | Book 1       | TC1    | Reading  |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | teacher1 | TC1    | editingteacher |

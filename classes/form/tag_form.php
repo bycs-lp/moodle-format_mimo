@@ -132,9 +132,7 @@ class tag_form extends \moodleform {
         return [
             '' => get_string('selectactivitytype', 'format_minimoodlewall'),
             'assign' => get_string('pluginname', 'mod_assign'),
-            'assignment' => get_string('modulename', 'mod_assignment'),
             'book' => get_string('pluginname', 'mod_book'),
-            'chat' => get_string('pluginname', 'mod_chat'),
             'choice' => get_string('pluginname', 'mod_choice'),
             'data' => get_string('pluginname', 'mod_data'),
             'feedback' => get_string('pluginname', 'mod_feedback'),
@@ -150,7 +148,6 @@ class tag_form extends \moodleform {
             'quiz' => get_string('pluginname', 'mod_quiz'),
             'resource' => get_string('pluginname', 'mod_resource'),
             'scorm' => get_string('pluginname', 'mod_scorm'),
-            'survey' => get_string('pluginname', 'mod_survey'),
             'url' => get_string('pluginname', 'mod_url'),
             'wiki' => get_string('pluginname', 'mod_wiki'),
             'workshop' => get_string('pluginname', 'mod_workshop'),

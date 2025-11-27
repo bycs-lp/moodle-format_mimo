@@ -51,7 +51,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'singular' => 'cmtag',
                 'datagenerator' => 'cmtag',
                 'required' => ['cm', 'tag'],
-                'switchids' => ['cm' => 'cmid', 'tag' => 'tagid'],
+                'switchids' => ['cm' => 'cmid'],
             ],
             'activities' => [
                 'singular' => 'activity',

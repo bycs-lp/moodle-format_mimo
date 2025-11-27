@@ -30,7 +30,7 @@ Feature: Design variants in minimoodlewall format
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC1    | 0       |
+      | page     | Page 1 | First page | TC1    | 1       |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | TC1    | student |

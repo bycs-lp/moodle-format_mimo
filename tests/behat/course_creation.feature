@@ -69,9 +69,9 @@ Feature: Course creation with minimoodlewall format
       | Test Course 1 | TC1       | minimoodlewall | Default Tags |
     And the following "activities" exist:
       | activity | name          | intro                | course | section |
-      | assign   | Assignment 1  | First assignment     | TC1    | 0       |
-      | quiz     | Quiz 1        | First quiz           | TC1    | 0       |
-      | page     | Page 1        | First page           | TC1    | 0       |
+      | assign   | Assignment 1  | First assignment     | TC1    | 1       |
+      | quiz     | Quiz 1        | First quiz           | TC1    | 1       |
+      | page     | Page 1        | First page           | TC1    | 1       |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | teacher1 | TC1    | student |

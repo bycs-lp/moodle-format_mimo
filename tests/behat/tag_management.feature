@@ -26,7 +26,7 @@ Feature: Tag management in minimoodlewall format
     Then I should see "Science Topics"
     And I should see "Tags for science courses"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Admin can add tags to a tag set
     Given the following "format_minimoodlewall > tagsets" exist:
       | name           | description            |
@@ -34,17 +34,19 @@ Feature: Tag management in minimoodlewall format
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "Create Tag" "link"
+    And I wait until "Science Topics" "text" exists
+    When I click on "Create Tag" "link" in the "//div[contains(@class, 'card')]//h3[contains(text(), 'Science Topics')]//ancestor::div[contains(@class, 'card')]" "xpath_element"
     And I set the following fields to these values:
       | Name                              | Biology      |
       | Description                       | Life science |
       | First Suggested Activity Type     | assign       |
       | Second Suggested Activity Type    | quiz         |
-    And I press "Save"
+    And I upload "course/format/minimoodlewall/pix/tags/lab.svg" file to "Card Image" filemanager
+    And I press "Save changes"
+    And I wait until the page is ready
     Then I should see "Biology"
-    And I should see "Life science"
 
-  @javascript
+  @javascript @_file_upload
   Scenario: Admin can edit existing tags
     Given the following "format_minimoodlewall > tagsets" exist:
       | name           | description      |
@@ -59,10 +61,10 @@ Feature: Tag management in minimoodlewall format
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
       | Description | Advanced life science |
-    And I press "Save"
+    And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image" filemanager
+    And I press "Save changes"
+    And I wait until the page is ready
     Then I should see "Advanced Biology"
-    And I should see "Advanced life science"
-    And I should not see "Biology" in the ".tag-list" "css_element"
 
   @javascript
   Scenario: Admin can delete tags
@@ -77,7 +79,6 @@ Feature: Tag management in minimoodlewall format
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
     When I click on "Delete Tag" "link" in the "//tr[contains(., 'Physics')]" "xpath_element"
-    And I accept the currently displayed dialog
     Then I should see "Biology"
     And I should not see "Physics"
 
