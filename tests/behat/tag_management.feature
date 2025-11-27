@@ -15,10 +15,10 @@ Feature: Tag management in minimoodlewall format
 
   @javascript
   Scenario: Admin can create a new tag set
-    Given I log in as "admin1"
+    Given I log in as "admin"
     And I am on site homepage
-    And I navigate to "Plugins > Course formats > Minimal Moodle Wall > Tag Management" in site administration
-    When I click on "Create tagset" "button"
+    And I visit "/course/format/minimoodlewall/tag_management.php"
+    When I click on "Create Tag Set" "link"
     And I set the following fields to these values:
       | Name        | Science Topics |
       | Description | Tags for science courses |
@@ -31,16 +31,15 @@ Feature: Tag management in minimoodlewall format
     Given the following "format_minimoodlewall > tagsets" exist:
       | name           | description            |
       | Science Topics | Tags for science       |
-    And I log in as "admin1"
+    And I log in as "admin"
     And I am on site homepage
-    And I navigate to "Plugins > Course formats > Minimal Moodle Wall > Tag Management" in site administration
-    When I click on "Manage tags" "link" in the "Science Topics" "table_row"
-    And I click on "Create tag" "button"
+    And I visit "/course/format/minimoodlewall/tag_management.php"
+    When I click on "Create Tag" "link"
     And I set the following fields to these values:
-      | Name             | Biology      |
-      | Description      | Life science |
-      | Activity type 1  | assign       |
-      | Activity type 2  | quiz         |
+      | Name                              | Biology      |
+      | Description                       | Life science |
+      | First Suggested Activity Type     | assign       |
+      | Second Suggested Activity Type    | quiz         |
     And I press "Save"
     Then I should see "Biology"
     And I should see "Life science"
@@ -53,11 +52,10 @@ Feature: Tag management in minimoodlewall format
     And the following "format_minimoodlewall > tags" exist:
       | tagset         | name    | description  | activitytype1 | activitytype2 |
       | Science Topics | Biology | Life science | assign        | quiz          |
-    And I log in as "admin1"
+    And I log in as "admin"
     And I am on site homepage
-    And I navigate to "Plugins > Course formats > Minimal Moodle Wall > Tag Management" in site administration
-    When I click on "Manage tags" "link" in the "Science Topics" "table_row"
-    And I click on "Edit" "link" in the "Biology" "table_row"
+    And I visit "/course/format/minimoodlewall/tag_management.php"
+    When I click on "Edit Tag" "link" in the "//tr[contains(., 'Biology')]" "xpath_element"
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
       | Description | Advanced life science |
@@ -75,12 +73,11 @@ Feature: Tag management in minimoodlewall format
       | tagset         | name    | description  | activitytype1 | activitytype2 |
       | Science Topics | Biology | Life science | assign        | quiz          |
       | Science Topics | Physics | Matter       | assign        | forum         |
-    And I log in as "admin1"
+    And I log in as "admin"
     And I am on site homepage
-    And I navigate to "Plugins > Course formats > Minimal Moodle Wall > Tag Management" in site administration
-    When I click on "Manage tags" "link" in the "Science Topics" "table_row"
-    And I click on "Delete" "link" in the "Physics" "table_row"
-    And I press "Yes"
+    And I visit "/course/format/minimoodlewall/tag_management.php"
+    When I click on "Delete Tag" "link" in the "//tr[contains(., 'Physics')]" "xpath_element"
+    And I accept the currently displayed dialog
     Then I should see "Biology"
     And I should not see "Physics"
 

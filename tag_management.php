@@ -44,8 +44,6 @@ $PAGE->set_heading(get_string('tagmanagement', 'format_minimoodlewall'));
 
 // Handle create/edit tagset.
 if ($action === 'createtagset' || $action === 'edittagset') {
-    debugging("Action: {$action}, tagsetid: {$tagsetid}", DEBUG_DEVELOPER);
-    
     $tagset = null;
     if ($action === 'edittagset' && $tagsetid) {
         $tagset = tag_manager::get_tagset($tagsetid);
@@ -65,29 +63,15 @@ if ($action === 'createtagset' || $action === 'edittagset') {
     if ($mform->is_cancelled()) {
         redirect($PAGE->url);
     } else if ($data = $mform->get_data()) {
-        debugging("Form data received: name={$data->name}, description={$data->description}, tagsetid=" . (isset($data->tagsetid) ? $data->tagsetid : 'not set'), DEBUG_DEVELOPER);
-        
         if (!empty($data->tagsetid)) {
-            debugging("Updating tagset {$data->tagsetid}", DEBUG_DEVELOPER);
             $success = tag_manager::update_tagset($data->tagsetid, $data->name, $data->description);
             $message = get_string('edittagset', 'format_minimoodlewall');
         } else {
-            debugging("Creating new tagset with name={$data->name}", DEBUG_DEVELOPER);
             try {
                 $id = tag_manager::create_tagset($data->name, $data->description);
-                debugging("Tagset created with ID: {$id}", DEBUG_DEVELOPER);
                 $message = get_string('createtagset', 'format_minimoodlewall');
                 $success = !empty($id);
-                if ($success) {
-                    // Debug: verify it was created.
-                    $check = tag_manager::get_tagset($id);
-                    if (!$check) {
-                        debugging('Tagset created with ID ' . $id . ' but cannot be retrieved', DEBUG_DEVELOPER);
-                        $success = false;
-                    }
-                }
             } catch (\Exception $e) {
-                debugging('Error creating tagset: ' . $e->getMessage(), DEBUG_DEVELOPER);
                 $success = false;
                 $message = 'Error: ' . $e->getMessage();
             }

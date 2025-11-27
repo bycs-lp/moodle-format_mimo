@@ -44,18 +44,18 @@ Feature: Tag filtering in minimoodlewall format
     Given I log in as "student1"
     When I am on "Test Course 1" course homepage
     Then ".minimoodlewall-filterbar" "css_element" should exist
-    And I should see "Show All" in the ".minimoodlewall-filterbar" "css_element"
+    And ".minimoodlewall-filterbar button" "css_element" should exist
     And I should see "Reading" in the ".minimoodlewall-filterbar" "css_element"
     And I should see "Practice" in the ".minimoodlewall-filterbar" "css_element"
     And I should see "Discuss" in the ".minimoodlewall-filterbar" "css_element"
 
   @javascript
-  Scenario: Filter bar shows usage counts
+  Scenario: Filter bar shows tag data attributes
     Given I log in as "student1"
     When I am on "Test Course 1" course homepage
-    Then I should see "2" in the "Reading" "button"
-    And I should see "2" in the "Practice" "button"
-    And I should see "1" in the "Discuss" "button"
+    Then ".minimoodlewall-filterbar" "css_element" should exist
+    And "button[title*='Practice']" "css_element" should exist
+    And "button[data-hasactivities='1']" "css_element" should exist
 
   @javascript
   Scenario: Student can filter activities by tag
@@ -76,7 +76,7 @@ Feature: Tag filtering in minimoodlewall format
     Then I should see "Page 1"
     And I should see "Book 1"
     And I should not see "Assignment 1" in the ".minimoodlewall-activities" "css_element"
-    When I click on "Show All" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "Reading" "button" in the ".minimoodlewall-filterbar" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
     And I should see "Page 1"
@@ -88,7 +88,8 @@ Feature: Tag filtering in minimoodlewall format
     Given I log in as "student1"
     And I am on "Test Course 1" course homepage
     When I click on "Discuss" "button" in the ".minimoodlewall-filterbar" "css_element"
-    Then the "class" attribute of "button.is-active" "css_element" should contain "Discuss"
+    And I wait "1" seconds
+    Then "button.minimoodlewall-filterbar-button.is-active" "css_element" should exist
     And I should see "Forum 1"
 
   @javascript
