@@ -53,6 +53,12 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['cm', 'tag'],
                 'switchids' => ['cm' => 'cmid', 'tag' => 'tagid'],
             ],
+            'activities' => [
+                'singular' => 'activity',
+                'datagenerator' => 'activity',
+                'required' => ['activity', 'name', 'course'],
+                'switchids' => ['course' => 'course', 'gradecategory' => 'gradecategory'],
+            ],
         ];
     }
 
@@ -73,17 +79,18 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Look up tag id from name.
+     * Look up tag id from name within a specific tagset.
      *
      * @param string $tagname
+     * @param int $tagsetid Tag set ID to search within
      * @return int
      */
-    protected function get_tag_id(string $tagname): int {
+    protected function get_tag_id(string $tagname, int $tagsetid): int {
         global $DB;
 
-        $id = $DB->get_field('format_minimoodlewall_tags', 'id', ['name' => $tagname]);
+        $id = $DB->get_field('format_minimoodlewall_tags', 'id', ['name' => $tagname, 'tagsetid' => $tagsetid]);
         if (!$id) {
-            throw new Exception('The specified tag with name "' . $tagname . '" does not exist');
+            throw new Exception('The specified tag with name "' . $tagname . '" does not exist in tagset ' . $tagsetid);
         }
         return $id;
     }
@@ -129,17 +136,27 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Resolve a course shortname to its database id.
+     * Resolve a course shortname or ID to its database id.
      *
-     * @param string $shortname
+     * @param string|int $course Course shortname or ID
      * @return int
      */
-    protected function resolve_course_id(string $shortname): int {
+    protected function resolve_course_id($course): int {
         global $DB;
 
-        $id = $DB->get_field('course', 'id', ['shortname' => $shortname]);
+        // If already numeric, assume it's an ID and validate it exists.
+        if (is_numeric($course)) {
+            $courseid = (int)$course;
+            if ($DB->record_exists('course', ['id' => $courseid])) {
+                return $courseid;
+            }
+            throw new Exception('The specified course with id "' . $courseid . '" does not exist');
+        }
+
+        // Otherwise treat as shortname.
+        $id = $DB->get_field('course', 'id', ['shortname' => $course]);
         if (!$id) {
-            throw new Exception('The specified course with shortname "' . $shortname . '" does not exist');
+            throw new Exception('The specified course with shortname "' . $course . '" does not exist');
         }
 
         return (int)$id;
@@ -188,7 +205,18 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             unset($data['cm']);
         }
         if (isset($data['tag'])) {
-            $data['tagid'] = $this->get_tag_id($data['tag']);
+            // For cmtags, we need the tagsetid - get it from the course module's course.
+            // Needs more logic because in behat we create multiple tags with the same name.
+            $cm = get_coursemodule_from_id('', $data['cmid'], 0, false, MUST_EXIST);
+            $course = get_course($cm->course);
+            $formatoptions = course_get_format($course)->get_format_options();
+            $tagsetid = $formatoptions['tagsetid'] ?? 0;
+            
+            if ($tagsetid > 0) {
+                $data['tagid'] = $this->get_tag_id($data['tag'], $tagsetid);
+            } else {
+                throw new Exception('Course does not have a tagsetid configured');
+            }
             unset($data['tag']);
         }
         return $data;
@@ -270,5 +298,57 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         }
 
         return !empty($value) ? 1 : 0;
+    }
+
+    /**
+     * Process activity creation with optional tag assignment.
+     *
+     * @param array $data
+     * @return void
+     */
+    public function process_activity(array $data): void {
+        global $DB;
+
+        // Extract tag if provided.
+        $tagname = null;
+        if (isset($data['tag'])) {
+            $tagname = $data['tag'];
+            unset($data['tag']);
+        }
+
+        // Create the activity using the core generator.
+        $modulename = $data['activity'];
+        $generator = $this->datagenerator->get_plugin_generator('mod_' . $modulename);
+        
+        if (!$generator) {
+            throw new coding_exception("Activity type '{$modulename}' does not have a generator");
+        }
+
+        $instance = $generator->create_instance($data);
+
+        // If a tag was specified, create the cmtag entry.
+        if ($tagname && $instance) {
+            // Use the course ID from the created instance to ensure we find the right CM.
+            $courseid = isset($instance->course) ? $instance->course : null;
+            
+            // Get the course module ID.
+            $cm = get_coursemodule_from_instance($modulename, $instance->id, $courseid);
+            if ($cm) {
+                // Get the course's tagsetid from format options.
+                $course = get_course($courseid);
+                $formatoptions = course_get_format($course)->get_format_options();
+                $tagsetid = $formatoptions['tagsetid'] ?? 0;
+                
+                if ($tagsetid > 0) {
+                    $tagid = $this->get_tag_id($tagname, $tagsetid);
+                    
+                    // Create cmtag entry.
+                    $this->componentdatagenerator->create_cmtag([
+                        'cmid' => $cm->id,
+                        'tagid' => $tagid,
+                    ]);
+                }
+            }
+        }
     }
 }

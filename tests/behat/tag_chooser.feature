@@ -101,21 +101,16 @@ Feature: Tag-based activity chooser in minimoodlewall format
 
   @javascript
   Scenario: Multiple activities can have different tags
-    Given the following "activities" exist:
-      | activity | name         | intro            | course | section |
-      | assign   | Assignment 1 | First assignment | TC1    | 1       |
-      | quiz     | Quiz 1       | First quiz       | TC1    | 1       |
-      | page     | Page 1       | First page       | TC1    | 1       |
-    And the following "format_minimoodlewall > cmtags" exist:
-      | cm           | tag      |
-      | Assignment 1 | Practice |
-      | Quiz 1       | Practice |
-      | Page 1       | Reading  |
+    Given the following "format_minimoodlewall > activities" exist:
+      | activity | name         | intro            | course | section | tag      |
+      | assign   | Assignment 1 | First assignment | TC1    | 1       | Practice |
+      | quiz     | Quiz 1       | First quiz       | TC1    | 1       | Practice |
+      | page     | Page 1       | First page       | TC1    | 1       | Reading  |
     When I log in as "teacher1"
     And I am on "Test Course 1" course homepage with editing mode off
+    And I wait until ".minimoodlewall-filterbar" "css_element" exists
     And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
     And I wait "2" seconds
-    And I wait until "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
     When I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
