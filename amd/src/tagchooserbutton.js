@@ -84,6 +84,7 @@ export const init = () => {
  * @param {string} sectionReturnNum Section return number (optional)
  * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
  */
+// eslint-disable-next-line complexity
 const showActivityTypeModal = async(
     tagId,
     tagName,
@@ -106,11 +107,19 @@ const showActivityTypeModal = async(
         }
 
         // Fetch descriptions and labels in parallel.
-        const [selectActivityTypeStr, selectActivityTypeDescStr, activityOrResourceStr, type1Label, type2Label, descriptions] =
-            await Promise.all([
-                getString('selectactivitytype', 'format_minimoodlewall'),
+        const [
+            modalTitle,
+            selectActivityTypeStr,
+            selectActivityTypeDescStr,
+            activityOrResourceStr,
+            type1Label,
+            type2Label,
+            descriptions
+        ] = await Promise.all([
+                getString('newactivity', 'format_minimoodlewall', tagName),
+                getString('newactivityfor', 'format_minimoodlewall', tagName),
                 getString('selectactivitytypedesc', 'format_minimoodlewall'),
-                getString('activityorresource', 'core'),
+                getString('openallactivities', 'format_minimoodlewall'),
                 activityType1 && activityType1 !== 'null' ? getActivityTypeLabel(activityType1) : Promise.resolve(''),
                 activityType2 && activityType2 !== 'null' ? getActivityTypeLabel(activityType2) : Promise.resolve(''),
                 typesToFetch.length > 0 ? Ajax.call([{
@@ -128,7 +137,7 @@ const showActivityTypeModal = async(
                 purpose: desc.purpose,
             };
         });
-        
+
         // Get activity type strings.
         const [type1Str, type2Str] = await Promise.all([
             activityType1 && activityType1 !== 'null' ? getString('activitytype', 'format_minimoodlewall') : Promise.resolve(''),
@@ -160,7 +169,7 @@ const showActivityTypeModal = async(
         const bodyHtml = await Templates.render('format_minimoodlewall/activitytype_chooser_modal', context);
 
         const modal = await Modal.create({
-            title: tagName,
+            title: modalTitle,
             body: bodyHtml,
             large: true,
             removeOnClose: true,
