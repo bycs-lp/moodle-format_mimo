@@ -69,15 +69,9 @@ final class tag_manager_test extends \advanced_testcase {
         return [
             'basic tagset' => [
                 'name' => 'Test Tagset',
-                'description' => 'Test description',
             ],
             'tagset with special characters' => [
                 'name' => 'Tagset & Co.',
-                'description' => 'Description with <html> & "quotes"',
-            ],
-            'tagset with empty description' => [
-                'name' => 'Empty Description',
-                'description' => '',
             ],
         ];
     }
@@ -87,10 +81,9 @@ final class tag_manager_test extends \advanced_testcase {
      *
      * @dataProvider tagset_data_provider
      * @param string $name
-     * @param string $description
      */
-    public function test_create_tagset(string $name, string $description): void {
-        $id = tag_manager::create_tagset($name, $description);
+    public function test_create_tagset(string $name): void {
+        $id = tag_manager::create_tagset($name);
         
         $this->assertNotEmpty($id);
         $this->assertIsInt($id);
@@ -99,7 +92,6 @@ final class tag_manager_test extends \advanced_testcase {
         $tagset = tag_manager::get_tagset($id);
         $this->assertNotFalse($tagset);
         $this->assertEquals($name, $tagset->name);
-        $this->assertEquals($description, $tagset->description);
         $this->assertNotEmpty($tagset->timecreated);
         $this->assertNotEmpty($tagset->timemodified);
     }
@@ -108,10 +100,17 @@ final class tag_manager_test extends \advanced_testcase {
      * Test getting all tagsets.
      */
     public function test_get_tagsets(): void {
+        global $DB;
+        
+        // Clear any existing tagsets from install.
+        $DB->delete_records('format_minimoodlewall_tagsets');
+        $DB->delete_records('format_minimoodlewall_tags');
+        tag_manager::clear_tag_cache();
+        
         // Create multiple tagsets.
-        tag_manager::create_tagset('Tagset 1', 'Description 1');
-        tag_manager::create_tagset('Tagset 2', 'Description 2');
-        tag_manager::create_tagset('Tagset 3', 'Description 3');
+        tag_manager::create_tagset('Tagset 1');
+        tag_manager::create_tagset('Tagset 2');
+        tag_manager::create_tagset('Tagset 3');
 
         $tagsets = tag_manager::get_tagsets();
         
@@ -126,27 +125,26 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tagset.
      */
     public function test_update_tagset(): void {
-        $id = tag_manager::create_tagset('Original Name', 'Original Description');
+        $id = tag_manager::create_tagset('Original Name');
         
         // Update the tagset.
-        $result = tag_manager::update_tagset($id, 'Updated Name', 'Updated Description');
+        $result = tag_manager::update_tagset($id, 'Updated Name');
         
         $this->assertTrue($result);
         
         // Verify the update.
         $tagset = tag_manager::get_tagset($id);
         $this->assertEquals('Updated Name', $tagset->name);
-        $this->assertEquals('Updated Description', $tagset->description);
     }
 
     /**
      * Test deleting a tagset.
      */
     public function test_delete_tagset(): void {
-        $id = tag_manager::create_tagset('To Delete', 'Will be deleted');
+        $id = tag_manager::create_tagset('To Delete');
         
         // Create a tag in this tagset.
-        $tagid = tag_manager::create_tag($id, 'Test Tag', 'Description', 'test.svg', 'test-small.svg', 'page');
+        $tagid = tag_manager::create_tag($id, 'Test Tag', 'test.svg', 'test-small.svg', 'page');
         
         // Delete the tagset.
         $result = tag_manager::delete_tagset($id);
@@ -166,12 +164,11 @@ final class tag_manager_test extends \advanced_testcase {
      * Test creating a tag.
      */
     public function test_create_tag(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $tagsetid = tag_manager::create_tagset('Tagset');
         
         $id = tag_manager::create_tag(
             $tagsetid,
             'Reading',
-            'Reading activities',
             'reading.svg',
             'reading-small.svg',
             'page',
@@ -186,7 +183,6 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertNotFalse($tag);
         $this->assertEquals($tagsetid, $tag->tagsetid);
         $this->assertEquals('Reading', $tag->name);
-        $this->assertEquals('Reading activities', $tag->description);
         $this->assertEquals('reading.svg', $tag->cardimage);
         $this->assertEquals('reading-small.svg', $tag->filterimage);
         $this->assertEquals('page', $tag->activitytype1);
@@ -198,9 +194,9 @@ final class tag_manager_test extends \advanced_testcase {
      * Ensure custom colours are normalised when creating a tag.
      */
     public function test_create_tag_with_bgcolor(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $tagsetid = tag_manager::create_tagset('Tagset');
 
-        $id = tag_manager::create_tag($tagsetid, 'Colourful', '', null, null, null, null, 'a1b2c3');
+        $id = tag_manager::create_tag($tagsetid, 'Colourful', null, null, null, null, null, 'a1b2c3');
         $tag = tag_manager::get_tag($id);
 
         $this->assertEquals('#a1b2c3', $tag->bgcolor);
@@ -210,12 +206,12 @@ final class tag_manager_test extends \advanced_testcase {
      * Test getting tags by tagset.
      */
     public function test_get_tags_by_tagset(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $tagsetid = tag_manager::create_tagset('Tagset');
         
         // Create multiple tags.
-        tag_manager::create_tag($tagsetid, 'Tag 1', '', 'tag1.svg', 'tag1-small.svg', 'page');
-        tag_manager::create_tag($tagsetid, 'Tag 2', '', 'tag2.svg', 'tag2-small.svg', 'quiz');
-        tag_manager::create_tag($tagsetid, 'Tag 3', '', 'tag3.svg', 'tag3-small.svg', 'forum');
+        tag_manager::create_tag($tagsetid, 'Tag 1', 'tag1.svg', 'tag1-small.svg', 'page');
+        tag_manager::create_tag($tagsetid, 'Tag 2', 'tag2.svg', 'tag2-small.svg', 'quiz');
+        tag_manager::create_tag($tagsetid, 'Tag 3', 'tag3.svg', 'tag3-small.svg', 'forum');
         
         $tags = tag_manager::get_tags_by_tagset($tagsetid);
         
@@ -226,13 +222,12 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tag.
      */
     public function test_update_tag(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
-        $id = tag_manager::create_tag($tagsetid, 'Original', '', 'orig.svg', 'orig-small.svg', 'page');
+        $tagsetid = tag_manager::create_tagset('Tagset');
+        $id = tag_manager::create_tag($tagsetid, 'Original', 'orig.svg', 'orig-small.svg', 'page');
         
         // Update the tag.
         $result = tag_manager::update_tag($id, [
             'name' => 'Updated',
-            'description' => 'Updated description',
             'cardimage' => 'updated.svg',
             'filterimage' => 'updated-small.svg',
             'activitytype1' => 'quiz',
@@ -245,7 +240,6 @@ final class tag_manager_test extends \advanced_testcase {
         // Verify the update.
         $tag = tag_manager::get_tag($id);
         $this->assertEquals('Updated', $tag->name);
-        $this->assertEquals('Updated description', $tag->description);
         $this->assertEquals('updated.svg', $tag->cardimage);
         $this->assertEquals('updated-small.svg', $tag->filterimage);
         $this->assertEquals('quiz', $tag->activitytype1);
@@ -257,8 +251,8 @@ final class tag_manager_test extends \advanced_testcase {
      * The accent resolver should prefer stored colours.
      */
     public function test_get_tag_accent_color_prefers_custom_colour(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
-        $id = tag_manager::create_tag($tagsetid, 'Colourful', '', null, null, null, null, '#445566');
+        $tagsetid = tag_manager::create_tagset('Tagset');
+        $id = tag_manager::create_tag($tagsetid, 'Colourful', null, null, null, null, null, '#445566');
         $tag = tag_manager::get_tag($id);
 
         $this->assertSame('#445566', tag_manager::get_tag_accent_color($tag));
@@ -268,7 +262,7 @@ final class tag_manager_test extends \advanced_testcase {
      * The accent resolver should fall back to the starters palette.
      */
     public function test_get_tag_accent_color_fallback_uses_palette(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
+        $tagsetid = tag_manager::create_tagset('Tagset');
         $id = tag_manager::create_tag($tagsetid, 'Default Colour');
         $tag = tag_manager::get_tag($id);
 
@@ -280,8 +274,8 @@ final class tag_manager_test extends \advanced_testcase {
      * Test deleting a tag.
      */
     public function test_delete_tag(): void {
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
-        $id = tag_manager::create_tag($tagsetid, 'To Delete', '', 'test.svg', 'test-small.svg', 'page');
+        $tagsetid = tag_manager::create_tagset('Tagset');
+        $id = tag_manager::create_tag($tagsetid, 'To Delete', 'test.svg', 'test-small.svg', 'page');
         
         // Delete the tag.
         $result = tag_manager::delete_tag($id);
@@ -302,8 +296,8 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         
         // Create tagset and tag.
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
-        $tagid = tag_manager::create_tag($tagsetid, 'Reading', '', 'reading.svg', 'reading-small.svg', 'page');
+        $tagsetid = tag_manager::create_tagset('Tagset');
+        $tagid = tag_manager::create_tag($tagsetid, 'Reading', 'reading.svg', 'reading-small.svg', 'page');
         
         // Assign tag to module.
         $result = tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -326,8 +320,8 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         
         // Create tagset and tag.
-        $tagsetid = tag_manager::create_tagset('Tagset', 'Description');
-        $tagid = tag_manager::create_tag($tagsetid, 'Reading', '', 'reading.svg', 'reading-small.svg', 'page');
+        $tagsetid = tag_manager::create_tagset('Tagset');
+        $tagid = tag_manager::create_tag($tagsetid, 'Reading', 'reading.svg', 'reading-small.svg', 'page');
         
         // Assign and then unassign.
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -362,6 +356,13 @@ final class tag_manager_test extends \advanced_testcase {
      * Test initializing default tags.
      */
     public function test_initialize_default_tags(): void {
+        global $DB;
+        
+        // Clear any existing tagsets from install.
+        $DB->delete_records('format_minimoodlewall_tagsets');
+        $DB->delete_records('format_minimoodlewall_tags');
+        tag_manager::clear_tag_cache();
+        
         tag_manager::initialize_default_tags();
         
         // Verify default tagset was created.
@@ -387,6 +388,13 @@ final class tag_manager_test extends \advanced_testcase {
      * Test that initialize_default_tags is idempotent.
      */
     public function test_initialize_default_tags_idempotent(): void {
+        global $DB;
+        
+        // Clear any existing tagsets from install.
+        $DB->delete_records('format_minimoodlewall_tagsets');
+        $DB->delete_records('format_minimoodlewall_tags');
+        tag_manager::clear_tag_cache();
+        
         // Call twice.
         tag_manager::initialize_default_tags();
         tag_manager::initialize_default_tags();

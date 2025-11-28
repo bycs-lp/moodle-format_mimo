@@ -717,10 +717,16 @@ class tag_manager {
      * @return bool Success
      */
     public static function initialize_default_tags(): bool {
+        global $DB;
+        
+        // Check if default tagset already exists.
+        $defaultname = get_string('defaulttagset', 'format_minimoodlewall');
+        if ($DB->record_exists('format_minimoodlewall_tagsets', ['name' => $defaultname])) {
+            return true; // Already initialized.
+        }
+        
         // Create default tag set.
-        $tagsetid = self::create_tagset(
-            get_string('defaulttagset', 'format_minimoodlewall')
-        );
+        $tagsetid = self::create_tagset($defaultname);
 
         // Create default tags.
         $defaulttags = [
