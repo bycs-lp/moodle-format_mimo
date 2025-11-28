@@ -9,12 +9,12 @@ Feature: Drag and drop activity reordering in minimoodlewall format
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
     And the following "format_minimoodlewall > tagsets" exist:
-      | name         | description     |
-      | Default Tags | Default tag set |
+      | name         |
+      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | description       | activitytype1 | activitytype2 |
-      | Default Tags | Reading  | Reading materials | page          | book          |
-      | Default Tags | Practice | Practice tasks    | assign        | quiz          |
+      | tagset       | name     | activitytype1 | activitytype2 |
+      | Default Tags | Reading  | page          | book          |
+      | Default Tags | Practice | assign        | quiz          |
     And the following "format_minimoodlewall > courses" exist:
       | fullname      | shortname | format         | tagsetid     |
       | Test Course 1 | TC1       | minimoodlewall | Default Tags |

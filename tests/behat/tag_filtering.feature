@@ -10,13 +10,13 @@ Feature: Tag filtering in minimoodlewall format
       | teacher1 | Teacher   | One      | teacher1@example.com |
       | student1 | Student   | One      | student1@example.com |
     And the following "format_minimoodlewall > tagsets" exist:
-      | name         | description     |
-      | Default Tags | Default tag set |
+      | name         |
+      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | description       | activitytype1 | activitytype2 |
-      | Default Tags | Reading  | Reading materials | page          | book          |
-      | Default Tags | Practice | Practice tasks    | assign        | quiz          |
-      | Default Tags | Discuss  | Discussion topics | forum         | chat          |
+      | tagset       | name     | activitytype1 | activitytype2 |
+      | Default Tags | Reading  | page          | book          |
+      | Default Tags | Practice | assign        | quiz          |
+      | Default Tags | Discuss  | forum         | chat          |
     And the following "format_minimoodlewall > courses" exist:
       | fullname      | shortname | format         | tagsetid     | enablefiltering |
       | Test Course 1 | TC1       | minimoodlewall | Default Tags | 1               |

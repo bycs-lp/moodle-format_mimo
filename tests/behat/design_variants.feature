@@ -9,11 +9,11 @@ Feature: Design variants in minimoodlewall format
       | username | firstname | lastname | email                |
       | student1 | Student   | One      | student1@example.com |
     And the following "format_minimoodlewall > tagsets" exist:
-      | name         | description     |
-      | Default Tags | Default tag set |
+      | name         |
+      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name    | description       | activitytype1 | activitytype2 |
-      | Default Tags | Reading | Reading materials | page          | book          |
+      | tagset       | name    | activitytype1 | activitytype2 |
+      | Default Tags | Reading | page          | book          |
 
   @javascript
   Scenario: Admin can set design variant when creating course

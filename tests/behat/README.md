@@ -86,15 +86,15 @@ The format includes custom Behat generators for creating test data:
 ### Tagsets:
 ```gherkin
 Given the following "format_minimoodlewall > tagsets" exist:
-  | name         | description     |
-  | Default Tags | Default tag set |
+  | name         |
+  | Default Tags |
 ```
 
 ### Tags:
 ```gherkin
 Given the following "format_minimoodlewall > tags" exist:
-  | tagset       | name    | description | activitytype1 | activitytype2 |
-  | Default Tags | Reading | Materials   | page          | book          |
+  | tagset       | name    | activitytype1 | activitytype2 |
+  | Default Tags | Reading | page          | book          |
 ```
 
 ### Course Module Tags:

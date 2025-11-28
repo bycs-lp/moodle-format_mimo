@@ -48,9 +48,6 @@ class format_minimoodlewall_generator extends component_generator_base {
         if (!isset($record->name)) {
             $record->name = 'Test Tagset ' . $this->tagsetcount;
         }
-        if (!isset($record->description)) {
-            $record->description = 'Description for ' . $record->name;
-        }
         if (!isset($record->timecreated)) {
             $record->timecreated = time();
         }
@@ -81,9 +78,6 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         if (!isset($record->name)) {
             $record->name = 'Test Tag ' . $this->tagcount;
-        }
-        if (!isset($record->description)) {
-            $record->description = 'Description for ' . $record->name;
         }
         if (!isset($record->activitytype1)) {
             $record->activitytype1 = 'assign';
@@ -128,8 +122,11 @@ class format_minimoodlewall_generator extends component_generator_base {
         }
 
         // Check if tag is already assigned to this cm.
-        if ($existing = $DB->get_record('format_minimoodlewall_cmtags',
-                ['cmid' => $record->cmid])) {
+        $existing = $DB->get_record(
+            'format_minimoodlewall_cmtags',
+            ['cmid' => $record->cmid]
+        );
+        if ($existing) {
             // Update existing assignment.
             $existing->tagid = $record->tagid;
             $existing->timemodified = time();

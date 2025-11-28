@@ -9,13 +9,13 @@ Feature: Tag-based activity chooser in minimoodlewall format
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
     And the following "format_minimoodlewall > tagsets" exist:
-      | name         | description        |
-      | Chooser Tags | Tag chooser tests  |
+      | name         |
+      | Chooser Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | description       | activitytype1 | activitytype2 |
-      | Chooser Tags | Reading  | Reading materials | page          | book          |
-      | Chooser Tags | Practice | Practice tasks    | assign        | quiz          |
-      | Chooser Tags | Discuss  | Discussion topics | forum         | chat          |
+      | tagset       | name     | activitytype1 | activitytype2 |
+      | Chooser Tags | Reading  | page          | book          |
+      | Chooser Tags | Practice | assign        | quiz          |
+      | Chooser Tags | Discuss  | forum         | chat          |
     And the following "format_minimoodlewall > courses" exist:
       | fullname      | shortname | format         | tagsetid     | enablefiltering |
       | Test Course 1 | TC1       | minimoodlewall | Chooser Tags | 1               |
@@ -42,7 +42,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I click on "Reading" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
     Then I should see "Reading" in the ".modal-title" "css_element"
-    And I should see "Select activity type..." in the ".modal-body" "css_element"
+    And I should see "Choose a fitting activity for the area of Reading" in the ".modal-body" "css_element"
     And I should see "Page" in the ".modal-body" "css_element"
     And I should see "Book" in the ".modal-body" "css_element"
     And I click on "Page" "link" in the ".modal-body" "css_element"
@@ -69,7 +69,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
     And I click on "Reading" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
-    And I click on "Activity or resource" "link" in the ".modal-body" "css_element"
+    And I click on "Open all activities" "link" in the ".modal-body" "css_element"
     Then I should see "Add an activity or resource"
     And I should see "Assignment"
     And I should see "Quiz"
