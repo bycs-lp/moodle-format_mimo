@@ -76,18 +76,6 @@ class activity_descriptions_form extends \moodleform {
                 '<div style="margin-top: 20px;"><strong>' . s($type['displayname']) . '</strong></div>'
             );
             
-            // Tag selector.
-            $mform->addElement(
-                'select',
-                'desctag_' . $type['name'],
-                get_string('descriptiontag', 'format_minimoodlewall'),
-                $tagoptions
-            );
-            $mform->setType('desctag_' . $type['name'], PARAM_INT);
-            if ($currentdesc && isset($currentdesc->desctagid)) {
-                $mform->setDefault('desctag_' . $type['name'], $currentdesc->desctagid ?? 0);
-            }
-            
             // Description textarea.
             $mform->addElement(
                 'textarea',
@@ -99,6 +87,18 @@ class activity_descriptions_form extends \moodleform {
                     'placeholder' => get_string('activitydescription_placeholder', 'format_minimoodlewall'),
                 ]
             );
+            
+            // Tag selector.
+            $mform->addElement(
+                'select',
+                'desctag_' . $type['name'],
+                get_string('descriptiontag', 'format_minimoodlewall'),
+                $tagoptions
+            );
+            $mform->setType('desctag_' . $type['name'], PARAM_INT);
+            if ($currentdesc && isset($currentdesc->desctagid)) {
+                $mform->setDefault('desctag_' . $type['name'], $currentdesc->desctagid ?? 0);
+            }
             $mform->setType('description_' . $type['name'], PARAM_TEXT);
             if ($currentdesc) {
                 $mform->setDefault('description_' . $type['name'], $currentdesc->description ?? '');

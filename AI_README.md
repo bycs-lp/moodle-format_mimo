@@ -16,6 +16,11 @@
   - Tables: `*_tagsets`, `*_tags`, `*_cmtags` (one tag per `cm`).
   - File areas (`FILEAREA_CARDIMAGE`, `FILEAREA_FILTERIMAGE`) live in system context; served via `format_minimoodlewall_pluginfile()`.
   - `tag_manager` handles CRUD, cache invalidation, filemanager prep/saving, default palettes, and usage counts.
+- **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
+  - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
+  - Description tags provide visual categorization pills on activity type cards in chooser modal.
+  - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
+  - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Admin UX** (`settings.php`, `tag_management.php`, `classes/form/*`)
   - External admin page for tag sets/tags with SVG previews and accent swatches.
   - Only admins (`moodle/site:config`) can manage tags; links exposed under Site administration › Courses.
@@ -26,7 +31,8 @@
 - **Caching** (`cache/definitions.php`)
   - `tagconfigurations`: tag + artwork metadata per tagset.
   - `activitytagmappings`: cm→tag lookup.
-  - Clear via `tag_manager::clear_tag_cache()` whenever tag data changes.
+  - `activity_descriptions`: cached activity descriptions with tag data (LEFT JOIN on desc_tags).
+  - Clear via `tag_manager::clear_tag_cache()` or `activity_description_manager::clear_cache()` whenever data changes.
 
 ## Workflows & Entry Points
 1. **Course creation**
@@ -38,6 +44,10 @@
 3. **Course editing**
   - Teachers see a tag-based activity chooser: clicking the "+" button reveals a dropdown of configured tags.
   - Selecting a tag opens a modal with three options: two quick-create shortcuts (pre-configured activity types) and a link to the full activity chooser.
+  - **Activity type cards** in the modal display:
+    - Activity icon with purpose-based border color
+    - Activity name and description
+    - **Description tag pill** (if assigned): appears on top-right, slightly overlapping edge, with custom background color from database
   - This workflow ensures mandatory tagging and guides teachers toward recommended activity combinations.
   - **Version Support:** The plugin supports both Moodle 5.0 and earlier, and 5.1+ with automatic version detection:
     - **Moodle 5.1+**: Uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class that extends the new `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
@@ -143,18 +153,31 @@ This plugin demonstrates the hybrid approach:
 ## Quick File Map
 - `lib.php` – course options, validation, navigation tweaks, pluginfile hook.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes.
-- `tag_management.php` – admin UI controller.
-- `classes/form/tag*_form.php` – mform definitions for UI.
+- `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
+- `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
+- `tag_management.php` – admin UI controller for tags.
+- `description_tags.php` – admin UI for managing description tags (name + hex color).
+- `activity_descriptions.php` – admin UI for editing activity type descriptions and assigning description tags.
+- `classes/form/tag*_form.php` – mform definitions for tag UI.
+- `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
+- `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.0+ tag chooser button** (extends core class).
 - `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates.
+- `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
 - `templates/local/content/activitychooserbutton.mustache` – **Moodle 5.0+ tag chooser template**.
 - `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
 - `templates/tagchooserbutton.mustache` – **Legacy Moodle 4.x tag chooser template**.
+- `templates/activitytype_chooser_modal.mustache` – modal body for activity type selection.
+- `templates/activitytype_card.mustache` – activity type card with optional description tag pill.
+- `templates/description_tags_list.mustache` – table view for description tags management page.
 - `templates/local/content/*.mustache` – Mustache templates for wall, sections, cards.
-- `styles.scss` / `styles.css` – wall styling + design variants.
-- `amd/src/tagchooserbutton.js` – tag chooser modal handler (version-agnostic).
+- `styles.scss` / `styles.css` – wall styling + design variants + activity card styles + description tag pill styling.
+- `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (version-agnostic).
 - `amd/` – placeholder for JS (filter bar, quick create, etc.).
+- `tests/behat/activity_descriptions.feature` – Behat tests for description tags and activity descriptions.
+- `tests/description_tag_manager_test.php` – PHPUnit tests for description tag manager.
+- `tests/generator/` – data generators for Behat tests (includes description_tag and activity_description).
 
 ## Open Questions / TODO Hooks
 - Teacher-side workflow for assigning/changing tags per activity is not implemented.

@@ -138,4 +138,76 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         return $record;
     }
+
+    /**
+     * Create a description tag.
+     *
+     * @param array|stdClass $record Must include name and color
+     * @return stdClass The created description tag record
+     */
+    public function create_description_tag($record = null) {
+        global $DB;
+
+        $record = (object)(array)$record;
+
+        if (!isset($record->name)) {
+            throw new coding_exception('name is required for creating description tag');
+        }
+        if (!isset($record->color)) {
+            throw new coding_exception('color is required for creating description tag');
+        }
+        if (!isset($record->timecreated)) {
+            $record->timecreated = time();
+        }
+        if (!isset($record->timemodified)) {
+            $record->timemodified = time();
+        }
+
+        $record->id = $DB->insert_record('format_minimoodlewall_desc_tags', $record);
+
+        return $record;
+    }
+
+    /**
+     * Create an activity description.
+     *
+     * @param array|stdClass $record Must include activitytype and description
+     * @return stdClass The created activity description record
+     */
+    public function create_activity_description($record = null) {
+        global $DB;
+
+        $record = (object)(array)$record;
+
+        if (!isset($record->activitytype)) {
+            throw new coding_exception('activitytype is required for creating activity description');
+        }
+        if (!isset($record->description)) {
+            throw new coding_exception('description is required for creating activity description');
+        }
+        if (!isset($record->timecreated)) {
+            $record->timecreated = time();
+        }
+        if (!isset($record->timemodified)) {
+            $record->timemodified = time();
+        }
+
+        // Check if description already exists for this activity type.
+        $existing = $DB->get_record(
+            'format_minimoodlewall_actdesc',
+            ['activitytype' => $record->activitytype]
+        );
+        if ($existing) {
+            // Update existing description.
+            $existing->description = $record->description;
+            $existing->desctagid = $record->desctagid ?? null;
+            $existing->timemodified = time();
+            $DB->update_record('format_minimoodlewall_actdesc', $existing);
+            return $existing;
+        }
+
+        $record->id = $DB->insert_record('format_minimoodlewall_actdesc', $record);
+
+        return $record;
+    }
 }

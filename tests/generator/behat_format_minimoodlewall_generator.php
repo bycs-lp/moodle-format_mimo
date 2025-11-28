@@ -59,6 +59,18 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['activity', 'name', 'course'],
                 'switchids' => ['course' => 'course', 'gradecategory' => 'gradecategory'],
             ],
+            'description tags' => [
+                'singular' => 'description tag',
+                'datagenerator' => 'description_tag',
+                'required' => ['name', 'color'],
+                'switchids' => [],
+            ],
+            'activity descriptions' => [
+                'singular' => 'activity description',
+                'datagenerator' => 'activity_description',
+                'required' => ['activitytype', 'description'],
+                'switchids' => ['desctag' => 'desctagid'],
+            ],
         ];
     }
 
@@ -93,6 +105,32 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             throw new Exception('The specified tag with name "' . $tagname . '" does not exist in tagset ' . $tagsetid);
         }
         return $id;
+    }
+
+    /**
+     * Look up description tag id from name.
+     *
+     * @param string $tagname
+     * @return int
+     */
+    protected function get_description_tag_id(string $tagname): int {
+        global $DB;
+
+        $id = $DB->get_field('format_minimoodlewall_desc_tags', 'id', ['name' => $tagname]);
+        if (!$id) {
+            throw new Exception('The specified description tag with name "' . $tagname . '" does not exist');
+        }
+        return $id;
+    }
+
+    /**
+     * Look up description tag id from name (alias for switchids resolution).
+     *
+     * @param string $tagname
+     * @return int
+     */
+    protected function get_desctag_id(string $tagname): int {
+        return $this->get_description_tag_id($tagname);
     }
 
     /**
@@ -219,6 +257,29 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             }
             unset($data['tag']);
         }
+        return $data;
+    }
+
+    /**
+     * Preprocess description tag data before creating.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function preprocess_description_tag($data) {
+        // No preprocessing needed.
+        return $data;
+    }
+
+    /**
+     * Preprocess activity description data before creating.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function preprocess_activity_description($data) {
+        // The switchids mechanism will handle desctag -> desctagid conversion.
+        // No additional preprocessing needed.
         return $data;
     }
 
