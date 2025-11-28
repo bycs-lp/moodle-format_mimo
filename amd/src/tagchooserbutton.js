@@ -175,9 +175,6 @@ const showActivityTypeModal = async(
             tagcolor: dataMap[type]?.tagcolor || '',
         }));
 
-        // eslint-disable-next-line no-console
-        console.log('Activity cards with tags:', activitycards);
-
         // Determine column class based on number of cards
         let colclass = 'col-12';
         if (activitycards.length === 2) {
