@@ -199,6 +199,9 @@ if ($action && confirm_sesskey()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
 
+// Initialize delete confirmation modal.
+$PAGE->requires->js_call_amd('format_minimoodlewall/tag_delete_confirm', 'init');
+
 // Display tagsets.
 $tagsets = tag_manager::get_tagsets();
 
@@ -226,7 +229,12 @@ if (empty($tagsets)) {
         echo html_writer::link(
             new moodle_url($PAGE->url, ['action' => 'deletetagset', 'tagsetid' => $tagset->id, 'sesskey' => sesskey()]),
             get_string('deletetagset', 'format_minimoodlewall'),
-            ['class' => 'btn btn-sm btn-danger', 'onclick' => 'return confirm("' . get_string('confirm') . '");']
+            [
+                'class' => 'btn btn-sm btn-danger',
+                'data-action' => 'delete-tagset',
+                'data-tagset-id' => $tagset->id,
+                'data-tagset-name' => format_string($tagset->name),
+            ]
         );
         echo html_writer::end_div();
         echo html_writer::end_div();
@@ -301,7 +309,12 @@ if (empty($tagsets)) {
                 echo html_writer::link(
                     new moodle_url($PAGE->url, ['action' => 'deletetag', 'tagid' => $tag->id, 'sesskey' => sesskey()]),
                     get_string('deletetag', 'format_minimoodlewall'),
-                    ['class' => 'btn btn-sm btn-danger', 'onclick' => 'return confirm("' . get_string('confirm') . '");']
+                    [
+                        'class' => 'btn btn-sm btn-danger',
+                        'data-action' => 'delete-tag',
+                        'data-tag-id' => $tag->id,
+                        'data-tag-name' => format_string($tag->name),
+                    ]
                 );
                 echo html_writer::end_div();
                 echo html_writer::end_tag('td');

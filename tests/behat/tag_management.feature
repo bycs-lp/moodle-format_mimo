@@ -79,6 +79,8 @@ Feature: Tag management in minimoodlewall format
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
     When I click on "Delete Tag" "link" in the "//tr[contains(., 'Physics')]" "xpath_element"
+    And I click on "Delete" "button" in the ".modal-dialog" "css_element"
+    And I wait until the page is ready
     Then I should see "Biology"
     And I should not see "Physics"
 
