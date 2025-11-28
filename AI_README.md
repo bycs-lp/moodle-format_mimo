@@ -61,6 +61,55 @@
   - Behat: cover tag selection workflow, filter interactions, and admin CRUD.
   - PHPUnit: tag manager CRUD, cache invalidation, pluginfile access.
 
+## Moodle-Specific Linter Considerations
+Moodle has several unique patterns that cause issues with standard PHP linters and static analysis tools:
+
+### Dynamic Class Loading & Missing Namespaces
+- **Legacy naming convention**: Many Moodle core classes use `plugintype_pluginname_classname` naming (e.g., `backup_format_minimoodlewall_plugin`, `restore_moodleform`) without namespaces.
+- **File naming pattern**: Classes in special directories use `.class.php` extension (backup/restore subsystems) which linters may not recognize.
+- **Autoloading limitations**: Moodle's autoloader expects:
+  - Namespaced classes in `classes/` directory follow PSR-4
+  - Legacy classes in root or subdirectories require explicit `require_once()`
+- **Mixed paradigms in same plugin**:
+  - `lib.php`: Legacy global class `format_minimoodlewall` (NO namespace, extends `core_courseformat\base`)
+  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`
+  - `backup/moodle2/*.class.php`: Legacy classes `backup_format_minimoodlewall_plugin` (NO namespace)
+  - `classes/form/*.php`: Modern but extend legacy `\moodleform` which requires explicit `require_once($CFG->libdir.'/formslib.php')`
+
+### PSR Compliance Challenges
+- **PSR-4 autoloading**: Only applies to `classes/` directory; other locations require manual includes.
+- **PSR-1/2 violations**: Moodle coding style differs from PSR standards:
+  - Underscores in class names for legacy classes
+  - 4-space indentation vs PSR-2's requirement
+  - Different brace positioning in some contexts
+- **Global dependencies**: `$CFG`, `$DB`, `$USER` globals are standard practice, triggering undefined variable warnings.
+- **Dynamic file paths**: `require_once($CFG->dirroot . '/path/to/file.php')` patterns confuse static analyzers.
+
+### Required Patterns to Avoid Linter Errors
+1. **Always include base classes explicitly** in files that don't use autoloading:
+   ```php
+   require_once($CFG->dirroot . '/course/format/lib.php');  // For format base class
+   require_once($CFG->libdir . '/formslib.php');            // For moodleform
+   ```
+2. **Namespace declaration placement**: Must come AFTER `defined('MOODLE_INTERNAL') || die();` but BEFORE any `require_once()` that references non-namespaced classes.
+3. **Use statements**: Can reference both namespaced and global classes, but global classes don't need leading backslash if referenced after namespace declaration.
+4. **Backup/restore classes**: Cannot use namespaces (Moodle's backup system expects specific legacy class names).
+
+### Linter Configuration Recommendations
+- **PHPStan/Psalm**: Requires custom bootstrap file to define globals (`$CFG`, `$DB`, etc.)
+- **PHP_CodeSniffer**: Use `moodle` or `moodle-extra` rulesets, NOT standard PSR-2
+- **IDEs (PHPStorm/VSCode)**: 
+  - Add Moodle root as "library" to resolve dynamic includes
+  - Configure to recognize `.class.php` files as PHP
+  - Suppress "undefined global variable" warnings for Moodle globals
+
+### Plugin-Specific Patterns
+This plugin demonstrates the hybrid approach:
+- `lib.php` (68 lines): Global `format_minimoodlewall` class, extends namespaced base
+- `classes/tag_manager.php`: Fully namespaced, modern PSR-4
+- `classes/form/tag_form.php`: Namespaced but extends global `\moodleform`, requires explicit include
+- `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
+
 ## Guardrails for Future Agents
 - Respect single-section assumption; avoid introducing multiple sections unless architecture is revisited.
 - Never bypass tagset requirement—other logic assumes every course module can resolve a tag.
@@ -68,6 +117,7 @@
 - Update caches after any tag/tagset change; otherwise wall rendering will show stale logos/colors.
 - Keep AI-facing docs (this file + README) updated when adding new options or data flows to minimize forgotten invariants.
 - **Version Compatibility**: The plugin automatically detects Moodle version and uses appropriate classes/templates. The split is at Moodle 5.1 (branch 501) where MDL-86337 moved activity chooser to core_courseformat. Test changes in both 5.0 and 5.1+ environments.
+- **Linter warnings**: Expect false positives for dynamic class loading, missing namespaces in legacy code, and global variable usage—these are intentional Moodle patterns, not bugs.
 
 ## Version Compatibility Details
 
