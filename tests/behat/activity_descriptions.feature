@@ -30,11 +30,12 @@ Feature: Activity type descriptions with tags
     Then I should see "Activity Descriptions"
     When I navigate to "Plugins > Course formats > Mini Moodle Wall > Description Tag Management" in site administration
     Then I should see "Description Tag Management"
-    And I click on "Create Description Tag" "link"
+    And I click on "Create Description Tag" "button"
     And I set the following fields to these values:
       | Name  | Homework |
       | Color | #ff6b6b  |
     And I click on "Save changes" "button"
+    And I wait until the page is ready
     Then I should see "Homework"
     When I navigate to "Plugins > Course formats > Mini Moodle Wall > Activity Descriptions" in site administration
     And I should see "Assignment"
