@@ -24,9 +24,9 @@
 
 namespace format_minimoodlewall\form;
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/formslib.php');
+use core_form\dynamic_form;
+use context;
+use format_minimoodlewall\description_tag_manager;
 
 /**
  * Form for creating and editing description tags.
@@ -35,11 +35,11 @@ require_once($CFG->libdir . '/formslib.php');
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class description_tag_form extends \moodleform {
+class description_tag_form extends dynamic_form {
     /**
      * Form definition.
      */
-    protected function definition() {
+    public function definition() {
         $mform = $this->_form;
 
         // Tag ID (hidden field for editing).
@@ -59,8 +59,6 @@ class description_tag_form extends \moodleform {
         $mform->setType('color', PARAM_TEXT);
         $mform->addRule('color', get_string('required'), 'required', null, 'client');
         $mform->addHelpButton('color', 'desctagcolor', 'format_minimoodlewall');
-
-        $this->add_action_buttons(true, get_string('savechanges'));
     }
 
     /**
@@ -75,11 +73,74 @@ class description_tag_form extends \moodleform {
 
         // Validate color format.
         if (!empty($data['color'])) {
-            if (!\format_minimoodlewall\description_tag_manager::is_valid_color($data['color'])) {
+            if (!description_tag_manager::is_valid_color($data['color'])) {
                 $errors['color'] = get_string('invalidcolor', 'format_minimoodlewall');
             }
         }
 
         return $errors;
+    }
+
+    /**
+     * Returns context where this form is used.
+     *
+     * @return context
+     */
+    protected function get_context_for_dynamic_submission(): context {
+        return \context_system::instance();
+    }
+
+    /**
+     * Checks if current user has sufficient permissions.
+     */
+    protected function check_access_for_dynamic_submission(): void {
+        require_capability('moodle/site:config', \context_system::instance());
+    }
+
+    /**
+     * Load in existing data as form defaults.
+     */
+    public function set_data_for_dynamic_submission(): void {
+        $id = $this->optional_param('id', 0, PARAM_INT);
+        
+        if ($id) {
+            $tag = description_tag_manager::get_tag($id);
+            if ($tag) {
+                $this->set_data($tag);
+            }
+        }
+    }
+
+    /**
+     * Process the form submission.
+     *
+     * @return array
+     */
+    public function process_dynamic_submission() {
+        $data = $this->get_data();
+        
+        if (!empty($data->id)) {
+            // Update existing tag.
+            description_tag_manager::update_tag($data->id, $data->name, $data->color);
+            $message = get_string('desctagsaved', 'format_minimoodlewall');
+        } else {
+            // Create new tag.
+            description_tag_manager::create_tag($data->name, $data->color);
+            $message = get_string('desctagcreated', 'format_minimoodlewall');
+        }
+        
+        return [
+            'result' => true,
+            'message' => $message,
+        ];
+    }
+
+    /**
+     * Returns url to set in $PAGE->set_url() when form is being rendered or submitted via AJAX.
+     *
+     * @return \moodle_url
+     */
+    protected function get_page_url_for_dynamic_submission(): \moodle_url {
+        return new \moodle_url('/course/format/minimoodlewall/description_tags.php');
     }
 }

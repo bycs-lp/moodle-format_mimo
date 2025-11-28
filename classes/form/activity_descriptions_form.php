@@ -58,7 +58,6 @@ class activity_descriptions_form extends \moodleform {
             $descriptionmap[$desc->activitytype] = $desc;
         }
 
-        $mform->addElement('header', 'activitydescriptionsheader', get_string('activitydescriptions', 'format_minimoodlewall'));
         $mform->addElement(
             'static',
             'activitydescriptions_help',

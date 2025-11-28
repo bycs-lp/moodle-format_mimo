@@ -44,9 +44,9 @@
 
 <div class="description-tags-management">
     <div class="mb-3">
-        <a href="{{{createurl}}}" class="btn btn-primary">
+        <button type="button" class="btn btn-primary" data-action="create-tag">
             {{#str}}createdesctag, format_minimoodlewall{{/str}}
-        </a>
+        </button>
     </div>
 
     {{#notags}}
@@ -75,12 +75,12 @@
                     </td>
                     <td>{{usagecount}}</td>
                     <td>
-                        <a href="{{{editurl}}}" title="{{#str}}edit{{/str}}">
+                        <button type="button" class="btn btn-sm btn-link p-0" data-action="edit-tag" data-id="{{id}}" title="{{#str}}edit{{/str}}">
                             {{{editicon}}}
-                        </a>
-                        <a href="{{{deleteurl}}}" class="ml-2" title="{{#str}}delete{{/str}}">
+                        </button>
+                        <button type="button" class="btn btn-sm btn-link p-0 ml-2" data-action="delete-tag" data-id="{{id}}" data-name="{{name}}" data-usagecount="{{usagecount}}" title="{{#str}}delete{{/str}}">
                             {{{deleteicon}}}
-                        </a>
+                        </button>
                     </td>
                 </tr>
                 {{/tags}}

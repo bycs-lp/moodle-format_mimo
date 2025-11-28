@@ -25,7 +25,7 @@
 $string['activitydescription_placeholder'] = 'Enter a short description for the modal...';
 $string['activitydescriptiondeleted'] = 'Activity description deleted successfully.';
 $string['activitydescriptions'] = 'Activity Descriptions';
-$string['activitydescriptions_help'] = 'Add short descriptions for activity types that will be shown in the tag chooser modal.';
+$string['activitydescriptions_help'] = 'Add short descriptions for activity types that will be shown in the tag chooser modal. Description Tags can be assigned to each description to help categorise activities.';
 $string['activitydescriptionsaved'] = 'Activity description saved successfully.';
 $string['activitytype'] = 'Activity Type';
 $string['activitytype1'] = 'First Suggested Activity Type';
@@ -57,6 +57,7 @@ $string['desctagcreated'] = 'Description tag created successfully.';
 $string['desctagdeleted'] = 'Description tag deleted successfully.';
 $string['desctagdeletedwithusage'] = 'Description tag deleted. {$a} activity description(s) no longer have a tag assigned.';
 $string['desctagmanagement'] = 'Description Tag Management';
+$string['desctagmanagement_help'] = 'Description tags appear as colored pills on activity type cards in the activity chooser modal, displayed in the same location as activity descriptions.';
 $string['desctagname'] = 'Tag Name';
 $string['desctagsaved'] = 'Description tag updated successfully.';
 $string['desctagusagewarning'] = '<strong>Warning:</strong> This tag is currently used by {$a} activity description(s). Deleting it will remove the tag from those descriptions.';
