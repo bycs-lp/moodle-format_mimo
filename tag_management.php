@@ -204,135 +204,74 @@ echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
 // Initialize delete confirmation modal.
 $PAGE->requires->js_call_amd('format_minimoodlewall/tag_delete_confirm', 'init');
 
-// Display tagsets.
+// Prepare template context.
 $tagsets = tag_manager::get_tagsets();
 
-echo html_writer::start_div('mb-3');
-echo html_writer::link(
-    new moodle_url($PAGE->url, ['action' => 'createtagset']),
-    get_string('createtagset', 'format_minimoodlewall'),
-    ['class' => 'btn btn-primary']
-);
-echo html_writer::end_div();
+$templatecontext = [
+    'createtagseturl' => (new moodle_url($PAGE->url, ['action' => 'createtagset']))->out(false),
+    'createtagsettext' => get_string('createtagset', 'format_minimoodlewall'),
+    'notagsetstext' => get_string('notagsets', 'format_minimoodlewall'),
+    'hastagsets' => !empty($tagsets),
+    'tagsets' => [],
+];
 
-if (empty($tagsets)) {
-    echo $OUTPUT->notification(get_string('notagsets', 'format_minimoodlewall'), \core\output\notification::NOTIFY_INFO);
-} else {
-    foreach ($tagsets as $tagset) {
-        echo html_writer::start_div('card mb-3');
-        echo html_writer::start_div('card-header d-flex justify-content-between align-items-center');
-        echo html_writer::tag('h3', format_string($tagset->name), ['class' => 'mb-0']);
-        echo html_writer::start_div('btn-group');
-        echo html_writer::link(
-            new moodle_url($PAGE->url, ['action' => 'edittagset', 'tagsetid' => $tagset->id]),
-            get_string('edittagset', 'format_minimoodlewall'),
-            ['class' => 'btn btn-sm btn-secondary']
-        );
-        echo html_writer::link(
-            new moodle_url($PAGE->url, ['action' => 'deletetagset', 'tagsetid' => $tagset->id, 'sesskey' => sesskey()]),
-            get_string('deletetagset', 'format_minimoodlewall'),
-            [
-                'class' => 'btn btn-sm btn-danger',
-                'data-action' => 'delete-tagset',
-                'data-tagset-id' => $tagset->id,
-                'data-tagset-name' => format_string($tagset->name),
-            ]
-        );
-        echo html_writer::end_div();
-        echo html_writer::end_div();
-
-        echo html_writer::start_div('card-body');
+foreach ($tagsets as $tagset) {
+    $tags = tag_manager::get_tags_by_tagset($tagset->id);
+    
+    $tagsetdata = [
+        'id' => $tagset->id,
+        'name' => format_string($tagset->name),
+        'description' => !empty($tagset->description) ? format_text($tagset->description) : null,
+        'editurl' => (new moodle_url($PAGE->url, ['action' => 'edittagset', 'tagsetid' => $tagset->id]))->out(false),
+        'deleteurl' => (new moodle_url($PAGE->url, [
+            'action' => 'deletetagset',
+            'tagsetid' => $tagset->id,
+            'sesskey' => sesskey(),
+        ]))->out(false),
+        'edittext' => get_string('edittagset', 'format_minimoodlewall'),
+        'deletetext' => get_string('deletetagset', 'format_minimoodlewall'),
+        'createtagurl' => (new moodle_url($PAGE->url, ['action' => 'createtag', 'tagsetid' => $tagset->id]))->out(false),
+        'createtagtext' => get_string('createtag', 'format_minimoodlewall'),
+        'hastags' => !empty($tags),
+        'notagstext' => get_string('notags', 'format_minimoodlewall'),
+        'tableheaders' => [
+            'cardimage' => get_string('cardimage', 'format_minimoodlewall'),
+            'name' => get_string('tagname', 'format_minimoodlewall'),
+            'bgcolor' => get_string('tagbgcolor', 'format_minimoodlewall'),
+            'activitytype1' => get_string('activitytype1', 'format_minimoodlewall'),
+            'activitytype2' => get_string('activitytype2', 'format_minimoodlewall'),
+            'activitytype3' => get_string('activitytype3', 'format_minimoodlewall'),
+            'actions' => get_string('actions'),
+        ],
+        'tags' => [],
+    ];
+    
+    foreach ($tags as $tag) {
+        $cardimgurl = tag_manager::get_cardimage_url($tag);
+        $accentcolor = tag_manager::get_tag_accent_color($tag);
         
-        if (!empty($tagset->description)) {
-            echo html_writer::tag('p', format_text($tagset->description), ['class' => 'text-muted']);
-        }
-
-        // Display tags in this tagset.
-        $tags = tag_manager::get_tags_by_tagset($tagset->id);
-        
-        echo html_writer::start_div('mb-2');
-        echo html_writer::link(
-            new moodle_url($PAGE->url, ['action' => 'createtag', 'tagsetid' => $tagset->id]),
-            get_string('createtag', 'format_minimoodlewall'),
-            ['class' => 'btn btn-sm btn-success']
-        );
-        echo html_writer::end_div();
-
-        if (empty($tags)) {
-            echo $OUTPUT->notification(get_string('notags', 'format_minimoodlewall'), \core\output\notification::NOTIFY_INFO);
-        } else {
-            echo html_writer::start_tag('table', ['class' => 'table table-striped']);
-            echo html_writer::start_tag('thead');
-            echo html_writer::start_tag('tr');
-            echo html_writer::tag('th', get_string('cardimage', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('tagname', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('tagbgcolor', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('activitytype1', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('activitytype2', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('activitytype3', 'format_minimoodlewall'));
-            echo html_writer::tag('th', get_string('actions'));
-            echo html_writer::end_tag('tr');
-            echo html_writer::end_tag('thead');
-            echo html_writer::start_tag('tbody');
-
-            foreach ($tags as $tag) {
-                echo html_writer::start_tag('tr');
-                
-                // Card image preview.
-                $cardimgurl = tag_manager::get_cardimage_url($tag);
-                echo html_writer::start_tag('td');
-                if ($cardimgurl) {
-                    echo html_writer::img($cardimgurl, $tag->name, ['style' => 'width: 80px; height: 50px; object-fit: cover;']);
-                } else {
-                    echo html_writer::span('-', 'text-muted');
-                }
-                echo html_writer::end_tag('td');
-                
-                echo html_writer::tag('td', format_string($tag->name));
-
-                $accentcolor = tag_manager::get_tag_accent_color($tag);
-                $swatch = html_writer::span('', null, [
-                    'style' => 'display:inline-block;width:32px;height:20px;border-radius:6px;background:' .
-                        $accentcolor . ';border:1px solid rgba(0,0,0,0.1);'
-                ]);
-                $colorlabel = html_writer::span($accentcolor, 'ms-2 text-muted small fw-semibold');
-                echo html_writer::tag('td', $swatch . $colorlabel, ['class' => 'align-middle']);
-
-                echo html_writer::tag('td', $tag->activitytype1);
-                echo html_writer::tag('td', $tag->activitytype2 ?: '-');
-                echo html_writer::tag('td', $tag->activitytype3 ?: '-');
-                
-                // Actions.
-                echo html_writer::start_tag('td');
-                echo html_writer::start_div('btn-group');
-                echo html_writer::link(
-                    new moodle_url($PAGE->url, ['action' => 'edittag', 'tagid' => $tag->id]),
-                    get_string('edittag', 'format_minimoodlewall'),
-                    ['class' => 'btn btn-sm btn-secondary']
-                );
-                echo html_writer::link(
-                    new moodle_url($PAGE->url, ['action' => 'deletetag', 'tagid' => $tag->id, 'sesskey' => sesskey()]),
-                    get_string('deletetag', 'format_minimoodlewall'),
-                    [
-                        'class' => 'btn btn-sm btn-danger',
-                        'data-action' => 'delete-tag',
-                        'data-tag-id' => $tag->id,
-                        'data-tag-name' => format_string($tag->name),
-                    ]
-                );
-                echo html_writer::end_div();
-                echo html_writer::end_tag('td');
-                
-                echo html_writer::end_tag('tr');
-            }
-
-            echo html_writer::end_tag('tbody');
-            echo html_writer::end_tag('table');
-        }
-
-        echo html_writer::end_div();
-        echo html_writer::end_div();
+        $tagsetdata['tags'][] = [
+            'id' => $tag->id,
+            'name' => format_string($tag->name),
+            'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : null,
+            'bgcolor' => $accentcolor,
+            'activitytype1' => $tag->activitytype1,
+            'activitytype2' => $tag->activitytype2 ?: '-',
+            'activitytype3' => $tag->activitytype3 ?: '-',
+            'editurl' => (new moodle_url($PAGE->url, ['action' => 'edittag', 'tagid' => $tag->id]))->out(false),
+            'deleteurl' => (new moodle_url($PAGE->url, [
+                'action' => 'deletetag',
+                'tagid' => $tag->id,
+                'sesskey' => sesskey(),
+            ]))->out(false),
+            'edittitle' => get_string('edittag', 'format_minimoodlewall'),
+            'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
+        ];
     }
+    
+    $templatecontext['tagsets'][] = $tagsetdata;
 }
+
+echo $OUTPUT->render_from_template('format_minimoodlewall/tag_management', $templatecontext);
 
 echo $OUTPUT->footer();

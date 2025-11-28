@@ -1,0 +1,178 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_minimoodlewall/tag_management
+
+    Tag management page template.
+
+    Context variables:
+    * createtagseturl - URL to create new tagset
+    * createtagsettext - Text for create tagset button
+    * notagsetstext - Text when no tagsets exist
+    * hastagsets - Boolean if tagsets exist
+    * tagsets - Array of tagset objects with:
+        - id: Tagset ID
+        - name: Tagset name
+        - description: Tagset description (optional)
+        - editurl: URL to edit tagset
+        - deleteurl: URL to delete tagset
+        - edittext: Edit text
+        - deletetext: Delete text
+        - createtagurl: URL to create tag in this tagset
+        - createtagtext: Create tag text
+        - hastags: Boolean if tags exist
+        - notagstext: Text when no tags
+        - tags: Array of tag objects with:
+            * id: Tag ID
+            * name: Tag name
+            * cardimageurl: URL to card image
+            * bgcolor: Background color hex
+            * activitytype1: First activity type
+            * activitytype2: Second activity type (or dash)
+            * activitytype3: Third activity type (or dash)
+            * editurl: Edit URL
+            * deleteurl: Delete URL
+        - tableheaders: Array of table header strings
+
+    Example context (json):
+    {
+        "createtagseturl": "/path/to/create",
+        "createtagsettext": "Create tag set",
+        "hastagsets": true,
+        "tagsets": [
+            {
+                "id": 1,
+                "name": "Default Tags",
+                "description": "Default tag set",
+                "hastags": true,
+                "tags": []
+            }
+        ]
+    }
+}}
+
+<div class="tag-management">
+    <div class="mb-3">
+        <a href="{{createtagseturl}}" class="btn btn-primary">
+            {{createtagsettext}}
+        </a>
+    </div>
+
+    {{^hastagsets}}
+        <div class="alert alert-info">
+            {{notagsetstext}}
+        </div>
+    {{/hastagsets}}
+
+    {{#tagsets}}
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">{{name}}</h3>
+                    <div class="d-flex gap-2">
+                        <a href="{{editurl}}" title="{{edittext}}" class="btn btn-sm btn-icon">
+                            {{#pix}}i/edit, core, {{edittext}}{{/pix}}
+                        </a>
+                        <a href="{{deleteurl}}" 
+                           title="{{deletetext}}"
+                           class="btn btn-sm btn-icon"
+                           data-action="delete-tagset"
+                           data-tagset-id="{{id}}"
+                           data-tagset-name="{{name}}">
+                            {{#pix}}t/delete, core, {{deletetext}}{{/pix}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {{#description}}
+                    <p class="text-muted">{{{description}}}</p>
+                {{/description}}
+
+                <div class="mb-3">
+                    <a href="{{createtagurl}}" class="btn btn-sm btn-success">
+                        {{createtagtext}}
+                    </a>
+                </div>
+
+                {{^hastags}}
+                    <div class="alert alert-info">
+                        {{notagstext}}
+                    </div>
+                {{/hastags}}
+
+                {{#hastags}}
+                    <div class="table-responsive">
+                        <table class="table table-striped generaltable">
+                            <thead>
+                                <tr>
+                                    <th>{{tableheaders.cardimage}}</th>
+                                    <th>{{tableheaders.name}}</th>
+                                    <th>{{tableheaders.bgcolor}}</th>
+                                    <th>{{tableheaders.activitytype1}}</th>
+                                    <th>{{tableheaders.activitytype2}}</th>
+                                    <th>{{tableheaders.activitytype3}}</th>
+                                    <th>{{tableheaders.actions}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#tags}}
+                                    <tr>
+                                        <td>
+                                            {{#cardimageurl}}
+                                                <img src="{{cardimageurl}}" 
+                                                     alt="{{name}}" 
+                                                     style="width: 80px; height: 50px; object-fit: cover;">
+                                            {{/cardimageurl}}
+                                            {{^cardimageurl}}
+                                                <span class="text-muted">-</span>
+                                            {{/cardimageurl}}
+                                        </td>
+                                        <td>{{name}}</td>
+                                        <td class="align-middle">
+                                            <span style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
+                                            <span class="ms-2 text-muted small fw-semibold">{{bgcolor}}</span>
+                                        </td>
+                                        <td>{{activitytype1}}</td>
+                                        <td>{{activitytype2}}</td>
+                                        <td>{{activitytype3}}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon">
+                                                    {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
+                                                </a>
+                                                <a href="{{deleteurl}}"
+                                                   title="{{deletetitle}}"
+                                                   class="btn btn-sm btn-icon"
+                                                   data-action="delete-tag"
+                                                   data-tag-id="{{id}}"
+                                                   data-tag-name="{{name}}">
+                                                    {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {{/tags}}
+                            </tbody>
+                        </table>
+                    </div>
+                {{/hastags}}
+            </div>
+        </div>
+    {{/tagsets}}
+</div>
