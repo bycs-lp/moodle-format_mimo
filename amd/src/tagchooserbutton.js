@@ -50,6 +50,7 @@ export const init = () => {
         const tagName = tagLink.dataset.tagName;
         const activityType1 = tagLink.dataset.activityType1;
         const activityType2 = tagLink.dataset.activityType2;
+        const activityType3 = tagLink.dataset.activityType3;
         const sectionNum = tagLink.dataset.sectionnum;
         const sectionId = tagLink.dataset.sectionId;
         const beforeMod = tagLink.dataset.beforemod;
@@ -62,6 +63,7 @@ export const init = () => {
             tagName,
             activityType1,
             activityType2,
+            activityType3,
             sectionNum,
             sectionId,
             beforeMod,
@@ -78,6 +80,7 @@ export const init = () => {
  * @param {string} tagName The tag name
  * @param {string} activityType1 First activity type
  * @param {string} activityType2 Second activity type (or null)
+ * @param {string} activityType3 Third activity type (or null)
  * @param {string} sectionNum Section number
  * @param {string} sectionId Section ID (Moodle 5.1+)
  * @param {string} beforeMod Module ID to insert before (optional)
@@ -89,6 +92,7 @@ const showActivityTypeModal = async(
     tagName,
     activityType1,
     activityType2,
+    activityType3,
     sectionNum,
     sectionId,
     beforeMod,
@@ -107,6 +111,10 @@ const showActivityTypeModal = async(
         if (activityType2 && activityType2 !== 'null') {
             typesToFetch.push(activityType2);
             activityTypes.push(activityType2);
+        }
+        if (activityType3 && activityType3 !== 'null') {
+            typesToFetch.push(activityType3);
+            activityTypes.push(activityType3);
         }
 
         // Fetch descriptions and labels in parallel.

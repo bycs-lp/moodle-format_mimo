@@ -88,6 +88,16 @@ class tag_form extends \moodleform {
         );
         $mform->setType('activitytype2', PARAM_TEXT);
 
+        // Activity type 3.
+        $activitytypes3 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
+        $mform->addElement(
+            'select',
+            'activitytype3',
+            get_string('activitytype3', 'format_minimoodlewall'),
+            $activitytypes3
+        );
+        $mform->setType('activitytype3', PARAM_TEXT);
+
         // Card image upload.
         $mform->addElement(
             'filemanager',

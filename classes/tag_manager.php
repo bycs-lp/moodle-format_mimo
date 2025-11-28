@@ -472,6 +472,7 @@ class tag_manager {
         ?string $filterimage = null,
         ?string $activitytype1 = null,
         ?string $activitytype2 = null,
+        ?string $activitytype3 = null,
         ?string $bgcolor = null
     ): int {
         global $DB;
@@ -492,6 +493,7 @@ class tag_manager {
         $record->filterimage = $filterimage;
         $record->activitytype1 = $activitytype1;
         $record->activitytype2 = $activitytype2;
+        $record->activitytype3 = $activitytype3;
         $record->bgcolor = self::normalize_hex_color($bgcolor);
         $record->sortorder = $sortorder;
         $record->timecreated = time();

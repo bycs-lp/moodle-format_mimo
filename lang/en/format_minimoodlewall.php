@@ -30,6 +30,7 @@ $string['activitydescriptionsaved'] = 'Activity description saved successfully.'
 $string['activitytype'] = 'Activity Type';
 $string['activitytype1'] = 'First Suggested Activity Type';
 $string['activitytype2'] = 'Second Suggested Activity Type';
+$string['activitytype3'] = 'Third Suggested Activity Type';
 $string['addactivity'] = 'Add activity';
 $string['cachedef_activity_descriptions'] = 'Activity type descriptions cache';
 $string['cachedef_activitytagmappings'] = 'Activity-tag mappings cache';

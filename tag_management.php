@@ -135,6 +135,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                     'description' => $data->description,
                     'activitytype1' => $data->activitytype1,
                     'activitytype2' => $data->activitytype2,
+                    'activitytype3' => $data->activitytype3,
                     'bgcolor' => $data->bgcolor,
                 ]
             );
@@ -150,6 +151,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                 null,
                 $data->activitytype1,
                 $data->activitytype2,
+                $data->activitytype3,
                 $data->bgcolor
             );
             tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
@@ -267,6 +269,7 @@ if (empty($tagsets)) {
             echo html_writer::tag('th', get_string('tagbgcolor', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('activitytype1', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('activitytype2', 'format_minimoodlewall'));
+            echo html_writer::tag('th', get_string('activitytype3', 'format_minimoodlewall'));
             echo html_writer::tag('th', get_string('actions'));
             echo html_writer::end_tag('tr');
             echo html_writer::end_tag('thead');
@@ -297,6 +300,7 @@ if (empty($tagsets)) {
 
                 echo html_writer::tag('td', $tag->activitytype1);
                 echo html_writer::tag('td', $tag->activitytype2 ?: '-');
+                echo html_writer::tag('td', $tag->activitytype3 ?: '-');
                 
                 // Actions.
                 echo html_writer::start_tag('td');

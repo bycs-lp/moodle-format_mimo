@@ -95,5 +95,17 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112501, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112800) {
+        // Add activitytype3 field to format_minimoodlewall_tags table.
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('activitytype3', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'activitytype2');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2025112800, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

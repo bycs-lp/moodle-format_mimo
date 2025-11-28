@@ -73,6 +73,7 @@ class get_tags extends external_api {
                 'filterimage' => $tag->filterimage,
                 'activitytype1' => $tag->activitytype1,
                 'activitytype2' => $tag->activitytype2 ?? '',
+                'activitytype3' => $tag->activitytype3 ?? '',
                 'sortorder' => $tag->sortorder,
             ];
         }
@@ -95,6 +96,7 @@ class get_tags extends external_api {
                 'filterimage' => new external_value(PARAM_TEXT, 'Filter image filename'),
                 'activitytype1' => new external_value(PARAM_TEXT, 'Primary activity type'),
                 'activitytype2' => new external_value(PARAM_TEXT, 'Secondary activity type'),
+                'activitytype3' => new external_value(PARAM_TEXT, 'Third activity type'),
                 'sortorder' => new external_value(PARAM_INT, 'Sort order'),
             ])
         );
