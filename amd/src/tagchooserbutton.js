@@ -154,6 +154,8 @@ const showActivityTypeModal = async(
                 description: desc.description,
                 iconhtml: desc.iconhtml,
                 purpose: desc.purpose,
+                tagname: desc.tagname,
+                tagcolor: desc.tagcolor,
             };
         });
 
@@ -169,7 +171,12 @@ const showActivityTypeModal = async(
             icon: dataMap[type]?.iconhtml || '',
             purpose: dataMap[type]?.purpose || '',
             type: activityTypeStr,
+            tagname: dataMap[type]?.tagname || '',
+            tagcolor: dataMap[type]?.tagcolor || '',
         }));
+
+        // eslint-disable-next-line no-console
+        console.log('Activity cards with tags:', activitycards);
 
         // Determine column class based on number of cards
         let colclass = 'col-12';

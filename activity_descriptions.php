@@ -45,16 +45,24 @@ if ($mform->is_cancelled()) {
     $availabletypes = activity_description_manager::get_available_activity_types();
     
     foreach ($availabletypes as $type) {
-        $fieldname = 'description_' . $type['name'];
-        if (isset($data->$fieldname)) {
-            $description = trim($data->$fieldname);
+        $descfieldname = 'description_' . $type['name'];
+        $tagfieldname = 'desctag_' . $type['name'];
+        
+        if (isset($data->$descfieldname)) {
+            $description = trim($data->$descfieldname);
+            $desctagid = isset($data->$tagfieldname) ? $data->$tagfieldname : null;
+            
+            // Convert 0 (no tag) to null.
+            if ($desctagid === 0) {
+                $desctagid = null;
+            }
             
             if (empty($description)) {
                 // Empty description - delete if exists.
                 activity_description_manager::delete_description($type['name']);
             } else {
                 // Save or update description.
-                activity_description_manager::save_description($type['name'], $description);
+                activity_description_manager::save_description($type['name'], $description, $desctagid);
             }
         }
     }

@@ -62,9 +62,9 @@ if ($ADMIN->fulltree) {
 $settings->add($categoryname, $settingspage);
 
 $settings->add($categoryname, new admin_externalpage(
-    'format_minimoodlewall_tags',
-    get_string('tagmanagement', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/tag_management.php'),
+    'format_minimoodlewall_descriptiontags',
+    get_string('desctagmanagement', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/description_tags.php'),
     'moodle/site:config'
 ));
 

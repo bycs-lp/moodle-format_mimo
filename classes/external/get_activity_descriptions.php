@@ -66,7 +66,7 @@ class get_activity_descriptions extends external_api {
      */
     public static function execute(array $activitytypes) {
         global $PAGE;
-        
+
         $params = self::validate_parameters(self::execute_parameters(), [
             'activitytypes' => $activitytypes,
         ]);
@@ -77,19 +77,21 @@ class get_activity_descriptions extends external_api {
 
         $descriptions = [];
         foreach ($params['activitytypes'] as $type) {
-            $desc = activity_description_manager::get_description($type);
-            
+            $descdata = activity_description_manager::get_description_with_tag($type);
+
             // Get activity icon and purpose.
             $icon = \core_course\output\activity_icon::from_modname($type);
             $iconhtml = $renderer->render($icon);
             $purpose = plugin_supports('mod', $type, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
             $purposeclass = self::get_purpose_classname($purpose);
-            
+
             $descriptions[] = [
                 'activitytype' => $type,
-                'description' => $desc ?? '',
+                'description' => $descdata->description ?? '',
                 'iconhtml' => $iconhtml,
                 'purpose' => $purposeclass,
+                'tagname' => $descdata->tagname ?? '',
+                'tagcolor' => $descdata->tagcolor ?? '',
             ];
         }
 
@@ -128,6 +130,8 @@ class get_activity_descriptions extends external_api {
                 'description' => new external_value(PARAM_RAW, 'Activity description'),
                 'iconhtml' => new external_value(PARAM_RAW, 'Activity icon HTML'),
                 'purpose' => new external_value(PARAM_ALPHANUMEXT, 'Activity purpose CSS class'),
+                'tagname' => new external_value(PARAM_TEXT, 'Tag name', VALUE_OPTIONAL),
+                'tagcolor' => new external_value(PARAM_TEXT, 'Tag color', VALUE_OPTIONAL),
             ])
         );
     }

@@ -39,9 +39,9 @@ class activity_description_manager {
     const CACHE_KEY = 'activity_descriptions';
 
     /**
-     * Get all activity descriptions.
+     * Get all activity descriptions with tag information.
      *
-     * @return array Array of stdClass objects with activitytype and description properties
+     * @return array Array of stdClass objects with activitytype, description, and tag properties
      */
     public static function get_all_descriptions(): array {
         $cache = \cache::make('format_minimoodlewall', 'activity_descriptions');
@@ -49,7 +49,16 @@ class activity_description_manager {
 
         if ($descriptions === false) {
             global $DB;
-            $descriptions = $DB->get_records('format_minimoodlewall_actdesc', null, 'activitytype ASC');
+
+            // Fetch descriptions with tag data via LEFT JOIN.
+            $sql = "SELECT ad.id, ad.activitytype, ad.description, ad.desctagid,
+                           ad.timecreated, ad.timemodified,
+                           dt.name AS tagname, dt.color AS tagcolor
+                      FROM {format_minimoodlewall_actdesc} ad
+                 LEFT JOIN {format_minimoodlewall_desc_tags} dt ON ad.desctagid = dt.id
+                  ORDER BY ad.activitytype ASC";
+
+            $descriptions = $DB->get_records_sql($sql);
             $cache->set(self::CACHE_KEY, $descriptions);
         }
 
@@ -75,13 +84,37 @@ class activity_description_manager {
     }
 
     /**
+     * Get description with tag info for a specific activity type.
+     *
+     * @param string $activitytype The activity module name (e.g., 'assign', 'quiz')
+     * @return \stdClass|null Object with description, tagname, tagcolor or null if not found
+     */
+    public static function get_description_with_tag(string $activitytype): ?\stdClass {
+        $descriptions = self::get_all_descriptions();
+
+        foreach ($descriptions as $desc) {
+            if ($desc->activitytype === $activitytype) {
+                $result = new \stdClass();
+                $result->description = $desc->description;
+                $result->tagname = $desc->tagname ?? null;
+                $result->tagcolor = $desc->tagcolor ?? null;
+
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Save or update an activity description.
      *
      * @param string $activitytype The activity module name
      * @param string $description The description text
+     * @param int|null $desctagid The tag ID (optional)
      * @return bool Success status
      */
-    public static function save_description(string $activitytype, string $description): bool {
+    public static function save_description(string $activitytype, string $description, ?int $desctagid = null): bool {
         global $DB;
 
         $time = time();
@@ -89,12 +122,14 @@ class activity_description_manager {
 
         if ($record) {
             $record->description = $description;
+            $record->desctagid = $desctagid;
             $record->timemodified = $time;
             $result = $DB->update_record('format_minimoodlewall_actdesc', $record);
         } else {
             $record = new \stdClass();
             $record->activitytype = $activitytype;
             $record->description = $description;
+            $record->desctagid = $desctagid;
             $record->timecreated = $time;
             $record->timemodified = $time;
             $result = $DB->insert_record('format_minimoodlewall_actdesc', $record);

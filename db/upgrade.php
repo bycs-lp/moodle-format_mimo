@@ -124,5 +124,78 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112801, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112802) {
+        // Create description tags table.
+        $table = new xmldb_table('format_minimoodlewall_desc_tags');
+
+        // Adding fields to table format_minimoodlewall_desc_tags.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('color', XMLDB_TYPE_CHAR, '7', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        // Adding keys to table format_minimoodlewall_desc_tags.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for format_minimoodlewall_desc_tags.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Add desctagid field to activity descriptions table.
+        $table = new xmldb_table('format_minimoodlewall_actdesc');
+        $field = new xmldb_field('desctagid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add index and foreign key for desctagid.
+        $index = new xmldb_index('desctagid', XMLDB_INDEX_NOTUNIQUE, ['desctagid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $key = new xmldb_key('desctagid', XMLDB_KEY_FOREIGN, ['desctagid'], 'format_minimoodlewall_desc_tags', ['id']);
+        $dbman->add_key($table, $key);
+
+        upgrade_plugin_savepoint(true, 2025112802, 'format', 'minimoodlewall');
+    }
+
+    if ($oldversion < 2025112803) {
+        // Rename tagid to desctagid in format_minimoodlewall_actdesc table.
+        $table = new xmldb_table('format_minimoodlewall_actdesc');
+        $field = new xmldb_field('tagid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+
+        if ($dbman->field_exists($table, $field)) {
+            // Drop old foreign key and index first.
+            $key = new xmldb_key('tagid', XMLDB_KEY_FOREIGN, ['tagid'], 'format_minimoodlewall_desc_tags', ['id']);
+            $dbman->drop_key($table, $key);
+
+            $index = new xmldb_index('tagid', XMLDB_INDEX_NOTUNIQUE, ['tagid']);
+            if ($dbman->index_exists($table, $index)) {
+                $dbman->drop_index($table, $index);
+            }
+
+            // Rename the field.
+            $field = new xmldb_field('tagid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'description');
+            $dbman->rename_field($table, $field, 'desctagid');
+
+            // Add new foreign key and index.
+            $index = new xmldb_index('desctagid', XMLDB_INDEX_NOTUNIQUE, ['desctagid']);
+            $dbman->add_index($table, $index);
+
+            $key = new xmldb_key('desctagid', XMLDB_KEY_FOREIGN, ['desctagid'], 'format_minimoodlewall_desc_tags', ['id']);
+            $dbman->add_key($table, $key);
+        }
+
+        // Clear the activity descriptions cache.
+        $cache = cache::make('format_minimoodlewall', 'activity_descriptions');
+        $cache->purge();
+
+        upgrade_plugin_savepoint(true, 2025112803, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/formslib.php');
 
 use format_minimoodlewall\activity_description_manager;
+use format_minimoodlewall\description_tag_manager;
 
 /**
  * Form for managing activity type descriptions.
@@ -48,10 +49,13 @@ class activity_descriptions_form extends \moodleform {
         $availabletypes = activity_description_manager::get_available_activity_types();
         $existingdescriptions = activity_description_manager::get_all_descriptions();
 
+        // Get all available tags for select.
+        $tagoptions = description_tag_manager::get_tags_for_select();
+
         // Create lookup array for existing descriptions.
         $descriptionmap = [];
         foreach ($existingdescriptions as $desc) {
-            $descriptionmap[$desc->activitytype] = $desc->description;
+            $descriptionmap[$desc->activitytype] = $desc;
         }
 
         $mform->addElement('header', 'activitydescriptionsheader', get_string('activitydescriptions', 'format_minimoodlewall'));
@@ -62,17 +66,43 @@ class activity_descriptions_form extends \moodleform {
             get_string('activitydescriptions_help', 'format_minimoodlewall')
         );
 
-        // Add textarea for each activity type.
+        // Add textarea and tag selector for each activity type.
         foreach ($availabletypes as $type) {
-            $currentdesc = $descriptionmap[$type['name']] ?? '';
+            $currentdesc = $descriptionmap[$type['name']] ?? null;
             
-            $mform->addElement('textarea', 'description_' . $type['name'], $type['displayname'], [
-                'rows' => 2,
-                'cols' => 80,
-                'placeholder' => get_string('activitydescription_placeholder', 'format_minimoodlewall'),
-            ]);
+            // Activity type label.
+            $mform->addElement(
+                'html',
+                '<div style="margin-top: 20px;"><strong>' . s($type['displayname']) . '</strong></div>'
+            );
+            
+            // Tag selector.
+            $mform->addElement(
+                'select',
+                'desctag_' . $type['name'],
+                get_string('descriptiontag', 'format_minimoodlewall'),
+                $tagoptions
+            );
+            $mform->setType('desctag_' . $type['name'], PARAM_INT);
+            if ($currentdesc && isset($currentdesc->desctagid)) {
+                $mform->setDefault('desctag_' . $type['name'], $currentdesc->desctagid ?? 0);
+            }
+            
+            // Description textarea.
+            $mform->addElement(
+                'textarea',
+                'description_' . $type['name'],
+                get_string('description'),
+                [
+                    'rows' => 2,
+                    'cols' => 80,
+                    'placeholder' => get_string('activitydescription_placeholder', 'format_minimoodlewall'),
+                ]
+            );
             $mform->setType('description_' . $type['name'], PARAM_TEXT);
-            $mform->setDefault('description_' . $type['name'], $currentdesc);
+            if ($currentdesc) {
+                $mform->setDefault('description_' . $type['name'], $currentdesc->description ?? '');
+            }
         }
 
         $this->add_action_buttons(false, get_string('savechanges'));

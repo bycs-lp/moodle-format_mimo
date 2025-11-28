@@ -1,20 +1,4 @@
 {{!
-    This file is part of Moodle - http://moodle.org/
-
-    Moodle is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Moodle is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-}}
-{{!
     @template format_minimoodlewall/activitytype_card
 
     Activity type card partial template.
@@ -26,6 +10,8 @@
     * icon - Icon HTML
     * purpose - Purpose CSS class (e.g., 'assessment', 'administration')
     * type - Type string (e.g., 'Activity type')
+    * tagname - Optional tag name
+    * tagcolor - Optional tag color (hex format)
 
     Example context (json):
     {
@@ -34,11 +20,18 @@
         "description": "Create an assignment...",
         "icon": "<img src='...' alt='Assignment'>",
         "purpose": "assessment",
-        "type": "Activity type"
+        "type": "Activity type",
+        "tagname": "Homework",
+        "tagcolor": "#ff6b6b"
     }
 }}
 <a href="#" class="mmw-activity-card" data-activity-type="{{activitytype}}">
     <div class="mmw-activity-card-content">
+        {{#tagname}}
+        <div class="mmw-activity-card-tag" style="background-color: {{tagcolor}};">
+            {{tagname}}
+        </div>
+        {{/tagname}}
         <h3 class="mmw-activity-card-title">{{label}}</h3>
         <p class="mmw-activity-card-description">{{description}}</p>
         <div class="mmw-activity-card-icon activityiconcontainer {{purpose}} modicon_{{activitytype}}">

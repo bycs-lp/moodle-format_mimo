@@ -60,15 +60,30 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="activitytype" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Activity module name (e.g., assign, quiz)"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Short description for modal"/>
+        <FIELD NAME="desctagid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Reference to description tag"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="desctagid" TYPE="foreign" FIELDS="desctagid" REFTABLE="format_minimoodlewall_desc_tags" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="activitytype_unique" UNIQUE="true" FIELDS="activitytype"/>
+        <INDEX NAME="desctagid" UNIQUE="false" FIELDS="desctagid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="format_minimoodlewall_desc_tags" COMMENT="Tags for categorizing activity descriptions">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Tag name"/>
+        <FIELD NAME="color" TYPE="char" LENGTH="7" NOTNULL="true" SEQUENCE="false" COMMENT="Hex color code (e.g., #FF5733)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="activitytype_unique" UNIQUE="true" FIELDS="activitytype"/>
-      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

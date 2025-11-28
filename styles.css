@@ -660,6 +660,19 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.2s ease;
 }
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-tag {
+  position: absolute;
+  top: -8px;
+  right: 1rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -672,12 +685,6 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   color: #555;
   margin-bottom: 0.5rem;
   flex: 1;
-}
-.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-type {
-  font-size: 0.875rem;
-  font-style: italic;
-  color: #888;
-  margin-bottom: 0;
 }
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon {
   position: absolute;
@@ -702,8 +709,8 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon .icon,
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon img,
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon svg {
-  width: 41px;
-  height: 41px;
+  width: 54.6666666667px;
+  height: 54.6666666667px;
   display: block;
   margin: 0 auto;
 }
