@@ -22,40 +22,31 @@
     Context variables required for this template:
     * selectactivitytype - Prompt text for selecting activity type
     * selectactivitytypedesc - Description text for the chooser
-    * activitytype1 - First activity type option
-    * activitytype1label - Label for first activity type
-    * activitytype1description - Description for first activity type
-    * activitytype1icon - Icon HTML for first activity type
-    * activitytype1purpose - Purpose CSS class for first activity type
-    * activitytype1type - Type string for first activity type
-    * hasactivitytype1 - Whether first activity type exists
-    * activitytype2 - Second activity type option
-    * activitytype2label - Label for second activity type
-    * activitytype2description - Description for second activity type
-    * activitytype2icon - Icon HTML for second activity type
-    * activitytype2purpose - Purpose CSS class for second activity type
-    * activitytype2type - Type string for second activity type
-    * hasactivitytype2 - Whether second activity type exists
+    * activitycards - Array of activity card objects with properties:
+        - activitytype: Activity module type
+        - label: Activity type label
+        - description: Activity type description
+        - icon: Icon HTML
+        - purpose: Purpose CSS class
+        - type: Type string
+    * colclass - Bootstrap column class (e.g., 'col-4', 'col-6')
     * activityorresource - Label for activity chooser option
 
     Example context (json):
     {
         "selectactivitytype": "Select activity type...",
         "selectactivitytypedesc": "Choose which type...",
-        "activitytype1": "assign",
-        "activitytype1label": "Assignment",
-        "activitytype1description": "Create an assignment...",
-        "activitytype1icon": "<img src='...' alt='Assignment'>",
-        "activitytype1purpose": "assessment",
-        "activitytype1type": "Activity type",
-        "hasactivitytype1": true,
-        "activitytype2": "quiz",
-        "activitytype2label": "Quiz",
-        "activitytype2description": "Create a quiz...",
-        "activitytype2icon": "<img src='...' alt='Quiz'>",
-        "activitytype2purpose": "assessment",
-        "activitytype2type": "Activity type",
-        "hasactivitytype2": true,
+        "activitycards": [
+            {
+                "activitytype": "assign",
+                "label": "Assignment",
+                "description": "Create an assignment...",
+                "icon": "<img src='...' alt='Assignment'>",
+                "purpose": "assessment",
+                "type": "Activity type"
+            }
+        ],
+        "colclass": "col-6",
         "activityorresource": "Activity or resource"
     }
 }}
@@ -63,32 +54,11 @@
     <p class="mb-0 fs-5">{{selectactivitytype}}</p>
     <p class="mb-4 text-muted">{{selectactivitytypedesc}}</p>
     <div class="row g-3 mb-3">
-        {{#hasactivitytype1}}
-        <div class="col-6">
-            <a href="#" class="mmw-activity-card" data-activity-type="{{activitytype1}}">
-                <div class="mmw-activity-card-content">
-                    <h3 class="mmw-activity-card-title">{{activitytype1label}}</h3>
-                    <p class="mmw-activity-card-description">{{activitytype1description}}</p>
-                    <div class="mmw-activity-card-icon activityiconcontainer {{activitytype1purpose}} modicon_{{activitytype1}}">
-                        {{{activitytype1icon}}}
-                    </div>
-                </div>
-            </a>
+        {{#activitycards}}
+        <div class="{{colclass}}">
+            {{> format_minimoodlewall/activitytype_card }}
         </div>
-        {{/hasactivitytype1}}
-        {{#hasactivitytype2}}
-        <div class="col-6">
-            <a href="#" class="mmw-activity-card" data-activity-type="{{activitytype2}}">
-                <div class="mmw-activity-card-content">
-                    <h3 class="mmw-activity-card-title">{{activitytype2label}}</h3>
-                    <p class="mmw-activity-card-description">{{activitytype2description}}</p>
-                    <div class="mmw-activity-card-icon activityiconcontainer {{activitytype2purpose}} modicon_{{activitytype2}}">
-                        {{{activitytype2icon}}}
-                    </div>
-                </div>
-            </a>
-        </div>
-        {{/hasactivitytype2}}
+        {{/activitycards}}
     </div>
     <div class="row">
         <div class="col-12">

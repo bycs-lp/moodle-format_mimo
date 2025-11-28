@@ -84,7 +84,6 @@ export const init = () => {
  * @param {string} sectionReturnNum Section return number (optional)
  * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
  */
-// eslint-disable-next-line complexity
 const showActivityTypeModal = async(
     tagId,
     tagName,
@@ -99,34 +98,46 @@ const showActivityTypeModal = async(
     try {
         // Collect activity types to fetch descriptions for.
         const typesToFetch = [];
+        const activityTypes = [];
+
         if (activityType1 && activityType1 !== 'null') {
             typesToFetch.push(activityType1);
+            activityTypes.push(activityType1);
         }
         if (activityType2 && activityType2 !== 'null') {
             typesToFetch.push(activityType2);
+            activityTypes.push(activityType2);
         }
 
         // Fetch descriptions and labels in parallel.
-        const [
-            modalTitle,
-            selectActivityTypeStr,
-            selectActivityTypeDescStr,
-            activityOrResourceStr,
-            type1Label,
-            type2Label,
-            descriptions
-        ] = await Promise.all([
-                getString('newactivity', 'format_minimoodlewall', tagName),
-                getString('newactivityfor', 'format_minimoodlewall', tagName),
-                getString('selectactivitytypedesc', 'format_minimoodlewall'),
-                getString('openallactivities', 'format_minimoodlewall'),
-                activityType1 && activityType1 !== 'null' ? getActivityTypeLabel(activityType1) : Promise.resolve(''),
-                activityType2 && activityType2 !== 'null' ? getActivityTypeLabel(activityType2) : Promise.resolve(''),
-                typesToFetch.length > 0 ? Ajax.call([{
-                    methodname: 'format_minimoodlewall_get_activity_descriptions',
-                    args: {activitytypes: typesToFetch},
-                }])[0] : Promise.resolve([]),
-            ]);
+        const promises = [
+            getString('newactivity', 'format_minimoodlewall', tagName),
+            getString('newactivityfor', 'format_minimoodlewall', tagName),
+            getString('selectactivitytypedesc', 'format_minimoodlewall'),
+            getString('openallactivities', 'format_minimoodlewall'),
+        ];
+
+        // Add label fetching for each activity type
+        activityTypes.forEach(type => {
+            promises.push(getActivityTypeLabel(type));
+        });
+
+        // Add description fetching
+        if (typesToFetch.length > 0) {
+            promises.push(Ajax.call([{
+                methodname: 'format_minimoodlewall_get_activity_descriptions',
+                args: {activitytypes: typesToFetch},
+            }])[0]);
+        }
+
+        const results = await Promise.all(promises);
+
+        const modalTitle = results[0];
+        const selectActivityTypeStr = results[1];
+        const selectActivityTypeDescStr = results[2];
+        const activityOrResourceStr = results[3];
+        const labels = results.slice(4, 4 + activityTypes.length);
+        const descriptions = typesToFetch.length > 0 ? results[results.length - 1] : [];
 
         // Map descriptions, icons, and purposes by activity type.
         const dataMap = {};
@@ -138,31 +149,35 @@ const showActivityTypeModal = async(
             };
         });
 
-        // Get activity type strings.
-        const [type1Str, type2Str] = await Promise.all([
-            activityType1 && activityType1 !== 'null' ? getString('activitytype', 'format_minimoodlewall') : Promise.resolve(''),
-            activityType2 && activityType2 !== 'null' ? getString('activitytype', 'format_minimoodlewall') : Promise.resolve(''),
-        ]);
+        // Get activity type string once
+        const activityTypeStr = activityTypes.length > 0 ?
+            await getString('activitytype', 'format_minimoodlewall') : '';
+
+        // Build activity cards array
+        const activitycards = activityTypes.map((type, index) => ({
+            activitytype: type,
+            label: labels[index],
+            description: dataMap[type]?.description || '',
+            icon: dataMap[type]?.iconhtml || '',
+            purpose: dataMap[type]?.purpose || '',
+            type: activityTypeStr,
+        }));
+
+        // Determine column class based on number of cards
+        let colclass = 'col-12';
+        if (activitycards.length === 2) {
+            colclass = 'col-6';
+        } else if (activitycards.length === 3) {
+            colclass = 'col-4';
+        }
 
         // Prepare template context
         const context = {
             selectactivitytype: selectActivityTypeStr,
             selectactivitytypedesc: selectActivityTypeDescStr,
             activityorresource: activityOrResourceStr,
-            hasactivitytype1: activityType1 && activityType1 !== 'null',
-            activitytype1: activityType1,
-            activitytype1label: type1Label,
-            activitytype1description: dataMap[activityType1]?.description || '',
-            activitytype1icon: dataMap[activityType1]?.iconhtml || '',
-            activitytype1purpose: dataMap[activityType1]?.purpose || '',
-            activitytype1type: type1Str,
-            hasactivitytype2: activityType2 && activityType2 !== 'null',
-            activitytype2: activityType2,
-            activitytype2label: type2Label,
-            activitytype2description: dataMap[activityType2]?.description || '',
-            activitytype2icon: dataMap[activityType2]?.iconhtml || '',
-            activitytype2purpose: dataMap[activityType2]?.purpose || '',
-            activitytype2type: type2Str,
+            activitycards: activitycards,
+            colclass: colclass,
         };
 
         // Render template
