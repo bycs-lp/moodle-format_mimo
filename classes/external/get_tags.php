@@ -68,7 +68,6 @@ class get_tags extends external_api {
             $result[] = [
                 'id' => $tag->id,
                 'name' => $tag->name,
-                'description' => $tag->description,
                 'cardimage' => $tag->cardimage,
                 'filterimage' => $tag->filterimage,
                 'activitytype1' => $tag->activitytype1,
@@ -91,7 +90,6 @@ class get_tags extends external_api {
             new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Tag ID'),
                 'name' => new external_value(PARAM_TEXT, 'Tag name'),
-                'description' => new external_value(PARAM_TEXT, 'Tag description'),
                 'cardimage' => new external_value(PARAM_TEXT, 'Card image filename'),
                 'filterimage' => new external_value(PARAM_TEXT, 'Filter image filename'),
                 'activitytype1' => new external_value(PARAM_TEXT, 'Primary activity type'),

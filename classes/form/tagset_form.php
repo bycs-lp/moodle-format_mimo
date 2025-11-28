@@ -51,15 +51,6 @@ class tagset_form extends \moodleform {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
-        // Tagset description.
-        $mform->addElement(
-            'textarea',
-            'description',
-            get_string('tagsetdescription', 'format_minimoodlewall'),
-            ['rows' => 5, 'cols' => 60]
-        );
-        $mform->setType('description', PARAM_TEXT);
-
         // Action buttons.
         $this->add_action_buttons();
     }

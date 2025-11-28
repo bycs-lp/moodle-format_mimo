@@ -107,5 +107,22 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112800, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025112801) {
+        // Drop unused description fields from tagsets and tags tables.
+        $table = new xmldb_table('format_minimoodlewall_tagsets');
+        $field = new xmldb_field('description');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('description');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2025112801, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

@@ -58,15 +58,6 @@ class tag_form extends \moodleform {
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
-        // Tag description.
-        $mform->addElement(
-            'textarea',
-            'description',
-            get_string('tagdescription', 'format_minimoodlewall'),
-            ['rows' => 3, 'cols' => 60]
-        );
-        $mform->setType('description', PARAM_TEXT);
-
         // Activity type 1.
         $activitytypes = $this->get_activity_types();
         $mform->addElement(

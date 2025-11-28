@@ -393,7 +393,7 @@ class tag_manager {
      */
     public static function get_tagsets(): array {
         global $DB;
-        return $DB->get_records('format_minimoodlewall_tagsets', null, 'name ASC');
+        return $DB->get_records('format_minimoodlewall_tagsets');
     }
 
     /**
@@ -467,7 +467,6 @@ class tag_manager {
     public static function create_tag(
         int $tagsetid,
         string $name,
-        ?string $description = null,
         ?string $cardimage = null,
         ?string $filterimage = null,
         ?string $activitytype1 = null,
@@ -488,7 +487,6 @@ class tag_manager {
         $record = new \stdClass();
         $record->tagsetid = $tagsetid;
         $record->name = $name;
-        $record->description = $description;
         $record->cardimage = $cardimage;
         $record->filterimage = $filterimage;
         $record->activitytype1 = $activitytype1;
@@ -721,8 +719,7 @@ class tag_manager {
     public static function initialize_default_tags(): bool {
         // Create default tag set.
         $tagsetid = self::create_tagset(
-            get_string('defaulttagset', 'format_minimoodlewall'),
-            get_string('defaulttagset_desc', 'format_minimoodlewall')
+            get_string('defaulttagset', 'format_minimoodlewall')
         );
 
         // Create default tags.
@@ -762,11 +759,11 @@ class tag_manager {
             $tagid = self::create_tag(
                 $tagsetid,
                 $tag['name'],
-                null,
                 $tag['cardimage'],
                 $tag['filterimage'],
                 $tag['activitytype1'],
                 $tag['activitytype2'],
+                null,
                 $bgcolor
             );
 

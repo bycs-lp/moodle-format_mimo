@@ -64,11 +64,11 @@ if ($action === 'createtagset' || $action === 'edittagset') {
         redirect($PAGE->url);
     } else if ($data = $mform->get_data()) {
         if (!empty($data->tagsetid)) {
-            $success = tag_manager::update_tagset($data->tagsetid, $data->name, $data->description);
+            $success = tag_manager::update_tagset($data->tagsetid, $data->name);
             $message = get_string('edittagset', 'format_minimoodlewall');
         } else {
             try {
-                $id = tag_manager::create_tagset($data->name, $data->description);
+                $id = tag_manager::create_tagset($data->name);
                 $message = get_string('createtagset', 'format_minimoodlewall');
                 $success = !empty($id);
             } catch (\Exception $e) {
@@ -84,8 +84,8 @@ if ($action === 'createtagset' || $action === 'edittagset') {
     }
     
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($action === 'createtagset' ? 
-        get_string('createtagset', 'format_minimoodlewall') : 
+    echo $OUTPUT->heading($action === 'createtagset' ?
+        get_string('createtagset', 'format_minimoodlewall') :
         get_string('edittagset', 'format_minimoodlewall'));
     $mform->display();
     echo $OUTPUT->footer();
@@ -132,7 +132,6 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->tagid,
                 [
                     'name' => $data->name,
-                    'description' => $data->description,
                     'activitytype1' => $data->activitytype1,
                     'activitytype2' => $data->activitytype2,
                     'activitytype3' => $data->activitytype3,
@@ -146,7 +145,6 @@ if ($action === 'createtag' || $action === 'edittag') {
             $newtagid = tag_manager::create_tag(
                 $data->tagsetid,
                 $data->name,
-                $data->description,
                 null,
                 null,
                 $data->activitytype1,
@@ -162,8 +160,8 @@ if ($action === 'createtag' || $action === 'edittag') {
     }
     
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($action === 'createtag' ? 
-        get_string('createtag', 'format_minimoodlewall') : 
+    echo $OUTPUT->heading($action === 'createtag' ?
+        get_string('createtag', 'format_minimoodlewall') :
         get_string('edittag', 'format_minimoodlewall'));
     $mform->display();
     echo $OUTPUT->footer();
@@ -221,7 +219,6 @@ foreach ($tagsets as $tagset) {
     $tagsetdata = [
         'id' => $tagset->id,
         'name' => format_string($tagset->name),
-        'description' => !empty($tagset->description) ? format_text($tagset->description) : null,
         'editurl' => (new moodle_url($PAGE->url, ['action' => 'edittagset', 'tagsetid' => $tagset->id]))->out(false),
         'deleteurl' => (new moodle_url($PAGE->url, [
             'action' => 'deletetagset',
