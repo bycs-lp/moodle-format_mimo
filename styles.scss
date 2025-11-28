@@ -1,5 +1,22 @@
 // Base styles for minimoodlewall card layout.
 
+// Moodle's activity icon colors (from theme/boost/scss/moodle/variables.scss)
+$activity-icon-administration-bg:     #da58ef !default;
+$activity-icon-assessment-bg:         #f90086 !default;
+$activity-icon-collaboration-bg:      #5b40ff !default;
+$activity-icon-communication-bg:      #eb6200 !default;
+$activity-icon-content-bg:            #0099ad !default;
+$activity-icon-interactivecontent-bg: #8d3d1b !default;
+
+$activity-icon-colors: (
+    "administration": $activity-icon-administration-bg,
+    "assessment": $activity-icon-assessment-bg,
+    "collaboration": $activity-icon-collaboration-bg,
+    "communication": $activity-icon-communication-bg,
+    "content": $activity-icon-content-bg,
+    "interactivecontent": $activity-icon-interactivecontent-bg,
+);
+
 // Activity container.
 .minimoodlewall-activities {
     margin-bottom: 1rem; // Add space after the activities list
@@ -859,12 +876,13 @@ body.format-minimoodlewall-theme-colorful {
             margin-bottom: 0;
         }
 
+        $size-icon: 82px;
         .mmw-activity-card-icon {
             position: absolute;
             bottom: 1rem;
             right: 1rem;
-            width: 64px;
-            height: 64px;
+            width: $size-icon;
+            height: $size-icon;
             border-radius: 50%;
             border: 3px solid #d67357;
             display: flex;
@@ -872,11 +890,29 @@ body.format-minimoodlewall-theme-colorful {
             justify-content: center;
             background: #fff;
 
-            .icon,
-            img {
-                width: 32px;
-                height: 32px;
+            &.activityiconcontainer {
+                max-width: $size-icon;
+                max-height: $size-icon;
             }
+
+            .activity-icon {
+                align-content: center;
+                .icon,
+                img,
+                svg {
+                    width: calc($size-icon / 1.5);
+                    height: calc($size-icon / 1.5);
+                    display: block;
+                    margin: 0 auto;
+                }
+            }
+        }
+    }
+
+    // Apply purpose-based border colors using Moodle's activity icon color variables
+    @each $type, $value in $activity-icon-colors {
+        .mmw-activity-card-icon.#{$type} {
+            border-color: $value;
         }
     }
 

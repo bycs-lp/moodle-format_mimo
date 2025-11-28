@@ -43,7 +43,6 @@ use format_minimoodlewall\activity_description_manager;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_activity_descriptions extends external_api {
-
     /**
      * Returns description of method parameters.
      *
@@ -66,20 +65,55 @@ class get_activity_descriptions extends external_api {
      * @return array Array of descriptions
      */
     public static function execute(array $activitytypes) {
+        global $PAGE;
+        
         $params = self::validate_parameters(self::execute_parameters(), [
             'activitytypes' => $activitytypes,
         ]);
 
+        // Set up a minimal context for rendering (required for external webservices).
+        $PAGE->set_context(\context_system::instance());
+        $renderer = $PAGE->get_renderer('core');
+
         $descriptions = [];
         foreach ($params['activitytypes'] as $type) {
             $desc = activity_description_manager::get_description($type);
+            
+            // Get activity icon and purpose.
+            $icon = \core_course\output\activity_icon::from_modname($type);
+            $iconhtml = $renderer->render($icon);
+            $purpose = plugin_supports('mod', $type, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
+            $purposeclass = self::get_purpose_classname($purpose);
+            
             $descriptions[] = [
                 'activitytype' => $type,
                 'description' => $desc ?? '',
+                'iconhtml' => $iconhtml,
+                'purpose' => $purposeclass,
             ];
         }
 
         return $descriptions;
+    }
+    
+    /**
+     * Convert purpose constant to CSS class name.
+     *
+     * @param string $purpose The purpose constant
+     * @return string The CSS class name
+     */
+    private static function get_purpose_classname($purpose) {
+        $purposes = [
+            MOD_PURPOSE_ADMINISTRATION => 'administration',
+            MOD_PURPOSE_ASSESSMENT => 'assessment',
+            MOD_PURPOSE_COLLABORATION => 'collaboration',
+            MOD_PURPOSE_COMMUNICATION => 'communication',
+            MOD_PURPOSE_CONTENT => 'content',
+            MOD_PURPOSE_INTERACTIVECONTENT => 'interactivecontent',
+            MOD_PURPOSE_OTHER => '',
+        ];
+        
+        return $purposes[$purpose] ?? '';
     }
 
     /**
@@ -92,6 +126,8 @@ class get_activity_descriptions extends external_api {
             new external_single_structure([
                 'activitytype' => new external_value(PARAM_ALPHANUMEXT, 'Activity type name'),
                 'description' => new external_value(PARAM_RAW, 'Activity description'),
+                'iconhtml' => new external_value(PARAM_RAW, 'Activity icon HTML'),
+                'purpose' => new external_value(PARAM_ALPHANUMEXT, 'Activity purpose CSS class'),
             ])
         );
     }

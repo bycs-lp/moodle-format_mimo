@@ -76,6 +76,7 @@ $string['quickcreate'] = 'Quick create';
 $string['section0name'] = 'General';
 $string['sectionname'] = 'Section';
 $string['selectactivitytype'] = 'Select activity type...';
+$string['selectactivitytypedesc'] = 'Choose which type of activity you want to create, or browse all available activities.';
 $string['selecttag'] = 'Select a tag';
 $string['selecttaghelp'] = 'Choose a tag that describes this activity. The tag determines which icon and category the activity will have.';
 $string['selecttagset'] = 'Select a tag set...';

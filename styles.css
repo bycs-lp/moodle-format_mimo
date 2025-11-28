@@ -683,8 +683,8 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   position: absolute;
   bottom: 1rem;
   right: 1rem;
-  width: 64px;
-  height: 64px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   border: 3px solid #d67357;
   display: flex;
@@ -692,10 +692,38 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   justify-content: center;
   background: #fff;
 }
-.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .icon,
-.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon img {
-  width: 32px;
-  height: 32px;
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon.activityiconcontainer {
+  max-width: 82px;
+  max-height: 82px;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon {
+  align-content: center;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon .icon,
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon img,
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon .activity-icon svg {
+  width: 41px;
+  height: 41px;
+  display: block;
+  margin: 0 auto;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.administration {
+  border-color: #da58ef;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.assessment {
+  border-color: #f90086;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.collaboration {
+  border-color: #5b40ff;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.communication {
+  border-color: #eb6200;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.content {
+  border-color: #0099ad;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card-icon.interactivecontent {
+  border-color: #8d3d1b;
 }
 .format-minimoodlewall-activity-options .mmw-activity-chooser-link {
   display: block;
