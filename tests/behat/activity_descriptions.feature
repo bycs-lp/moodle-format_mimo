@@ -70,8 +70,8 @@ Feature: Activity type descriptions with tags
       | name     | color   |
       | Homework | #ff6b6b |
     And the following "format_minimoodlewall > activity descriptions" exist:
-      | activitytype | description                              | desctagid |
-      | assign       | Create homework assignments for students | Homework  |
+      | activitytype | description                              | desctag  |
+      | assign       | Create homework assignments for students | Homework |
     When I log in as "teacher1"
     And I am on "Test Course 1" course homepage with editing mode on
     And I click on "button[data-action='open-tagchooser']" "css_element"
