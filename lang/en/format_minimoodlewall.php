@@ -89,6 +89,7 @@ $string['of'] = 'of';
 $string['openallactivities'] = 'Open all activities';
 $string['other'] = 'Other...';
 $string['page'] = 'Page';
+$string['paginationnavigation'] = 'Activity pages navigation';
 $string['pluginname'] = 'Minimal Moodle Wall';
 $string['previouspage'] = 'Previous page';
 $string['privacy:metadata'] = 'The Minimal Moodle Wall format plugin does not store any personal data.';

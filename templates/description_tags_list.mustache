@@ -75,10 +75,10 @@
                     </td>
                     <td>{{usagecount}}</td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-link p-0" data-action="edit-tag" data-testid="edit-tag-button" data-id="{{id}}" title="{{#str}}edit{{/str}}">
+                        <button type="button" class="btn btn-sm btn-link p-0" data-action="edit-tag" data-testid="edit-tag-button" data-id="{{id}}" aria-label="{{#str}}edit{{/str}} {{name}}">
                             {{{editicon}}}
                         </button>
-                        <button type="button" class="btn btn-sm btn-link p-0 ml-2" data-action="delete-tag" data-testid="delete-tag-button" data-id="{{id}}" data-name="{{name}}" data-usagecount="{{usagecount}}" title="{{#str}}delete{{/str}}">
+                        <button type="button" class="btn btn-sm btn-link p-0 ml-2" data-action="delete-tag" data-testid="delete-tag-button" data-id="{{id}}" data-name="{{name}}" data-usagecount="{{usagecount}}" aria-label="{{#str}}delete{{/str}} {{name}}">
                             {{{deleteicon}}}
                         </button>
                     </td>

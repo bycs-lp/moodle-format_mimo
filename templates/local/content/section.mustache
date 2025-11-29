@@ -24,6 +24,10 @@
 {{< core_courseformat/local/content/section }}
     {{! Override the cmlist block to display activities in a custom wall format. }}
     {{$ core_courseformat/local/content/section/cmlist }}
+        {{! Live region for filter status announcements }}
+        <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="filter-status"></div>
+        {{! Live region for pagination status announcements }}
+        <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="pagination-status"></div>
         {{#filterbar.hasitems}}
         <div class="minimoodlewall-filterbar {{designclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-design="{{designvariant}}">
             {{#filterbar.tags}}
@@ -63,7 +67,7 @@
             {{/cmitem}}
             {{/cms}}
         </ul>
-        <div class="minimoodlewall-navigation-wrapper {{designclass}}" data-design="{{designvariant}}">
+        <div class="minimoodlewall-navigation-wrapper {{designclass}}" data-design="{{designvariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_minimoodlewall{{/str}}">
             {{! Pagination navigation }}
             <div
                 class="minimoodlewall-navigation justify-content-end align-items-center gap-3 is-booting"

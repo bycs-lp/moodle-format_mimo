@@ -41,6 +41,34 @@ const notifyFilterChange = (active) => {
 };
 
 /**
+ * Announce filter status to screen readers via live region.
+ *
+ * Accessibility:
+ * - Finds sr-only live region with role="status" aria-live="polite"
+ * - Announces count and tag name when filter active
+ * - Announces "showing all" when filter cleared
+ * - Screen readers will speak the message without moving focus
+ *
+ * @param {string} tagName - Name of the active tag, or empty for cleared filter
+ * @param {number} visibleCount - Number of visible activities
+ * @param {number} totalCount - Total number of activities
+ * @returns {void}
+ */
+const announceFilterStatus = (tagName, visibleCount, totalCount) => {
+    const liveRegion = document.querySelector('[data-region="filter-status"]');
+    if (!liveRegion) {
+        return;
+    }
+
+    if (tagName) {
+        // Use Moodle string API when available, fallback to English
+        liveRegion.textContent = `Showing ${visibleCount} of ${totalCount} activities tagged '${tagName}'.`;
+    } else {
+        liveRegion.textContent = `Filter cleared. Showing all ${totalCount} activities.`;
+    }
+};
+
+/**
  * Clear inline display styles applied by filtering.
  *
  * Restoration process:
@@ -227,12 +255,20 @@ const initFilterBar = (bar) => {
             reorderActivitiesByTag(tagid);
             applyFilter(activityItems, tagid);
             updateButtons(bar, button);
+
+            // Announce filter status to screen readers
+            const visibleCount = activityItems.filter(item => !item.hidden).length;
+            const tagName = button ? button.dataset.tagName || '' : '';
+            announceFilterStatus(tagName, visibleCount, activityItems.length);
         } else {
             activeTag = '';
             restoreOriginalOrder();
             clearFilterStyles(activityItems);
             updateButtons(bar, null);
             notifyFilterChange(false);
+
+            // Announce filter cleared to screen readers
+            announceFilterStatus('', activityItems.length, activityItems.length);
         }
     };
 

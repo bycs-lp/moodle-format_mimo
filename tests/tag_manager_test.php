@@ -53,6 +53,16 @@ final class tag_manager_test extends \advanced_testcase {
         \cache::make('format_minimoodlewall', 'activitytagmappings')->purge();
         tag_manager::clear_mapping_cache();
 
+        // Force tag_manager to re-initialize cache instances on next access.
+        // This prevents stale static cache references from contaminating subsequent tests.
+        $reflection = new \ReflectionClass(tag_manager::class);
+        $tagcacheprop = $reflection->getProperty('tagcache');
+        $tagcacheprop->setAccessible(true);
+        $tagcacheprop->setValue(null, null);
+        $mappingcacheprop = $reflection->getProperty('mappingcache');
+        $mappingcacheprop->setAccessible(true);
+        $mappingcacheprop->setValue(null, null);
+
         // Ensure session is clean for next test.
         unset($SESSION->format_minimoodlewall_pending_tag);
 

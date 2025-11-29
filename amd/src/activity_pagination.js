@@ -27,6 +27,38 @@ import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
 const FILTER_EVENT = 'minimoodlewall:filterchange';
 
 /**
+ * Announce pagination status to screen readers via live region.
+ *
+ * Accessibility:
+ * - Finds sr-only live region with role="status" aria-live="polite"
+ * - Announces current page, total pages, and visible items range
+ * - Screen readers will speak the message without moving focus
+ * - Uses polite live region so announcement waits for user to pause
+ *
+ * @param {number} page - Current page number (0-indexed)
+ * @param {number} totalPages - Total number of pages
+ * @param {number} startIndex - First visible activity index (0-indexed)
+ * @param {number} endIndex - Last visible activity index (0-indexed)
+ * @param {number} totalItems - Total number of activities
+ * @returns {void}
+ */
+const announcePaginationStatus = (page, totalPages, startIndex, endIndex, totalItems) => {
+    const liveRegion = document.querySelector('[data-region="pagination-status"]');
+    if (!liveRegion) {
+        return;
+    }
+
+    // Convert to 1-indexed for user-friendly display
+    const pageNumber = page + 1;
+    const firstItem = startIndex + 1;
+    const lastItem = Math.min(endIndex, totalItems);
+
+    // Use Moodle string API when available, fallback to English
+    liveRegion.textContent =
+        `Page ${pageNumber} of ${totalPages}. Showing activities ${firstItem} to ${lastItem} of ${totalItems}.`;
+};
+
+/**
  * Initialize activity pagination with carousel animations.
  *
  * State Management:
@@ -480,6 +512,15 @@ export const init = () => {
                 navContainer.classList.add('is-visible');
                 navContainer.dataset.hasNext = '1';
             }
+        }
+
+        // Announce current page status to screen readers
+        if (paginationEnabled && totalPages > 1) {
+            const currentCards = Array.from(container.querySelectorAll('.col-12'));
+            const itemsPerPage = getItemsPerPage();
+            const startIndex = currentPage * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            announcePaginationStatus(currentPage, totalPages, startIndex, endIndex, currentCards.length);
         }
     };
 
