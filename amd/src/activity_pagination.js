@@ -26,6 +26,33 @@ import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
 /** Custom event name for filter activation/deactivation coordination. */
 const FILTER_EVENT = 'minimoodlewall:filterchange';
 
+// Animation and timing constants.
+/** Duration in milliseconds for slide and height transition animations. */
+const ANIMATION_DURATION_MS = 400;
+/** Additional buffer time in milliseconds for animation fallback timeout. */
+const ANIMATION_FALLBACK_BUFFER_MS = 200;
+/** Minimum horizontal distance in pixels required to register a swipe gesture. */
+const SWIPE_THRESHOLD_PX = 50;
+
+// Responsive breakpoints and items per page (matching Bootstrap grid).
+/** Extra large screens breakpoint (≥1200px). */
+const BREAKPOINT_XL = 1200;
+/** Large screens breakpoint (≥992px). */
+const BREAKPOINT_LG = 992;
+/** Medium screens breakpoint (≥768px). */
+const BREAKPOINT_MD = 768;
+/** Small screens breakpoint (≥576px). */
+const BREAKPOINT_SM = 576;
+
+/** Items per page for XL/LG screens (4 columns × 2 rows). */
+const ITEMS_PER_PAGE_XL = 8;
+/** Items per page for MD screens (3 columns × 2 rows). */
+const ITEMS_PER_PAGE_MD = 6;
+/** Items per page for SM screens (2 columns × 2 rows). */
+const ITEMS_PER_PAGE_SM = 4;
+/** Items per page for XS screens (1 column × 3 rows). */
+const ITEMS_PER_PAGE_XS = 3;
+
 /**
  * Announce pagination status to screen readers via live region.
  *
@@ -73,7 +100,7 @@ const announcePaginationStatus = (page, totalPages, startIndex, endIndex, totalI
  * - Handles window resize to recalculate page layout
  *
  * Animation Strategy:
- * - Simultaneous height and slide transitions (400ms duration)
+ * - Simultaneous height and slide transitions (see ANIMATION_DURATION_MS constant)
  * - Pre-measures target height to prevent layout jumps
  * - Slides old cards out while new cards slide in
  * - Fallback timeout ensures completion if transitionend fails
@@ -100,7 +127,6 @@ export const init = () => {
     let touchStartX = 0;
     let touchEndX = 0;
     let paginationEnabled = true;
-    const animationDuration = 400; // Duration (ms) for slide and height transitions.
 
     /**
      * Check if bulk mode is active via reactive state.
@@ -186,23 +212,24 @@ export const init = () => {
      * - SM (≥576px):  2 columns × 2 rows = 4 items
      * - XS (<576px):  1 column  × 3 rows = 3 items
      *
-     * These values match the Bootstrap grid breakpoints and column counts
-     * defined in the Mustache templates.
+     * These values are defined as constants (BREAKPOINT_* and ITEMS_PER_PAGE_*)
+     * and match the Bootstrap grid breakpoints and column counts defined in
+     * the Mustache templates.
      *
      * @returns {number} Number of activity cards to show per page
      */
     const getItemsPerPage = () => {
         const width = window.innerWidth;
-        if (width >= 1200) { // XL - 4 columns.
-            return 8;
-        } else if (width >= 992) { // LG - 4 columns.
-            return 8;
-        } else if (width >= 768) { // MD - 3 columns.
-            return 6;
-        } else if (width >= 576) { // SM - 2 columns.
-            return 4;
+        if (width >= BREAKPOINT_XL) { // XL - 4 columns.
+            return ITEMS_PER_PAGE_XL;
+        } else if (width >= BREAKPOINT_LG) { // LG - 4 columns.
+            return ITEMS_PER_PAGE_XL;
+        } else if (width >= BREAKPOINT_MD) { // MD - 3 columns.
+            return ITEMS_PER_PAGE_MD;
+        } else if (width >= BREAKPOINT_SM) { // SM - 2 columns.
+            return ITEMS_PER_PAGE_SM;
         } else { // XS - 1 column.
-            return 3;
+            return ITEMS_PER_PAGE_XS;
         }
     };
 
@@ -366,7 +393,7 @@ export const init = () => {
                 container.removeEventListener('transitionend', onHeightTransitionEnd);
                 heightTransitionDone = true;
                 finalizeAnimation();
-            }, animationDuration + 200);
+            }, ANIMATION_DURATION_MS + ANIMATION_FALLBACK_BUFFER_MS);
 
             requestAnimationFrame(() => {
                 container.style.height = `${targetHeight}px`;
@@ -472,7 +499,7 @@ export const init = () => {
 
             cardsReset = true;
             finalizeAnimation();
-        }, animationDuration);
+        }, ANIMATION_DURATION_MS);
     };
 
     /**
@@ -580,7 +607,7 @@ export const init = () => {
      *
      * Gesture detection:
      * - Calculates horizontal distance between touchstart and touchend
-     * - Requires minimum 50px movement to qualify as swipe
+     * - Requires minimum threshold movement (see SWIPE_THRESHOLD_PX constant)
      * - Positive difference = swipe left (next page)
      * - Negative difference = swipe right (previous page)
      *
@@ -592,10 +619,9 @@ export const init = () => {
      * @returns {void}
      */
     const handleSwipe = () => {
-        const swipeThreshold = 50; // Minimum distance for a swipe.
         const diff = touchStartX - touchEndX;
 
-        if (Math.abs(diff) < swipeThreshold) {
+        if (Math.abs(diff) < SWIPE_THRESHOLD_PX) {
             return; // Not a swipe, ignore.
         }
 
