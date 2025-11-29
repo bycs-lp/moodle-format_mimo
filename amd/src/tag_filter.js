@@ -21,12 +21,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/** Custom event name for coordinating with pagination module. */
 const EVENT_NAME = 'minimoodlewall:filterchange';
 
 /**
  * Dispatch a custom filter change event so pagination can react.
  *
- * @param {boolean} active Whether a filter is active
+ * Event coordination:
+ * - When active=true: Pagination disables and shows all activities
+ * - When active=false: Pagination re-enables and restores page view
+ *
+ * @param {boolean} active - Whether a filter is currently active
+ * @returns {void}
  */
 const notifyFilterChange = (active) => {
     document.dispatchEvent(new CustomEvent(EVENT_NAME, {
@@ -37,7 +43,15 @@ const notifyFilterChange = (active) => {
 /**
  * Clear inline display styles applied by filtering.
  *
- * @param {HTMLElement[]} items Activity elements
+ * Restoration process:
+ * - Removes hidden attribute
+ * - Removes 'is-filtered-out' class (for potential CSS hooks)
+ * - Removes inline display style (restores grid layout)
+ *
+ * Called when filter is deactivated to show all activities again.
+ *
+ * @param {HTMLElement[]} items - Array of activity list item elements
+ * @returns {void}
  */
 const clearFilterStyles = (items) => {
     items.forEach((item) => {
@@ -50,8 +64,17 @@ const clearFilterStyles = (items) => {
 /**
  * Apply the selected filter to the activity cards.
  *
- * @param {HTMLElement[]} items Activity elements
- * @param {string} tagid Selected tag id
+ * Filtering strategy:
+ * - Compares each activity's data-tagid with selected tag
+ * - Matching activities: unhidden, visible, no special class
+ * - Non-matching activities: hidden, display:none, marked with class
+ *
+ * Note: Activities must have data-tagid attribute set by renderer.
+ * Missing or empty data-tagid will not match any filter.
+ *
+ * @param {HTMLElement[]} items - Array of activity list item elements
+ * @param {string} tagid - ID of the tag to filter by
+ * @returns {void}
  */
 const applyFilter = (items, tagid) => {
     items.forEach((item) => {
@@ -71,8 +94,18 @@ const applyFilter = (items, tagid) => {
 /**
  * Update filter buttons to reflect the active state.
  *
- * @param {HTMLElement} bar Filter bar element
- * @param {HTMLElement|null} activeButton The button that is now active
+ * Visual states:
+ * - Active button: 'is-active' class, aria-pressed="true"
+ * - Inactive buttons when filter active: 'is-muted' class
+ * - All buttons when no filter: no special classes, aria-pressed="false"
+ *
+ * Accessibility:
+ * - Uses aria-pressed to indicate toggle button state
+ * - Screen readers announce "pressed" or "not pressed"
+ *
+ * @param {HTMLElement} bar - Filter bar container element
+ * @param {HTMLElement|null} activeButton - The button that is now active, or null for none
+ * @returns {void}
  */
 const updateButtons = (bar, activeButton) => {
     const buttons = bar.querySelectorAll('[data-action="tag-filter"]');
@@ -85,9 +118,30 @@ const updateButtons = (bar, activeButton) => {
 };
 
 /**
- * Initialise the filter bar listeners.
+ * Initialize the filter bar listeners and state management.
  *
- * @param {HTMLElement} bar Filter bar element.
+ * Setup process:
+ * 1. Locate activity container (next sibling or parent's descendant)
+ * 2. Collect all activity items and preserve original DOM order
+ * 3. Enable buttons that have activities with matching tags
+ * 4. Attach click handler for filter toggling
+ *
+ * State management:
+ * - activeTag: Currently selected tag ID (empty string = no filter)
+ * - originalOrder: Array preserving initial activity sequence
+ *
+ * Reordering strategy:
+ * - When filter active: Matching activities move to top, others follow
+ * - When filter inactive: Restore originalOrder array sequence
+ * - Uses DocumentFragment for efficient batch DOM manipulation
+ *
+ * Click behavior:
+ * - Click active filter: Deactivates and shows all
+ * - Click inactive filter: Activates and shows only matching
+ * - Prevents default to avoid navigation
+ *
+ * @param {HTMLElement} bar - Filter bar element with [data-region="minimoodlewall-filterbar"]
+ * @returns {void}
  */
 const initFilterBar = (bar) => {
     const sibling = bar.nextElementSibling;
@@ -145,6 +199,27 @@ const initFilterBar = (bar) => {
         }
     });
 
+    /**
+     * Set or clear the active filter.
+     *
+     * Filter activation (tagid provided):
+     * - Sets activeTag state
+     * - Notifies pagination to disable
+     * - Reorders activities (matching first)
+     * - Applies visibility filtering
+     * - Updates button visual states
+     *
+     * Filter deactivation (no tagid):
+     * - Clears activeTag state
+     * - Restores original activity order
+     * - Clears all filter styles
+     * - Resets button visual states
+     * - Notifies pagination to re-enable
+     *
+     * @param {string} tagid - Tag ID to filter by, or empty string to clear
+     * @param {HTMLElement|null} button - Button element that was clicked, or null
+     * @returns {void}
+     */
     const setFilter = (tagid, button) => {
         if (tagid) {
             activeTag = tagid;
@@ -177,6 +252,16 @@ const initFilterBar = (bar) => {
     });
 };
 
+/**
+ * Initialize all filter bars in the page.
+ *
+ * Scans for all elements with [data-region="minimoodlewall-filterbar"]
+ * and initializes filtering functionality for each.
+ *
+ * Typically one filter bar per course section, but supports multiple.
+ *
+ * @returns {void}
+ */
 export const init = () => {
     document
         .querySelectorAll('[data-region="minimoodlewall-filterbar"]')

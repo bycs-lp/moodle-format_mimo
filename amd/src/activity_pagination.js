@@ -23,8 +23,31 @@
 
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
 
+/** Custom event name for filter activation/deactivation coordination. */
 const FILTER_EVENT = 'minimoodlewall:filterchange';
 
+/**
+ * Initialize activity pagination with carousel animations.
+ *
+ * State Management:
+ * - Maintains current page index and animation state
+ * - Tracks pagination enabled/disabled based on filter and bulk mode states
+ * - Monitors touch gesture coordinates for swipe navigation
+ *
+ * Event Coordination:
+ * - Listens to FILTER_EVENT to disable pagination when filters are active
+ * - Watches reactive course editor for bulk mode changes
+ * - Responds to 'minimoodlewall:reorder' for drag-drop updates
+ * - Handles window resize to recalculate page layout
+ *
+ * Animation Strategy:
+ * - Simultaneous height and slide transitions (400ms duration)
+ * - Pre-measures target height to prevent layout jumps
+ * - Slides old cards out while new cards slide in
+ * - Fallback timeout ensures completion if transitionend fails
+ *
+ * @returns {void}
+ */
 export const init = () => {
     const container = document.querySelector('.minimoodlewall-activities');
     if (!container) {
@@ -49,7 +72,15 @@ export const init = () => {
 
     /**
      * Check if bulk mode is active via reactive state.
-     * @returns {boolean}
+     *
+     * Strategy:
+     * 1. Try to read from reactive course editor state (Moodle 4.0+)
+     * 2. Fallback to DOM check for visible bulk checkboxes
+     *
+     * Bulk mode requires all activities visible for checkbox access,
+     * so pagination is disabled when bulk mode is active.
+     *
+     * @returns {boolean} True if bulk editing mode is currently active
      */
     const isBulkMode = () => {
         try {
@@ -67,7 +98,19 @@ export const init = () => {
     };
 
     /**
-     * Show all activities (disable pagination).
+     * Show all activities and disable pagination.
+     *
+     * Called when:
+     * - Filter is activated (all activities visible for filtering)
+     * - Bulk mode is enabled (all checkboxes need to be accessible)
+     *
+     * Side effects:
+     * - Removes all pagination-related styles
+     * - Hides navigation controls
+     * - Makes all activity cards visible
+     * - Disables navigation buttons
+     *
+     * @returns {void}
      */
     const showAllActivities = () => {
         const currentCards = Array.from(container.querySelectorAll('.col-12'));
@@ -102,8 +145,19 @@ export const init = () => {
     };
 
     /**
-     * Get items per page based on screen size.
-     * @returns {number}
+     * Get items per page based on screen size and grid layout.
+     *
+     * Responsive breakpoints:
+     * - XL (≥1200px): 4 columns × 2 rows = 8 items
+     * - LG (≥992px):  4 columns × 2 rows = 8 items
+     * - MD (≥768px):  3 columns × 2 rows = 6 items
+     * - SM (≥576px):  2 columns × 2 rows = 4 items
+     * - XS (<576px):  1 column  × 3 rows = 3 items
+     *
+     * These values match the Bootstrap grid breakpoints and column counts
+     * defined in the Mustache templates.
+     *
+     * @returns {number} Number of activity cards to show per page
      */
     const getItemsPerPage = () => {
         const width = window.innerWidth;
@@ -130,9 +184,20 @@ export const init = () => {
 
     /**
      * Measure the height the container needs for a given page without affecting the live DOM.
-     * @param {number} startIndex
-     * @param {number} endIndex
-     * @returns {number}
+     *
+     * Technique:
+     * - Clones the activity container (deep copy)
+     * - Positions clone off-screen at -9999px
+     * - Applies same width but auto height
+     * - Shows only cards for target page, hides others
+     * - Measures scrollHeight of clone
+     * - Removes clone from DOM
+     *
+     * This prevents layout thrashing and provides accurate height before animation starts.
+     *
+     * @param {number} startIndex - First card index for the page
+     * @param {number} endIndex - One past the last card index for the page
+     * @returns {number} Height in pixels needed for this page
      */
     const measurePageHeight = (startIndex, endIndex) => {
         const containerRect = container.getBoundingClientRect();
@@ -193,7 +258,26 @@ export const init = () => {
 
     /**
      * Show activities for current page with carousel animation.
-     * @param {string} direction - 'next' or 'prev' for animation direction
+     *
+     * Animation phases:
+     * 1. Lock container overflow and set explicit height
+     * 2. Measure target height for new page (prevents content jump)
+     * 3. Start height transition to target height
+     * 4. Position new cards off-screen in slide direction
+     * 5. Calculate vertical offset to align new cards with container top
+     * 6. Simultaneously slide old cards out and new cards in
+     * 7. After animation completes, reset all styles and show/hide cards
+     *
+     * Animation coordination:
+     * - Height transition runs independently with transitionend listener
+     * - Card slide animations run on a fixed 400ms timeout
+     * - finalizeAnimation() only proceeds when both phases complete
+     * - Fallback timeout ensures cleanup even if transitionend doesn't fire
+     *
+     * Note: Re-queries DOM for fresh card list to handle drag-drop reordering
+     *
+     * @param {string} direction - 'next' or 'prev' determines slide direction (left/right)
+     * @returns {void}
      */
     const showPage = (direction = 'next') => {
         if (isAnimating || !paginationEnabled) {
@@ -451,7 +535,20 @@ export const init = () => {
     }, {passive: true});
 
     /**
-     * Handle swipe gesture.
+     * Handle swipe gesture for touch navigation.
+     *
+     * Gesture detection:
+     * - Calculates horizontal distance between touchstart and touchend
+     * - Requires minimum 50px movement to qualify as swipe
+     * - Positive difference = swipe left (next page)
+     * - Negative difference = swipe right (previous page)
+     *
+     * Only processes swipe if:
+     * - Movement exceeds threshold
+     * - Target page exists
+     * - Not currently animating
+     *
+     * @returns {void}
      */
     const handleSwipe = () => {
         const swipeThreshold = 50; // Minimum distance for a swipe.
