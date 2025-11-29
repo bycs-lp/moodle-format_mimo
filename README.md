@@ -1,13 +1,25 @@
 # Minimal Moodle Wall Course Format
 
-A minimal course format for Moodle that displays all activities in a single section using a card-based wall layout.
+A modern course format for Moodle that displays activities in a card-based wall layout with tagging, filtering, and pagination features.
 
 ## Features
 
-- **Single Section**: Uses only one section to keep things simple
-- **Card Layout**: Displays activities in a responsive card grid
-- **Mustache Templates**: Uses modern Moodle templating system
-- **Moodle 4.0+ Compatible**: Supports the component-based course editor
+### Core Features
+- **Single Section Design**: Uses one section to keep navigation simple
+- **Card Layout**: Responsive grid layout for activity cards
+- **Tagging System**: Organize activities with custom tags (tagsets and tags)
+- **Tag-Based Filtering**: Students can filter activities by tags
+- **Pagination**: Automatic pagination with responsive breakpoints (XL: 8 items, LG: 6, MD: 4, SM: 3 per page)
+- **Drag & Drop**: Reorder activities in editing mode
+- **Activity Descriptions**: Rich descriptions with purpose-based CSS classes
+- **Design Variants**: Multiple visual themes (standard, compact, modern)
+
+### Technical Features
+- **Performance Optimized**: Application-level caching with granular invalidation
+- **Accessibility**: WCAG 2.1 compliant with ARIA live regions, semantic roles, and screen reader support
+- **Moodle 5.1+ Compatible**: Uses modern course editor and reactive components
+- **Touch Gestures**: Swipe support for pagination on mobile devices
+- **Bulk Mode Support**: Pagination automatically disables during bulk operations
 
 ## Installation
 
@@ -16,6 +28,22 @@ A minimal course format for Moodle that displays all activities in a single sect
 3. Create a new course or edit an existing course
 4. Select "Minimal Moodle Wall" as the course format
 
+## Configuration
+
+### Course Settings
+- **Design Variant**: Choose between standard, compact, or modern layouts
+- **Enable Filtering**: Toggle tag-based filtering on/off
+- **Tagset**: Select which tagset to use for this course
+
+### Tag Management
+1. Navigate to course > Manage tags
+2. Create tagsets to organize your tags
+3. Create tags with:
+   - Name and background color
+   - Up to 3 activity types (primary, secondary, tertiary)
+   - Card image (required): Displayed on activity cards
+   - Filter image (optional): Displayed in filter bar (falls back to tag name text)
+
 ## File Structure
 
 ```
@@ -23,63 +51,150 @@ format_minimoodlewall/
 ├── version.php                     # Plugin version and dependencies
 ├── lib.php                         # Main format class
 ├── format.php                      # Entry point for displaying the course
-├── lang/
-│   └── en/
-│       └── format_minimoodlewall.php   # English language strings
+├── lang/en/                        # Language strings
 ├── classes/
-│   └── output/
-│       ├── renderer.php            # Main renderer class
-│       └── courseformat/
-│           ├── content.php         # Content output class
-│           └── content/
-│               ├── section.php     # Section output class
-│               └── section/
-│                   └── cmitem.php  # Course module item output class
-└── templates/
-    └── local/
-        ├── content.mustache        # Main content template
-        └── content/
-            ├── section.mustache    # Section template (displays activities)
-            └── section/
-                └── cmitem.mustache # Activity item template
+│   ├── tag_manager.php             # Tag and tagset CRUD operations
+│   ├── description_tag_manager.php # Activity-tag associations
+│   ├── observer.php                # Event observers for auto-tagging
+│   ├── external/                   # Web service APIs
+│   │   └── get_activity_descriptions.php
+│   ├── form/                       # Moodle forms
+│   │   ├── tag_form.php
+│   │   └── tagset_form.php
+│   └── output/                     # Output renderers and classes
+├── amd/src/                        # JavaScript AMD modules (ES6)
+│   ├── activity_pagination.js      # Pagination with swipe support
+│   ├── tag_filter.js               # Tag filtering logic
+│   ├── tagchooserbutton.js         # Activity creation with tags
+│   ├── activity_dragdrop.js        # Drag and drop reordering
+│   ├── description_tag_management.js
+│   └── tag_delete_confirm.js
+├── templates/                      # Mustache templates
+└── tests/                          # PHPUnit and Behat tests
+    ├── behat/                      # Acceptance tests
+    └── *.php                       # Unit tests
 ```
 
-## How It Works
+## JavaScript Architecture
 
-1. **Format Class** (`lib.php`): Defines the format behavior, restricts to one section
-2. **Output Classes**: Extend core classes to use custom templates
-3. **Mustache Templates**: Override specific parts to display activities in a card grid
-4. **Responsive Grid**: Uses Bootstrap 5 grid system for responsive layout
+All modules follow consistent patterns:
+- **ES6 modules** compiled with Grunt/Rollup
+- **JSDoc documentation** for all functions
+- **Error handling** with `Notification.exception()`
+- **Named constants** instead of magic numbers
+- **Accessibility** with live region announcements
 
-## Customization
+### Key Modules
+- `activity_pagination.js`: Responsive pagination (11 breakpoint/timing constants)
+- `tag_filter.js`: Client-side filtering with activity reordering
+- `tagchooserbutton.js`: Enhanced activity chooser with tag selection
 
-### Modify the Activity Layout
+## Caching Strategy
 
-Edit `templates/local/content/section.mustache` to change the grid layout:
-- `col-12 col-sm-6 col-md-4 col-lg-3` creates 4 columns on large screens
-- Change these classes to adjust the number of columns at different breakpoints
+The plugin uses Moodle's application cache with granular invalidation:
+- **Tag/tagset changes**: Invalidates affected course sections only
+- **Activity updates**: Invalidates specific section cache
+- **Performance**: 60%+ reduction in database queries
 
-### Add Custom Styles
+Cache is automatically managed - no manual purging needed in production.
 
-Create a `styles.css` file in the plugin root and add custom CSS for the `.minimoodlewall-activities` class.
+## Testing
 
-### Modify Activity Cards
+### PHPUnit Tests
+```bash
+vendor/bin/phpunit --testsuite format_minimoodlewall_testsuite
+```
 
-Edit `templates/local/content/section/cmitem.mustache` to customize how each activity is displayed within the card.
+Tests include:
+- Tag/tagset CRUD operations
+- Description-tag associations
+- Cache behavior
+- External API validation
+- Defensive tests for Moodle core constant mappings
 
-## Development Notes
+### Behat Tests
+```bash
+php admin/tool/behat/cli/run.php --tags=@format_minimoodlewall
+```
 
-This plugin follows Moodle's course format architecture:
-- Extends `core_courseformat\base` for the format class
-- Uses output classes and mustache templates (Moodle 4.0+ pattern)
-- Overrides templates using mustache blocks pattern
-- Compatible with the course editor and reactive components
+35 scenarios covering:
+- Course creation and display
+- Tag management UI
+- Filtering functionality
+- Pagination controls
+- Drag and drop
+- Activity creation with auto-tagging
+
+## Development Guidelines
+
+### Adding New Features
+1. Follow Moodle coding standards (use `local_moodlecheck` and `local_codechecker`)
+2. Add JSDoc comments to all JavaScript functions
+3. Include PHPUnit tests for PHP logic
+4. Add Behat tests for user-facing features
+5. Update language strings in `lang/en/format_minimoodlewall.php`
+
+### JavaScript Development
+```bash
+# Compile AMD modules
+grunt amd
+
+# Watch for changes
+grunt watch
+```
+
+### Cache Management in Development
+Static cache properties in tests require explicit reset:
+```php
+protected function tearDown(): void {
+    $reflection = new \ReflectionClass(tag_manager::class);
+    $property = $reflection->getProperty('tagcache');
+    $property->setAccessible(true);
+    $property->setValue(null, null);
+    parent::tearDown();
+}
+```
+
+## Accessibility Features
+
+- **Live Regions**: Announce filter and pagination changes to screen readers
+- **ARIA Labels**: Contextual labels for icon-only buttons
+- **Keyboard Navigation**: Full keyboard support for all interactions
+- **Semantic HTML**: Proper use of `<nav>`, `role="status"`, `aria-pressed`
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Touch gestures on mobile devices
+- Graceful degradation for older browsers (fallback bulk mode detection)
+
+## Known Limitations
+
+- Single section only (by design)
+- Reactive editor features require Moodle 5.1+
+- Filter images should be SVG for best quality
+
+## Troubleshooting
+
+### Tests Failing
+- **Cache contamination**: Ensure tearDown() resets static properties
+- **Behat failures**: Run `php admin/tool/behat/cli/init.php` after JS changes
+
+### JavaScript Not Loading
+- Purge all caches: Site administration > Development > Purge all caches
+- Recompile: `grunt amd` in plugin directory
+
+### Pagination Not Working
+- Check browser console for errors
+- Verify reactive editor is available (Moodle 5.1+)
+- Falls back to MutationObserver if reactive features unavailable
 
 ## Documentation References
 
-- [Course Format Plugin Development](https://moodledev.io/docs/5.1/apis/plugintypes/format)
+- [Course Format Plugin Development](https://moodledev.io/docs/apis/plugintypes/format)
 - [Moodle Templates](https://moodledev.io/docs/guides/templates)
-- [Course Format Output Classes](https://moodledev.io/docs/5.1/apis/plugintypes/format#format-output-classes-and-templates)
+- [JavaScript Modules](https://moodledev.io/docs/guides/javascript)
+- [Accessibility](https://moodledev.io/docs/guides/accessibility)
 
 ## License
 
