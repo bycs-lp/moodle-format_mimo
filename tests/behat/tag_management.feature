@@ -18,7 +18,7 @@ Feature: Tag management in minimoodlewall format
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "Create Tag Set" "link"
+    When I click on "[data-testid='create-tagset-button']" "css_element"
     And I set the following fields to these values:
       | Name        | Science Topics |
     And I press "Save"
@@ -33,7 +33,7 @@ Feature: Tag management in minimoodlewall format
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
     And I wait until "Science Topics" "text" exists
-    When I click on "Create Tag" "link" in the "//div[contains(@class, 'card')]//h3[contains(text(), 'Science Topics')]//ancestor::div[contains(@class, 'card')]" "xpath_element"
+    When I click on "[data-testid='create-tag-button']" "css_element" in the "[data-testid='tagset-card'][data-tagset-name='Science Topics']" "css_element"
     And I set the following fields to these values:
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
@@ -54,7 +54,7 @@ Feature: Tag management in minimoodlewall format
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "Edit Tag" "link" in the "//tr[contains(., 'Biology')]" "xpath_element"
+    When I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
     And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image" filemanager
@@ -74,7 +74,7 @@ Feature: Tag management in minimoodlewall format
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "Delete Tag" "link" in the "//tr[contains(., 'Physics')]" "xpath_element"
+    When I click on "[data-testid='delete-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Physics']" "css_element"
     And I click on "Delete" "button" in the ".modal-dialog" "css_element"
     And I wait until the page is ready
     Then I should see "Biology"

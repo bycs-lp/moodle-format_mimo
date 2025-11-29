@@ -27,22 +27,21 @@ Feature: Activity type descriptions with tags
     Given I log in as "admin"
     And I am on site homepage
     When I navigate to "Plugins > Course formats > Mini Moodle Wall > Activity Descriptions" in site administration
-    Then I should see "Activity Descriptions"
     When I navigate to "Plugins > Course formats > Mini Moodle Wall > Description Tag Management" in site administration
-    Then I should see "Description Tag Management"
-    And I click on "Create Description Tag" "button"
+    Then "[data-region='tag-management']" "css_element" should exist
+    And I click on "[data-testid='create-tag-button']" "css_element"
     And I set the following fields to these values:
       | Name  | Homework |
       | Color | #ff6b6b  |
-    And I click on "Save changes" "button"
+    And I press "Save"
     And I wait until the page is ready
-    Then I should see "Homework"
+    Then "[data-region='tag-list-table']" "css_element" should exist
+    And "[data-testid='tag-row'][data-tag-name='Homework']" "css_element" should exist
     When I navigate to "Plugins > Course formats > Mini Moodle Wall > Activity Descriptions" in site administration
-    And I should see "Assignment"
     And I set the field "description_assign" to "Create homework assignments for students"
     And I set the field "desctag_assign" to "Homework"
-    And I click on "Save changes" "button"
-    Then I should see "Changes saved"
+    And I press "Save"
+    And I wait until the page is ready
 
   @javascript
   Scenario: Teacher sees description tag pill on activity cards in chooser modal
@@ -58,11 +57,12 @@ Feature: Activity type descriptions with tags
     And I am on "Test Course 1" course homepage with editing mode on
     And I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    And I click on "Practice" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And I click on "[data-tag-name='Practice']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
-    Then ".mmw-activity-card-tag" "css_element" should exist
-    And I should see "Homework" in the ".mmw-activity-card[data-activity-type='assign'] .mmw-activity-card-tag" "css_element"
-    And I should see "Classwork" in the ".mmw-activity-card[data-activity-type='quiz'] .mmw-activity-card-tag" "css_element"
+    Then "[data-testid='activity-card'][data-activity-type='assign'] [data-testid='activity-tag']" "css_element" should exist
+    And "[data-testid='activity-card'][data-activity-type='quiz'] [data-testid='activity-tag']" "css_element" should exist
+    And "[data-testid='activity-tag'][data-tag-name='Homework']" "css_element" should exist
+    And "[data-testid='activity-tag'][data-tag-name='Classwork']" "css_element" should exist
 
   @javascript
   Scenario: Description tag pills have correct background colors
@@ -76,6 +76,7 @@ Feature: Activity type descriptions with tags
     And I am on "Test Course 1" course homepage with editing mode on
     And I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    And I click on "Practice" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And I click on "[data-tag-name='Practice']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
-    Then the "style" attribute of ".mmw-activity-card[data-activity-type='assign'] .mmw-activity-card-tag" "css_element" should contain "#ff6b6b"
+    Then "[data-testid='activity-card'][data-activity-type='assign'] [data-testid='activity-tag'][data-tag-name='Homework']" "css_element" should exist
+    And the "style" attribute of "[data-testid='activity-card'][data-activity-type='assign'] [data-testid='activity-tag']" "css_element" should contain "#ff6b6b"

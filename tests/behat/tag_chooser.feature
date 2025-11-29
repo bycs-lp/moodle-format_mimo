@@ -29,9 +29,9 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I am on "Test Course 1" course homepage with editing mode on
     When I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    Then I should see "Reading" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
-    And I should see "Practice" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
-    And I should see "Discuss" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    Then "[data-tag-name='Reading']" "css_element" should exist in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And "[data-tag-name='Practice']" "css_element" should exist in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And "[data-tag-name='Discuss']" "css_element" should exist in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
 
   @javascript
   Scenario: Teacher can create activity with pre-selected tag and activity type
@@ -39,7 +39,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I am on "Test Course 1" course homepage with editing mode on
     When I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    And I click on "Reading" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And I click on "[data-tag-name='Reading']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
     Then I should see "Reading" in the ".modal-title" "css_element"
     And I should see "Choose a fitting activity for the area of Reading" in the ".modal-body" "css_element"
@@ -56,7 +56,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait until ".minimoodlewall-filterbar" "css_element" exists
     And I wait until "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Reading') and not(@disabled)]" "xpath_element" exists
     And I wait "1" seconds
-    When I click on "Reading" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
     And I wait "2" seconds
     Then ".minimoodlewall-card" "css_element" should be visible
     And I should see "First reading" in the ".minimoodlewall-activities" "css_element"
@@ -67,7 +67,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I am on "Test Course 1" course homepage with editing mode on
     When I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    And I click on "Reading" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And I click on "[data-tag-name='Reading']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
     And I click on "Open all activities" "link" in the ".modal-body" "css_element"
     Then I should see "Add an activity or resource"
@@ -80,7 +80,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I am on "Test Course 1" course homepage with editing mode on
     When I click on "button[data-action='open-tagchooser']" "css_element"
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
-    And I click on "Practice" "link" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
+    And I click on "[data-tag-name='Practice']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
     And I click on "Assignment" "link" in the ".modal-body" "css_element"
     And I wait until the page is ready
@@ -92,7 +92,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait until ".minimoodlewall-filterbar" "css_element" exists
     And I wait until "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
     And I wait "1" seconds
-    When I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     And I wait "2" seconds
     Then I should see "First practice task" in the ".minimoodlewall-activities" "css_element"
     And I turn editing mode off
@@ -111,10 +111,10 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait until ".minimoodlewall-filterbar" "css_element" exists
     And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
     And I wait "2" seconds
-    When I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
     And I should not see "Page 1" in the ".minimoodlewall-activities" "css_element"
     And I wait until "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Reading') and not(@disabled)]" "xpath_element" exists
-    When I click on "Reading" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
     Then I should see "Page 1"

@@ -65,9 +65,9 @@
     }
 }}
 
-<div class="tag-management">
+<div class="tag-management" data-region="tag-management">
     <div class="mb-3">
-        <a href="{{createtagseturl}}" class="btn btn-primary">
+        <a href="{{createtagseturl}}" class="btn btn-primary" data-testid="create-tagset-button">
             {{createtagsettext}}
         </a>
     </div>
@@ -79,18 +79,19 @@
     {{/hastagsets}}
 
     {{#tagsets}}
-        <div class="card mb-4">
+        <div class="card mb-4" data-testid="tagset-card" data-tagset-id="{{id}}" data-tagset-name="{{name}}">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="mb-0">{{name}}</h3>
                     <div class="d-flex gap-2">
-                        <a href="{{editurl}}" title="{{edittext}}" class="btn btn-sm btn-icon">
+                        <a href="{{editurl}}" title="{{edittext}}" class="btn btn-sm btn-icon" data-testid="edit-tagset-button">
                             {{#pix}}i/edit, core, {{edittext}}{{/pix}}
                         </a>
                         <a href="{{deleteurl}}" 
                            title="{{deletetext}}"
                            class="btn btn-sm btn-icon"
                            data-action="delete-tagset"
+                           data-testid="delete-tagset-button"
                            data-tagset-id="{{id}}"
                            data-tagset-name="{{name}}">
                             {{#pix}}t/delete, core, {{deletetext}}{{/pix}}
@@ -101,7 +102,7 @@
 
             <div class="card-body">
                 <div class="mb-3">
-                    <a href="{{createtagurl}}" class="btn btn-sm btn-success">
+                    <a href="{{createtagurl}}" class="btn btn-sm btn-success" data-testid="create-tag-button">
                         {{createtagtext}}
                     </a>
                 </div>
@@ -114,7 +115,7 @@
 
                 {{#hastags}}
                     <div class="table-responsive">
-                        <table class="table table-striped generaltable">
+                        <table class="table table-striped generaltable" data-testid="tag-list-table">
                             <thead>
                                 <tr>
                                     <th>{{tableheaders.cardimage}}</th>
@@ -128,7 +129,7 @@
                             </thead>
                             <tbody>
                                 {{#tags}}
-                                    <tr>
+                                    <tr data-testid="tag-row" data-tag-id="{{id}}" data-tag-name="{{name}}">
                                         <td>
                                             {{#cardimageurl}}
                                                 <img src="{{cardimageurl}}" 
@@ -149,13 +150,14 @@
                                         <td>{{activitytype3}}</td>
                                         <td>
                                             <div class="d-flex gap-2">
-                                                <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon">
+                                                <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button">
                                                     {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                                 </a>
                                                 <a href="{{deleteurl}}"
                                                    title="{{deletetitle}}"
                                                    class="btn btn-sm btn-icon"
                                                    data-action="delete-tag"
+                                                   data-testid="delete-tag-button"
                                                    data-tag-id="{{id}}"
                                                    data-tag-name="{{name}}">
                                                     {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}

@@ -25,10 +25,10 @@
         "tagcolor": "#ff6b6b"
     }
 }}
-<a href="#" class="mmw-activity-card" data-activity-type="{{activitytype}}">
+<a href="#" class="mmw-activity-card" data-activity-type="{{activitytype}}" data-testid="activity-card">
     <div class="mmw-activity-card-content">
         {{#tagname}}
-        <div class="mmw-activity-card-tag" style="background-color: {{tagcolor}};">
+        <div class="mmw-activity-card-tag" data-testid="activity-tag" data-tag-name="{{tagname}}" style="background-color: {{tagcolor}};">
             {{tagname}}
         </div>
         {{/tagname}}

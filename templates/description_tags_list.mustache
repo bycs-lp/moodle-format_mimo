@@ -42,9 +42,9 @@
     }
 }}
 
-<div class="description-tags-management">
+<div class="description-tags-management" data-region="tag-management">
     <div class="mb-3">
-        <button type="button" class="btn btn-primary" data-action="create-tag">
+        <button type="button" class="btn btn-primary" data-action="create-tag" data-testid="create-tag-button">
             {{#str}}createdesctag, format_minimoodlewall{{/str}}
         </button>
     </div>
@@ -56,7 +56,7 @@
     {{/notags}}
 
     {{^notags}}
-        <table class="table table-striped generaltable">
+        <table class="table table-striped generaltable" data-region="tag-list-table" data-testid="tag-list-table">
             <thead>
                 <tr>
                     <th>{{#str}}desctagname, format_minimoodlewall{{/str}}</th>
@@ -67,18 +67,18 @@
             </thead>
             <tbody>
                 {{#tags}}
-                <tr>
+                <tr data-testid="tag-row" data-tag-id="{{id}}" data-tag-name="{{name}}">
                     <td>{{name}}</td>
                     <td>
-                        <span class="color-preview" style="display:inline-block;width:30px;height:20px;background-color:{{color}};border:1px solid #ccc;vertical-align:middle;"></span>
+                        <span class="color-preview" data-testid="tag-color-preview" style="display:inline-block;width:30px;height:20px;background-color:{{color}};border:1px solid #ccc;vertical-align:middle;"></span>
                         <span class="ml-2">{{color}}</span>
                     </td>
                     <td>{{usagecount}}</td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-link p-0" data-action="edit-tag" data-id="{{id}}" title="{{#str}}edit{{/str}}">
+                        <button type="button" class="btn btn-sm btn-link p-0" data-action="edit-tag" data-testid="edit-tag-button" data-id="{{id}}" title="{{#str}}edit{{/str}}">
                             {{{editicon}}}
                         </button>
-                        <button type="button" class="btn btn-sm btn-link p-0 ml-2" data-action="delete-tag" data-id="{{id}}" data-name="{{name}}" data-usagecount="{{usagecount}}" title="{{#str}}delete{{/str}}">
+                        <button type="button" class="btn btn-sm btn-link p-0 ml-2" data-action="delete-tag" data-testid="delete-tag-button" data-id="{{id}}" data-name="{{name}}" data-usagecount="{{usagecount}}" title="{{#str}}delete{{/str}}">
                             {{{deleteicon}}}
                         </button>
                     </td>

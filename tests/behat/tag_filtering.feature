@@ -45,9 +45,9 @@ Feature: Tag filtering in minimoodlewall format
     When I am on "Test Course 1" course homepage
     Then ".minimoodlewall-filterbar" "css_element" should exist
     And ".minimoodlewall-filterbar button" "css_element" should exist
-    And I should see "Reading" in the ".minimoodlewall-filterbar" "css_element"
-    And I should see "Practice" in the ".minimoodlewall-filterbar" "css_element"
-    And I should see "Discuss" in the ".minimoodlewall-filterbar" "css_element"
+    And "[data-testid='filter-button'][data-tag-name='Reading']" "css_element" should exist
+    And "[data-testid='filter-button'][data-tag-name='Practice']" "css_element" should exist
+    And "[data-testid='filter-button'][data-tag-name='Discuss']" "css_element" should exist
 
   @javascript
   Scenario: Filter bar shows tag data attributes
@@ -61,7 +61,7 @@ Feature: Tag filtering in minimoodlewall format
   Scenario: Student can filter activities by tag
     Given I log in as "student1"
     And I am on "Test Course 1" course homepage
-    When I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
     And I should not see "Page 1" in the ".minimoodlewall-activities" "css_element"
@@ -72,11 +72,11 @@ Feature: Tag filtering in minimoodlewall format
   Scenario: Student can clear filter to see all activities
     Given I log in as "student1"
     And I am on "Test Course 1" course homepage
-    When I click on "Reading" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
     Then I should see "Page 1"
     And I should see "Book 1"
     And I should not see "Assignment 1" in the ".minimoodlewall-activities" "css_element"
-    When I click on "Reading" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
     And I should see "Page 1"
@@ -87,7 +87,7 @@ Feature: Tag filtering in minimoodlewall format
   Scenario: Active filter button is highlighted
     Given I log in as "student1"
     And I am on "Test Course 1" course homepage
-    When I click on "Discuss" "button" in the ".minimoodlewall-filterbar" "css_element"
+    When I click on "[data-testid='filter-button'][data-tag-name='Discuss']" "css_element"
     And I wait "1" seconds
     Then "button.minimoodlewall-filterbar-button.is-active" "css_element" should exist
     And I should see "Forum 1"
@@ -109,8 +109,8 @@ Feature: Tag filtering in minimoodlewall format
     Given I log in as "teacher1"
     And I am on "Test Course 1" course homepage
     Then ".minimoodlewall-filterbar" "css_element" should exist
-    And I should see "Reading"
-    And I should see "Practice"
-    When I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
+    And "[data-testid='filter-button'][data-tag-name='Reading']" "css_element" should exist
+    And "[data-testid='filter-button'][data-tag-name='Practice']" "css_element" should exist
+    When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
