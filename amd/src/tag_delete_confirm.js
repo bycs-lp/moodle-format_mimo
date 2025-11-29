@@ -23,6 +23,7 @@
 
 import ModalDeleteCancel from 'core/modal_delete_cancel';
 import ModalEvents from 'core/modal_events';
+import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 
 const SELECTORS = {
@@ -65,19 +66,23 @@ const registerEventListeners = () => {
  * @param {HTMLElement} button The delete button element
  */
 const handleDeleteTag = async(button) => {
-    const tagName = button.dataset.tagName;
-    const deleteUrl = button.href;
+    try {
+        const tagName = button.dataset.tagName;
+        const deleteUrl = button.href;
 
-    const modal = await ModalDeleteCancel.create({
-        title: getString('deletetag', 'format_minimoodlewall'),
-        body: getString('confirmdeletetag', 'format_minimoodlewall', tagName),
-    });
+        const modal = await ModalDeleteCancel.create({
+            title: getString('deletetag', 'format_minimoodlewall'),
+            body: getString('confirmdeletetag', 'format_minimoodlewall', tagName),
+        });
 
-    modal.getRoot().on(ModalEvents.delete, () => {
-        window.location.href = deleteUrl;
-    });
+        modal.getRoot().on(ModalEvents.delete, () => {
+            window.location.href = deleteUrl;
+        });
 
-    modal.show();
+        modal.show();
+    } catch (error) {
+        Notification.exception(error);
+    }
 };
 
 /**
@@ -86,17 +91,21 @@ const handleDeleteTag = async(button) => {
  * @param {HTMLElement} button The delete button element
  */
 const handleDeleteTagset = async(button) => {
-    const tagsetName = button.dataset.tagsetName;
-    const deleteUrl = button.href;
+    try {
+        const tagsetName = button.dataset.tagsetName;
+        const deleteUrl = button.href;
 
-    const modal = await ModalDeleteCancel.create({
-        title: getString('deletetagset', 'format_minimoodlewall'),
-        body: getString('confirmdeletetagset', 'format_minimoodlewall', tagsetName),
-    });
+        const modal = await ModalDeleteCancel.create({
+            title: getString('deletetagset', 'format_minimoodlewall'),
+            body: getString('confirmdeletetagset', 'format_minimoodlewall', tagsetName),
+        });
 
-    modal.getRoot().on(ModalEvents.delete, () => {
-        window.location.href = deleteUrl;
-    });
+        modal.getRoot().on(ModalEvents.delete, () => {
+            window.location.href = deleteUrl;
+        });
 
-    modal.show();
+        modal.show();
+    } catch (error) {
+        Notification.exception(error);
+    }
 };

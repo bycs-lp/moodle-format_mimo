@@ -21,6 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+import Notification from 'core/notification';
+
 /** Custom event name for coordinating with pagination module. */
 const EVENT_NAME = 'minimoodlewall:filterchange';
 
@@ -172,120 +174,124 @@ const updateButtons = (bar, activeButton) => {
  * @returns {void}
  */
 const initFilterBar = (bar) => {
-    const sibling = bar.nextElementSibling;
-    let activityContainer = null;
-    if (sibling && sibling.classList.contains('minimoodlewall-activities')) {
-        activityContainer = sibling;
-    } else {
-        activityContainer = bar.parentElement.querySelector('.minimoodlewall-activities');
-    }
+    try {
+        const sibling = bar.nextElementSibling;
+        let activityContainer = null;
+        if (sibling && sibling.classList.contains('minimoodlewall-activities')) {
+            activityContainer = sibling;
+        } else {
+            activityContainer = bar.parentElement.querySelector('.minimoodlewall-activities');
+        }
 
-    if (!activityContainer) {
-        return;
-    }
+        if (!activityContainer) {
+            return;
+        }
 
-    const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
-    if (!activityItems.length) {
-        return;
-    }
+        const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
+        if (!activityItems.length) {
+            return;
+        }
 
-    const originalOrder = activityItems.slice();
+        const originalOrder = activityItems.slice();
 
-    const restoreOriginalOrder = () => {
-        const fragment = document.createDocumentFragment();
-        originalOrder.forEach((item) => fragment.appendChild(item));
-        activityContainer.appendChild(fragment);
-    };
+        const restoreOriginalOrder = () => {
+            const fragment = document.createDocumentFragment();
+            originalOrder.forEach((item) => fragment.appendChild(item));
+            activityContainer.appendChild(fragment);
+        };
 
-    const reorderActivitiesByTag = (tagid) => {
-        const matching = [];
-        const remaining = [];
-        originalOrder.forEach((item) => {
-            if ((item.dataset.tagid || '') === tagid) {
-                matching.push(item);
-            } else {
-                remaining.push(item);
+        const reorderActivitiesByTag = (tagid) => {
+            const matching = [];
+            const remaining = [];
+            originalOrder.forEach((item) => {
+                if ((item.dataset.tagid || '') === tagid) {
+                    matching.push(item);
+                } else {
+                    remaining.push(item);
+                }
+            });
+            const fragment = document.createDocumentFragment();
+            matching.concat(remaining).forEach((item) => fragment.appendChild(item));
+            activityContainer.appendChild(fragment);
+        };
+
+        // Buttons mirror the server-side tag list for this section.
+        const filterButtons = Array.from(bar.querySelectorAll('[data-action="tag-filter"]'));
+        if (!filterButtons.length) {
+            return;
+        }
+        let activeTag = '';
+
+        filterButtons.forEach((button) => {
+            const hasActivities = button.dataset.hasactivities === '1';
+            if (hasActivities) {
+                button.disabled = false;
+                button.classList.remove('is-empty');
             }
         });
-        const fragment = document.createDocumentFragment();
-        matching.concat(remaining).forEach((item) => fragment.appendChild(item));
-        activityContainer.appendChild(fragment);
-    };
 
-    // Buttons mirror the server-side tag list for this section.
-    const filterButtons = Array.from(bar.querySelectorAll('[data-action="tag-filter"]'));
-    if (!filterButtons.length) {
-        return;
-    }
-    let activeTag = '';
+        /**
+         * Set or clear the active filter.
+         *
+         * Filter activation (tagid provided):
+         * - Sets activeTag state
+         * - Notifies pagination to disable
+         * - Reorders activities (matching first)
+         * - Applies visibility filtering
+         * - Updates button visual states
+         *
+         * Filter deactivation (no tagid):
+         * - Clears activeTag state
+         * - Restores original activity order
+         * - Clears all filter styles
+         * - Resets button visual states
+         * - Notifies pagination to re-enable
+         *
+         * @param {string} tagid - Tag ID to filter by, or empty string to clear
+         * @param {HTMLElement|null} button - Button element that was clicked, or null
+         * @returns {void}
+         */
+        const setFilter = (tagid, button) => {
+            if (tagid) {
+                activeTag = tagid;
+                notifyFilterChange(true);
+                reorderActivitiesByTag(tagid);
+                applyFilter(activityItems, tagid);
+                updateButtons(bar, button);
 
-    filterButtons.forEach((button) => {
-        const hasActivities = button.dataset.hasactivities === '1';
-        if (hasActivities) {
-            button.disabled = false;
-            button.classList.remove('is-empty');
-        }
-    });
-
-    /**
-     * Set or clear the active filter.
-     *
-     * Filter activation (tagid provided):
-     * - Sets activeTag state
-     * - Notifies pagination to disable
-     * - Reorders activities (matching first)
-     * - Applies visibility filtering
-     * - Updates button visual states
-     *
-     * Filter deactivation (no tagid):
-     * - Clears activeTag state
-     * - Restores original activity order
-     * - Clears all filter styles
-     * - Resets button visual states
-     * - Notifies pagination to re-enable
-     *
-     * @param {string} tagid - Tag ID to filter by, or empty string to clear
-     * @param {HTMLElement|null} button - Button element that was clicked, or null
-     * @returns {void}
-     */
-    const setFilter = (tagid, button) => {
-        if (tagid) {
-            activeTag = tagid;
-            notifyFilterChange(true);
-            reorderActivitiesByTag(tagid);
-            applyFilter(activityItems, tagid);
-            updateButtons(bar, button);
-
-            // Announce filter status to screen readers
-            const visibleCount = activityItems.filter(item => !item.hidden).length;
-            const tagName = button ? button.dataset.tagName || '' : '';
-            announceFilterStatus(tagName, visibleCount, activityItems.length);
-        } else {
-            activeTag = '';
-            restoreOriginalOrder();
-            clearFilterStyles(activityItems);
-            updateButtons(bar, null);
-            notifyFilterChange(false);
-
-            // Announce filter cleared to screen readers
-            announceFilterStatus('', activityItems.length, activityItems.length);
-        }
-    };
-
-    bar.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-action="tag-filter"]');
-        if (button && bar.contains(button)) {
-            event.preventDefault();
-            if (!button.dataset.tagid) {
-                return;
-            }
-            if (activeTag === button.dataset.tagid) {
-                setFilter('', null);
+                // Announce filter status to screen readers
+                const visibleCount = activityItems.filter(item => !item.hidden).length;
+                const tagName = button ? button.dataset.tagName || '' : '';
+                announceFilterStatus(tagName, visibleCount, activityItems.length);
             } else {
-                setFilter(button.dataset.tagid, button);
+                activeTag = '';
+                restoreOriginalOrder();
+                clearFilterStyles(activityItems);
+                updateButtons(bar, null);
+                notifyFilterChange(false);
+
+                // Announce filter cleared to screen readers
+                announceFilterStatus('', activityItems.length, activityItems.length);
             }
-        }
-    });
+        };
+
+        bar.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-action="tag-filter"]');
+            if (button && bar.contains(button)) {
+                event.preventDefault();
+                if (!button.dataset.tagid) {
+                    return;
+                }
+                if (activeTag === button.dataset.tagid) {
+                    setFilter('', null);
+                } else {
+                    setFilter(button.dataset.tagid, button);
+                }
+            }
+        });
+    } catch (error) {
+        Notification.exception(error);
+    }
 };
 
 /**

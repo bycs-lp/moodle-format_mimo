@@ -149,6 +149,7 @@ export const init = () => {
             }
         } catch (e) {
             // Fallback: check if bulk checkboxes are visible.
+            // This is expected when reactive editor isn't available.
             const bulkSelect = document.querySelector('.bulkselect:not(.d-none)');
             return bulkSelect !== null;
         }
@@ -676,6 +677,7 @@ export const init = () => {
         }
     } catch (e) {
         // Fallback: watch for class changes on bulkselect elements.
+        // This is expected when reactive editor state watchers aren't available.
         const observer = new MutationObserver(() => {
             const bulkNow = isBulkMode();
             if (bulkNow && paginationEnabled) {
