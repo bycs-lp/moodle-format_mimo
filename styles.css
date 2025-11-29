@@ -771,3 +771,38 @@ body.format-minimoodlewall .course-content .divider .divider-content:hover {
 body.format-minimoodlewall .course-content .divider .btn.add-content {
   transform: scale(1.5);
 }
+
+/* Distraction-free mode toggle buttons */
+.format-minimoodlewall-df-toggle {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1040;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #dee2e6;
+  border-radius: 0 0 8px 8px;
+  padding: 0.25rem 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+.format-minimoodlewall-df-toggle:hover {
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.format-minimoodlewall-df-toggle-top {
+  top: 0;
+  border-top: none;
+}
+
+.format-minimoodlewall-df-toggle-bottom {
+  bottom: auto;
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+}
+
+/* Position bottom toggle after fixed-top nav */
+nav.fixed-top + .format-minimoodlewall-df-toggle-bottom {
+  top: 50px; /* Adjust based on your nav height */
+}

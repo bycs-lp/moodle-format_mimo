@@ -45,6 +45,45 @@ if ($ADMIN->fulltree) {
         ]
     ));
 
+    // Distraction-free mode settings.
+    $distractionfreeselectorsdefault = [
+        'nav.fixed-top',
+        '#nav-drawer',
+        '#page-footer',
+        '.activity-navigation',
+        '#region-main-settings-menu',
+        '.drawer-toggles',
+        '.secondary-navigation',
+    ];
+
+    $nopaddingselectorsdefault = [
+        '#page',
+        '#topofscroll',
+    ];
+
+    $settingspage->add(new admin_setting_configtextarea(
+        'format_minimoodlewall/distractionfreeselectors',
+        get_string('distractionfreeselectors', 'format_minimoodlewall'),
+        get_string('distractionfreeselectors_desc', 'format_minimoodlewall'),
+        implode("\n", $distractionfreeselectorsdefault),
+        PARAM_TEXT
+    ));
+
+    $settingspage->add(new admin_setting_configtextarea(
+        'format_minimoodlewall/nopaddingselectors',
+        get_string('nopaddingselectors', 'format_minimoodlewall'),
+        get_string('nopaddingselectors_desc', 'format_minimoodlewall'),
+        implode("\n", $nopaddingselectorsdefault),
+        PARAM_TEXT
+    ));
+
+    $settingspage->add(new admin_setting_configcheckbox(
+        'format_minimoodlewall/closedrawers',
+        get_string('closedrawers', 'format_minimoodlewall'),
+        get_string('closedrawers_desc', 'format_minimoodlewall'),
+        1
+    ));
+
     // Link to tag management page.
     $tagmanageurl = new moodle_url('/course/format/minimoodlewall/tag_management.php');
     $activitydescurl = new moodle_url('/course/format/minimoodlewall/activity_descriptions.php');
