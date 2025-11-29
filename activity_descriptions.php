@@ -43,20 +43,20 @@ if ($mform->is_cancelled()) {
     redirect($PAGE->url);
 } else if ($data = $mform->get_data()) {
     $availabletypes = activity_description_manager::get_available_activity_types();
-    
+
     foreach ($availabletypes as $type) {
         $descfieldname = 'description_' . $type['name'];
         $tagfieldname = 'desctag_' . $type['name'];
-        
+
         if (isset($data->$descfieldname)) {
             $description = trim($data->$descfieldname);
             $desctagid = isset($data->$tagfieldname) ? $data->$tagfieldname : null;
-            
+
             // Convert 0 (no tag) to null.
             if ($desctagid === 0) {
                 $desctagid = null;
             }
-            
+
             if (empty($description)) {
                 // Empty description - delete if exists.
                 activity_description_manager::delete_description($type['name']);
@@ -66,7 +66,7 @@ if ($mform->is_cancelled()) {
             }
         }
     }
-    
+
     redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 

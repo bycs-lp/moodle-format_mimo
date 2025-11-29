@@ -54,7 +54,7 @@ if ($ADMIN->fulltree) {
         html_writer::link($activitydescurl, get_string('setting_activitydescriptions_link', 'format_minimoodlewall')) .
         '<br>' .
         html_writer::link($desctagurl, get_string('desctagmanagement', 'format_minimoodlewall'));
-    
+
     $settingspage->add(new admin_setting_heading(
         'format_minimoodlewall/tagmanagement',
         get_string('setting_tagmanagement', 'format_minimoodlewall'),

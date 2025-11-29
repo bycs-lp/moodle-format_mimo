@@ -34,7 +34,6 @@ use core_courseformat\output\section_renderer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends section_renderer {
-    
     /**
      * Renders the add cm control for a section.
      *
@@ -46,8 +45,10 @@ class renderer extends section_renderer {
      */
     public function course_section_add_cm_control($course, $section, $sectionreturn = null, $displayoptions = []) {
         // Check to see if user can add menus.
-        if (!has_capability('moodle/course:manageactivities', \context_course::instance($course->id))
-                || !$this->page->user_is_editing()) {
+        if (
+            !has_capability('moodle/course:manageactivities', \context_course::instance($course->id))
+                || !$this->page->user_is_editing()
+        ) {
             return '';
         }
 
@@ -58,20 +59,20 @@ class renderer extends section_renderer {
         // If we have a tagset configured, use our tag chooser button.
         if ($tagsetid > 0) {
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
-            
+
             if (!empty($tags)) {
                 $sectioninfo = get_fast_modinfo($course)->get_section_info($section);
-                
+
                 $data = [
                     'tags' => array_values($tags),
                     'sectionnum' => $section,
                     'sectionreturn' => $sectionreturn,
                     'uniqid' => uniqid(),
                 ];
-                
+
                 // Load the JS for our tag chooser.
                 $this->page->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
-                
+
                 return $this->render_from_template(
                     'core_courseformat/local/content/divider',
                     [

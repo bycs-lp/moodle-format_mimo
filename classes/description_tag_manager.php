@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class description_tag_manager {
-
     /**
      * Get all description tags.
      *
@@ -138,11 +137,11 @@ class description_tag_manager {
     public static function get_tags_for_select(): array {
         $tags = self::get_all_tags();
         $options = [0 => get_string('notag', 'format_minimoodlewall')];
-        
+
         foreach ($tags as $tag) {
             $options[$tag->id] = $tag->name;
         }
-        
+
         return $options;
     }
 

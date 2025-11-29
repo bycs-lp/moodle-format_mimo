@@ -58,7 +58,7 @@ class assign_tag extends external_api {
      */
     public static function execute($cmid, $tagid) {
         global $DB;
-        
+
         $params = self::validate_parameters(self::execute_parameters(), [
             'cmid' => $cmid,
             'tagid' => $tagid,

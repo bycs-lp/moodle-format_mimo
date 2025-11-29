@@ -45,13 +45,13 @@ if ($delete && $confirm && confirm_sesskey()) {
     if ($tag) {
         $usagecount = description_tag_manager::count_descriptions_with_tag($delete);
         description_tag_manager::delete_tag($delete);
-        
+
         if ($usagecount > 0) {
             $message = get_string('desctagdeletedwithusage', 'format_minimoodlewall', $usagecount);
         } else {
             $message = get_string('desctagdeleted', 'format_minimoodlewall');
         }
-        
+
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
     }
 }
@@ -81,7 +81,7 @@ $templatecontext = [
 if (!empty($tags)) {
     foreach ($tags as $tag) {
         $usagecount = description_tag_manager::count_descriptions_with_tag($tag->id);
-        
+
         $templatecontext['tags'][] = [
             'id' => $tag->id,
             'name' => $tag->name,

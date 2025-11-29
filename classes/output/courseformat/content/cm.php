@@ -47,20 +47,20 @@ class cm extends cm_base {
      */
     public function export_for_template(renderer_base $output): stdClass {
         global $PAGE, $CFG;
-        
+
         $data = parent::export_for_template($output);
-        
+
         // In Moodle 5.1+, the activitychooserbutton class handles tag data.
         // This is only needed for backward compatibility with 5.0 and earlier.
         if ($CFG->branch < 501) {
             // Pass tag information if we're editing and have tags configured.
             $options = $this->format->get_format_options();
             $tagsetid = $options['tagsetid'] ?? 0;
-            
+
             if ($PAGE->user_is_editing() && $tagsetid > 0) {
                 // Get tags for this tagset.
                 $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
-                
+
                 // Add tag data and section info to the activity chooser button context.
                 if (isset($data->activitychooserbutton)) {
                     $data->activitychooserbutton->tags = array_values($tags);
@@ -69,7 +69,7 @@ class cm extends cm_base {
                     $data->activitychooserbutton->sectionnum = $this->mod->sectionnum;
                     $data->activitychooserbutton->uniqid = uniqid();
                 }
-                
+
                 // Also add to the top level for the cm template.
                 $data->tags = array_values($tags);
                 $data->hastags = !empty($tags);
@@ -78,17 +78,17 @@ class cm extends cm_base {
             // In Moodle 5.1+, ensure tags are set at top level for the template.
             $options = $this->format->get_format_options();
             $tagsetid = $options['tagsetid'] ?? 0;
-            
+
             if ($PAGE->user_is_editing() && $tagsetid > 0) {
                 $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
                 $data->tags = array_values($tags);
                 $data->hastags = !empty($tags);
             }
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Returns the output class template path.
      *

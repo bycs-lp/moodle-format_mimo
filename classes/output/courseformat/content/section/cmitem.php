@@ -53,30 +53,30 @@ class cmitem extends cmitem_base {
      */
     public function export_for_template(\renderer_base $output): \stdClass {
         global $DB;
-        
+
         $data = parent::export_for_template($output);
-        
+
         // Get the course module.
         $mod = $this->mod;
         $cmid = $mod->id;
-        
+
         // Get the full cm_info object for more details.
         $modinfo = get_fast_modinfo($mod->course);
         $cm = $modinfo->get_cm($cmid);
-        
+
         // Initialize cmformat if not set.
         if (!isset($data->cmformat)) {
             $data->cmformat = new \stdClass();
         }
-        
+
         // Add activity name and URL from cm_info.
         $data->cmformat->activityname = $cm->get_formatted_name();
         $data->cmformat->url = $cm->url ? $cm->url->out(false) : null;
         $data->cmformat->sectionid = $cm->sectionid;
-        
+
         // Get tag information for this activity.
         $tag = tag_manager::get_cm_tag($cmid);
-        
+
         if ($tag) {
             $data->cmformat->tagname = $tag->name;
             $data->cmformat->tagid = $tag->id;
@@ -92,7 +92,7 @@ class cmitem extends cmitem_base {
                 $data->cmformat->filterimage = $filterurl->out(false);
             }
         }
-        
+
         // Add activity description (truncated to 3 lines).
         $intro = $cm->get_formatted_content(['overflowdiv' => false, 'noclean' => false]);
         if (empty($intro)) {
@@ -103,7 +103,7 @@ class cmitem extends cmitem_base {
                 $intro = format_text($instance->intro, FORMAT_HTML, ['noclean' => false]);
             }
         }
-        
+
         if (!empty($intro)) {
             // Strip HTML tags and get plain text.
             $description = trim(strip_tags($intro));
@@ -116,7 +116,7 @@ class cmitem extends cmitem_base {
                 $data->cmformat->description = $description;
             }
         }
-        
+
         // Add completion status - get from cm_info object.
         $completioninfo = new \completion_info($cm->get_course());
         if ($completioninfo->is_enabled($cm)) {
@@ -124,7 +124,7 @@ class cmitem extends cmitem_base {
                 $data->cmformat->completion = new \stdClass();
             }
             $data->cmformat->completion->hascompletion = true;
-            
+
             // Check if activity is completed.
             $completiondata = $completioninfo->get_data($cm, false);
             if ($completiondata) {
@@ -134,7 +134,7 @@ class cmitem extends cmitem_base {
                 );
             }
         }
-        
+
         return $data;
     }
 }

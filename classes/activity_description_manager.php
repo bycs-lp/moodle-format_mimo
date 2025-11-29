@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class activity_description_manager {
-
     /** @var string Cache key for activity descriptions */
     const CACHE_KEY = 'activity_descriptions';
 
@@ -201,7 +200,7 @@ class activity_description_manager {
         }
 
         // Sort by display name.
-        uasort($modules, function($a, $b) {
+        uasort($modules, function ($a, $b) {
             return strcmp($a['displayname'], $b['displayname']);
         });
 

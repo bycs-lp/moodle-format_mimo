@@ -51,15 +51,15 @@ if ($action === 'createtagset' || $action === 'edittagset') {
             $tagset->tagsetid = $tagset->id;
         }
     }
-    
+
     // Pass the current URL with action parameter to the form.
     $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagsetid' => $tagsetid]);
     $mform = new tagset_form($formurl);
-    
+
     if ($tagset) {
         $mform->set_data($tagset);
     }
-    
+
     if ($mform->is_cancelled()) {
         redirect($PAGE->url);
     } else if ($data = $mform->get_data()) {
@@ -82,7 +82,7 @@ if ($action === 'createtagset' || $action === 'edittagset') {
             redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_ERROR);
         }
     }
-    
+
     echo $OUTPUT->header();
     echo $OUTPUT->heading($action === 'createtagset' ?
         get_string('createtagset', 'format_minimoodlewall') :
@@ -102,11 +102,11 @@ if ($action === 'createtag' || $action === 'edittag') {
             $tagsetid = $tag->tagsetid;
         }
     }
-    
+
     // Pass the current URL with action parameter to the form.
     $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagsetid' => $tagsetid, 'tagid' => $tagid]);
     $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
-    
+
     if ($tag) {
         $tag->cardimagefile = tag_manager::prepare_cardimage_draft($tag->id);
         $tag->filterimagefile = tag_manager::prepare_filterimage_draft($tag->id);
@@ -123,7 +123,7 @@ if ($action === 'createtag' || $action === 'edittag') {
             'filterimagefile' => tag_manager::prepare_filterimage_draft(null),
         ]);
     }
-    
+
     if ($mform->is_cancelled()) {
         redirect($PAGE->url);
     } else if ($data = $mform->get_data()) {
@@ -158,7 +158,7 @@ if ($action === 'createtag' || $action === 'edittag') {
         }
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
     }
-    
+
     echo $OUTPUT->header();
     echo $OUTPUT->heading($action === 'createtag' ?
         get_string('createtag', 'format_minimoodlewall') :
@@ -215,7 +215,7 @@ $templatecontext = [
 
 foreach ($tagsets as $tagset) {
     $tags = tag_manager::get_tags_by_tagset($tagset->id);
-    
+
     $tagsetdata = [
         'id' => $tagset->id,
         'name' => format_string($tagset->name),
@@ -242,11 +242,11 @@ foreach ($tagsets as $tagset) {
         ],
         'tags' => [],
     ];
-    
+
     foreach ($tags as $tag) {
         $cardimgurl = tag_manager::get_cardimage_url($tag);
         $accentcolor = tag_manager::get_tag_accent_color($tag);
-        
+
         $tagsetdata['tags'][] = [
             'id' => $tag->id,
             'name' => format_string($tag->name),
@@ -265,7 +265,7 @@ foreach ($tagsets as $tagset) {
             'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
         ];
     }
-    
+
     $templatecontext['tagsets'][] = $tagsetdata;
 }
 

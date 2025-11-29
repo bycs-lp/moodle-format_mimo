@@ -102,7 +102,7 @@ class description_tag_form extends dynamic_form {
      */
     public function set_data_for_dynamic_submission(): void {
         $id = $this->optional_param('id', 0, PARAM_INT);
-        
+
         if ($id) {
             $tag = description_tag_manager::get_tag($id);
             if ($tag) {
@@ -118,7 +118,7 @@ class description_tag_form extends dynamic_form {
      */
     public function process_dynamic_submission() {
         $data = $this->get_data();
-        
+
         if (!empty($data->id)) {
             // Update existing tag.
             description_tag_manager::update_tag($data->id, $data->name, $data->color);
@@ -128,7 +128,7 @@ class description_tag_form extends dynamic_form {
             description_tag_manager::create_tag($data->name, $data->color);
             $message = get_string('desctagcreated', 'format_minimoodlewall');
         }
-        
+
         return [
             'result' => true,
             'message' => $message,

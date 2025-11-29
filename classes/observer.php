@@ -46,7 +46,7 @@ class observer {
         // Check if this course uses minimoodlewall format.
         $courseid = $event->courseid;
         $course = get_course($courseid);
-        
+
         if ($course->format !== 'minimoodlewall') {
             return;
         }

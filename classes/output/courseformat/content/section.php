@@ -47,9 +47,9 @@ class section extends section_base {
      */
     public function export_for_template(\renderer_base $output): \stdClass {
         global $PAGE;
-        
+
         $data = parent::export_for_template($output);
-        
+
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
         $tagsetid = $options['tagsetid'] ?? 0;
@@ -90,7 +90,7 @@ class section extends section_base {
                 }
             }
         }
-        
+
         return $data;
     }
 
@@ -129,7 +129,7 @@ class section extends section_base {
 
         return $filtertags;
     }
-    
+
     /**
      * Returns the output class template path.
      *

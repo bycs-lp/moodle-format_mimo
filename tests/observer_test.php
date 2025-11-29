@@ -33,7 +33,6 @@ namespace format_minimoodlewall;
  * @covers     \format_minimoodlewall\observer
  */
 final class observer_test extends \advanced_testcase {
-
     /** @var \stdClass Test course with minimoodlewall format */
     private $course;
 
@@ -225,7 +224,7 @@ final class observer_test extends \advanced_testcase {
     public static function tag_rejection_provider(): array {
         return [
             'invalid_tag_id' => [
-                'setup' => function($course, $SESSION) {
+                'setup' => function ($course, $SESSION) {
                     // Create a tagset.
                     $tagsetid = tag_manager::create_tagset('Test Tagset', 'Test Description');
 
@@ -239,7 +238,7 @@ final class observer_test extends \advanced_testcase {
                 'message' => 'Invalid tag should not be assigned',
             ],
             'tag_from_wrong_tagset' => [
-                'setup' => function($course, $SESSION) {
+                'setup' => function ($course, $SESSION) {
                     // Create two tagsets with tags.
                     $tagsetid1 = tag_manager::create_tagset('Tagset 1', 'Description 1');
                     tag_manager::create_tag($tagsetid1, 'Tag 1', 'Description', 'test1.svg', 'test1-small.svg');

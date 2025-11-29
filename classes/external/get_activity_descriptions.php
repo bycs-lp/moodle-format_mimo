@@ -97,7 +97,7 @@ class get_activity_descriptions extends external_api {
 
         return $descriptions;
     }
-    
+
     /**
      * Convert purpose constant to CSS class name.
      *
@@ -114,7 +114,7 @@ class get_activity_descriptions extends external_api {
             MOD_PURPOSE_INTERACTIVECONTENT => 'interactivecontent',
             MOD_PURPOSE_OTHER => '',
         ];
-        
+
         return $purposes[$purpose] ?? '';
     }
 

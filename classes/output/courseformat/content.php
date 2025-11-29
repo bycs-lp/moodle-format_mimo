@@ -42,9 +42,9 @@ class content extends content_base {
      */
     public function export_for_template(\renderer_base $output): \stdClass {
         global $PAGE;
-        
+
         $data = parent::export_for_template($output);
-        
+
         // Get the course format options.
         $course = $this->format->get_course();
         $tagsetid = $course->tagsetid ?? 0;
@@ -56,21 +56,21 @@ class content extends content_base {
 
         $data->designvariant = $designvariant;
         $data->designclass = 'minimoodlewall-design-' . $designvariant;
-        
+
         // Initialize the tag chooser button JavaScript if editing is on and tagset is configured.
         if ($PAGE->user_is_editing() && $tagsetid > 0) {
             $PAGE->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
-            
+
             // Pass tag data to the template.
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
             $data->tags = array_values($tags);
             $data->hastags = !empty($tags);
             $data->tagsetid = $tagsetid;
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Returns the output class template path.
      *

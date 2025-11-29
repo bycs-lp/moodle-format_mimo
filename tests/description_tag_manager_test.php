@@ -34,12 +34,11 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_minimoodlewall\description_tag_manager
  */
-class description_tag_manager_test extends \advanced_testcase {
-
+final class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test creating a description tag.
      */
-    public function test_create_tag() {
+    public function test_create_tag(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -56,7 +55,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test getting all tags.
      */
-    public function test_get_all_tags() {
+    public function test_get_all_tags(): void {
         $this->resetAfterTest(true);
 
         // Create some tags.
@@ -76,7 +75,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test getting a specific tag.
      */
-    public function test_get_tag() {
+    public function test_get_tag(): void {
         $this->resetAfterTest(true);
 
         $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
@@ -91,7 +90,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test updating a tag.
      */
-    public function test_update_tag() {
+    public function test_update_tag(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -109,7 +108,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test deleting a tag.
      */
-    public function test_delete_tag() {
+    public function test_delete_tag(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -125,7 +124,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test deleting a tag that is in use.
      */
-    public function test_delete_tag_removes_references() {
+    public function test_delete_tag_removes_references(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -149,7 +148,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test counting descriptions with tag.
      */
-    public function test_count_descriptions_with_tag() {
+    public function test_count_descriptions_with_tag(): void {
         $this->resetAfterTest(true);
 
         $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
@@ -169,7 +168,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test getting tags for select options.
      */
-    public function test_get_tags_for_select() {
+    public function test_get_tags_for_select(): void {
         $this->resetAfterTest(true);
 
         description_tag_manager::create_tag('Tag A', '#FF5733');
@@ -186,7 +185,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test color validation.
      */
-    public function test_is_valid_color() {
+    public function test_is_valid_color(): void {
         $this->assertTrue(description_tag_manager::is_valid_color('#FF5733'));
         $this->assertTrue(description_tag_manager::is_valid_color('#123456'));
         $this->assertTrue(description_tag_manager::is_valid_color('#abcdef'));
@@ -202,7 +201,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test activity description with tag.
      */
-    public function test_save_description_with_tag() {
+    public function test_save_description_with_tag(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -221,7 +220,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test updating description with different tag.
      */
-    public function test_update_description_tag() {
+    public function test_update_description_tag(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -244,7 +243,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test removing tag from description.
      */
-    public function test_remove_tag_from_description() {
+    public function test_remove_tag_from_description(): void {
         global $DB;
         $this->resetAfterTest(true);
 
@@ -266,7 +265,7 @@ class description_tag_manager_test extends \advanced_testcase {
     /**
      * Test getting all descriptions returns tag information.
      */
-    public function test_get_all_descriptions_includes_tag() {
+    public function test_get_all_descriptions_includes_tag(): void {
         $this->resetAfterTest(true);
 
         $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');

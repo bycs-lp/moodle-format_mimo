@@ -249,7 +249,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             $course = get_course($cm->course);
             $formatoptions = course_get_format($course)->get_format_options();
             $tagsetid = $formatoptions['tagsetid'] ?? 0;
-            
+
             if ($tagsetid > 0) {
                 $data['tagid'] = $this->get_tag_id($data['tag'], $tagsetid);
             } else {
@@ -380,7 +380,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         // Create the activity using the core generator.
         $modulename = $data['activity'];
         $generator = $this->datagenerator->get_plugin_generator('mod_' . $modulename);
-        
+
         if (!$generator) {
             throw new coding_exception("Activity type '{$modulename}' does not have a generator");
         }
@@ -391,7 +391,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         if ($tagname && $instance) {
             // Use the course ID from the created instance to ensure we find the right CM.
             $courseid = isset($instance->course) ? $instance->course : null;
-            
+
             // Get the course module ID.
             $cm = get_coursemodule_from_instance($modulename, $instance->id, $courseid);
             if ($cm) {
@@ -399,10 +399,10 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 $course = get_course($courseid);
                 $formatoptions = course_get_format($course)->get_format_options();
                 $tagsetid = $formatoptions['tagsetid'] ?? 0;
-                
+
                 if ($tagsetid > 0) {
                     $tagid = $this->get_tag_id($tagname, $tagsetid);
-                    
+
                     // Create cmtag entry.
                     $this->componentdatagenerator->create_cmtag([
                         'cmid' => $cm->id,

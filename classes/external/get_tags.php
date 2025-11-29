@@ -62,7 +62,7 @@ class get_tags extends external_api {
         ]);
 
         $tags = tag_manager::get_tags_by_tagset($params['tagsetid']);
-        
+
         $result = [];
         foreach ($tags as $tag) {
             $result[] = [

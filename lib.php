@@ -152,7 +152,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'type' => PARAM_ALPHANUMEXT,
             ],
         ];
-        
+
         if ($forupdate) {
             // Get available tagsets.
             $tagsets = \format_minimoodlewall\tag_manager::get_tagsets();
@@ -160,11 +160,11 @@ class format_minimoodlewall extends core_courseformat\base {
             foreach ($tagsets as $tagset) {
                 $tagsetchoices[$tagset->id] = $tagset->name;
             }
-            
+
             // Check if this is an existing course.
             $course = $this->get_course();
             $iscreating = empty($course->id) || $course->id == SITEID;
-            
+
             // Add form elements for course settings.
             $courseformatoptions['tagsetid'] += [
                 'label' => get_string('setting_tagsetid', 'format_minimoodlewall'),

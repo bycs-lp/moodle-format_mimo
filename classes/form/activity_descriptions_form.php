@@ -68,13 +68,13 @@ class activity_descriptions_form extends \moodleform {
         // Add textarea and tag selector for each activity type.
         foreach ($availabletypes as $type) {
             $currentdesc = $descriptionmap[$type['name']] ?? null;
-            
+
             // Activity type label.
             $mform->addElement(
                 'html',
                 '<div style="margin-top: 20px;"><strong>' . s($type['displayname']) . '</strong></div>'
             );
-            
+
             // Description textarea.
             $mform->addElement(
                 'textarea',
@@ -86,7 +86,7 @@ class activity_descriptions_form extends \moodleform {
                     'placeholder' => get_string('activitydescription_placeholder', 'format_minimoodlewall'),
                 ]
             );
-            
+
             // Tag selector.
             $mform->addElement(
                 'select',
