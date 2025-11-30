@@ -22,12 +22,9 @@ $activity-icon-colors: (
     margin-bottom: 1rem; // Add space after the activities list
     transition: height 0.3s ease;
     border-radius: 1rem;
-    padding: 1.9rem 1rem 2.9rem 1rem;
+    padding: 1.9rem 1rem;
     background-color: var(--bs-body-bg, #f8f9fa);
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-    &.pagination-active {
-        padding-bottom: 4rem; // Extra space for pagination controls
-    }
 
     // Ensure proper row spacing for Bootstrap grid
     & > .col-12,
@@ -522,20 +519,15 @@ $activity-icon-colors: (
 // Navigation buttons.
 .minimoodlewall-navigation {
     display: none; // Hidden by default until JavaScript loads.
-    position: absolute;
-    bottom: 17px; // Position from bottom of activities container.
-    right: 23px; // Position from right edge.
-    z-index: 100; // Ensure buttons are above cards.
     
-    // When visible or booting, use flex layout.
+    // When visible or booting, show container.
     &.is-visible,
     &.is-booting {
-        display: flex;
+        display: block;
     }
 
     &.is-booting {
         pointer-events: none;
-        gap: 0.75rem;
     }
 
     &.is-booting .minimoodlewall-nav-btn--prev {
@@ -551,6 +543,9 @@ $activity-icon-colors: (
     }
 
     .minimoodlewall-nav-btn {
+        position: absolute;
+        bottom: -17px; // Position from bottom of activities container.
+        z-index: 100; // Ensure buttons are above cards.
         width: 64px;
         height: 48px;
         border-radius: 24px;
@@ -564,6 +559,14 @@ $activity-icon-colors: (
         transition: all 0.2s ease-in-out;
         box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
         padding: 0 5px;
+
+        &.minimoodlewall-nav-btn--prev {
+            left: 23px; // Position prev button at left edge.
+        }
+
+        &.minimoodlewall-nav-btn--next {
+            right: 23px; // Position next button at right edge.
+        }
 
         .minimoodlewall-nav-arrow {
             width: 100%;

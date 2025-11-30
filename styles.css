@@ -399,17 +399,12 @@
 
 .minimoodlewall-navigation {
   display: none;
-  position: absolute;
-  bottom: 17px;
-  right: 23px;
-  z-index: 100;
 }
 .minimoodlewall-navigation.is-visible, .minimoodlewall-navigation.is-booting {
-  display: flex;
+  display: block;
 }
 .minimoodlewall-navigation.is-booting {
   pointer-events: none;
-  gap: 0.75rem;
 }
 .minimoodlewall-navigation.is-booting .minimoodlewall-nav-btn--prev {
   display: none;
@@ -421,6 +416,9 @@
   opacity: 0.4;
 }
 .minimoodlewall-navigation .minimoodlewall-nav-btn {
+  position: absolute;
+  bottom: 17px;
+  z-index: 100;
   width: 64px;
   height: 48px;
   border-radius: 24px;
@@ -434,6 +432,12 @@
   transition: all 0.2s ease-in-out;
   box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
   padding: 0 5px;
+}
+.minimoodlewall-navigation .minimoodlewall-nav-btn.minimoodlewall-nav-btn--prev {
+  left: 23px;
+}
+.minimoodlewall-navigation .minimoodlewall-nav-btn.minimoodlewall-nav-btn--next {
+  right: 23px;
 }
 .minimoodlewall-navigation .minimoodlewall-nav-btn .minimoodlewall-nav-arrow {
   width: 100%;
