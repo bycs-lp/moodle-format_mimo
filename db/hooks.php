@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Hook callbacks for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -24,6 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025112805;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2024100700;        // Requires this Moodle version (4.5).
-$plugin->component = 'format_minimoodlewall';    // Full name of the plugin (used for diagnostics).
+$callbacks = [
+    [
+        'hook' => \core\hook\output\before_standard_head_html_generation::class,
+        'callback' => \format_minimoodlewall\hook_callbacks::class . '::before_standard_head_html_generation',
+    ],
+];

@@ -245,7 +245,6 @@ class format_minimoodlewall extends core_courseformat\base {
      * @param moodle_page $page The page object
      */
     public function page_set_course(moodle_page $page) {
-        global $CFG;
         parent::page_set_course($page);
 
         // Apply distraction-free mode if enabled for this course.
@@ -258,77 +257,14 @@ class format_minimoodlewall extends core_courseformat\base {
             }
 
             if ($dfactive) {
+                // Add body class for distraction-free mode.
+                // CSS is injected via hook callback in classes/hook_callbacks.php.
                 $page->add_body_class('format-minimoodlewall-distraction-free');
-                
-                // Add CSS immediately to prevent FOUC.
-                $css = $this->get_distraction_free_css();
-                $CFG->additionalhtmlhead = ($CFG->additionalhtmlhead ?? '') . $css;
             }
 
             // Initialize JavaScript module for toggle functionality.
             $page->requires->js_call_amd('format_minimoodlewall/distraction_free', 'init');
         }
-    }
-
-    /**
-     * Generate dynamic CSS for distraction-free mode based on plugin settings.
-     *
-     * @return string CSS wrapped in style tags
-     */
-    protected function get_distraction_free_css() {
-        // Get settings.
-        $hideselectors = get_config('format_minimoodlewall', 'distractionfreeselectors');
-        $nopaddingselectors = get_config('format_minimoodlewall', 'nopaddingselectors');
-        $closedrawers = get_config('format_minimoodlewall', 'closedrawers');
-
-        // Default values if not set.
-        if (empty($hideselectors)) {
-            $hideselectors = "nav.fixed-top\n#nav-drawer\n#page-footer\n.activity-navigation\n" .
-                           "#region-main-settings-menu\n.drawer-toggles\n.secondary-navigation";
-        }
-        if (empty($nopaddingselectors)) {
-            $nopaddingselectors = "#page\n#topofscroll";
-        }
-
-        // Build CSS.
-        $css = '<style type="text/css">' . "\n";
-
-        // Hide selectors.
-        $selectors = array_filter(array_map('trim', explode("\n", $hideselectors)));
-        if (!empty($selectors)) {
-            $prefixed = array_map(function ($sel) {
-                return 'body.format-minimoodlewall-distraction-free ' . $sel;
-            }, $selectors);
-            $css .= implode(",\n", $prefixed) . " {\n";
-            $css .= "    display: none !important;\n";
-            $css .= "}\n\n";
-        }
-
-        // No padding selectors.
-        $nopaddinglist = array_filter(array_map('trim', explode("\n", $nopaddingselectors)));
-        if (!empty($nopaddinglist)) {
-            foreach ($nopaddinglist as $selector) {
-                $css .= "body.format-minimoodlewall-distraction-free {$selector} {\n";
-                $css .= "    padding-top: 0 !important;\n";
-                $css .= "}\n\n";
-            }
-        }
-
-        // Additional fixed styles for activity header.
-        $css .= "body.format-minimoodlewall-distraction-free .activity-header {\n";
-        $css .= "    margin-bottom: 0 !important;\n";
-        $css .= "}\n\n";
-
-        // Close drawers CSS (if enabled).
-        if ($closedrawers) {
-            $css .= "body.format-minimoodlewall-distraction-free [data-region=\"drawer\"] {\n";
-            $css .= "    display: none !important;\n";
-            $css .= "}\n";
-        }
-
-        $css .= '</style>';
-
-        return $css;
     }
 
     /**

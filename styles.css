@@ -838,7 +838,7 @@ body.format-minimoodlewall-distraction-free #topofscroll {
   margin-top: 0;
 }
 
-#page {
+body.format-minimoodlewall #page-wrapper #page {
   display: block;
 }
 
