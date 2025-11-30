@@ -837,3 +837,12 @@ body.format-minimoodlewall-distraction-free #topofscroll {
 .minimoodlewall.section-list > li {
   margin-top: 0;
 }
+
+#page {
+  display: block;
+}
+
+.minimoodlewall-activities li.activity {
+  background: transparent !important;
+  padding: 0.75rem !important;
+}

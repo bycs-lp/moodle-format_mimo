@@ -1054,3 +1054,12 @@ body.format-minimoodlewall-distraction-free {
 .minimoodlewall.section-list > li {
     margin-top: 0;
 }
+
+// theme mebis rules.
+#page {
+    display:block;
+}
+.minimoodlewall-activities li.activity {
+    background: transparent !important;
+    padding: .75rem !important;
+}
