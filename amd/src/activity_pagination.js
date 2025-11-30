@@ -180,7 +180,8 @@ export const init = () => {
             card.style.display = 'block';
         });
 
-        // Hide navigation controls.
+        // Hide navigation controls and remove pagination class.
+        container.classList.remove('pagination-active');
         if (navContainer) {
             navContainer.classList.remove('is-visible');
             navContainer.dataset.hasNext = '0';
@@ -536,9 +537,11 @@ export const init = () => {
             if (!paginationEnabled || totalPages <= 1) {
                 navContainer.classList.remove('is-visible');
                 navContainer.dataset.hasNext = '0';
+                container.classList.remove('pagination-active');
             } else {
                 navContainer.classList.add('is-visible');
                 navContainer.dataset.hasNext = '1';
+                container.classList.add('pagination-active');
             }
         }
 

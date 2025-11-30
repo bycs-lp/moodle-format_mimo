@@ -61,8 +61,6 @@ class renderer extends section_renderer {
             $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
 
             if (!empty($tags)) {
-                $sectioninfo = get_fast_modinfo($course)->get_section_info($section);
-
                 $data = [
                     'tags' => array_values($tags),
                     'sectionnum' => $section,

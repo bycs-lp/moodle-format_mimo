@@ -22,15 +22,17 @@ $activity-icon-colors: (
     margin-bottom: 1rem; // Add space after the activities list
     transition: height 0.3s ease;
     border-radius: 1rem;
-    padding: 1.9rem 1rem;
+    padding: 1.9rem 1rem 2.9rem 1rem;
     background-color: var(--bs-body-bg, #f8f9fa);
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    &.pagination-active {
+        padding-bottom: 4rem; // Extra space for pagination controls
+    }
 
     // Ensure proper row spacing for Bootstrap grid
     & > .col-12,
     & > li.col-12 {
         margin-top: 0;
-        margin-bottom: 1rem; // Add bottom margin to each activity card
         padding-bottom: 1rem;
     }
     
@@ -123,21 +125,65 @@ $activity-icon-colors: (
         border: 1px solid #4a5568;
 
         .minimoodlewall-card {
-            background: #2d3748;
             border-color: #4a5568;
 
+            .minimoodlewall-card-content {
+                background: #2d3748;
+
+                .minimoodlewall-card-body {
+                    background: #2d3748;
+
+                    .minimoodlewall-card-title {
+                        color: #f9fafb;
+
+                        a {
+                            color: #f9fafb;
+                        }
+                    }
+
+                    .minimoodlewall-card-description {
+                        color: #d1d5db;
+
+                        a {
+                            color: #d1d5db;
+                        }
+                    }
+                }
+            }
+
             &:hover {
-                background: #374151;
                 border-color: #6b7280;
+
+                .minimoodlewall-card-content {
+                    background: #374151;
+
+                    .minimoodlewall-card-body {
+                        background: #374151;
+                    }
+                }
             }
         }
+    }
+}
 
-        .minimoodlewall-card-title {
-            color: #f9fafb;
-        }
+.minimoodlewall-navigation-wrapper.minimoodlewall-design-dark {
+    .minimoodlewall-navigation {
+        .minimoodlewall-nav-btn {
+            background: #4a5568;
+            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
 
-        .minimoodlewall-card-description {
-            color: #d1d5db;
+            &:hover {
+                background: #6b7280;
+                box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+            }
+
+            &:active {
+                box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4);
+            }
+
+            &:disabled {
+                box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+            }
         }
     }
 }
@@ -206,7 +252,7 @@ $activity-icon-colors: (
         .minimoodlewall-card-body {
             padding: 0.5rem 1rem 0.5rem;
             background: #fff;
-            min-height: 112px;
+            min-height: 100px;
             border-radius: 0 0 1.2rem 1.2rem;
             flex: 1;
             display: flex;
@@ -477,8 +523,8 @@ $activity-icon-colors: (
 .minimoodlewall-navigation {
     display: none; // Hidden by default until JavaScript loads.
     position: absolute;
-    bottom: 10px; // Position from bottom of activities container.
-    right: 10px; // Position from right edge.
+    bottom: 17px; // Position from bottom of activities container.
+    right: 23px; // Position from right edge.
     z-index: 100; // Ensure buttons are above cards.
     
     // When visible or booting, use flex layout.
@@ -517,9 +563,12 @@ $activity-icon-colors: (
         cursor: pointer;
         transition: all 0.2s ease-in-out;
         box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+        padding: 0 5px;
 
-        i {
-            font-size: 20px;
+        .minimoodlewall-nav-arrow {
+            width: 100%;
+            height: 100%;
+            color: #fff;
         }
 
         &:hover {
@@ -538,26 +587,6 @@ $activity-icon-colors: (
             cursor: not-allowed;
             box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
             transform: none;
-        }
-    }
-}
-
-.minimoodlewall-navigation-wrapper.minimoodlewall-design-light {
-    .minimoodlewall-navigation {
-        position: static;
-        justify-content: flex-end;
-        margin-top: 1rem;
-    }
-
-    .minimoodlewall-nav-btn {
-        width: 64px;
-        height: 64px;
-        background: #ff9555;
-        box-shadow: 0 12px 24px rgba(154, 78, 30, 0.35);
-        border-radius: 18px;
-
-        &:hover {
-            background: #ff7c2a;
         }
     }
 }
@@ -1002,12 +1031,26 @@ body.format-minimoodlewall {
 
 .format-minimoodlewall-df-toggle-bottom {
     bottom: auto;
-    border-radius: 8px 8px 0 0;
+    border-radius: 0 0 8px 8px;
     border-bottom: none;
 }
 
 /* Position bottom toggle after fixed-top nav */
 nav.fixed-top + .format-minimoodlewall-df-toggle-bottom {
-    top: 50px; /* Adjust based on your nav height */
+    top: var(--navbar-height, 60px);
 }
 
+// Change course overview on distraction-free mode.
+// Especially for ipads.
+body.format-minimoodlewall-distraction-free {
+    #page {
+        margin-top: 1rem;
+    }
+    #topofscroll {
+        margin-bottom: 0;
+    }
+}
+
+.minimoodlewall.section-list > li {
+    margin-top: 0;
+}
