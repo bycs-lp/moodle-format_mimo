@@ -326,12 +326,74 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
 
         ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {
-        // If activity chooser modules are not available (older Moodle version), silently fail
+        // If activity chooser modules are not available (older Moodle version), fall back to old-style chooser
         // The error is typically "No define call for core_courseformat/local/activitychooser/..."
         if (error.message && (error.message.includes('nodefine') || error.message.includes('activitychooser'))) {
             // eslint-disable-next-line no-console
-            console.warn('Activity chooser not available in this Moodle version:', error.message);
-            // Don't show an error to the user - the modal has already closed and they can try another option
+            console.warn('New activity chooser not available, trying legacy chooser:', error.message);
+
+            try {
+                // Try to use the old pre-4.0 activity chooser API
+                const OldChooser = await import('core_course/local/activitychooser/dialogue');
+                const OldRepository = await import('core_course/local/activitychooser/repository');
+
+                const courseId = M.cfg.courseId;
+                const footerDataPromise = OldRepository.fetchFooterData(courseId, sectionNum);
+                const modulesDataPromise = OldRepository.activityModules(courseId, sectionNum);
+
+                const footerData = await footerDataPromise;
+                const modulesData = await modulesDataPromise;
+
+                // Build module data with section info
+                const builtModuleData = modulesData.content_items.map(module => {
+                    const link = module.link + '&section=' + sectionNum + '&beforemod=' + (beforeMod || 0);
+                    return {...module, link: link + (sectionReturnNum ? '&sr=' + sectionReturnNum : '')};
+                });
+
+                // Create modal and display chooser
+                const Modal = await import('core/modal');
+                const Templates = await import('core/templates');
+                const {get_string: getString} = await import('core/str');
+
+                let bodyPromiseResolver;
+                const bodyPromise = new Promise(resolve => {
+                    bodyPromiseResolver = resolve;
+                });
+
+                const sectionModal = Modal.create({
+                    body: bodyPromise,
+                    title: getString('addresourceoractivity'),
+                    footer: footerData.customfootertemplate,
+                    large: true,
+                    scrollable: false,
+                    templateContext: {
+                        classes: 'modchooser'
+                    },
+                    show: true,
+                });
+
+                OldChooser.displayChooser(sectionModal, builtModuleData, null, footerData);
+
+                // Render the body template
+                bodyPromiseResolver(await Templates.render('core_course/activitychooser', {
+                    content_items: builtModuleData
+                }));
+            } catch (legacyError) {
+                // If even the legacy chooser fails, fall back to page navigation
+                // eslint-disable-next-line no-console
+                console.warn('Legacy chooser also unavailable, redirecting to modedit.php:', legacyError.message);
+
+                const url = new URL(M.cfg.wwwroot + '/course/modedit.php');
+                url.searchParams.set('course', M.cfg.courseId);
+                url.searchParams.set('section', sectionNum);
+                if (beforeMod) {
+                    url.searchParams.set('beforemod', beforeMod);
+                }
+                if (sectionReturnNum) {
+                    url.searchParams.set('sr', sectionReturnNum);
+                }
+                window.location.href = url.toString();
+            }
         } else {
             Notification.exception(error);
         }
