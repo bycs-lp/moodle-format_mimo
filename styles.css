@@ -2,12 +2,9 @@
   margin-bottom: 1rem;
   transition: height 0.3s ease;
   border-radius: 1rem;
-  padding: 1.9rem 1rem 2.9rem 1rem;
+  padding: 1.9rem 1rem;
   background-color: var(--bs-body-bg, #f8f9fa);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
-}
-.minimoodlewall-activities.pagination-active {
-  padding-bottom: 4rem;
 }
 .minimoodlewall-activities > .col-12, .minimoodlewall-activities > li.col-12 {
   margin-top: 0;
@@ -417,7 +414,7 @@
 }
 .minimoodlewall-navigation .minimoodlewall-nav-btn {
   position: absolute;
-  bottom: 17px;
+  bottom: -17px;
   z-index: 100;
   width: 64px;
   height: 48px;

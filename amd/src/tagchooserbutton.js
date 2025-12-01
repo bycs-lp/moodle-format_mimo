@@ -29,9 +29,9 @@ import Notification from 'core/notification';
 import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';
 import Templates from 'core/templates';
-import * as Repository from 'core_courseformat/local/activitychooser/repository';
-import * as ChooserDialogue from 'core_courseformat/local/activitychooser/dialogue';
 import Modal from 'core/modal';
+
+// Note: Activity chooser modules are dynamically imported to support older Moodle versions
 
 /**
  * Initialize the tag chooser button handlers.
@@ -280,6 +280,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
  * Open the standard Moodle activity chooser.
  *
  * Supports both Moodle 5.1+ (sectionid) and 5.0 and earlier (section parameter).
+ * Uses dynamic imports to support Moodle versions that don't have the activity chooser.
  *
  * @param {string} sectionNum Section number
  * @param {string} sectionId Section ID (Moodle 5.1+)
@@ -295,6 +296,10 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
             methodname: 'format_minimoodlewall_store_pending_tag',
             args: {tagid: parseInt(tagId)},
         }])[0];
+
+        // Dynamically import activity chooser modules (available in Moodle 4.0+)
+        const Repository = await import('core_courseformat/local/activitychooser/repository');
+        const ChooserDialogue = await import('core_courseformat/local/activitychooser/dialogue');
 
         // Open the core activity chooser modal
         const courseId = M.cfg.courseId;
@@ -321,6 +326,14 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
 
         ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {
-        Notification.exception(error);
+        // If activity chooser modules are not available (older Moodle version), silently fail
+        // The error is typically "No define call for core_courseformat/local/activitychooser/..."
+        if (error.message && (error.message.includes('nodefine') || error.message.includes('activitychooser'))) {
+            // eslint-disable-next-line no-console
+            console.warn('Activity chooser not available in this Moodle version:', error.message);
+            // Don't show an error to the user - the modal has already closed and they can try another option
+        } else {
+            Notification.exception(error);
+        }
     }
 };
