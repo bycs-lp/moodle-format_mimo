@@ -196,6 +196,7 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertEquals('reading-small.svg', $tag->filterimage);
         $this->assertEquals('page', $tag->activitytype1);
         $this->assertEquals('book', $tag->activitytype2);
+        $this->assertEquals('center', $tag->imgplacement);
         $this->assertEquals(0, $tag->sortorder);
     }
 
@@ -242,6 +243,7 @@ final class tag_manager_test extends \advanced_testcase {
             'activitytype1' => 'quiz',
             'activitytype2' => 'choice',
             'bgcolor' => '#123456',
+            'imgplacement' => 'lower',
         ]);
 
         $this->assertTrue($result);
@@ -254,6 +256,7 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertEquals('quiz', $tag->activitytype1);
         $this->assertEquals('choice', $tag->activitytype2);
         $this->assertEquals('#123456', $tag->bgcolor);
+        $this->assertEquals('lower', $tag->imgplacement);
     }
 
     /**

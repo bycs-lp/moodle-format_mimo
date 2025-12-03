@@ -197,5 +197,17 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025112803, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2025120300) {
+        // Add imgplacement field to format_minimoodlewall_tags table.
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('imgplacement', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'center', 'cardimage');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2025120300, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

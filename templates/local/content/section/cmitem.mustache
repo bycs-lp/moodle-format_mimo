@@ -50,7 +50,7 @@
     {{! Activity card region for drag-drop }}
     <div data-region="activity-card" class="minimoodlewall-card-content">
     {{! Tag Image at top }}
-    <div class="minimoodlewall-card-image">
+    <div class="minimoodlewall-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}">
         {{#tagimage}}
         <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
         {{/tagimage}}

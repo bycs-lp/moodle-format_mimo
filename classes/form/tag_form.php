@@ -99,6 +99,33 @@ class tag_form extends \moodleform {
         );
         $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
 
+        // Image placement.
+        $placementoptions = [
+            $mform->createElement(
+                'radio',
+                'imgplacement',
+                '',
+                get_string('imgplacement_center', 'format_minimoodlewall'),
+                'center'
+            ),
+            $mform->createElement(
+                'radio',
+                'imgplacement',
+                '',
+                get_string('imgplacement_lower', 'format_minimoodlewall'),
+                'lower'
+            ),
+        ];
+        $mform->addGroup(
+            $placementoptions,
+            'imgplacementgroup',
+            get_string('imgplacement', 'format_minimoodlewall'),
+            ['<br>'],
+            false
+        );
+        $mform->setDefault('imgplacement', 'center');
+        $mform->setType('imgplacement', PARAM_TEXT);
+
         // Filter image upload (optional).
         $mform->addElement(
             'filemanager',

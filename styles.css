@@ -158,11 +158,19 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
+  overflow: visible;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image img {
-  width: 80%;
-  max-height: 90px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  max-height: 130px;
   object-fit: contain;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.lower img {
+  transform: translate(-50%, -40%);
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body {
   padding: 0.5rem 1rem 0.5rem;

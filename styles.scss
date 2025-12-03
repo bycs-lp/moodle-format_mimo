@@ -237,11 +237,19 @@ $activity-icon-colors: (
             align-items: center;
             justify-content: center;
             padding: .5rem;
+            overflow: visible;
 
             img {
-                width: 80%;
-                max-height: 90px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 110%;
+                max-height: 130px;
                 object-fit: contain;
+            }
+            &.lower img {
+                transform: translate(-50%, -40%);
             }
         }
 

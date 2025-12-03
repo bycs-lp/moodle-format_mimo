@@ -136,6 +136,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                     'activitytype2' => $data->activitytype2,
                     'activitytype3' => $data->activitytype3,
                     'bgcolor' => $data->bgcolor,
+                    'imgplacement' => $data->imgplacement,
                 ]
             );
             tag_manager::save_cardimage_from_draft($data->tagid, $data->cardimagefile);
@@ -150,7 +151,8 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->activitytype1,
                 $data->activitytype2,
                 $data->activitytype3,
-                $data->bgcolor
+                $data->bgcolor,
+                $data->imgplacement
             );
             tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
             tag_manager::save_filterimage_from_draft($newtagid, (int)$data->filterimagefile);
