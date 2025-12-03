@@ -203,7 +203,7 @@ const showActivityTypeModal = async(
         });
 
         // Handle option selection (updated selector for new template structure)
-        modal.getRoot().on('click', '.mmw-activity-card, .mmw-activity-chooser-link', (e) => {
+        modal.getRoot().on('click', '.mmw-activity-card, .mmw-activity-chooser-link', async(e) => {
             e.preventDefault();
             const activityType = e.currentTarget.dataset.activityType;
 
@@ -211,7 +211,7 @@ const showActivityTypeModal = async(
 
             if (activityType === 'chooser') {
                 // Open the standard activity chooser
-                openActivityChooser(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId);
+                await openActivityChooser(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId);
             } else {
                 // Navigate directly to the activity creation page
                 navigateToActivityCreation(activityType, sectionNum, beforeMod, sectionReturnNum, tagId);
@@ -279,8 +279,8 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
 /**
  * Open the standard Moodle activity chooser.
  *
- * Supports both Moodle 5.1+ (sectionid) and 5.0 and earlier (section parameter).
- * Uses dynamic imports to support Moodle versions that don't have the activity chooser.
+ * Supports both Moodle 5.1+ (with core_courseformat modules) and 5.0 (with core_course modules).
+ * For Moodle 5.0, triggers a click on the hidden button to let core handle the chooser.
  *
  * @param {string} sectionNum Section number
  * @param {string} sectionId Section ID (Moodle 5.1+)
@@ -297,7 +297,7 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
             args: {tagid: parseInt(tagId)},
         }])[0];
 
-        // Dynamically import activity chooser modules (available in Moodle 4.0+)
+        // Dynamically import activity chooser modules (available in Moodle 5.1+)
         const Repository = await import('core_courseformat/local/activitychooser/repository');
         const ChooserDialogue = await import('core_courseformat/local/activitychooser/dialogue');
 
@@ -326,76 +326,62 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
 
         ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {
-        // If activity chooser modules are not available (older Moodle version), fall back to old-style chooser
-        // The error is typically "No define call for core_courseformat/local/activitychooser/..."
-        if (error.message && (error.message.includes('nodefine') || error.message.includes('activitychooser'))) {
-            // eslint-disable-next-line no-console
-            console.warn('New activity chooser not available, trying legacy chooser:', error.message);
+        // Moodle 5.0: Use core_course modules instead
+        try {
+            const Repository = await import('core_course/local/activitychooser/repository');
+            const ChooserDialogue = await import('core_course/local/activitychooser/dialogue');
 
-            try {
-                // Try to use the old pre-4.0 activity chooser API
-                const OldChooser = await import('core_course/local/activitychooser/dialogue');
-                const OldRepository = await import('core_course/local/activitychooser/repository');
+            const courseId = M.cfg.courseId;
+            const footerDataPromise = Repository.fetchFooterData(courseId, sectionNum);
+            const modulesDataPromise = Repository.activityModules(courseId, sectionNum);
 
-                const courseId = M.cfg.courseId;
-                const footerDataPromise = OldRepository.fetchFooterData(courseId, sectionNum);
-                const modulesDataPromise = OldRepository.activityModules(courseId, sectionNum);
+            const footerData = await footerDataPromise;
+            const modulesData = await modulesDataPromise;
 
-                const footerData = await footerDataPromise;
-                const modulesData = await modulesDataPromise;
-
-                // Build module data with section info
-                const builtModuleData = modulesData.content_items.map(module => {
-                    const link = module.link + '&section=' + sectionNum + '&beforemod=' + (beforeMod || 0);
-                    return {...module, link: link + (sectionReturnNum ? '&sr=' + sectionReturnNum : '')};
-                });
-
-                // Create modal and display chooser
-                const Modal = await import('core/modal');
-                const Templates = await import('core/templates');
-                const {get_string: getString} = await import('core/str');
-
-                let bodyPromiseResolver;
-                const bodyPromise = new Promise(resolve => {
-                    bodyPromiseResolver = resolve;
-                });
-
-                const sectionModal = Modal.create({
-                    body: bodyPromise,
-                    title: getString('addresourceoractivity'),
-                    footer: footerData.customfootertemplate,
-                    large: true,
-                    scrollable: false,
-                    templateContext: {
-                        classes: 'modchooser'
-                    },
-                    show: true,
-                });
-
-                OldChooser.displayChooser(sectionModal, builtModuleData, null, footerData);
-
-                // Render the body template
-                bodyPromiseResolver(await Templates.render('core_course/activitychooser', {
-                    content_items: builtModuleData
-                }));
-            } catch (legacyError) {
-                // If even the legacy chooser fails, fall back to page navigation
-                // eslint-disable-next-line no-console
-                console.warn('Legacy chooser also unavailable, redirecting to modedit.php:', legacyError.message);
-
-                const url = new URL(M.cfg.wwwroot + '/course/modedit.php');
-                url.searchParams.set('course', M.cfg.courseId);
-                url.searchParams.set('section', sectionNum);
-                if (beforeMod) {
-                    url.searchParams.set('beforemod', beforeMod);
-                }
+            // Build module data with section info
+            const builtModuleData = modulesData.content_items.map(module => {
+                let link = module.link + '&section=' + sectionNum + '&beforemod=' + (beforeMod || 0);
                 if (sectionReturnNum) {
-                    url.searchParams.set('sr', sectionReturnNum);
+                    link += '&sr=' + sectionReturnNum;
                 }
-                window.location.href = url.toString();
-            }
-        } else {
-            Notification.exception(error);
+                return {...module, link: link};
+            });
+
+            // Create modal promise
+            const Templates = await import('core/templates');
+            const {get_string: getString} = await import('core/str');
+
+            let bodyPromiseResolver;
+            const bodyPromise = new Promise(resolve => {
+                bodyPromiseResolver = resolve;
+            });
+
+            const modalPromise = Modal.create({
+                body: bodyPromise,
+                title: await getString('addresourceoractivity'),
+                footer: footerData.customfootertemplate,
+                large: true,
+                scrollable: false,
+                templateContext: {
+                    classes: 'modchooser'
+                },
+                show: true,
+            });
+
+            // Display the chooser - it expects a promise
+            ChooserDialogue.displayChooser(
+                modalPromise,
+                builtModuleData,
+                null, // Favourite manager function
+                footerData
+            );
+
+            // Render the body template
+            bodyPromiseResolver(await Templates.render('core_course/activitychooser', {
+                default: builtModuleData
+            }));
+        } catch (legacyError) {
+            Notification.exception(legacyError);
         }
     }
 };
