@@ -347,6 +347,23 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
                 return {...module, link: link};
             });
 
+            // Build template context - simplified version without tab modes
+            const templateContext = {
+                'default': builtModuleData,
+                showAll: true,
+                activities: [],
+                showActivities: false,
+                activitiesFirst: false,
+                resources: [],
+                showResources: false,
+                favourites: [],
+                recommended: [],
+                recommendedFirst: false,
+                recommendedBeginning: false,
+                favouritesFirst: false,
+                fallback: true,
+            };
+
             // Create modal promise
             const Templates = await import('core/templates');
             const {get_string: getString} = await import('core/str');
@@ -368,18 +385,17 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
                 show: true,
             });
 
-            // Display the chooser - it expects a promise
+            // Render and resolve body BEFORE calling displayChooser
+            const renderedBody = await Templates.render('core_course/activitychooser', templateContext);
+            bodyPromiseResolver(renderedBody);
+
+            // Now display the chooser - it will find the rendered elements
             ChooserDialogue.displayChooser(
                 modalPromise,
                 builtModuleData,
                 null, // Favourite manager function
                 footerData
             );
-
-            // Render the body template
-            bodyPromiseResolver(await Templates.render('core_course/activitychooser', {
-                default: builtModuleData
-            }));
         } catch (legacyError) {
             Notification.exception(legacyError);
         }
