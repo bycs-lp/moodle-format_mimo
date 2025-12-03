@@ -76,24 +76,10 @@
     {{/hascompletion}}
     {{/completion}}
     
-    {{! Card body with description }}
+    {{! Card body with activity name }}
     <div class="card-body minimoodlewall-card-body">
-        {{#description}}
-        {{! Description preview (3 lines max) }}
+        {{! Activity name always shown with description styling }}
         <div class="minimoodlewall-card-description text-muted small">
-            {{#url}}
-            <a href="{{url}}" class="activity-link stretched-link">
-                {{{description}}}
-            </a>
-            {{/url}}
-            {{^url}}
-            {{{description}}}
-            {{/url}}
-        </div>
-        {{/description}}
-        {{^description}}
-        {{! Activity title (only shown if no description) }}
-        <div class="minimoodlewall-card-title">
             {{#url}}
             <a href="{{url}}" class="activity-link stretched-link">
                 {{activityname}}
@@ -103,7 +89,6 @@
             {{activityname}}
             {{/url}}
         </div>
-        {{/description}}
     </div>
     </div>
 </div>

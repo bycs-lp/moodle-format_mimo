@@ -94,29 +94,6 @@ class cmitem extends cmitem_base {
             }
         }
 
-        // Add activity description (truncated to 3 lines).
-        $intro = $cm->get_formatted_content(['overflowdiv' => false, 'noclean' => false]);
-        if (empty($intro)) {
-            // Try getting intro from the module table directly.
-            $modulename = $cm->modname;
-            $instance = $DB->get_record($modulename, ['id' => $cm->instance], 'intro', IGNORE_MISSING);
-            if ($instance && !empty($instance->intro)) {
-                $intro = format_text($instance->intro, FORMAT_HTML, ['noclean' => false]);
-            }
-        }
-
-        if (!empty($intro)) {
-            // Strip HTML tags and get plain text.
-            $description = trim(strip_tags($intro));
-            // Truncate to approximately 150 characters (about 3 lines).
-            if (strlen($description) > 150) {
-                $description = substr($description, 0, 147) . '...';
-            }
-            // Only set description if it's not empty (for Mustache conditionals).
-            if (!empty($description)) {
-                $data->cmformat->description = $description;
-            }
-        }
 
         // Add completion status - get from cm_info object.
         $completioninfo = new \completion_info($cm->get_course());

@@ -11,7 +11,7 @@ A modern course format for Moodle that displays activities in a card-based wall 
 - **Tag-Based Filtering**: Students can filter activities by tags
 - **Pagination**: Automatic pagination with responsive breakpoints (XL: 8 items, LG: 6, MD: 4, SM: 3 per page)
 - **Drag & Drop**: Reorder activities in editing mode
-- **Activity Descriptions**: Rich descriptions with purpose-based CSS classes
+- **Guided Activity Creation**: Tag-based chooser with 1-3 recommended activity types per tag, each with custom instructional descriptions
 - **Design Variants**: Multiple visual themes (standard, compact, modern)
 
 ### Technical Features

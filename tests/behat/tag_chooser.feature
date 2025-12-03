@@ -59,7 +59,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
     And I wait "2" seconds
     Then ".minimoodlewall-card" "css_element" should be visible
-    And I should see "First reading" in the ".minimoodlewall-activities" "css_element"
+    And I should see "Reading Material 1" in the ".minimoodlewall-activities" "css_element"
 
   @javascript
   Scenario: Teacher can open standard activity chooser from dropdown
@@ -94,7 +94,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait "1" seconds
     When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     And I wait "2" seconds
-    Then I should see "First practice task" in the ".minimoodlewall-activities" "css_element"
+    Then I should see "Practice Assignment 1" in the ".minimoodlewall-activities" "css_element"
     And I turn editing mode off
     And I wait until "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
     And "//button[contains(@class,'minimoodlewall-filterbar-button')][contains(@title,'Practice') and @data-hasactivities='1']" "xpath_element" should exist
