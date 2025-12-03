@@ -201,15 +201,15 @@ $activity-icon-colors: (
 .card.minimoodlewall-card {
     border-radius: 1.2rem; // Follwing radiuses must match.
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
     overflow: visible;
     // background: transparent;
     display: flex;
     flex-direction: column;
 
     &:hover {
-        transform: translateY(-6px);
-        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.2);
+        box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
     }
 
     // Drag and drop styles (editing mode).
