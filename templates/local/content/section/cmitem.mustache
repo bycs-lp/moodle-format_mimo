@@ -78,16 +78,24 @@
     
     {{! Card body with activity name }}
     <div class="card-body minimoodlewall-card-body">
-        {{! Activity name always shown with description styling }}
+        {{! Activity name with inplace editable support }}
         <div class="minimoodlewall-card-description text-muted small">
-            {{#url}}
-            <a href="{{url}}" class="activity-link stretched-link">
+            {{#cmname}}
+                {{$ core_courseformat/local/content/cm/cmname }}
+                    {{> core_courseformat/local/content/cm/cmname }}
+                {{/ core_courseformat/local/content/cm/cmname }}
+            {{/cmname}}
+            {{^cmname}}
+                {{! Fallback if cmname is not available }}
+                {{#url}}
+                <a href="{{url}}" class="activity-link stretched-link">
+                    {{activityname}}
+                </a>
+                {{/url}}
+                {{^url}}
                 {{activityname}}
-            </a>
-            {{/url}}
-            {{^url}}
-            {{activityname}}
-            {{/url}}
+                {{/url}}
+            {{/cmname}}
         </div>
     </div>
     </div>

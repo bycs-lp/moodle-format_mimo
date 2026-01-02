@@ -279,6 +279,69 @@ $activity-icon-colors: (
                     margin: 0;
                     color: inherit;
                 }
+
+                // Inplace editable support for activity names.
+                [data-inplaceeditable] {
+                    // Ensure the inplace editable container doesn't break layout.
+                    display: block;
+
+                    // Make the edit icon visible but subtle.
+                    .quickediticon {
+                        opacity: 0.6;
+                        transition: opacity 0.2s;
+                        position: relative;
+                        z-index: 5;
+
+                        &:hover {
+                            opacity: 1;
+                        }
+                    }
+
+                    // The displayvalue contains the link and should work with stretched-link.
+                    .quickeditlink {
+                        .stretched-link {
+                            color: inherit;
+                            text-decoration: none;
+                        }
+                    }
+
+                    // When editing, ensure input is visible.
+                    input[type="text"] {
+                        position: relative;
+                        z-index: 10;
+                        width: 100%;
+                        // Match the card title font size.
+                        font-size: clamp(1rem, 10cqw, 2.7rem);
+                        // Reduce padding for compact appearance.
+                        padding: 0.25rem 0.5rem;
+                        margin: 0;
+                    }
+
+                    // Hide labels and instructions to keep it compact.
+                    label,
+                    .editinstructions {
+                        display: none;
+                    }
+                }
+
+                // Core courseformat cmname wrapper.
+                .activity-name-area {
+                    display: block;
+                    width: 100%;
+
+                    .activitytitle {
+                        display: block;
+
+                        .activityname {
+                            display: block;
+                        }
+                    }
+                }
+
+                // Hide the activity icon in card view (it's a sibling of activity-name-area).
+                .activityiconcontainer {
+                    display: none;
+                }
             }
         }
 
