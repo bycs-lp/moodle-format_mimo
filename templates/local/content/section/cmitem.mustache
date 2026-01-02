@@ -49,6 +49,14 @@
     {{/cmbulk}}
     {{! Activity card region for drag-drop }}
     <div data-region="activity-card" class="minimoodlewall-card-content">
+    {{! Visibility control in top-right corner }}
+    {{#controlmenu}}
+    <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center">
+        {{$ core_courseformat/local/content/cm/controlmenu }}
+            {{> format_minimoodlewall/local/content/cm/controlmenu }}
+        {{/ core_courseformat/local/content/cm/controlmenu }}
+    </div>
+    {{/controlmenu}}
     {{! Tag Image at top }}
     <div class="minimoodlewall-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}">
         {{#tagimage}}
@@ -59,7 +67,8 @@
         {{/tagimage}}
     </div>
     
-    {{! Completion indicator overlay (top-right) }}
+    {{! Completion indicator overlay (top-right) - hidden in editing mode }}
+    {{^editing}}
     {{#completion}}
     {{#hascompletion}}
     <div class="minimoodlewall-completion-badge">
@@ -75,6 +84,7 @@
     </div>
     {{/hascompletion}}
     {{/completion}}
+    {{/editing}}
     
     {{! Card body with activity name }}
     <div class="card-body minimoodlewall-card-body">

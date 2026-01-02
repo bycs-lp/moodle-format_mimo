@@ -1,5 +1,63 @@
 // Base styles for minimoodlewall card layout.
 
+// Icon-only visibility control - global override
+.visibility-icon-control {
+    position: relative;
+    z-index: 1;
+    
+    .dropdown-toggle {
+        background: transparent !important;
+        border: none !important;
+        padding: 0.25rem !important;
+        border-radius: 50%;
+        width: 2rem !important;
+        height: 2rem !important;
+        min-width: 2rem !important;
+        min-height: 2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #6c757d;
+        font-size: 0 !important; // Hide text content
+        line-height: 0 !important;
+        position: relative;
+        z-index: 1;
+        text-indent: -9999px; // Push text out of view
+        white-space: nowrap;
+        overflow: hidden;
+        
+        &:hover {
+            background: rgba(0, 0, 0, 0.1) !important;
+            color: #495057;
+        }
+
+        // Show only the icon
+        .icon {
+            font-size: 1.25rem !important;
+            line-height: 1 !important;
+            text-indent: 0 !important; // Reset for icon
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        // Remove the dropdown chevron
+        &::after {
+            content: none !important;
+            display: none !important;
+        }
+    }
+
+    // Position dropdown menu to not be clipped and overlay everything
+    .dropdown-menu {
+        position: absolute !important;
+        right: 0;
+        top: 100%;
+        z-index: 9999 !important;
+    }
+}
+
 // Moodle's activity icon colors (from theme/boost/scss/moodle/variables.scss)
 $activity-icon-administration-bg:     #da58ef !default;
 $activity-icon-assessment-bg:         #f90086 !default;
@@ -210,10 +268,21 @@ $activity-icon-colors: (
         position: relative;
         border-radius: 1.2rem;
         background: #fff;
-        overflow: hidden;
+        overflow: visible; // Changed from hidden to allow dropdown menu to show
         display: flex;
         flex-direction: column;
         height: 100%;
+        z-index: 1;
+        
+        // Elevate card above navigation buttons when dropdown is open
+        &:has(.visibility-icon-control .show) {
+            z-index: 200;
+        }
+        
+        // Control z-index for visibility control wrapper
+        .activity-badges {
+            z-index: 1; // Keep low so dropdowns overlay it
+        }
 
         // Card image container with tag image.
         .minimoodlewall-card-image {
@@ -341,6 +410,111 @@ $activity-icon-colors: (
                 // Hide the activity icon in card view (it's a sibling of activity-name-area).
                 .activityiconcontainer {
                     display: none;
+                }
+
+                // Visibility badges styling for card layout.
+                .activity-badges {
+                    margin-top: 0.5rem;
+                    position: relative;
+                    z-index: 5;
+
+                    .badge {
+                        font-size: 0.75rem;
+                        padding: 0.25rem 0.5rem;
+                    }
+
+                    // Icon-only visibility control.
+                    .visibility-icon-control {
+                        .dropdown {
+                            position: static; // Allow dropdown menu to escape card overflow
+                        }
+
+                        .dropdown-toggle {
+                            background: transparent !important;
+                            border: none !important;
+                            padding: 0.25rem !important;
+                            border-radius: 50%;
+                            width: 2rem;
+                            height: 2rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: #6c757d;
+                            font-size: 0 !important; // Hide text content
+                            
+                            &:hover {
+                                background: rgba(0, 0, 0, 0.1) !important;
+                                color: #495057;
+                            }
+
+                            // Show only the icon
+                            .icon {
+                                font-size: 1.25rem !important;
+                            }
+
+                            // Remove the dropdown chevron
+                            &::after {
+                                display: none !important;
+                            }
+                        }
+
+                        // Position dropdown menu to not be clipped
+                        .dropdown-menu {
+                            position: absolute !important;
+                            right: 0;
+                            top: 100%;
+                            z-index: 1050;
+                        }
+                    }
+
+                    // Interactive dropdown for visibility.
+                    .dropdown-subpanel {
+                        position: relative;
+                        z-index: 15;
+
+                        .dropdown-toggle {
+                            font-size: 0.75rem;
+                            padding: 0.25rem 0.5rem;
+                            border: none;
+                            background: transparent;
+
+                            &:hover {
+                                background: rgba(0, 0, 0, 0.05);
+                            }
+                        }
+
+                        .dropdown-menu {
+                            font-size: 0.875rem;
+                            z-index: 1100;
+                        }
+                    }
+                }
+
+                // Action menu in card corner.
+                .activity-actions {
+                    background: rgba(255, 255, 255, 0.9);
+                    border-radius: 0.25rem;
+                    padding: 0.25rem;
+
+                    .dropdown-toggle {
+                        padding: 0.25rem 0.5rem;
+                        font-size: 0.875rem;
+                        border: none;
+                        background: transparent;
+
+                        &:hover {
+                            background: rgba(0, 0, 0, 0.05);
+                        }
+
+                        &::after {
+                            display: none;
+                        }
+                    }
+
+                    .dropdown-menu {
+                        font-size: 0.875rem;
+                        z-index: 1100;
+                    }
                 }
             }
         }

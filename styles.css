@@ -1,3 +1,52 @@
+.visibility-icon-control {
+  position: relative;
+  z-index: 1;
+}
+.visibility-icon-control .dropdown-toggle {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  border-radius: 50%;
+  width: 2rem !important;
+  height: 2rem !important;
+  min-width: 2rem !important;
+  min-height: 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #6c757d;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  position: relative;
+  z-index: 1;
+  text-indent: -9999px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.visibility-icon-control .dropdown-toggle:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #495057;
+}
+.visibility-icon-control .dropdown-toggle .icon {
+  font-size: 1.25rem !important;
+  line-height: 1 !important;
+  text-indent: 0 !important;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.visibility-icon-control .dropdown-toggle::after {
+  content: none !important;
+  display: none !important;
+}
+.visibility-icon-control .dropdown-menu {
+  position: absolute !important;
+  right: 0;
+  top: 100%;
+  z-index: 9999 !important;
+}
+
 .minimoodlewall-activities {
   margin-bottom: 1rem;
   transition: height 0.3s ease;
@@ -136,10 +185,17 @@
   position: relative;
   border-radius: 1.2rem;
   background: #fff;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   height: 100%;
+  z-index: 1;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content:has(.visibility-icon-control .show) {
+  z-index: 200;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .activity-badges {
+  z-index: 1;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image {
   position: relative;
@@ -239,6 +295,85 @@
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activityiconcontainer {
   display: none;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges {
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 5;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown {
+  position: static;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown-toggle {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 0 !important;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown-toggle:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #495057;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown-toggle .icon {
+  font-size: 1.25rem !important;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown-toggle::after {
+  display: none !important;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .visibility-icon-control .dropdown-menu {
+  position: absolute !important;
+  right: 0;
+  top: 100%;
+  z-index: 1050;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .dropdown-subpanel {
+  position: relative;
+  z-index: 15;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .dropdown-subpanel .dropdown-toggle {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: transparent;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .dropdown-subpanel .dropdown-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-badges .dropdown-subpanel .dropdown-menu {
+  font-size: 0.875rem;
+  z-index: 1100;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-actions {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-actions .dropdown-toggle {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: none;
+  background: transparent;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-actions .dropdown-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-actions .dropdown-toggle::after {
+  display: none;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description .activity-actions .dropdown-menu {
+  font-size: 0.875rem;
+  z-index: 1100;
 }
 
 .col-12.dragging {
