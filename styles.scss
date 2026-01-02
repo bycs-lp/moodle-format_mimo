@@ -3,7 +3,7 @@
 // Icon-only visibility control - global override
 .visibility-icon-control {
     position: relative;
-    z-index: 1;
+    z-index: 10; // Must be higher than stretched-link (z-index: 1)
     
     .dropdown-toggle {
         background: transparent !important;
@@ -238,6 +238,14 @@ $activity-icon-colors: (
 
 // Override default activity styling.
 .minimoodlewall-activities {
+
+    // Gray out hidden/stealth activities
+    .activity.dimmed {
+        .minimoodlewall-card-content {
+            opacity: 0.5;
+        }
+    }
+    
     li.activity {
         border: none !important; // Remove any default borders
     }
@@ -273,6 +281,7 @@ $activity-icon-colors: (
         flex-direction: column;
         height: 100%;
         z-index: 1;
+        transition: opacity 0.2s ease;
         
         // Elevate card above navigation buttons when dropdown is open
         &:has(.visibility-icon-control .show) {

@@ -1,6 +1,6 @@
 .visibility-icon-control {
   position: relative;
-  z-index: 1;
+  z-index: 10;
 }
 .visibility-icon-control .dropdown-toggle {
   background: transparent !important;
@@ -161,6 +161,9 @@
   position: relative;
 }
 
+.minimoodlewall-activities .activity.dimmed .minimoodlewall-card-content {
+  opacity: 0.5;
+}
 .minimoodlewall-activities li.activity {
   border: none !important;
 }
@@ -190,6 +193,7 @@
   flex-direction: column;
   height: 100%;
   z-index: 1;
+  transition: opacity 0.2s ease;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content:has(.visibility-icon-control .show) {
   z-index: 200;

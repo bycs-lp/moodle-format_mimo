@@ -22,7 +22,7 @@
     This template extends the core cmitem template.
 }}
 <li
-    class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}}"
+    class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}} {{#cmformat.modhiddenfromstudents}}dimmed{{/cmformat.modhiddenfromstudents}}{{#cmformat.modstealth}}dimmed{{/cmformat.modstealth}}"
     id="module-{{id}}"
     data-for="cmitem"
     data-id="{{id}}"
@@ -51,7 +51,7 @@
     <div data-region="activity-card" class="minimoodlewall-card-content">
     {{! Visibility control in top-right corner }}
     {{#controlmenu}}
-    <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center">
+    <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center" style="z-index: 10;">
         {{$ core_courseformat/local/content/cm/controlmenu }}
             {{> format_minimoodlewall/local/content/cm/controlmenu }}
         {{/ core_courseformat/local/content/cm/controlmenu }}
@@ -92,7 +92,7 @@
         <div class="minimoodlewall-card-description text-muted small">
             {{#cmname}}
                 {{$ core_courseformat/local/content/cm/cmname }}
-                    {{> core_courseformat/local/content/cm/cmname }}
+                    {{> format_minimoodlewall/local/content/cm/cmname }}
                 {{/ core_courseformat/local/content/cm/cmname }}
             {{/cmname}}
             {{^cmname}}
