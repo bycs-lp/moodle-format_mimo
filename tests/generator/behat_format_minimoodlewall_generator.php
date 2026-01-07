@@ -83,11 +83,16 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     protected function get_tagset_id(string $tagsetname): int {
         global $DB;
 
-        $id = $DB->get_field('format_minimoodlewall_tagsets', 'id', ['name' => $tagsetname]);
-        if (!$id) {
+        // Use get_record to get the most recent tagset with this name (ORDER BY id DESC).
+        $record = $DB->get_record_sql(
+            "SELECT id FROM {format_minimoodlewall_tagsets} WHERE name = ? ORDER BY id DESC",
+            [$tagsetname],
+            IGNORE_MULTIPLE
+        );
+        if (!$record) {
             throw new Exception('The specified tagset with name "' . $tagsetname . '" does not exist');
         }
-        return $id;
+        return (int)$record->id;
     }
 
     /**
@@ -306,6 +311,9 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'designvariant' => $data['designvariant'],
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
+
+        // Rebuild course cache to ensure format options are immediately available.
+        rebuild_course_cache($course->id, true);
     }
 
     /**
