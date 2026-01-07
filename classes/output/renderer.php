@@ -52,33 +52,28 @@ class renderer extends section_renderer {
             return '';
         }
 
-        $format = course_get_format($course);
-        $options = $format->get_format_options();
-        $tagsetid = $options['tagsetid'] ?? 0;
+        // Get tags selected for this course.
+        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
 
-        // If we have a tagset configured, use our tag chooser button.
-        if ($tagsetid > 0) {
-            $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+        // If we have tags selected, use our tag chooser button.
+        if (!empty($tags)) {
+            $data = [
+                'tags' => array_values($tags),
+                'sectionnum' => $section,
+                'sectionreturn' => $sectionreturn,
+                'uniqid' => uniqid(),
+            ];
 
-            if (!empty($tags)) {
-                $data = [
-                    'tags' => array_values($tags),
-                    'sectionnum' => $section,
-                    'sectionreturn' => $sectionreturn,
-                    'uniqid' => uniqid(),
-                ];
+            // Load the JS for our tag chooser.
+            $this->page->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
 
-                // Load the JS for our tag chooser.
-                $this->page->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
-
-                return $this->render_from_template(
-                    'core_courseformat/local/content/divider',
-                    [
-                        'content' => $this->render_from_template('format_minimoodlewall/tagchooserbutton', $data),
-                        'extraclasses' => 'always-visible my-3',
-                    ]
-                );
-            }
+            return $this->render_from_template(
+                'core_courseformat/local/content/divider',
+                [
+                    'content' => $this->render_from_template('format_minimoodlewall/tagchooserbutton', $data),
+                    'extraclasses' => 'always-visible my-3',
+                ]
+            );
         }
 
         // Fall back to default implementation.

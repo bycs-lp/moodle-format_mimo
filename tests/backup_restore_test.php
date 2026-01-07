@@ -46,11 +46,15 @@ final class backup_restore_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $course = $generator->create_course(['format' => 'minimoodlewall']);
+        $tagid = tag_manager::create_tag('Backup Tag');
+        
+        // Create course with selectedtags set.
+        $course = $generator->create_course([
+            'format' => 'minimoodlewall',
+            'selectedtags' => (string)$tagid,
+        ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
 
-        $tagsetid = tag_manager::create_tagset('Backup Tagset', 'Used for backup test');
-        $tagid = tag_manager::create_tag($tagsetid, 'Backup Tag');
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         $backupid = 'mmw_backup_' . random_string(6);
@@ -58,19 +62,25 @@ final class backup_restore_test extends \advanced_testcase {
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored minimoodlewall');
 
         $tag = $DB->get_record_sql(
-            "SELECT t.name, ts.name AS tagsetname
+            "SELECT t.name
                FROM {format_minimoodlewall_cmtags} cmt
                JOIN {course_modules} cm ON cm.id = cmt.cmid
                JOIN {modules} m ON m.id = cm.module
                JOIN {format_minimoodlewall_tags} t ON t.id = cmt.tagid
-               JOIN {format_minimoodlewall_tagsets} ts ON ts.id = t.tagsetid
               WHERE cm.course = :courseid AND m.name = :modname",
             ['courseid' => $restoredcourseid, 'modname' => 'page']
         );
 
         $this->assertNotFalse($tag);
         $this->assertEquals('Backup Tag', $tag->name);
-        $this->assertEquals('Backup Tagset', $tag->tagsetname);
+
+        // Verify selectedtags format option was restored.
+        $selectedtags = $DB->get_field('course_format_options', 'value', [
+            'courseid' => $restoredcourseid,
+            'format' => 'minimoodlewall',
+            'name' => 'selectedtags',
+        ]);
+        $this->assertNotEmpty($selectedtags);
     }
 
     /**

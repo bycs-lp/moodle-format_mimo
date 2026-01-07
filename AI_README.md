@@ -4,18 +4,19 @@
 
 ## TL;DR
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards.
-- **Core concept**: Every course must pick a *tag set*; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
+- **Core concept**: Every course must select at least one *tag* via autocomplete multiselect; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
 - **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (DB + files + cache), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (design variants), `amd/` (future JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
   - Enforces single-section behavior, course index support, and hides section crumbs on activity pages.
-  - Adds course options: `tagsetid` (required at create time), `enablefiltering`, `designvariant`.
-  - `edit_form_validation()` forces a tag set selection.
+  - Adds course options: `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required, editable anytime), `enablefiltering`, `designvariant`.
+  - `edit_form_validation()` forces at least one tag selection.
 - **Tag domain model** (`db/install.xml` + `classes/tag_manager.php`)
-  - Tables: `*_tagsets`, `*_tags`, `*_cmtags` (one tag per `cm`).
+  - Tables: `*_tags` (standalone flat list), `*_cmtags` (one tag per `cm`).
   - File areas (`FILEAREA_CARDIMAGE`, `FILEAREA_FILTERIMAGE`) live in system context; served via `format_minimoodlewall_pluginfile()`.
   - `tag_manager` handles CRUD, cache invalidation, filemanager prep/saving, default palettes, and usage counts.
+  - Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (filters by course's selectedtags option).
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
@@ -29,18 +30,19 @@
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
   - `styles.scss` hosts shared wall styles + design variants (`classic`, `light`, `dark`).
 - **Caching** (`cache/definitions.php`)
-  - `tagconfigurations`: tag + artwork metadata per tagset.
+  - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`).
   - `activitytagmappings`: cm→tag lookup.
   - `activity_descriptions`: cached activity descriptions with tag data (LEFT JOIN on desc_tags).
-  - Clear via `tag_manager::clear_tag_cache()` or `activity_description_manager::clear_cache()` whenever data changes.
+  - Clear via `tag_manager::clear_course_tags_cache($courseid)` or `activity_description_manager::clear_cache()` whenever data changes.
 
 ## Workflows & Entry Points
 1. **Course creation**
    - User selects Minimal Moodle Wall format.
-   - Must choose an existing tag set (option disabled later to avoid changing taxonomy mid-course).
+   - Must select at least one tag via autocomplete multiselect (can be changed later if needed).
 2. **Tag management**
-   - Admin page handles create/edit/delete for tag sets and tags, including SVG uploads.
+   - Admin page handles create/edit/delete for tags, including SVG uploads.
    - SVGs must be `.svg` (enforced via filemanager options).
+   - Tags are global — all courses share the same tag pool; each course selects which tags to use.
 3. **Course editing**
   - Teachers see a tag-based activity chooser: clicking the "+" button reveals a dropdown of configured tags.
   - Selecting a tag opens a modal with three options: two quick-create shortcuts (pre-configured activity types) and a link to the full activity chooser.
@@ -122,9 +124,9 @@ This plugin demonstrates the hybrid approach:
 
 ## Guardrails for Future Agents
 - Respect single-section assumption; avoid introducing multiple sections unless architecture is revisited.
-- Never bypass tagset requirement—other logic assumes every course module can resolve a tag.
+- Never bypass selectedtags requirement—every course must have at least one tag selected for the wall to function properly.
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` helpers to avoid orphans.
-- Update caches after any tag/tagset change; otherwise wall rendering will show stale logos/colors.
+- Update caches after any tag change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
 - Keep AI-facing docs (this file + README) updated when adding new options or data flows to minimize forgotten invariants.
 - **Version Compatibility**: The plugin automatically detects Moodle version and uses appropriate classes/templates. The split is at Moodle 5.1 (branch 501) where MDL-86337 moved activity chooser to core_courseformat. Test changes in both 5.0 and 5.1+ environments.
 - **Linter warnings**: Expect false positives for dynamic class loading, missing namespaces in legacy code, and global variable usage—these are intentional Moodle patterns, not bugs.
@@ -151,16 +153,17 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options, validation, navigation tweaks, pluginfile hook.
-- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes.
+- `lib.php` – course options (selectedtags autocomplete), validation, navigation tweaks, pluginfile hook.
+- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)`.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
-- `tag_management.php` – admin UI controller for tags.
+- `tag_management.php` – admin UI controller for tags (flat list, no tagsets).
 - `description_tags.php` – admin UI for managing description tags (name + hex color).
 - `activity_descriptions.php` – admin UI for editing activity type descriptions and assigning description tags.
-- `classes/form/tag*_form.php` – mform definitions for tag UI.
+- `classes/form/tag_form.php` – mform definition for tag create/edit UI.
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
+- `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns tags matching course's selectedtags option).
 - `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.0+ tag chooser button** (extends core class).
 - `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates.

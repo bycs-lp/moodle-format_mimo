@@ -2,7 +2,7 @@
 Feature: Tag management in minimoodlewall format
   In order to organize activities with visual tags
   As an admin
-  I need to create and manage tag sets and tags
+  I need to create and manage tags
 
   Background:
     Given the following "users" exist:
@@ -13,27 +13,12 @@ Feature: Tag management in minimoodlewall format
       | user   | role    | contextlevel | reference |
       | admin1 | manager | System       |           |
 
-  @javascript
-  Scenario: Admin can create a new tag set
+  @javascript @_file_upload
+  Scenario: Admin can create a new tag
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "[data-testid='create-tagset-button']" "css_element"
-    And I set the following fields to these values:
-      | Name        | Science Topics |
-    And I press "Save"
-    Then I should see "Science Topics"
-
-  @javascript @_file_upload
-  Scenario: Admin can add tags to a tag set
-    Given the following "format_minimoodlewall > tagsets" exist:
-      | name           |
-      | Science Topics |
-    And I log in as "admin"
-    And I am on site homepage
-    And I visit "/course/format/minimoodlewall/tag_management.php"
-    And I wait until "Science Topics" "text" exists
-    When I click on "[data-testid='create-tag-button']" "css_element" in the "[data-testid='tagset-card'][data-tagset-name='Science Topics']" "css_element"
+    When I click on "[data-testid='create-tag-button']" "css_element"
     And I set the following fields to these values:
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
@@ -45,12 +30,9 @@ Feature: Tag management in minimoodlewall format
 
   @javascript @_file_upload
   Scenario: Admin can edit existing tags
-    Given the following "format_minimoodlewall > tagsets" exist:
-      | name           |
-      | Science Topics |
-    And the following "format_minimoodlewall > tags" exist:
-      | tagset         | name    | activitytype1 | activitytype2 |
-      | Science Topics | Biology | assign        | quiz          |
+    Given the following "format_minimoodlewall > tags" exist:
+      | name    | activitytype1 | activitytype2 |
+      | Biology | assign        | quiz          |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
@@ -64,13 +46,10 @@ Feature: Tag management in minimoodlewall format
 
   @javascript
   Scenario: Admin can delete tags
-    Given the following "format_minimoodlewall > tagsets" exist:
-      | name           |
-      | Science Topics |
-    And the following "format_minimoodlewall > tags" exist:
-      | tagset         | name    | activitytype1 | activitytype2 |
-      | Science Topics | Biology | assign        | quiz          |
-      | Science Topics | Physics | assign        | forum         |
+    Given the following "format_minimoodlewall > tags" exist:
+      | name    | activitytype1 | activitytype2 |
+      | Biology | assign        | quiz          |
+      | Physics | assign        | forum         |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"

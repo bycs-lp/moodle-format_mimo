@@ -47,7 +47,6 @@ class content extends content_base {
 
         // Get the course format options.
         $course = $this->format->get_course();
-        $tagsetid = $course->tagsetid ?? 0;
         $designvariant = $course->designvariant ?? 'classic';
         $allowedvariants = ['classic', 'light', 'dark'];
         if (!in_array($designvariant, $allowedvariants, true)) {
@@ -57,15 +56,14 @@ class content extends content_base {
         $data->designvariant = $designvariant;
         $data->designclass = 'minimoodlewall-design-' . $designvariant;
 
-        // Initialize the tag chooser button JavaScript if editing is on and tagset is configured.
-        if ($PAGE->user_is_editing() && $tagsetid > 0) {
+        // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
+        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+        if ($PAGE->user_is_editing() && !empty($tags)) {
             $PAGE->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
 
             // Pass tag data to the template.
-            $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
             $data->tags = array_values($tags);
-            $data->hastags = !empty($tags);
-            $data->tagsetid = $tagsetid;
+            $data->hastags = true;
         }
 
         return $data;

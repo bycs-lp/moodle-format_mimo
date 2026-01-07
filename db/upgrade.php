@@ -209,5 +209,102 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2025120300, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2026010700) {
+        // Remove tagset architecture - migrate to single flat tag list with course-based tag selection.
+
+        // Step 1: For each course using minimoodlewall format with a tagsetid,
+        // collect all tag IDs from that tagset and store as selectedtags course option.
+        $sql = "SELECT cfo.courseid, cfo.value AS tagsetid
+                  FROM {course_format_options} cfo
+                  JOIN {course} c ON c.id = cfo.courseid
+                 WHERE cfo.format = 'minimoodlewall'
+                   AND cfo.name = 'tagsetid'
+                   AND cfo.value IS NOT NULL
+                   AND cfo.value != ''
+                   AND cfo.value != '0'";
+        $courses = $DB->get_records_sql($sql);
+
+        foreach ($courses as $course) {
+            // Get all tag IDs from this tagset.
+            $tagids = $DB->get_fieldset_select(
+                'format_minimoodlewall_tags',
+                'id',
+                'tagsetid = :tagsetid',
+                ['tagsetid' => $course->tagsetid],
+                'sortorder ASC, id ASC'
+            );
+
+            if (!empty($tagids)) {
+                // Store as selectedtags course format option.
+                $selectedtags = implode(',', $tagids);
+
+                // Check if selectedtags option already exists.
+                $existing = $DB->get_record('course_format_options', [
+                    'courseid' => $course->courseid,
+                    'format' => 'minimoodlewall',
+                    'name' => 'selectedtags',
+                ]);
+
+                if ($existing) {
+                    $existing->value = $selectedtags;
+                    $DB->update_record('course_format_options', $existing);
+                } else {
+                    $option = new stdClass();
+                    $option->courseid = $course->courseid;
+                    $option->format = 'minimoodlewall';
+                    $option->sectionid = 0;
+                    $option->name = 'selectedtags';
+                    $option->value = $selectedtags;
+                    $DB->insert_record('course_format_options', $option);
+                }
+            }
+        }
+
+        // Step 2: Delete the tagsetid course format options.
+        $DB->delete_records_select(
+            'course_format_options',
+            "format = 'minimoodlewall' AND name = 'tagsetid'"
+        );
+
+        // Step 3: Drop tagsetid foreign key and index from tags table.
+        $table = new xmldb_table('format_minimoodlewall_tags');
+
+        // Drop foreign key first.
+        $key = new xmldb_key('tagsetid', XMLDB_KEY_FOREIGN, ['tagsetid'], 'format_minimoodlewall_tagsets', ['id']);
+        $dbman->drop_key($table, $key);
+
+        // Drop the composite index.
+        $index = new xmldb_index('tagsetid_sortorder', XMLDB_INDEX_NOTUNIQUE, ['tagsetid', 'sortorder']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Step 4: Drop tagsetid column from tags table.
+        $field = new xmldb_field('tagsetid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Step 5: Add new sortorder index (without tagsetid).
+        $index = new xmldb_index('sortorder', XMLDB_INDEX_NOTUNIQUE, ['sortorder']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Step 6: Drop the tagsets table.
+        $table = new xmldb_table('format_minimoodlewall_tagsets');
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // Step 7: Clear caches.
+        $cache = cache::make('format_minimoodlewall', 'tagconfigurations');
+        $cache->purge();
+        $cache = cache::make('format_minimoodlewall', 'activitytagmappings');
+        $cache->purge();
+
+        upgrade_plugin_savepoint(true, 2026010700, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

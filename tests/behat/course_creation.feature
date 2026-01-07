@@ -2,25 +2,21 @@
 Feature: Course creation with minimoodlewall format
   In order to use the minimal moodle wall format
   As a teacher
-  I need to select a tag set when creating a course
+  I need to select tags when creating a course
 
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name           | description              |
-      | Default Tags   | Default tag set          |
-      | Science Topics | Tags for science courses |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset         | name      | description       | activitytype1 | activitytype2 |
-      | Default Tags   | Reading   | Reading materials | page          | book          |
-      | Default Tags   | Practice  | Practice tasks    | assign        | quiz          |
-      | Science Topics | Biology   | Life science      | assign        | forum         |
-      | Science Topics | Chemistry | Matter            | quiz          | workshop      |
+      | name      | description       | activitytype1 | activitytype2 |
+      | Reading   | Reading materials | page          | book          |
+      | Practice  | Practice tasks    | assign        | quiz          |
+      | Biology   | Life science      | assign        | forum         |
+      | Chemistry | Matter            | quiz          | workshop      |
 
   @javascript
-  Scenario: Create a course with minimoodlewall format and select tag set
+  Scenario: Create a course with minimoodlewall format and select tags
     Given I log in as "admin"
     And I am on site homepage
     And I navigate to "Courses > Add a new course" in site administration
@@ -29,14 +25,14 @@ Feature: Course creation with minimoodlewall format
       | Course full name    | Test Course 1        |
       | Course short name   | TC1                  |
       | Format              | Minimal Moodle Wall  |
-      | Tag set             | Default Tags         |
       | Enable tag filtering| 1                    |
       | Design              | classic              |
+    And I set the field "Course tags" to "Reading, Practice"
     And I press "Save and display"
     Then I should see "Test Course 1"
 
   @javascript
-  Scenario: Tag set selection is required when creating a course
+  Scenario: Tag selection is required when creating a course
     Given I log in as "admin"
     And I am on site homepage
     And I navigate to "Courses > Add a new course" in site administration
@@ -45,14 +41,16 @@ Feature: Course creation with minimoodlewall format
       | Course full name  | Test Course 2       |
       | Course short name | TC2                 |
       | Format            | Minimal Moodle Wall |
+    # Clear any default tags
+    And I set the field "Course tags" to ""
     When I press "Save and display"
-    Then I should see "Required"
+    Then I should see "Please select at least one tag"
 
   @javascript
-  Scenario: Tag set cannot be changed after course creation
-    Given the following "courses" exist:
-      | fullname      | shortname | format            |
-      | Test Course 1 | TC1       | minimoodlewall    |
+  Scenario: Tags can be changed after course creation
+    Given the following "format_minimoodlewall > courses" exist:
+      | fullname      | shortname | selectedtags      |
+      | Test Course 1 | TC1       | Reading, Practice |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |
@@ -60,13 +58,13 @@ Feature: Course creation with minimoodlewall format
     When I am on "Test Course 1" course homepage
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
-    Then the "Tag set" "select" should be disabled
+    Then the "Course tags" "field" should be enabled
 
   @javascript
   Scenario: Course displays activities in wall format
-    Given the following "courses" exist:
-      | fullname      | shortname | format         | tagsetid     |
-      | Test Course 1 | TC1       | minimoodlewall | Default Tags |
+    Given the following "format_minimoodlewall > courses" exist:
+      | fullname      | shortname | selectedtags      |
+      | Test Course 1 | TC1       | Reading, Practice |
     And the following "activities" exist:
       | activity | name          | intro                | course | section |
       | assign   | Assignment 1  | First assignment     | TC1    | 1       |

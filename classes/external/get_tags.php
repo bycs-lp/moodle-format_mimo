@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External service to get tags for a tagset.
+ * External service to get tags for a course.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -32,7 +32,7 @@ use core_external\external_single_structure;
 use format_minimoodlewall\tag_manager;
 
 /**
- * External service to get tags for a tagset.
+ * External service to get tags for a course.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -46,22 +46,22 @@ class get_tags extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters([
-            'tagsetid' => new external_value(PARAM_INT, 'Tagset ID'),
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
         ]);
     }
 
     /**
-     * Get tags for a tagset.
+     * Get tags selected for a course.
      *
-     * @param int $tagsetid Tagset ID
+     * @param int $courseid Course ID
      * @return array
      */
-    public static function execute($tagsetid) {
+    public static function execute($courseid) {
         $params = self::validate_parameters(self::execute_parameters(), [
-            'tagsetid' => $tagsetid,
+            'courseid' => $courseid,
         ]);
 
-        $tags = tag_manager::get_tags_by_tagset($params['tagsetid']);
+        $tags = tag_manager::get_tags_for_course($params['courseid']);
 
         $result = [];
         foreach ($tags as $tag) {

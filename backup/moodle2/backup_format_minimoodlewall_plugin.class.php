@@ -28,7 +28,7 @@
  */
 class backup_format_minimoodlewall_plugin extends backup_format_plugin {
     /**
-     * Include tagset + tag information used by the course.
+     * Include tag information used by the course and selectedtags format option.
      *
      * @return backup_plugin_element
      * @throws base_element_struct_exception
@@ -39,14 +39,11 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         // Ensure predictable XML like plugin_format_minimoodlewall_course so get_pathfor() works on restore.
         $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
-        $tagsets = new backup_nested_element('mmw_tagsets');
-        $tagset = new backup_nested_element('mmw_tagset', ['id'], ['name', 'description', 'timecreated', 'timemodified']);
         $tags = new backup_nested_element('mmw_tags');
         $tag = new backup_nested_element(
             'mmw_tag',
             ['id'],
             [
-                'tagsetid',
                 'name',
                 'description',
                 'cardimage',
@@ -60,39 +57,23 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         );
 
         $plugin->add_child($pluginwrapper);
-        $pluginwrapper->add_child($tagsets);
-        $tagsets->add_child($tagset);
-        $tagset->add_child($tags);
+        $pluginwrapper->add_child($tags);
         $tags->add_child($tag);
 
-        // Tagset + tag IDs are annotated so other plugins (modules) can map references later.
-        $tagset->annotate_ids('format_minimoodlewall_tagset', 'id');
+        // Tag IDs are annotated so other plugins (modules) can map references later.
         $tag->annotate_ids('format_minimoodlewall_tag', 'id');
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE, 'id');
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE, 'id');
 
-        // Only export tagsets actually used in the course to keep backups lean.
-        $tagset->set_source_sql(
-            "SELECT DISTINCT ts.*
-               FROM {format_minimoodlewall_tagsets} ts
-               JOIN {format_minimoodlewall_tags} t ON t.tagsetid = ts.id
-               JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
-               JOIN {course_modules} cm ON cm.id = cmt.cmid
-              WHERE cm.course = :courseid",
-            ['courseid' => backup::VAR_COURSEID]
-        );
-
-        // Export all tags inside each exported tagset.
+        // Export all tags that are used by course modules in this course.
         $tag->set_source_sql(
             "SELECT DISTINCT t.*
                FROM {format_minimoodlewall_tags} t
                JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
                JOIN {course_modules} cm ON cm.id = cmt.cmid
-              WHERE cm.course = :courseid AND t.tagsetid = :tagsetid",
-            [
-                'courseid' => backup::VAR_COURSEID,
-                'tagsetid' => backup::VAR_PARENTID,
-            ]
+              WHERE cm.course = :courseid
+           ORDER BY t.sortorder",
+            ['courseid' => backup::VAR_COURSEID]
         );
 
         return $plugin;

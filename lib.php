@@ -139,9 +139,9 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function course_format_options($forupdate = false) {
         $courseformatoptions = [
-            'tagsetid' => [
-                'default' => 0,
-                'type' => PARAM_INT,
+            'selectedtags' => [
+                'default' => '',
+                'type' => PARAM_SEQUENCE,
             ],
             'enablefiltering' => [
                 'default' => 1,
@@ -158,26 +158,25 @@ class format_minimoodlewall extends core_courseformat\base {
         ];
 
         if ($forupdate) {
-            // Get available tagsets.
-            $tagsets = \format_minimoodlewall\tag_manager::get_tagsets();
-            $tagsetchoices = [0 => get_string('selecttagset', 'format_minimoodlewall')];
-            foreach ($tagsets as $tagset) {
-                $tagsetchoices[$tagset->id] = $tagset->name;
+            // Get all available tags.
+            $tags = \format_minimoodlewall\tag_manager::get_all_tags();
+            $tagchoices = [];
+            foreach ($tags as $tag) {
+                $tagchoices[$tag->id] = $tag->name;
             }
 
-            // Check if this is an existing course.
-            $course = $this->get_course();
-            $iscreating = empty($course->id) || $course->id == SITEID;
-
             // Add form elements for course settings.
-            $courseformatoptions['tagsetid'] += [
-                'label' => get_string('setting_tagsetid', 'format_minimoodlewall'),
-                'help' => 'setting_tagsetid',
+            $courseformatoptions['selectedtags'] += [
+                'label' => get_string('setting_selectedtags', 'format_minimoodlewall'),
+                'help' => 'setting_selectedtags',
                 'help_component' => 'format_minimoodlewall',
-                'element_type' => 'select',
+                'element_type' => 'autocomplete',
                 'element_attributes' => [
-                    $tagsetchoices,
-                    $iscreating ? [] : ['disabled' => 'disabled'],
+                    $tagchoices,
+                    [
+                        'multiple' => true,
+                        'noselectionstring' => get_string('selecttags', 'format_minimoodlewall'),
+                    ],
                 ],
             ];
             $courseformatoptions['enablefiltering'] += [
@@ -208,7 +207,7 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
-     * Require to pick a tag set when creating a course with this format.
+     * Require at least one tag to be selected when creating/editing a course with this format.
      *
      * @param array $data Submitted form data
      * @param array $files Uploaded files
@@ -218,8 +217,16 @@ class format_minimoodlewall extends core_courseformat\base {
     public function edit_form_validation($data, $files, $errors) {
         $errors = parent::edit_form_validation($data, $files, $errors);
 
-        if (empty((int)($data['tagsetid'] ?? 0))) {
-            $errors['tagsetid'] = get_string('error_required_tagset', 'format_minimoodlewall');
+        // selectedtags can be an array (from autocomplete) or string (comma-separated from db).
+        $selectedtags = $data['selectedtags'] ?? '';
+        if (is_array($selectedtags)) {
+            $selectedtags = array_filter($selectedtags);
+        } else {
+            $selectedtags = array_filter(explode(',', $selectedtags));
+        }
+
+        if (empty($selectedtags)) {
+            $errors['selectedtags'] = get_string('error_required_tags', 'format_minimoodlewall');
         }
 
         return $errors;

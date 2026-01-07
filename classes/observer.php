@@ -56,16 +56,13 @@ class observer {
             $tagid = $SESSION->format_minimoodlewall_pending_tag;
             $cmid = $event->objectid;
 
-            // Validate that the tag exists and belongs to this course's tagset.
-            $formatoptions = course_get_format($courseid)->get_format_options();
-            $tagsetid = $formatoptions['tagsetid'] ?? 0;
+            // Validate that the tag exists and is selected for this course.
+            $coursetags = tag_manager::get_tags_for_course($courseid);
+            $tag = tag_manager::get_tag($tagid);
 
-            if ($tagsetid > 0) {
-                $tag = tag_manager::get_tag($tagid);
-                if ($tag && $tag->tagsetid == $tagsetid) {
-                    // Assign the tag to the newly created course module.
-                    tag_manager::assign_tag_to_cm($cmid, $tagid);
-                }
+            if ($tag && isset($coursetags[$tag->id])) {
+                // Assign the tag to the newly created course module.
+                tag_manager::assign_tag_to_cm($cmid, $tagid);
             }
 
             // Clear the pending tag from session.

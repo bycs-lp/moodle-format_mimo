@@ -32,20 +32,14 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'courses' => [
                 'singular' => 'course',
                 'datagenerator' => 'course',
-                'required' => ['fullname', 'shortname', 'tagsetid'],
-                'switchids' => [],
-            ],
-            'tagsets' => [
-                'singular' => 'tagset',
-                'datagenerator' => 'tagset',
-                'required' => ['name'],
+                'required' => ['fullname', 'shortname'],
                 'switchids' => [],
             ],
             'tags' => [
                 'singular' => 'tag',
                 'datagenerator' => 'tag',
-                'required' => ['tagset', 'name'],
-                'switchids' => ['tagset' => 'tagsetid'],
+                'required' => ['name'],
+                'switchids' => [],
             ],
             'cmtags' => [
                 'singular' => 'cmtag',
@@ -75,41 +69,19 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Look up tagset id from name.
-     *
-     * @param string $tagsetname
-     * @return int
-     */
-    protected function get_tagset_id(string $tagsetname): int {
-        global $DB;
-
-        // Use get_record to get the most recent tagset with this name (ORDER BY id DESC).
-        $record = $DB->get_record_sql(
-            "SELECT id FROM {format_minimoodlewall_tagsets} WHERE name = ? ORDER BY id DESC",
-            [$tagsetname],
-            IGNORE_MULTIPLE
-        );
-        if (!$record) {
-            throw new Exception('The specified tagset with name "' . $tagsetname . '" does not exist');
-        }
-        return (int)$record->id;
-    }
-
-    /**
-     * Look up tag id from name within a specific tagset.
+     * Look up tag id from name.
      *
      * @param string $tagname
-     * @param int $tagsetid Tag set ID to search within
      * @return int
      */
-    protected function get_tag_id(string $tagname, int $tagsetid): int {
+    protected function get_tag_id(string $tagname): int {
         global $DB;
 
-        $id = $DB->get_field('format_minimoodlewall_tags', 'id', ['name' => $tagname, 'tagsetid' => $tagsetid]);
+        $id = $DB->get_field('format_minimoodlewall_tags', 'id', ['name' => $tagname]);
         if (!$id) {
-            throw new Exception('The specified tag with name "' . $tagname . '" does not exist in tagset ' . $tagsetid);
+            throw new Exception('The specified tag with name "' . $tagname . '" does not exist');
         }
-        return $id;
+        return (int)$id;
     }
 
     /**
@@ -142,6 +114,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
      * Look up course module id from activity name.
      *
      * @param string $cmname
+     * @param int|null $courseid Optional course ID to narrow search
      * @return int
      */
     protected function get_cm_id(string $cmname, ?int $courseid = null): int {
@@ -206,27 +179,13 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Preprocess tagset data before creating.
-     *
-     * @param array $data
-     * @return array
-     */
-    protected function preprocess_tagset($data) {
-        // No preprocessing needed for tagsets.
-        return $data;
-    }
-
-    /**
      * Preprocess tag data before creating.
      *
      * @param array $data
      * @return array
      */
     protected function preprocess_tag($data) {
-        if (isset($data['tagset'])) {
-            $data['tagsetid'] = $this->get_tagset_id($data['tagset']);
-            unset($data['tagset']);
-        }
+        // No preprocessing needed for tags - they are now standalone.
         return $data;
     }
 
@@ -248,18 +207,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             unset($data['cm']);
         }
         if (isset($data['tag'])) {
-            // For cmtags, we need the tagsetid - get it from the course module's course.
-            // Needs more logic because in behat we create multiple tags with the same name.
-            $cm = get_coursemodule_from_id('', $data['cmid'], 0, false, MUST_EXIST);
-            $course = get_course($cm->course);
-            $formatoptions = course_get_format($course)->get_format_options();
-            $tagsetid = $formatoptions['tagsetid'] ?? 0;
-
-            if ($tagsetid > 0) {
-                $data['tagid'] = $this->get_tag_id($data['tag'], $tagsetid);
-            } else {
-                throw new Exception('Course does not have a tagsetid configured');
-            }
+            $data['tagid'] = $this->get_tag_id($data['tag']);
             unset($data['tag']);
         }
         return $data;
@@ -290,7 +238,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
 
     /**
      * Process courses table data for minimoodlewall format.
-     * This hooks into Behat's course creation to handle tagsetid.
+     * This hooks into Behat's course creation to handle selectedtags.
      *
      * @param array $data
      * @return array
@@ -306,7 +254,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
 
         $formatoptions = [
             'id' => $course->id,
-            'tagsetid' => $data['tagsetid'],
+            'selectedtags' => $data['selectedtags'],
             'enablefiltering' => $data['enablefiltering'],
             'designvariant' => $data['designvariant'],
         ];
@@ -323,18 +271,29 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
      * @return array
      */
     protected function normalise_course_data(array $data): array {
+        global $DB;
+
         $data['format'] = $data['format'] ?? 'minimoodlewall';
         if ($data['format'] !== 'minimoodlewall') {
             throw new coding_exception('format_minimoodlewall course generator only supports the minimoodlewall format.');
         }
 
-        if (empty($data['tagsetid'])) {
-            throw new coding_exception('Courses created via format_minimoodlewall generator must specify a tagsetid.');
-        }
-        if (!is_numeric($data['tagsetid'])) {
-            $data['tagsetid'] = $this->get_tagset_id($data['tagsetid']);
+        // Handle selectedtags - can be a comma-separated list of tag names or IDs.
+        if (!empty($data['selectedtags'])) {
+            $tagnames = array_map('trim', explode(',', $data['selectedtags']));
+            $tagids = [];
+            foreach ($tagnames as $tagname) {
+                if (is_numeric($tagname)) {
+                    $tagids[] = (int)$tagname;
+                } else {
+                    $tagids[] = $this->get_tag_id($tagname);
+                }
+            }
+            $data['selectedtags'] = implode(',', $tagids);
         } else {
-            $data['tagsetid'] = (int)$data['tagsetid'];
+            // Default to all available tags if none specified.
+            $alltags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder', 'id');
+            $data['selectedtags'] = implode(',', array_keys($alltags));
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
@@ -403,20 +362,13 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             // Get the course module ID.
             $cm = get_coursemodule_from_instance($modulename, $instance->id, $courseid);
             if ($cm) {
-                // Get the course's tagsetid from format options.
-                $course = get_course($courseid);
-                $formatoptions = course_get_format($course)->get_format_options();
-                $tagsetid = $formatoptions['tagsetid'] ?? 0;
+                $tagid = $this->get_tag_id($tagname);
 
-                if ($tagsetid > 0) {
-                    $tagid = $this->get_tag_id($tagname, $tagsetid);
-
-                    // Create cmtag entry.
-                    $this->componentdatagenerator->create_cmtag([
-                        'cmid' => $cm->id,
-                        'tagid' => $tagid,
-                    ]);
-                }
+                // Create cmtag entry.
+                $this->componentdatagenerator->create_cmtag([
+                    'cmid' => $cm->id,
+                    'tagid' => $tagid,
+                ]);
             }
         }
     }

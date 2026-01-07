@@ -52,7 +52,6 @@ class section extends section_base {
 
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
-        $tagsetid = $options['tagsetid'] ?? 0;
         $enablefiltering = !empty($options['enablefiltering']);
         $isediting = $PAGE->user_is_editing();
 
@@ -67,13 +66,13 @@ class section extends section_base {
             $data->cmlist->hasinitialnext = ($activitycount > self::INITIAL_PAGINATION_THRESHOLD);
         }
 
-        if ($tagsetid > 0) {
-            $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+        // Get tags selected for this course.
+        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course((int)$course->id);
 
+        if (!empty($tags)) {
             if ($isediting) {
                 $data->tags = array_values($tags);
-                $data->hastags = !empty($tags);
-                $data->tagsetid = $tagsetid;
+                $data->hastags = true;
                 $data->sectionnum = $this->section->section;
             }
 

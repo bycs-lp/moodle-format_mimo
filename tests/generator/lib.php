@@ -28,41 +28,9 @@ class format_minimoodlewall_generator extends component_generator_base {
     protected $tagcount = 0;
 
     /**
-     * @var int Counter for tagset creation
-     */
-    protected $tagsetcount = 0;
-
-    /**
-     * Create a tag set.
-     *
-     * @param array|stdClass $record
-     * @return stdClass The created tagset record
-     */
-    public function create_tagset($record = null) {
-        global $DB;
-
-        $this->tagsetcount++;
-        $record = (object)(array)$record;
-
-        if (!isset($record->name)) {
-            $record->name = 'Test Tagset ' . $this->tagsetcount;
-        }
-        if (!isset($record->timecreated)) {
-            $record->timecreated = time();
-        }
-        if (!isset($record->timemodified)) {
-            $record->timemodified = time();
-        }
-
-        $record->id = $DB->insert_record('format_minimoodlewall_tagsets', $record);
-
-        return $record;
-    }
-
-    /**
      * Create a tag.
      *
-     * @param array|stdClass $record Must include tagsetid or tagset name
+     * @param array|stdClass $record Tag data
      * @return stdClass The created tag record
      */
     public function create_tag($record = null) {
@@ -70,10 +38,6 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         $this->tagcount++;
         $record = (object)(array)$record;
-
-        if (!isset($record->tagsetid)) {
-            throw new coding_exception('tagsetid is required for creating tags');
-        }
 
         if (!isset($record->name)) {
             $record->name = 'Test Tag ' . $this->tagcount;

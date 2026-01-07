@@ -36,9 +36,6 @@ final class observer_test extends \advanced_testcase {
     /** @var \stdClass Test course with minimoodlewall format */
     private $course;
 
-    /** @var int Test tagset ID */
-    private $tagsetid;
-
     /** @var int Test tag ID */
     private $tagid;
 
@@ -50,22 +47,19 @@ final class observer_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        // Create a course with minimoodlewall format for most tests.
-        $this->course = $this->getDataGenerator()->create_course(['format' => 'minimoodlewall']);
-
-        // Create a tagset and tag.
-        $this->tagsetid = tag_manager::create_tagset('Test Tagset', 'Test Description');
+        // Create a tag.
         $this->tagid = tag_manager::create_tag(
-            $this->tagsetid,
             'Test Tag',
-            'Description',
             'test.svg',
-            'test-small.svg'
+            'test-small.svg',
+            'page'
         );
 
-        // Set course format option to use this tagset.
-        $format = course_get_format($this->course->id);
-        $format->update_course_format_options(['tagsetid' => $this->tagsetid]);
+        // Create a course with minimoodlewall format and this tag selected.
+        $this->course = $this->getDataGenerator()->create_course([
+            'format' => 'minimoodlewall',
+            'selectedtags' => $this->tagid,
+        ]);
     }
 
     /**
@@ -150,18 +144,17 @@ final class observer_test extends \advanced_testcase {
     ): void {
         global $SESSION;
 
+        // Create a tag.
+        $tagid = tag_manager::create_tag('Test Tag', 'test.svg', 'test-small.svg', 'page');
+
         // Create a course with specified format.
-        $course = $this->getDataGenerator()->create_course(['format' => $format]);
-
-        // Create a tagset and tag.
-        $tagsetid = tag_manager::create_tagset('Test Tagset', 'Test Description');
-        $tagid = tag_manager::create_tag($tagsetid, 'Test Tag', 'Description', 'test.svg', 'test-small.svg');
-
-        // Set course format option if minimoodlewall.
+        $courseoptions = ['format' => $format];
         if ($format === 'minimoodlewall') {
-            $formatobj = course_get_format($course->id);
-            $formatobj->update_course_format_options(['tagsetid' => $tagsetid]);
+            $courseoptions['selectedtags'] = $tagid;
         }
+        $course = $this->getDataGenerator()->create_course($courseoptions);
+
+        // Note: For minimoodlewall format, selectedtags is already set during course creation.
 
         // Set pending tag in session if requested.
         if ($haspending) {
@@ -225,35 +218,32 @@ final class observer_test extends \advanced_testcase {
         return [
             'invalid_tag_id' => [
                 'setup' => function ($course, $SESSION) {
-                    // Create a tagset.
-                    $tagsetid = tag_manager::create_tagset('Test Tagset', 'Test Description');
+                    // Create a tag.
+                    $tagid = tag_manager::create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
 
-                    // Set course format option.
+                    // Set course selected tags.
                     $format = course_get_format($course->id);
-                    $format->update_course_format_options(['tagsetid' => $tagsetid]);
+                    $format->update_course_format_options(['selectedtags' => $tagid]);
 
                     // Set pending tag to non-existent tag ID.
                     $SESSION->format_minimoodlewall_pending_tag = 99999;
                 },
                 'message' => 'Invalid tag should not be assigned',
             ],
-            'tag_from_wrong_tagset' => [
+            'tag_not_selected_for_course' => [
                 'setup' => function ($course, $SESSION) {
-                    // Create two tagsets with tags.
-                    $tagsetid1 = tag_manager::create_tagset('Tagset 1', 'Description 1');
-                    tag_manager::create_tag($tagsetid1, 'Tag 1', 'Description', 'test1.svg', 'test1-small.svg');
+                    // Create two tags.
+                    $tagid1 = tag_manager::create_tag('Tag 1', 'test1.svg', 'test1-small.svg', 'page');
+                    $tagid2 = tag_manager::create_tag('Tag 2', 'test2.svg', 'test2-small.svg', 'url');
 
-                    $tagsetid2 = tag_manager::create_tagset('Tagset 2', 'Description 2');
-                    $tagid2 = tag_manager::create_tag($tagsetid2, 'Tag 2', 'Description', 'test2.svg', 'test2-small.svg');
-
-                    // Set course format option to use tagset 1.
+                    // Set course to only use tag 1.
                     $format = course_get_format($course->id);
-                    $format->update_course_format_options(['tagsetid' => $tagsetid1]);
+                    $format->update_course_format_options(['selectedtags' => $tagid1]);
 
-                    // Set pending tag from tagset 2.
+                    // Set pending tag to tag 2 (not selected for this course).
                     $SESSION->format_minimoodlewall_pending_tag = $tagid2;
                 },
-                'message' => 'Tag from different tagset should not be assigned',
+                'message' => 'Tag not selected for course should not be assigned',
             ],
         ];
     }

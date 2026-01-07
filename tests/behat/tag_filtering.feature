@@ -9,17 +9,14 @@ Feature: Tag filtering in minimoodlewall format
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
       | student1 | Student   | One      | student1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name         |
-      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | activitytype1 | activitytype2 |
-      | Default Tags | Reading  | page          | book          |
-      | Default Tags | Practice | assign        | quiz          |
-      | Default Tags | Discuss  | forum         | chat          |
+      | name     | activitytype1 | activitytype2 |
+      | Reading  | page          | book          |
+      | Practice | assign        | quiz          |
+      | Discuss  | forum         | chat          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | tagsetid     | enablefiltering |
-      | Test Course 1 | TC1       | minimoodlewall | Default Tags | 1               |
+      | fullname      | shortname | format         | selectedtags              | enablefiltering |
+      | Test Course 1 | TC1       | minimoodlewall | Reading, Practice, Discuss| 1               |
     And the following "activities" exist:
       | activity | name         | intro            | course | section |
       | assign   | Assignment 1 | First assignment | TC1    | 1       |
@@ -95,8 +92,8 @@ Feature: Tag filtering in minimoodlewall format
   @javascript
   Scenario: Filter bar is not visible when filtering is disabled
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | tagsetid     | enablefiltering |
-      | Test Course 2 | TC2       | minimoodlewall | Default Tags | 0               |
+      | fullname      | shortname | format         | selectedtags              | enablefiltering |
+      | Test Course 2 | TC2       | minimoodlewall | Reading, Practice, Discuss| 0               |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | TC2    | student |
