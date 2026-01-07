@@ -51,19 +51,17 @@ class activitychooserbutton extends activitychooserbutton_base {
         // Get the base data from parent.
         $data = parent::export_for_template($output);
 
-        // Add tag information if tags are configured.
-        $format = course_get_format($this->section->course);
-        $options = $format->get_format_options();
-        $tagsetid = $options['tagsetid'] ?? 0;
+        // Add tag information if tags are configured for this course.
+        $courseid = $this->section->course;
 
-        if ($PAGE->user_is_editing() && $tagsetid > 0) {
-            // Get tags for this tagset.
-            $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+        if ($PAGE->user_is_editing()) {
+            // Get tags selected for this course.
+            $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
 
             // Add tag data to context.
             $data->tags = array_values($tags);
             $data->hastags = !empty($tags);
-            $data->tagsetid = $tagsetid;
+            $data->courseid = $courseid;
             $data->uniqid = uniqid();
         } else {
             $data->hastags = false;
@@ -81,14 +79,16 @@ class activitychooserbutton extends activitychooserbutton_base {
     public function get_template_name(renderer_base $renderer): string {
         global $PAGE;
 
-        // Check if we have tags configured.
-        $format = course_get_format($this->section->course);
-        $options = $format->get_format_options();
-        $tagsetid = $options['tagsetid'] ?? 0;
+        // Check if we have tags configured for this course.
+        $courseid = $this->section->course;
 
-        if ($PAGE->user_is_editing() && $tagsetid > 0) {
-            // Use our custom template with tag chooser.
-            return 'format_minimoodlewall/local/content/activitychooserbutton';
+        if ($PAGE->user_is_editing()) {
+            $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
+            
+            if (!empty($tags)) {
+                // Use our custom template with tag chooser.
+                return 'format_minimoodlewall/local/content/activitychooserbutton';
+            }
         }
 
         // Fall back to core template.

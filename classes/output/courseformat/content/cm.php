@@ -50,39 +50,33 @@ class cm extends cm_base {
 
         $data = parent::export_for_template($output);
 
+        // Get tags selected for this course.
+        $courseid = $this->mod->course;
+        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
+        $hastags = !empty($tags);
+
         // In Moodle 5.1+, the activitychooserbutton class handles tag data.
         // This is only needed for backward compatibility with 5.0 and earlier.
         if ($CFG->branch < 501) {
-            // Pass tag information if we're editing and have tags configured.
-            $options = $this->format->get_format_options();
-            $tagsetid = $options['tagsetid'] ?? 0;
-
-            if ($PAGE->user_is_editing() && $tagsetid > 0) {
-                // Get tags for this tagset.
-                $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
-
+            if ($PAGE->user_is_editing() && $hastags) {
                 // Add tag data and section info to the activity chooser button context.
                 if (isset($data->activitychooserbutton)) {
                     $data->activitychooserbutton->tags = array_values($tags);
-                    $data->activitychooserbutton->hastags = !empty($tags);
-                    $data->activitychooserbutton->tagsetid = $tagsetid;
+                    $data->activitychooserbutton->hastags = $hastags;
+                    $data->activitychooserbutton->courseid = $courseid;
                     $data->activitychooserbutton->sectionnum = $this->mod->sectionnum;
                     $data->activitychooserbutton->uniqid = uniqid();
                 }
 
                 // Also add to the top level for the cm template.
                 $data->tags = array_values($tags);
-                $data->hastags = !empty($tags);
+                $data->hastags = $hastags;
             }
         } else {
             // In Moodle 5.1+, ensure tags are set at top level for the template.
-            $options = $this->format->get_format_options();
-            $tagsetid = $options['tagsetid'] ?? 0;
-
-            if ($PAGE->user_is_editing() && $tagsetid > 0) {
-                $tags = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagsetid);
+            if ($PAGE->user_is_editing() && $hastags) {
                 $data->tags = array_values($tags);
-                $data->hastags = !empty($tags);
+                $data->hastags = $hastags;
             }
         }
 

@@ -233,6 +233,27 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Updates course format options.
+     *
+     * Overrides parent to convert selectedtags array to comma-separated string
+     * before validation (autocomplete multiselect returns array, but we store as PARAM_SEQUENCE).
+     *
+     * @param stdClass|array $data Data to update
+     * @param stdClass $oldcourse Old course object
+     * @return bool whether there were any changes to the options values
+     */
+    public function update_course_format_options($data, $oldcourse = null) {
+        $data = (array)$data;
+        
+        // Convert selectedtags array to comma-separated string.
+        if (isset($data['selectedtags']) && is_array($data['selectedtags'])) {
+            $data['selectedtags'] = implode(',', array_filter($data['selectedtags']));
+        }
+        
+        return parent::update_course_format_options($data, $oldcourse);
+    }
+
+    /**
      * Returns the list of blocks to be automatically added for the newly created course.
      *
      * @return array of default blocks, must contain two keys BLOCK_POS_LEFT and BLOCK_POS_RIGHT
