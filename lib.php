@@ -237,6 +237,7 @@ class format_minimoodlewall extends core_courseformat\base {
      *
      * Overrides parent to convert selectedtags array to comma-separated string
      * before validation (autocomplete multiselect returns array, but we store as PARAM_SEQUENCE).
+     * Also clears the course tags cache when selectedtags changes.
      *
      * @param stdClass|array $data Data to update
      * @param stdClass $oldcourse Old course object
@@ -250,7 +251,14 @@ class format_minimoodlewall extends core_courseformat\base {
             $data['selectedtags'] = implode(',', array_filter($data['selectedtags']));
         }
         
-        return parent::update_course_format_options($data, $oldcourse);
+        $result = parent::update_course_format_options($data, $oldcourse);
+        
+        // Clear course tags cache if selectedtags was updated.
+        if ($result && isset($data['selectedtags'])) {
+            \format_minimoodlewall\tag_manager::clear_course_tags_cache($this->courseid);
+        }
+        
+        return $result;
     }
 
     /**
