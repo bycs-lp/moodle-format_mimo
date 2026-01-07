@@ -41,8 +41,6 @@ Feature: Course creation with minimoodlewall format
       | Course full name  | Test Course 2       |
       | Course short name | TC2                 |
       | Format            | Minimal Moodle Wall |
-    # Clear any default tags
-    And I set the field "Course tags" to ""
     When I press "Save and display"
     Then I should see "Please select at least one tag"
 

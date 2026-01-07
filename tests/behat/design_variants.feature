@@ -8,12 +8,9 @@ Feature: Design variants in minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | student1 | Student   | One      | student1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name         |
-      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name    | activitytype1 | activitytype2 |
-      | Default Tags | Reading | page          | book          |
+      | name    | activitytype1 | activitytype2 |
+      | Reading | page          | book          |
 
   @javascript
   Scenario: Admin can set design variant when creating course
@@ -25,7 +22,7 @@ Feature: Design variants in minimoodlewall format
       | Course short name | TC1                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Tag set" to "Default Tags"
+    And I set the field "Course tags" to "Reading"
     And I set the field "Design" to "classic"
     And I press "Save and display"
     And the following "activities" exist:
@@ -41,8 +38,8 @@ Feature: Design variants in minimoodlewall format
   @javascript
   Scenario: Course retains selected design variant
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | tagsetid     | designvariant |
-      | Test Course 2 | TC2       | minimoodlewall | Default Tags | light         |
+      | fullname      | shortname | format         | selectedtags | designvariant |
+      | Test Course 2 | TC2       | minimoodlewall | Reading      | light         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC2    | 0       |

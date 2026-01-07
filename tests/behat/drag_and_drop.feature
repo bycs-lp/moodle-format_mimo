@@ -8,16 +8,13 @@ Feature: Drag and drop activity reordering in minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name         |
-      | Default Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | activitytype1 | activitytype2 |
-      | Default Tags | Reading  | page          | book          |
-      | Default Tags | Practice | assign        | quiz          |
+      | name     | activitytype1 | activitytype2 |
+      | Reading  | page          | book          |
+      | Practice | assign        | quiz          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | tagsetid     |
-      | Test Course 1 | TC1       | minimoodlewall | Default Tags |
+      | fullname      | shortname | format         | selectedtags     |
+      | Test Course 1 | TC1       | minimoodlewall | Reading,Practice |
     And the following "activities" exist:
       | activity | name         | intro            | course | section |
       | page     | Page 1       | First page       | TC1    | 1       |

@@ -8,16 +8,13 @@ Feature: Activity type descriptions with tags
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name         |
-      | Chooser Tags |
     And the following "format_minimoodlewall > tags" exist:
-      | tagset       | name     | activitytype1 | activitytype2 |
-      | Chooser Tags | Reading  | page          | book          |
-      | Chooser Tags | Practice | assign        | quiz          |
+      | name     | activitytype1 | activitytype2 |
+      | Reading  | page          | book          |
+      | Practice | assign        | quiz          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | tagsetid     | enablefiltering |
-      | Test Course 1 | TC1       | minimoodlewall | Chooser Tags | 1               |
+      | fullname      | shortname | format         | selectedtags    | enablefiltering |
+      | Test Course 1 | TC1       | minimoodlewall | Reading,Practice | 1               |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |

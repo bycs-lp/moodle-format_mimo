@@ -42,23 +42,42 @@ class format_minimoodlewall_generator extends component_generator_base {
         if (!isset($record->name)) {
             $record->name = 'Test Tag ' . $this->tagcount;
         }
-        if (!isset($record->activitytype1)) {
-            $record->activitytype1 = 'assign';
-        }
-        if (!isset($record->activitytype2)) {
-            $record->activitytype2 = 'quiz';
-        }
-        if (!isset($record->sortorder)) {
-            $record->sortorder = $this->tagcount;
-        }
-        if (!isset($record->timecreated)) {
-            $record->timecreated = time();
-        }
-        if (!isset($record->timemodified)) {
-            $record->timemodified = time();
-        }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_tags', $record);
+        // Check if a tag with this name already exists and update it instead of creating a duplicate.
+        $existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $record->name]);
+        if ($existing) {
+            // Update existing tag with new values.
+            $record->id = $existing->id;
+            $record->timecreated = $existing->timecreated;
+            $record->timemodified = time();
+            
+            // Set activity types.
+            $record->activitytype1 = $record->activitytype1 ?? $existing->activitytype1;
+            $record->activitytype2 = $record->activitytype2 ?? $existing->activitytype2;
+            $record->activitytype3 = $record->activitytype3 ?? $existing->activitytype3 ?? null;
+            $record->sortorder = $record->sortorder ?? $existing->sortorder;
+            
+            $DB->update_record('format_minimoodlewall_tags', $record);
+        } else {
+            // Create new tag.
+            if (!isset($record->activitytype1)) {
+                $record->activitytype1 = 'assign';
+            }
+            if (!isset($record->activitytype2)) {
+                $record->activitytype2 = 'quiz';
+            }
+            if (!isset($record->sortorder)) {
+                $record->sortorder = $this->tagcount;
+            }
+            if (!isset($record->timecreated)) {
+                $record->timecreated = time();
+            }
+            if (!isset($record->timemodified)) {
+                $record->timemodified = time();
+            }
+
+            $record->id = $DB->insert_record('format_minimoodlewall_tags', $record);
+        }
 
         return $record;
     }
