@@ -580,15 +580,6 @@ $activity-icon-colors: (
         background: rgba(220, 53, 69, 0.3);
         color: #fff;
         position: relative;
-
-        &::after {
-            content: '';
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #fff;
-            display: block;
-        }
     }
 }
 

@@ -424,14 +424,6 @@
   color: #fff;
   position: relative;
 }
-.minimoodlewall-completion-badge .badge-incomplete::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #fff;
-  display: block;
-}
 
 .format-minimoodlewall .course-content {
   transition: height 0.3s ease;
