@@ -1,3 +1,8 @@
+:root {
+  --mmw-completion-complete: #28a745;
+  --mmw-completion-incomplete: #dc3545;
+}
+
 .visibility-icon-control {
   position: relative;
   z-index: 10;
@@ -422,12 +427,12 @@
   height: 100%;
 }
 .minimoodlewall-completion-badge .badge-complete {
-  background: #28a745;
+  background: var(--mmw-completion-complete);
   color: #fff;
   font-size: 18px;
 }
 .minimoodlewall-completion-badge .badge-incomplete {
-  background: rgba(220, 53, 69, 0.3);
+  background: color-mix(in srgb, var(--mmw-completion-incomplete) 30%, transparent);
   color: #fff;
   position: relative;
 }
@@ -1089,53 +1094,60 @@ body.format-minimoodlewall #page-wrapper #page {
 .completion-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
+  gap: 0.4rem;
+  padding: 0.1rem 0.6rem 0.1rem 0.1rem;
   border: none;
   border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-}
-.completion-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.18);
 }
 .completion-pill:focus-visible {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
 .completion-pill.is-active {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
 }
 .completion-pill--complete {
-  background: #28a745;
+  background: color-mix(in srgb, var(--mmw-completion-complete) 65%, white);
   color: #fff;
+}
+.completion-pill--complete .completion-pill-icon {
+  background: var(--mmw-completion-complete);
 }
 .completion-pill--complete.is-active {
-  background: #1e7e34;
+  background: color-mix(in srgb, var(--mmw-completion-complete) 80%, white);
 }
 .completion-pill--incomplete {
-  background: #dc3545;
+  background: color-mix(in srgb, var(--mmw-completion-incomplete) 55%, white);
   color: #fff;
 }
+.completion-pill--incomplete .completion-pill-icon {
+  background: var(--mmw-completion-incomplete);
+}
 .completion-pill--incomplete.is-active {
-  background: #bd2130;
+  background: color-mix(in srgb, var(--mmw-completion-incomplete) 70%, white);
 }
 
 .completion-pill-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  color: #fff;
+  flex-shrink: 0;
 }
 
 .completion-pill-count {
-  min-width: 1.2em;
   text-align: center;
+  line-height: 1;
 }
 
 .completion-status-empty {
