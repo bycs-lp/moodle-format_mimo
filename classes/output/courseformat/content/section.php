@@ -91,6 +91,15 @@ class section extends section_base {
             }
         }
 
+        // Build completion status counts for activities with completion tracking.
+        // Show regardless of tags/filtering, as long as there are trackable activities.
+        if (!$isediting) {
+            $completionstatus = $this->build_completion_status_data($course);
+            if ($completionstatus->total > 0) {
+                $data->completionstatus = $completionstatus;
+            }
+        }
+
         return $data;
     }
 
@@ -130,6 +139,50 @@ class section extends section_base {
         }
 
         return $filtertags;
+    }
+
+    /**
+     * Build completion status counts for the completion status indicator.
+     *
+     * Counts activities with completion tracking that are completed vs incomplete.
+     *
+     * @param \stdClass $course Course object
+     * @return \stdClass Object with completedcount, incompletecount, and total
+     */
+    private function build_completion_status_data(\stdClass $course): \stdClass {
+        $modinfo = get_fast_modinfo($course);
+        $completioninfo = new \completion_info($course);
+
+        $completedcount = 0;
+        $incompletecount = 0;
+
+        if ($completioninfo->is_enabled()) {
+            foreach ($modinfo->cms as $cm) {
+                // Skip hidden activities and activities without user visibility.
+                if (!$cm->uservisible) {
+                    continue;
+                }
+                // Only count activities with completion tracking enabled.
+                if ($completioninfo->is_enabled($cm)) {
+                    $completiondata = $completioninfo->get_data($cm, false);
+                    $iscomplete = $completiondata->completionstate == COMPLETION_COMPLETE ||
+                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS;
+                    if ($iscomplete) {
+                        $completedcount++;
+                    } else {
+                        $incompletecount++;
+                    }
+                }
+            }
+        }
+
+        return (object) [
+            'completedcount' => $completedcount,
+            'incompletecount' => $incompletecount,
+            'total' => $completedcount + $incompletecount,
+            'hascompleted' => $completedcount > 0,
+            'hasincomplete' => $incompletecount > 0,
+        ];
     }
 
     /**

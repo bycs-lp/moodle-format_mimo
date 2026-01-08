@@ -26,6 +26,13 @@ import Notification from 'core/notification';
 /** Custom event name for coordinating with pagination module. */
 const EVENT_NAME = 'minimoodlewall:filterchange';
 
+/** State object to track active filters across functions. */
+const filterState = {
+    activeTag: '',
+    activeTagImageUrl: '',
+    activeCompletion: '', // 'true', 'false', or '' (none)
+};
+
 /**
  * Dispatch a custom filter change event so pagination can react.
  *
@@ -92,33 +99,52 @@ const clearFilterStyles = (items) => {
 };
 
 /**
- * Apply the selected filter to the activity cards.
+ * Apply combined tag and completion filters to the activity cards.
  *
- * Filtering strategy:
- * - Compares each activity's data-tagid with selected tag
- * - Matching activities: unhidden, visible, no special class
- * - Non-matching activities: hidden, display:none, marked with class
- *
- * Note: Activities must have data-tagid attribute set by renderer.
- * Missing or empty data-tagid will not match any filter.
+ * Filtering strategy (AND logic):
+ * - If tag filter active: item must have matching data-tagid
+ * - If completion filter active: item must have matching data-completed
+ * - Both filters use AND logic when combined
  *
  * @param {HTMLElement[]} items - Array of activity list item elements
- * @param {string} tagid - ID of the tag to filter by
- * @returns {void}
+ * @returns {number} Count of visible items after filtering
  */
-const applyFilter = (items, tagid) => {
+const applyCombinedFilter = (items) => {
+    let visibleCount = 0;
     items.forEach((item) => {
-        const itemTag = item.dataset.tagid || '';
-        if (itemTag === tagid) {
+        let matchesTag = true;
+        let matchesCompletion = true;
+
+        // Check tag filter if active.
+        if (filterState.activeTag) {
+            const itemTag = item.dataset.tagid || '';
+            matchesTag = (itemTag === filterState.activeTag);
+        }
+
+        // Check completion filter if active.
+        if (filterState.activeCompletion) {
+            const itemCompleted = item.dataset.completed;
+            // Only filter items that have completion tracking.
+            if (itemCompleted !== undefined) {
+                matchesCompletion = (itemCompleted === filterState.activeCompletion);
+            } else {
+                // Items without completion tracking don't match completion filter.
+                matchesCompletion = false;
+            }
+        }
+
+        if (matchesTag && matchesCompletion) {
             item.hidden = false;
             item.classList.remove('is-filtered-out');
             item.style.removeProperty('display');
+            visibleCount++;
         } else {
             item.hidden = true;
             item.classList.add('is-filtered-out');
             item.style.display = 'none';
         }
     });
+    return visibleCount;
 };
 
 /**
@@ -148,6 +174,95 @@ const updateButtons = (bar, activeButton) => {
 };
 
 /**
+ * Update completion pill buttons to reflect active state.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {string} activeCompleted - 'true', 'false', or '' (none)
+ * @returns {void}
+ */
+const updateCompletionPills = (statusRegion, activeCompleted) => {
+    const pills = statusRegion.querySelectorAll('[data-action="completion-filter"]');
+    pills.forEach((pill) => {
+        const isActive = pill.dataset.completed === activeCompleted;
+        pill.classList.toggle('is-active', isActive);
+        pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+};
+
+/**
+ * Update completion counts displayed in the pills.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {HTMLElement[]} items - Array of activity items to count from
+ * @returns {void}
+ */
+const updateCompletionCounts = (statusRegion, items) => {
+    let completedCount = 0;
+    let incompleteCount = 0;
+
+    items.forEach((item) => {
+        // Skip hidden items when a tag filter is active.
+        if (filterState.activeTag && item.hidden) {
+            return;
+        }
+        // Only consider items with completion tracking.
+        const completed = item.dataset.completed;
+        if (completed === 'true') {
+            completedCount++;
+        } else if (completed === 'false') {
+            incompleteCount++;
+        }
+    });
+
+    const completedEl = statusRegion.querySelector('[data-count="completed"]');
+    const incompleteEl = statusRegion.querySelector('[data-count="incomplete"]');
+    if (completedEl) {
+        completedEl.textContent = completedCount;
+    }
+    if (incompleteEl) {
+        incompleteEl.textContent = incompleteCount;
+    }
+};
+
+/**
+ * Update the active tag image display in the completion status region.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {string} imageUrl - URL of the tag image to display, or empty to hide
+ * @returns {void}
+ */
+const updateActiveTagImage = (statusRegion, imageUrl) => {
+    const imageContainer = statusRegion.querySelector('[data-region="active-tag-image"]');
+    if (!imageContainer) {
+        return;
+    }
+
+    const img = imageContainer.querySelector('img');
+    if (imageUrl) {
+        if (img) {
+            img.src = imageUrl;
+        }
+        imageContainer.hidden = false;
+    } else {
+        imageContainer.hidden = true;
+    }
+};
+
+/**
+ * Show or hide the "no activities" message.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {boolean} show - Whether to show the message
+ * @returns {void}
+ */
+const toggleNoActivitiesMessage = (statusRegion, show) => {
+    const msgEl = statusRegion.querySelector('[data-region="no-activities"]');
+    if (msgEl) {
+        msgEl.hidden = !show;
+    }
+};
+
+/**
  * Initialize the filter bar listeners and state management.
  *
  * Setup process:
@@ -155,9 +270,11 @@ const updateButtons = (bar, activeButton) => {
  * 2. Collect all activity items and preserve original DOM order
  * 3. Enable buttons that have activities with matching tags
  * 4. Attach click handler for filter toggling
+ * 5. Initialize completion status region if present
  *
  * State management:
- * - activeTag: Currently selected tag ID (empty string = no filter)
+ * - filterState.activeTag: Currently selected tag ID (empty string = no filter)
+ * - filterState.activeCompletion: Currently selected completion state ('true', 'false', or '')
  * - originalOrder: Array preserving initial activity sequence
  *
  * Reordering strategy:
@@ -194,6 +311,9 @@ const initFilterBar = (bar) => {
 
         const originalOrder = activityItems.slice();
 
+        // Find the completion status region.
+        const statusRegion = bar.parentElement.querySelector('[data-region="completion-status"]');
+
         const restoreOriginalOrder = () => {
             const fragment = document.createDocumentFragment();
             originalOrder.forEach((item) => fragment.appendChild(item));
@@ -220,7 +340,6 @@ const initFilterBar = (bar) => {
         if (!filterButtons.length) {
             return;
         }
-        let activeTag = '';
 
         filterButtons.forEach((button) => {
             const hasActivities = button.dataset.hasactivities === '1';
@@ -231,50 +350,100 @@ const initFilterBar = (bar) => {
         });
 
         /**
-         * Set or clear the active filter.
+         * Apply all active filters and update UI state.
          *
-         * Filter activation (tagid provided):
-         * - Sets activeTag state
-         * - Notifies pagination to disable
-         * - Reorders activities (matching first)
-         * - Applies visibility filtering
-         * - Updates button visual states
-         *
-         * Filter deactivation (no tagid):
-         * - Clears activeTag state
-         * - Restores original activity order
-         * - Clears all filter styles
-         * - Resets button visual states
-         * - Notifies pagination to re-enable
+         * @returns {number} Count of visible items after filtering
+         */
+        const applyAllFilters = () => {
+            let visibleCount;
+            if (filterState.activeTag || filterState.activeCompletion) {
+                visibleCount = applyCombinedFilter(activityItems);
+            } else {
+                clearFilterStyles(activityItems);
+                visibleCount = activityItems.length;
+            }
+
+            // Update completion counts based on currently visible items.
+            if (statusRegion) {
+                updateCompletionCounts(statusRegion, activityItems);
+                toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
+            }
+
+            return visibleCount;
+        };
+
+        /**
+         * Set or clear the tag filter.
          *
          * @param {string} tagid - Tag ID to filter by, or empty string to clear
          * @param {HTMLElement|null} button - Button element that was clicked, or null
          * @returns {void}
          */
-        const setFilter = (tagid, button) => {
+        const setTagFilter = (tagid, button) => {
             if (tagid) {
-                activeTag = tagid;
+                filterState.activeTag = tagid;
+                // Store the tag image URL from the button.
+                const img = button ? button.querySelector('img') : null;
+                filterState.activeTagImageUrl = img ? img.src : '';
+
                 notifyFilterChange(true);
                 reorderActivitiesByTag(tagid);
-                applyFilter(activityItems, tagid);
                 updateButtons(bar, button);
 
-                // Announce filter status to screen readers
-                const visibleCount = activityItems.filter(item => !item.hidden).length;
-                const tagName = button ? button.dataset.tagName || '' : '';
-                announceFilterStatus(tagName, visibleCount, activityItems.length);
+                // Update tag image in completion status region.
+                if (statusRegion) {
+                    updateActiveTagImage(statusRegion, filterState.activeTagImageUrl);
+                }
             } else {
-                activeTag = '';
+                filterState.activeTag = '';
+                filterState.activeTagImageUrl = '';
                 restoreOriginalOrder();
-                clearFilterStyles(activityItems);
                 updateButtons(bar, null);
-                notifyFilterChange(false);
 
-                // Announce filter cleared to screen readers
-                announceFilterStatus('', activityItems.length, activityItems.length);
+                // Hide tag image in completion status region.
+                if (statusRegion) {
+                    updateActiveTagImage(statusRegion, '');
+                }
+
+                // Only notify pagination if no filters are active.
+                if (!filterState.activeCompletion) {
+                    notifyFilterChange(false);
+                }
             }
+
+            const visibleCount = applyAllFilters();
+
+            // Announce filter status to screen readers.
+            const tagName = button ? button.dataset.tagName || '' : '';
+            announceFilterStatus(tagName, visibleCount, activityItems.length);
         };
 
+        /**
+         * Set or clear the completion filter.
+         *
+         * @param {string} completed - 'true', 'false', or '' to clear
+         * @returns {void}
+         */
+        const setCompletionFilter = (completed) => {
+            if (completed) {
+                filterState.activeCompletion = completed;
+                notifyFilterChange(true);
+            } else {
+                filterState.activeCompletion = '';
+                // Only notify pagination if no filters are active.
+                if (!filterState.activeTag) {
+                    notifyFilterChange(false);
+                }
+            }
+
+            if (statusRegion) {
+                updateCompletionPills(statusRegion, completed);
+            }
+
+            applyAllFilters();
+        };
+
+        // Tag filter click handler.
         bar.addEventListener('click', (event) => {
             const button = event.target.closest('[data-action="tag-filter"]');
             if (button && bar.contains(button)) {
@@ -282,10 +451,106 @@ const initFilterBar = (bar) => {
                 if (!button.dataset.tagid) {
                     return;
                 }
-                if (activeTag === button.dataset.tagid) {
-                    setFilter('', null);
+                if (filterState.activeTag === button.dataset.tagid) {
+                    setTagFilter('', null);
                 } else {
-                    setFilter(button.dataset.tagid, button);
+                    setTagFilter(button.dataset.tagid, button);
+                }
+            }
+        });
+
+        // Completion filter click handler.
+        if (statusRegion) {
+            statusRegion.addEventListener('click', (event) => {
+                const pill = event.target.closest('[data-action="completion-filter"]');
+                if (pill && statusRegion.contains(pill)) {
+                    event.preventDefault();
+                    const completed = pill.dataset.completed;
+                    if (filterState.activeCompletion === completed) {
+                        setCompletionFilter('');
+                    } else {
+                        setCompletionFilter(completed);
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        Notification.exception(error);
+    }
+};
+
+/**
+ * Initialize completion status region without a filter bar.
+ *
+ * Used when filtering is disabled but completion status is still shown.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @returns {void}
+ */
+const initCompletionStatusOnly = (statusRegion) => {
+    try {
+        const activityContainer = statusRegion.parentElement.querySelector('.minimoodlewall-activities');
+        if (!activityContainer) {
+            return;
+        }
+
+        const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
+        if (!activityItems.length) {
+            return;
+        }
+
+        /**
+         * Apply completion filter and update UI.
+         *
+         * @returns {number} Count of visible items after filtering
+         */
+        const applyAllFilters = () => {
+            let visibleCount;
+            if (filterState.activeCompletion) {
+                visibleCount = applyCombinedFilter(activityItems);
+            } else {
+                activityItems.forEach((item) => {
+                    item.hidden = false;
+                    item.classList.remove('is-filtered-out');
+                    item.style.removeProperty('display');
+                });
+                visibleCount = activityItems.length;
+            }
+
+            updateCompletionCounts(statusRegion, activityItems);
+            toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
+
+            return visibleCount;
+        };
+
+        /**
+         * Set or clear the completion filter.
+         *
+         * @param {string} completed - 'true', 'false', or '' to clear
+         * @returns {void}
+         */
+        const setCompletionFilter = (completed) => {
+            if (completed) {
+                filterState.activeCompletion = completed;
+                notifyFilterChange(true);
+            } else {
+                filterState.activeCompletion = '';
+                notifyFilterChange(false);
+            }
+
+            updateCompletionPills(statusRegion, completed);
+            applyAllFilters();
+        };
+
+        statusRegion.addEventListener('click', (event) => {
+            const pill = event.target.closest('[data-action="completion-filter"]');
+            if (pill && statusRegion.contains(pill)) {
+                event.preventDefault();
+                const completed = pill.dataset.completed;
+                if (filterState.activeCompletion === completed) {
+                    setCompletionFilter('');
+                } else {
+                    setCompletionFilter(completed);
                 }
             }
         });
@@ -295,17 +560,31 @@ const initFilterBar = (bar) => {
 };
 
 /**
- * Initialize all filter bars in the page.
+ * Initialize all filter bars and completion status regions in the page.
  *
  * Scans for all elements with [data-region="minimoodlewall-filterbar"]
  * and initializes filtering functionality for each.
+ *
+ * Also initializes standalone completion status regions (without filter bar).
  *
  * Typically one filter bar per course section, but supports multiple.
  *
  * @returns {void}
  */
 export const init = () => {
+    // Initialize filter bars (which also handle their associated completion status regions).
     document
         .querySelectorAll('[data-region="minimoodlewall-filterbar"]')
         .forEach((bar) => initFilterBar(bar));
+
+    // Initialize standalone completion status regions (when filtering is disabled).
+    document
+        .querySelectorAll('[data-region="completion-status"]')
+        .forEach((statusRegion) => {
+            // Skip if already initialized by a filter bar.
+            const parent = statusRegion.parentElement;
+            if (!parent || !parent.querySelector('[data-region="minimoodlewall-filterbar"]')) {
+                initCompletionStatusOnly(statusRegion);
+            }
+        });
 };

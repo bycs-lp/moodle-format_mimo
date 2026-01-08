@@ -27,6 +27,7 @@
     data-for="cmitem"
     data-id="{{id}}"
     {{#cmformat.tagid}}data-tagid="{{cmformat.tagid}}"{{/cmformat.tagid}}
+    {{#cmformat.completion.hascompletion}}data-completed="{{#cmformat.completion.iscomplete}}true{{/cmformat.completion.iscomplete}}{{^cmformat.completion.iscomplete}}false{{/cmformat.completion.iscomplete}}"{{/cmformat.completion.hascompletion}}
     style="list-style: none;{{#cmformat.tagcolor}} --mmw-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
 >
 {{#cmformat}}

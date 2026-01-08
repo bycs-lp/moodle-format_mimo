@@ -101,6 +101,48 @@
                 </button>
             </div>
         </div>
+        {{#completionstatus}}
+        {{! Completion status indicator region }}
+        <div class="minimoodlewall-completion-status {{designclass}}" data-region="completion-status" data-design="{{designvariant}}">
+            {{! Active tag image overlay - shown when tag filter is active }}
+            <div class="completion-status-tag-image" data-region="active-tag-image" hidden>
+                <img src="" alt="" class="completion-status-tag-img">
+            </div>
+            {{! Completion filter pills }}
+            <div class="completion-status-pills" role="group" aria-label="{{#str}}completionfilter, format_minimoodlewall{{/str}}">
+                <button
+                    type="button"
+                    class="completion-pill completion-pill--complete"
+                    data-action="completion-filter"
+                    data-completed="true"
+                    aria-pressed="false"
+                    aria-label="{{#str}}showcompletedactivities, format_minimoodlewall{{/str}}"
+                >
+                    <span class="completion-pill-icon" aria-hidden="true">
+                        <i class="fa fa-check"></i>
+                    </span>
+                    <span class="completion-pill-count" data-count="completed">{{completedcount}}</span>
+                </button>
+                <button
+                    type="button"
+                    class="completion-pill completion-pill--incomplete"
+                    data-action="completion-filter"
+                    data-completed="false"
+                    aria-pressed="false"
+                    aria-label="{{#str}}showincompleteactivities, format_minimoodlewall{{/str}}"
+                >
+                    <span class="completion-pill-icon" aria-hidden="true">
+                        <i class="fa fa-times"></i>
+                    </span>
+                    <span class="completion-pill-count" data-count="incomplete">{{incompletecount}}</span>
+                </button>
+            </div>
+            {{! No activities message - shown when filters result in 0 items }}
+            <div class="completion-status-empty" data-region="no-activities" hidden>
+                <span>{{#str}}noactivitiesfound, format_minimoodlewall{{/str}}</span>
+            </div>
+        </div>
+        {{/completionstatus}}
         {{/cmlist}}
     {{/ core_courseformat/local/content/section/cmlist }}
 {{/ core_courseformat/local/content/section }}
