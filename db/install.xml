@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260107" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
+<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260108" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
+    <TABLE NAME="format_minimoodlewall_designs" COMMENT="Design variants for minimoodlewall course format">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Internal identifier (e.g., classic, light, dark)"/>
+        <FIELD NAME="displayname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Human-readable name"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Display order"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="name_unique" UNIQUE="true" FIELDS="name"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="format_minimoodlewall_tag_images" COMMENT="Design-specific images for tags">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to tag"/>
+        <FIELD NAME="designid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to design"/>
+        <FIELD NAME="cardimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for card image"/>
+        <FIELD NAME="filterimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for filter bar image"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="tagid" TYPE="foreign" FIELDS="tagid" REFTABLE="format_minimoodlewall_tags" REFFIELDS="id"/>
+        <KEY NAME="designid" TYPE="foreign" FIELDS="designid" REFTABLE="format_minimoodlewall_designs" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="tagid_designid_unique" UNIQUE="true" FIELDS="tagid,designid" COMMENT="Each tag can have only one image set per design"/>
+      </INDEXES>
+    </TABLE>
     <TABLE NAME="format_minimoodlewall_tags" COMMENT="Activity tags for course wall display">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

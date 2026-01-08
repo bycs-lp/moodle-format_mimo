@@ -53,6 +53,7 @@ class section extends section_base {
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
         $enablefiltering = !empty($options['enablefiltering']);
+        $designvariant = $options['designvariant'] ?? 'classic';
         $isediting = $PAGE->user_is_editing();
 
         if (!empty($data->cmlist) && isset($data->cmlist->cms)) {
@@ -77,7 +78,7 @@ class section extends section_base {
             }
 
             if ($enablefiltering) {
-                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting);
+                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $designvariant);
                 if (!empty($filtertags)) {
                     $data->filterbar = (object) [
                         'tags' => $filtertags,
@@ -97,10 +98,12 @@ class section extends section_base {
      * Build template data for the filter bar.
      *
      * @param array $tags Tag records keyed by id
+     * @param int $courseid Course ID
      * @param bool $isediting Whether editing mode is enabled
+     * @param string $designvariant The design variant name
      * @return array
      */
-    private function build_filterbar_data(array $tags, int $courseid, bool $isediting): array {
+    private function build_filterbar_data(array $tags, int $courseid, bool $isediting, string $designvariant = 'classic'): array {
         if (empty($tags)) {
             return [];
         }
@@ -111,7 +114,7 @@ class section extends section_base {
 
         $filtertags = [];
         foreach ($tags as $tag) {
-            $filterurl = \format_minimoodlewall\tag_manager::get_filterimage_url($tag);
+            $filterurl = \format_minimoodlewall\tag_manager::get_filterimage_url($tag, $designvariant);
             $hasactivities = !empty($usage[$tag->id]);
             if (!$isediting && !$hasactivities) {
                 continue;

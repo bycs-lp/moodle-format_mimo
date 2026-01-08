@@ -32,19 +32,6 @@ $settings = new admin_category($categoryname, new lang_string('pluginname', 'for
 $settingspage = new admin_settingpage('format_minimoodlewall', new lang_string('pluginname', 'format_minimoodlewall'));
 
 if ($ADMIN->fulltree) {
-    // Theme selection.
-    $settingspage->add(new admin_setting_configselect(
-        'format_minimoodlewall/defaulttheme',
-        get_string('setting_defaulttheme', 'format_minimoodlewall'),
-        get_string('setting_defaulttheme_desc', 'format_minimoodlewall'),
-        'normal',
-        [
-            'normal' => get_string('theme_normal', 'format_minimoodlewall'),
-            'dark' => get_string('theme_dark', 'format_minimoodlewall'),
-            'colorful' => get_string('theme_colorful', 'format_minimoodlewall'),
-        ]
-    ));
-
     // Distraction-free mode settings.
     $distractionfreeselectorsdefault = [
         'nav.fixed-top',
@@ -88,11 +75,14 @@ if ($ADMIN->fulltree) {
     $tagmanageurl = new moodle_url('/course/format/minimoodlewall/tag_management.php');
     $activitydescurl = new moodle_url('/course/format/minimoodlewall/activity_descriptions.php');
     $desctagurl = new moodle_url('/course/format/minimoodlewall/description_tags.php');
+    $designmanageurl = new moodle_url('/course/format/minimoodlewall/design_management.php');
     $links = html_writer::link($tagmanageurl, get_string('setting_tagmanagement_link', 'format_minimoodlewall')) .
         '<br>' .
         html_writer::link($activitydescurl, get_string('setting_activitydescriptions_link', 'format_minimoodlewall')) .
         '<br>' .
-        html_writer::link($desctagurl, get_string('desctagmanagement', 'format_minimoodlewall'));
+        html_writer::link($desctagurl, get_string('desctagmanagement', 'format_minimoodlewall')) .
+        '<br>' .
+        html_writer::link($designmanageurl, get_string('designmanagement', 'format_minimoodlewall'));
 
     $settingspage->add(new admin_setting_heading(
         'format_minimoodlewall/tagmanagement',
@@ -121,5 +111,12 @@ $settings->add($categoryname, new admin_externalpage(
     'format_minimoodlewall_activitydescriptions',
     get_string('activitydescriptions', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/activity_descriptions.php'),
+    'moodle/site:config'
+));
+
+$settings->add($categoryname, new admin_externalpage(
+    'format_minimoodlewall_designs',
+    get_string('designmanagement', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/design_management.php'),
     'moodle/site:config'
 ));

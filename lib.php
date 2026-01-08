@@ -172,16 +172,22 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
             ];
+            // Load designs dynamically from database.
+            $designoptions = [];
+            $designs = \format_minimoodlewall\design_manager::get_all_designs();
+            foreach ($designs as $design) {
+                $designoptions[$design->name] = $design->displayname;
+            }
+            // Fallback to default if no designs exist.
+            if (empty($designoptions)) {
+                $designoptions['classic'] = get_string('design_classic', 'format_minimoodlewall');
+            }
             $courseformatoptions['designvariant'] += [
                 'label' => get_string('setting_design', 'format_minimoodlewall'),
                 'help' => 'setting_design',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
-                'element_attributes' => [[
-                    'classic' => get_string('design_classic', 'format_minimoodlewall'),
-                    'light' => get_string('design_light', 'format_minimoodlewall'),
-                    'dark' => get_string('design_dark', 'format_minimoodlewall'),
-                ]],
+                'element_attributes' => [$designoptions],
             ];
             // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
             $courseformatoptions['selectedtags'] += [
@@ -239,14 +245,30 @@ class format_minimoodlewall extends core_courseformat\base {
         // Prepare renderer for mustache templates.
         $output = $PAGE->get_renderer('format_minimoodlewall');
 
+        // Get current design variant for displaying correct images.
+        $currentdesign = $course->designvariant ?? 'classic';
+
+        // Get all designs for passing image URLs to JS.
+        $designs = \format_minimoodlewall\design_manager::get_all_designs();
+        $tagimagedata = [];
+
         // Add individual checkbox for each tag with image.
         foreach ($tags as $tag) {
-            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag);
+            // Get the image URL for the current design.
+            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentdesign);
+
+            // Collect image URLs for all designs (for JS to update on design change).
+            $tagimagedata[$tag->id] = [];
+            foreach ($designs as $design) {
+                $designimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $design->name);
+                $tagimagedata[$tag->id][$design->name] = $designimageurl ? $designimageurl->out(false) : null;
+            }
 
             // Render label using mustache template.
             $templatecontext = [
                 'name' => $tag->name,
                 'imageurl' => $imageurl ? $imageurl->out(false) : null,
+                'tagid' => $tag->id,
             ];
             $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
@@ -259,9 +281,10 @@ class format_minimoodlewall extends core_courseformat\base {
             }
         }
 
-        // Initialize JS module to sync checkboxes to hidden field.
+        // Initialize JS modules.
         $tagids = array_keys($tags);
         $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$tagids]);
+        $PAGE->requires->js_call_amd('format_minimoodlewall/design_image_switcher', 'init', [$tagimagedata]);
 
         return $elements;
     }
@@ -447,6 +470,8 @@ function format_minimoodlewall_pluginfile(
     $allowedareas = [
         \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
         \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
+        \format_minimoodlewall\design_manager::FILEAREA_DESIGN_CARDIMAGE,
+        \format_minimoodlewall\design_manager::FILEAREA_DESIGN_FILTERIMAGE,
     ];
     if (!in_array($filearea, $allowedareas, true)) {
         return false;

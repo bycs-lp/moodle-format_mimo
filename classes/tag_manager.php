@@ -214,9 +214,18 @@ class tag_manager {
      * Build the display URL for the card image.
      *
      * @param \stdClass $tag Tag record
+     * @param string|null $designname Optional design name to get design-specific image
      * @return moodle_url|null
      */
-    public static function get_cardimage_url(\stdClass $tag): ?moodle_url {
+    public static function get_cardimage_url(\stdClass $tag, ?string $designname = null): ?moodle_url {
+        // If design specified, try to get design-specific image first.
+        if ($designname !== null) {
+            $url = design_manager::get_cardimage_url_by_name($tag->id, $designname);
+            if ($url) {
+                return $url;
+            }
+        }
+        // Fall back to legacy image storage.
         return self::get_image_url($tag, self::FILEAREA_CARDIMAGE);
     }
 
@@ -224,9 +233,18 @@ class tag_manager {
      * Build the display URL for the filter image area.
      *
      * @param \stdClass $tag Tag record
+     * @param string|null $designname Optional design name to get design-specific image
      * @return moodle_url|null
      */
-    public static function get_filterimage_url(\stdClass $tag): ?moodle_url {
+    public static function get_filterimage_url(\stdClass $tag, ?string $designname = null): ?moodle_url {
+        // If design specified, try to get design-specific image first.
+        if ($designname !== null) {
+            $url = design_manager::get_filterimage_url_by_name($tag->id, $designname);
+            if ($url) {
+                return $url;
+            }
+        }
+        // Fall back to legacy image storage.
         return self::get_image_url($tag, self::FILEAREA_FILTERIMAGE);
     }
 

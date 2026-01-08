@@ -27,7 +27,9 @@ namespace format_minimoodlewall\form;
 defined('MOODLE_INTERNAL') || die();
 
 use format_minimoodlewall\tag_manager;
+use format_minimoodlewall\design_manager;
 
+global $CFG;
 require_once($CFG->libdir . '/formslib.php');
 require_once($CFG->libdir . '/filelib.php');
 
@@ -85,16 +87,6 @@ class tag_form extends \moodleform {
         );
         $mform->setType('activitytype3', PARAM_TEXT);
 
-        // Card image upload.
-        $mform->addElement(
-            'filemanager',
-            'cardimagefile',
-            get_string('cardimage', 'format_minimoodlewall'),
-            null,
-            tag_manager::get_image_filemanager_options()
-        );
-        $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
-
         // Image placement.
         $placementoptions = [
             $mform->createElement(
@@ -122,16 +114,7 @@ class tag_form extends \moodleform {
         $mform->setDefault('imgplacement', 'center');
         $mform->setType('imgplacement', PARAM_TEXT);
 
-        // Filter image upload (optional).
-        $mform->addElement(
-            'filemanager',
-            'filterimagefile',
-            get_string('filterimage', 'format_minimoodlewall'),
-            null,
-            tag_manager::get_image_filemanager_options()
-        );
-        $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
-
+        // Background color.
         $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
         $mform->addElement(
             'text',
@@ -142,6 +125,39 @@ class tag_form extends \moodleform {
         $mform->setType('bgcolor', PARAM_TEXT);
         $mform->setDefault('bgcolor', $defaultcolor);
         $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
+
+        // Design-specific images section.
+        $mform->addElement('header', 'designimagesheader', get_string('designimages', 'format_minimoodlewall'));
+        $mform->setExpanded('designimagesheader', true);
+
+        // Add image uploads for each design.
+        $designs = design_manager::get_all_designs();
+        foreach ($designs as $design) {
+            // Card image for this design.
+            $mform->addElement(
+                'filemanager',
+                'cardimage_design_' . $design->id,
+                get_string('cardimage_for_design', 'format_minimoodlewall', $design->displayname),
+                null,
+                design_manager::get_image_filemanager_options()
+            );
+            $mform->addHelpButton('cardimage_design_' . $design->id, 'cardimage', 'format_minimoodlewall');
+
+            // Filter image for this design (optional).
+            $mform->addElement(
+                'filemanager',
+                'filterimage_design_' . $design->id,
+                get_string('filterimage_for_design', 'format_minimoodlewall', $design->displayname),
+                null,
+                design_manager::get_image_filemanager_options()
+            );
+            $mform->addHelpButton('filterimage_design_' . $design->id, 'filterimage', 'format_minimoodlewall');
+        }
+
+        // Store design IDs as hidden field for processing.
+        $designids = array_keys($designs);
+        $mform->addElement('hidden', 'designids', implode(',', $designids));
+        $mform->setType('designids', PARAM_TEXT);
 
         // Action buttons.
         $this->add_action_buttons();
@@ -179,28 +195,48 @@ class tag_form extends \moodleform {
     }
 
     /**
-     * Ensure a card image is always provided.
+     * Validate form data.
      *
      * @param array $data Form data
      * @param array $files Files
-     * @return array
+     * @return array Validation errors
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        $draftid = $data['cardimagefile'] ?? 0;
-        $tagid = $this->_customdata['tagid'] ?? 0;
-        $hasexisting = $tagid ? tag_manager::has_cardimage((int)$tagid) : false;
-
-        $fileinfo = \file_get_draft_area_info($draftid);
-        $hasdraftfiles = !empty($fileinfo['filecount']);
-        if ((!$hasdraftfiles) && !$hasexisting) {
-            $errors['cardimagefile'] = get_string('required');
-        }
-
+        // Check background color format.
         $color = $data['bgcolor'] ?? '';
         if (!empty($color) && !preg_match('/^#([0-9a-fA-F]{6})$/', $color)) {
             $errors['bgcolor'] = get_string('invalidcolor', 'format_minimoodlewall');
+        }
+
+        // Check that at least one design has a card image.
+        $tagid = $this->_customdata['tagid'] ?? 0;
+        $designids = !empty($data['designids']) ? explode(',', $data['designids']) : [];
+        $hasanyimage = false;
+
+        foreach ($designids as $designid) {
+            $fieldname = 'cardimage_design_' . $designid;
+            $draftid = $data[$fieldname] ?? 0;
+            $fileinfo = \file_get_draft_area_info($draftid);
+            if (!empty($fileinfo['filecount'])) {
+                $hasanyimage = true;
+                break;
+            }
+            // Check if existing image exists.
+            if ($tagid) {
+                $tagimage = design_manager::get_tag_image_for_design($tagid, (int)$designid);
+                if ($tagimage && !empty($tagimage->cardimage)) {
+                    $hasanyimage = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$hasanyimage && !empty($designids)) {
+            // Add error to first design's card image field.
+            $firstdesignid = reset($designids);
+            $errors['cardimage_design_' . $firstdesignid] = get_string('atleastoneimage', 'format_minimoodlewall');
         }
 
         return $errors;

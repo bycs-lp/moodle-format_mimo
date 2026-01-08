@@ -17,21 +17,21 @@
 {{!
     @template format_minimoodlewall/form_tag_option
 
-    Renders a tag option for the autocomplete form element with inline image.
+    Renders a tag option for the course form with inline image.
 
     Example context (json):
     {
         "name": "Lesen",
         "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
-        "bgcolor": "#ff5733"
+        "tagid": 1
     }
 }}
-<span class="mmw-tag-option d-flex align-items-center">
+<span class="mmw-tag-option d-flex align-items-center" data-tagid="{{tagid}}">
     {{#imageurl}}
-    <img src="{{imageurl}}" class="mmw-tag-preview me-2" alt="" aria-hidden="true">
+    <img src="{{imageurl}}" class="mmw-tag-preview me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
     {{/imageurl}}
     {{^imageurl}}
-    <span class="mmw-tag-preview-placeholder me-2"></span>
+    <span class="mmw-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
     {{/imageurl}}
     <span class="mmw-tag-name">{{name}}</span>
 </span>

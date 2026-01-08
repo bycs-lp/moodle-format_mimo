@@ -306,5 +306,86 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026010700, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2026010800) {
+        // Create designs table.
+        $table = new xmldb_table('format_minimoodlewall_designs');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('displayname', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('name_unique', XMLDB_INDEX_UNIQUE, ['name']);
+        $table->add_index('sortorder', XMLDB_INDEX_NOTUNIQUE, ['sortorder']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Create tag_images table for design-specific images.
+        $table = new xmldb_table('format_minimoodlewall_tag_images');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('tagid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('designid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('cardimage', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('filterimage', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('tagid', XMLDB_KEY_FOREIGN, ['tagid'], 'format_minimoodlewall_tags', ['id']);
+        $table->add_key('designid', XMLDB_KEY_FOREIGN, ['designid'], 'format_minimoodlewall_designs', ['id']);
+        $table->add_index('tagid_designid_unique', XMLDB_INDEX_UNIQUE, ['tagid', 'designid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Seed default designs.
+        $now = time();
+        $designs = [
+            ['name' => 'classic', 'displayname' => 'Classic', 'sortorder' => 1],
+            ['name' => 'light', 'displayname' => 'Light', 'sortorder' => 2],
+            ['name' => 'dark', 'displayname' => 'Dark', 'sortorder' => 3],
+        ];
+
+        foreach ($designs as $design) {
+            if (!$DB->record_exists('format_minimoodlewall_designs', ['name' => $design['name']])) {
+                $record = (object) $design;
+                $record->timecreated = $now;
+                $record->timemodified = $now;
+                $DB->insert_record('format_minimoodlewall_designs', $record);
+            }
+        }
+
+        // Migrate existing tag images to the first design (classic).
+        $classicdesign = $DB->get_record('format_minimoodlewall_designs', ['name' => 'classic']);
+        if ($classicdesign) {
+            $tags = $DB->get_records('format_minimoodlewall_tags');
+            foreach ($tags as $tag) {
+                // Check if tag_images record already exists.
+                if (!$DB->record_exists('format_minimoodlewall_tag_images', [
+                    'tagid' => $tag->id,
+                    'designid' => $classicdesign->id,
+                ])) {
+                    $record = new stdClass();
+                    $record->tagid = $tag->id;
+                    $record->designid = $classicdesign->id;
+                    $record->cardimage = $tag->cardimage;
+                    $record->filterimage = $tag->filterimage;
+                    $record->timecreated = $now;
+                    $record->timemodified = $now;
+                    $DB->insert_record('format_minimoodlewall_tag_images', $record);
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026010800, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

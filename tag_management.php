@@ -26,6 +26,7 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use format_minimoodlewall\tag_manager;
+use format_minimoodlewall\design_manager;
 use format_minimoodlewall\form\tag_form;
 
 admin_externalpage_setup('format_minimoodlewall_tags');
@@ -54,21 +55,34 @@ if ($action === 'createtag' || $action === 'edittag') {
     $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagid' => $tagid]);
     $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
 
+    // Prepare form data with design-specific image drafts.
+    $formdata = [];
+    $designs = design_manager::get_all_designs();
+    $designids = array_keys($designs);
+
     if ($tag) {
-        $tag->cardimagefile = tag_manager::prepare_cardimage_draft($tag->id);
-        $tag->filterimagefile = tag_manager::prepare_filterimage_draft($tag->id);
-        $mform->set_data($tag);
+        $formdata = (array) $tag;
+        // Prepare draft areas for each design's images.
+        foreach ($designs as $design) {
+            $formdata['cardimage_design_' . $design->id] = design_manager::prepare_cardimage_draft($tag->id, $design->id);
+            $formdata['filterimage_design_' . $design->id] = design_manager::prepare_filterimage_draft($tag->id, $design->id);
+        }
+        $formdata['designids'] = implode(',', $designids);
     } else {
-        $mform->set_data([
-            'cardimagefile' => tag_manager::prepare_cardimage_draft(null),
-            'filterimagefile' => tag_manager::prepare_filterimage_draft(null),
-        ]);
+        // New tag - prepare empty draft areas.
+        foreach ($designs as $design) {
+            $formdata['cardimage_design_' . $design->id] = 0;
+            $formdata['filterimage_design_' . $design->id] = 0;
+        }
+        $formdata['designids'] = implode(',', $designids);
     }
+    $mform->set_data($formdata);
 
     if ($mform->is_cancelled()) {
         redirect($PAGE->url);
     } else if ($data = $mform->get_data()) {
         if (!empty($data->tagid)) {
+            // Update existing tag.
             tag_manager::update_tag(
                 $data->tagid,
                 [
@@ -80,11 +94,11 @@ if ($action === 'createtag' || $action === 'edittag') {
                     'imgplacement' => $data->imgplacement,
                 ]
             );
-            tag_manager::save_cardimage_from_draft($data->tagid, $data->cardimagefile);
-            tag_manager::save_filterimage_from_draft($data->tagid, $data->filterimagefile);
+            $currenttagid = $data->tagid;
             $message = get_string('edittag', 'format_minimoodlewall');
         } else {
-            $newtagid = tag_manager::create_tag(
+            // Create new tag.
+            $currenttagid = tag_manager::create_tag(
                 $data->name,
                 null,
                 null,
@@ -94,10 +108,23 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->bgcolor,
                 $data->imgplacement
             );
-            tag_manager::save_cardimage_from_draft($newtagid, (int)$data->cardimagefile);
-            tag_manager::save_filterimage_from_draft($newtagid, (int)$data->filterimagefile);
             $message = get_string('createtag', 'format_minimoodlewall');
         }
+
+        // Save design-specific images.
+        $saveddesignids = !empty($data->designids) ? explode(',', $data->designids) : [];
+        foreach ($saveddesignids as $designid) {
+            $cardfield = 'cardimage_design_' . $designid;
+            $filterfield = 'filterimage_design_' . $designid;
+
+            if (isset($data->$cardfield)) {
+                design_manager::save_cardimage_from_draft($currenttagid, (int)$designid, (int)$data->$cardfield);
+            }
+            if (isset($data->$filterfield)) {
+                design_manager::save_filterimage_from_draft($currenttagid, (int)$designid, (int)$data->$filterfield);
+            }
+        }
+
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
     }
 
