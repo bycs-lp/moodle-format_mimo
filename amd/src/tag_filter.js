@@ -26,11 +26,135 @@ import Notification from 'core/notification';
 /** Custom event name for coordinating with pagination module. */
 const EVENT_NAME = 'minimoodlewall:filterchange';
 
+/** Duration in milliseconds for height transition animation. */
+const HEIGHT_TRANSITION_MS = 300;
+
 /** State object to track active filters across functions. */
 const filterState = {
     activeTag: '',
     activeTagImageUrl: '',
     activeCompletion: '', // 'true', 'false', or '' (none)
+};
+
+/**
+ * Animate container height change when filtering changes visible rows.
+ *
+ * Creates a temporary wrapper to animate height independently of the grid.
+ * The wrapper captures the height, while the inner content reflows freely.
+ *
+ * @param {HTMLElement} container - The .minimoodlewall-activities container
+ * @param {Function} applyChanges - Callback that applies the filter changes
+ * @returns {void}
+ */
+const animateContainerHeight = (container, applyChanges) => {
+    if (!container) {
+        applyChanges();
+        return;
+    }
+
+    // Get or create wrapper element around container.
+    let wrapper = container.parentElement;
+    let createdWrapper = false;
+
+    // If parent isn't already a dedicated wrapper, create one.
+    if (!wrapper.classList.contains('minimoodlewall-height-animator')) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'minimoodlewall-height-animator';
+        wrapper.style.overflow = 'hidden';
+        container.parentElement.insertBefore(wrapper, container);
+        wrapper.appendChild(container);
+        createdWrapper = true;
+    }
+
+    // Capture current height of wrapper before changes.
+    const startHeight = wrapper.offsetHeight;
+
+    // Lock wrapper height immediately.
+    wrapper.style.height = `${startHeight}px`;
+    wrapper.style.transition = 'none';
+
+    // Force reflow to lock the height.
+    void wrapper.offsetHeight;
+
+    // Hide all cards using visibility.
+    const allCards = Array.from(container.querySelectorAll('li[data-id]'));
+    allCards.forEach((card) => {
+        card.style.visibility = 'hidden';
+    });
+
+    // Apply the filter changes (cards get hidden/shown via display:none).
+    applyChanges();
+
+    // Get newly visible cards.
+    const visibleCards = Array.from(container.querySelectorAll('li[data-id]:not([hidden])'));
+
+    // Measure new natural height of container (wrapper is still locked).
+    const endHeight = container.offsetHeight;
+
+    // Skip animation if height didn't change significantly.
+    if (Math.abs(endHeight - startHeight) < 1) {
+        wrapper.style.height = '';
+        wrapper.style.transition = '';
+        if (createdWrapper) {
+            // Unwrap.
+            wrapper.parentElement.insertBefore(container, wrapper);
+            wrapper.remove();
+        }
+        // Just show cards with fade.
+        visibleCards.forEach((card) => {
+            card.style.visibility = '';
+            card.style.opacity = '0';
+        });
+        requestAnimationFrame(() => {
+            visibleCards.forEach((card) => {
+                card.style.transition = 'opacity 150ms ease';
+                card.style.opacity = '1';
+            });
+            setTimeout(() => {
+                visibleCards.forEach((card) => {
+                    card.style.transition = '';
+                    card.style.opacity = '';
+                });
+            }, 200);
+        });
+        return;
+    }
+
+    // Animate wrapper height.
+    wrapper.style.transition = `height ${HEIGHT_TRANSITION_MS}ms ease`;
+    wrapper.style.height = `${endHeight}px`;
+
+    // Fade cards in after height transition completes.
+    setTimeout(() => {
+        // Clean up wrapper.
+        wrapper.style.height = '';
+        wrapper.style.transition = '';
+        wrapper.style.overflow = '';
+
+        if (createdWrapper) {
+            // Unwrap - move container back and remove wrapper.
+            wrapper.parentElement.insertBefore(container, wrapper);
+            wrapper.remove();
+        }
+
+        // Show cards with fade.
+        visibleCards.forEach((card) => {
+            card.style.visibility = '';
+            card.style.opacity = '0';
+        });
+        requestAnimationFrame(() => {
+            visibleCards.forEach((card) => {
+                card.style.transition = 'opacity 150ms ease';
+                card.style.opacity = '1';
+            });
+            setTimeout(() => {
+                visibleCards.forEach((card) => {
+                    card.style.transition = '';
+                    card.style.opacity = '';
+                });
+            }, 200);
+        });
+    }, HEIGHT_TRANSITION_MS);
 };
 
 /**
@@ -350,18 +474,21 @@ const initFilterBar = (bar) => {
         });
 
         /**
-         * Apply all active filters and update UI state.
+         * Apply all active filters and update UI state with height animation.
          *
          * @returns {number} Count of visible items after filtering
          */
         const applyAllFilters = () => {
             let visibleCount;
-            if (filterState.activeTag || filterState.activeCompletion) {
-                visibleCount = applyCombinedFilter(activityItems);
-            } else {
-                clearFilterStyles(activityItems);
-                visibleCount = activityItems.length;
-            }
+
+            animateContainerHeight(activityContainer, () => {
+                if (filterState.activeTag || filterState.activeCompletion) {
+                    visibleCount = applyCombinedFilter(activityItems);
+                } else {
+                    clearFilterStyles(activityItems);
+                    visibleCount = activityItems.length;
+                }
+            });
 
             // Update completion counts based on currently visible items.
             if (statusRegion) {
@@ -500,22 +627,25 @@ const initCompletionStatusOnly = (statusRegion) => {
         }
 
         /**
-         * Apply completion filter and update UI.
+         * Apply completion filter and update UI with height animation.
          *
          * @returns {number} Count of visible items after filtering
          */
         const applyAllFilters = () => {
             let visibleCount;
-            if (filterState.activeCompletion) {
-                visibleCount = applyCombinedFilter(activityItems);
-            } else {
-                activityItems.forEach((item) => {
-                    item.hidden = false;
-                    item.classList.remove('is-filtered-out');
-                    item.style.removeProperty('display');
-                });
-                visibleCount = activityItems.length;
-            }
+
+            animateContainerHeight(activityContainer, () => {
+                if (filterState.activeCompletion) {
+                    visibleCount = applyCombinedFilter(activityItems);
+                } else {
+                    activityItems.forEach((item) => {
+                        item.hidden = false;
+                        item.classList.remove('is-filtered-out');
+                        item.style.removeProperty('display');
+                    });
+                    visibleCount = activityItems.length;
+                }
+            });
 
             updateCompletionCounts(statusRegion, activityItems);
             toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
