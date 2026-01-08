@@ -143,13 +143,18 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 1,
                 'type' => PARAM_BOOL,
             ],
+            'distractionfree' => [
+                'default' => 0,
+                'type' => PARAM_BOOL,
+            ],
             'designvariant' => [
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
-            'distractionfree' => [
-                'default' => 0,
-                'type' => PARAM_BOOL,
+            // selectedtags is handled manually in create_edit_form_elements() with custom checkboxes.
+            'selectedtags' => [
+                'default' => '',
+                'type' => PARAM_SEQUENCE,
             ],
         ];
 
@@ -158,6 +163,12 @@ class format_minimoodlewall extends core_courseformat\base {
             $courseformatoptions['enablefiltering'] += [
                 'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
                 'help' => 'setting_enablefiltering',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'advcheckbox',
+            ];
+            $courseformatoptions['distractionfree'] += [
+                'label' => get_string('setting_distractionfree', 'format_minimoodlewall'),
+                'help' => 'setting_distractionfree',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
             ];
@@ -172,20 +183,12 @@ class format_minimoodlewall extends core_courseformat\base {
                     'dark' => get_string('design_dark', 'format_minimoodlewall'),
                 ]],
             ];
-            $courseformatoptions['distractionfree'] += [
-                'label' => get_string('setting_distractionfree', 'format_minimoodlewall'),
-                'help' => 'setting_distractionfree',
-                'help_component' => 'format_minimoodlewall',
-                'element_type' => 'advcheckbox',
+            // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
+            $courseformatoptions['selectedtags'] += [
+                'label' => '',
+                'element_type' => 'hidden',
             ];
         }
-
-        // selectedtags is always included for storage but has no form element here.
-        // It's handled manually in create_edit_form_elements() with custom checkboxes.
-        $courseformatoptions['selectedtags'] = [
-            'default' => '',
-            'type' => PARAM_SEQUENCE,
-        ];
 
         return $courseformatoptions;
     }
@@ -225,28 +228,27 @@ class format_minimoodlewall extends core_courseformat\base {
         }
         $selectedtagsvalue = implode(',', $selectedtagids);
 
-        // Add hidden field to store the selected tag IDs (synced by JS from checkboxes).
-        // Only add if it doesn't already exist (parent might have created it).
-        if (!$mform->elementExists('selectedtags')) {
-            $elements[] = $mform->addElement('hidden', 'selectedtags');
-            $mform->setType('selectedtags', PARAM_SEQUENCE);
-        }
+        // Set default value for the hidden selectedtags field (created by parent).
+        // The JS module syncs checkbox states to this hidden field.
         $mform->setDefault('selectedtags', $selectedtagsvalue);
 
         // Create a label/header for the tag checkboxes section.
         $elements[] = $mform->addElement('static', 'selectedtags_label', get_string('setting_selectedtags', 'format_minimoodlewall'));
         $mform->addHelpButton('selectedtags_label', 'setting_selectedtags', 'format_minimoodlewall');
 
+        // Prepare renderer for mustache templates.
+        $output = $PAGE->get_renderer('format_minimoodlewall');
+
         // Add individual checkbox for each tag with image.
         foreach ($tags as $tag) {
             $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag);
 
-            // Build simple HTML label with image.
-            $labelhtml = '<span class="mmw-tag-option">';
-            if ($imageurl) {
-                $labelhtml .= '<img src="' . s($imageurl->out(false)) . '" class="mmw-tag-preview" alt="" style="width:24px;height:24px;margin-right:8px;">';
-            }
-            $labelhtml .= s($tag->name) . '</span>';
+            // Render label using mustache template.
+            $templatecontext = [
+                'name' => $tag->name,
+                'imageurl' => $imageurl ? $imageurl->out(false) : null,
+            ];
+            $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
             $checkboxname = 'selectedtag_' . $tag->id;
             $elements[] = $mform->addElement('advcheckbox', $checkboxname, '', $labelhtml, null, [0, $tag->id]);
