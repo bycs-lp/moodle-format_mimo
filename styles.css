@@ -997,3 +997,56 @@ body.format-minimoodlewall #page-wrapper #page {
   background: transparent !important;
   padding: 0.75rem !important;
 }
+
+.mmw-tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mmw-tag-preview {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.mmw-tag-preview-placeholder {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background: #e9ecef;
+  border-radius: 3px;
+}
+
+.mmw-tag-name {
+  white-space: nowrap;
+}
+
+[id^=fitem_id_selectedtag_] .form-check {
+  display: flex;
+  align-items: center;
+  padding-left: 0;
+  margin-bottom: 0.25rem;
+}
+[id^=fitem_id_selectedtag_] .form-check-input {
+  margin-right: 0.5rem;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+[id^=fitem_id_selectedtag_] .form-check-label {
+  display: flex;
+  align-items: center;
+}
+
+#fitem_id_selectedtags_label {
+  margin-bottom: 0.25rem;
+}
+#fitem_id_selectedtags_label .form-control-static {
+  font-weight: 600;
+}
+
+#fitem_id_selectedtags {
+  display: none;
+}

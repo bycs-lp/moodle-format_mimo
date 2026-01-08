@@ -139,10 +139,6 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function course_format_options($forupdate = false) {
         $courseformatoptions = [
-            'selectedtags' => [
-                'default' => '',
-                'type' => PARAM_SEQUENCE,
-            ],
             'enablefiltering' => [
                 'default' => 1,
                 'type' => PARAM_BOOL,
@@ -158,27 +154,7 @@ class format_minimoodlewall extends core_courseformat\base {
         ];
 
         if ($forupdate) {
-            // Get all available tags.
-            $tags = \format_minimoodlewall\tag_manager::get_all_tags();
-            $tagchoices = [];
-            foreach ($tags as $tag) {
-                $tagchoices[$tag->id] = $tag->name;
-            }
-
             // Add form elements for course settings.
-            $courseformatoptions['selectedtags'] += [
-                'label' => get_string('setting_selectedtags', 'format_minimoodlewall'),
-                'help' => 'setting_selectedtags',
-                'help_component' => 'format_minimoodlewall',
-                'element_type' => 'autocomplete',
-                'element_attributes' => [
-                    $tagchoices,
-                    [
-                        'multiple' => true,
-                        'noselectionstring' => get_string('selecttags', 'format_minimoodlewall'),
-                    ],
-                ],
-            ];
             $courseformatoptions['enablefiltering'] += [
                 'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
                 'help' => 'setting_enablefiltering',
@@ -203,7 +179,89 @@ class format_minimoodlewall extends core_courseformat\base {
                 'element_type' => 'advcheckbox',
             ];
         }
+
+        // selectedtags is always included for storage but has no form element here.
+        // It's handled manually in create_edit_form_elements() with custom checkboxes.
+        $courseformatoptions['selectedtags'] = [
+            'default' => '',
+            'type' => PARAM_SEQUENCE,
+        ];
+
         return $courseformatoptions;
+    }
+
+    /**
+     * Adds format options elements to the course/section edit form.
+     *
+     * Overrides parent to create custom checkbox elements for tag selection
+     * with inline images displayed vertically.
+     *
+     * @param MoodleQuickForm $mform form the elements are added to
+     * @param bool $forsection 'true' if this is a section edit form, 'false' if this is course edit form
+     * @return array array of references to the added form elements
+     */
+    public function create_edit_form_elements(&$mform, $forsection = false) {
+        global $PAGE;
+
+        // Let parent handle all standard elements first.
+        $elements = parent::create_edit_form_elements($mform, $forsection);
+
+        // Only add tag checkboxes for course edit form (not sections).
+        if ($forsection) {
+            return $elements;
+        }
+
+        // Get all available tags.
+        $tags = \format_minimoodlewall\tag_manager::get_all_tags();
+        if (empty($tags)) {
+            return $elements;
+        }
+
+        // Get currently selected tags from course format options.
+        $selectedtagids = [];
+        $course = $this->get_course();
+        if (!empty($course->selectedtags)) {
+            $selectedtagids = array_map('intval', explode(',', $course->selectedtags));
+        }
+        $selectedtagsvalue = implode(',', $selectedtagids);
+
+        // Add hidden field to store the selected tag IDs (synced by JS from checkboxes).
+        // Only add if it doesn't already exist (parent might have created it).
+        if (!$mform->elementExists('selectedtags')) {
+            $elements[] = $mform->addElement('hidden', 'selectedtags');
+            $mform->setType('selectedtags', PARAM_SEQUENCE);
+        }
+        $mform->setDefault('selectedtags', $selectedtagsvalue);
+
+        // Create a label/header for the tag checkboxes section.
+        $elements[] = $mform->addElement('static', 'selectedtags_label', get_string('setting_selectedtags', 'format_minimoodlewall'));
+        $mform->addHelpButton('selectedtags_label', 'setting_selectedtags', 'format_minimoodlewall');
+
+        // Add individual checkbox for each tag with image.
+        foreach ($tags as $tag) {
+            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag);
+
+            // Build simple HTML label with image.
+            $labelhtml = '<span class="mmw-tag-option">';
+            if ($imageurl) {
+                $labelhtml .= '<img src="' . s($imageurl->out(false)) . '" class="mmw-tag-preview" alt="" style="width:24px;height:24px;margin-right:8px;">';
+            }
+            $labelhtml .= s($tag->name) . '</span>';
+
+            $checkboxname = 'selectedtag_' . $tag->id;
+            $elements[] = $mform->addElement('advcheckbox', $checkboxname, '', $labelhtml, null, [0, $tag->id]);
+
+            // Set default checked state based on current selection.
+            if (in_array($tag->id, $selectedtagids)) {
+                $mform->setDefault($checkboxname, $tag->id);
+            }
+        }
+
+        // Initialize JS module to sync checkboxes to hidden field.
+        $tagids = array_keys($tags);
+        $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$tagids]);
+
+        return $elements;
     }
 
     /**
@@ -217,16 +275,26 @@ class format_minimoodlewall extends core_courseformat\base {
     public function edit_form_validation($data, $files, $errors) {
         $errors = parent::edit_form_validation($data, $files, $errors);
 
-        // selectedtags can be an array (from autocomplete) or string (comma-separated from db).
-        $selectedtags = $data['selectedtags'] ?? '';
-        if (is_array($selectedtags)) {
-            $selectedtags = array_filter($selectedtags);
-        } else {
-            $selectedtags = array_filter(explode(',', $selectedtags));
+        // Collect selected tags from individual checkboxes.
+        $selectedtags = [];
+        foreach ($data as $key => $value) {
+            if (strpos($key, 'selectedtag_') === 0 && !empty($value)) {
+                $selectedtags[] = $value;
+            }
+        }
+
+        // Fallback: also check the hidden selectedtags field.
+        if (empty($selectedtags)) {
+            $selectedtagsvalue = $data['selectedtags'] ?? '';
+            if (is_array($selectedtagsvalue)) {
+                $selectedtags = array_filter($selectedtagsvalue);
+            } else {
+                $selectedtags = array_filter(explode(',', $selectedtagsvalue));
+            }
         }
 
         if (empty($selectedtags)) {
-            $errors['selectedtags'] = get_string('error_required_tags', 'format_minimoodlewall');
+            $errors['selectedtags_label'] = get_string('error_required_tags', 'format_minimoodlewall');
         }
 
         return $errors;
@@ -235,8 +303,8 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Updates course format options.
      *
-     * Overrides parent to convert selectedtags array to comma-separated string
-     * before validation (autocomplete multiselect returns array, but we store as PARAM_SEQUENCE).
+     * Overrides parent to collect selectedtags from individual checkbox fields
+     * and convert to comma-separated string before storage.
      * Also clears the course tags cache when selectedtags changes.
      *
      * @param stdClass|array $data Data to update
@@ -245,19 +313,30 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function update_course_format_options($data, $oldcourse = null) {
         $data = (array)$data;
-        
-        // Convert selectedtags array to comma-separated string.
-        if (isset($data['selectedtags']) && is_array($data['selectedtags'])) {
+
+        // Collect selected tags from individual checkbox fields (selectedtag_1, selectedtag_2, etc.).
+        $selectedtags = [];
+        foreach ($data as $key => $value) {
+            if (strpos($key, 'selectedtag_') === 0 && !empty($value)) {
+                $selectedtags[] = (int)$value;
+            }
+        }
+
+        // If we found checkbox values, use them; otherwise check if selectedtags is already set.
+        if (!empty($selectedtags)) {
+            $data['selectedtags'] = implode(',', $selectedtags);
+        } else if (isset($data['selectedtags']) && is_array($data['selectedtags'])) {
+            // Fallback for autocomplete-style array.
             $data['selectedtags'] = implode(',', array_filter($data['selectedtags']));
         }
-        
+
         $result = parent::update_course_format_options($data, $oldcourse);
-        
+
         // Clear course tags cache if selectedtags was updated.
         if ($result && isset($data['selectedtags'])) {
             \format_minimoodlewall\tag_manager::clear_course_tags_cache($this->courseid);
         }
-        
+
         return $result;
     }
 

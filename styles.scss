@@ -1269,3 +1269,75 @@ body.format-minimoodlewall #page-wrapper #page {
     background: transparent !important;
     padding: .75rem !important;
 }
+
+// ============================================
+// Course Form: Tag Checkbox Styling
+// ============================================
+
+// Tag option label (used in checkboxes and potentially autocomplete).
+.mmw-tag-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+// Small inline tag preview image.
+.mmw-tag-preview {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 3px;
+}
+
+// Placeholder when no image exists.
+.mmw-tag-preview-placeholder {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+// Tag name text.
+.mmw-tag-name {
+    white-space: nowrap;
+}
+
+// Tag checkbox container styling - ensure vertical stacking.
+// Each checkbox is in a fitem row, we want them to stack nicely.
+[id^="fitem_id_selectedtag_"] {
+    // Remove default horizontal layout, keep checkboxes in a clean list.
+    .form-check {
+        display: flex;
+        align-items: center;
+        padding-left: 0;
+        margin-bottom: 0.25rem;
+    }
+
+    .form-check-input {
+        margin-right: 0.5rem;
+        margin-top: 0;
+        flex-shrink: 0;
+    }
+
+    .form-check-label {
+        display: flex;
+        align-items: center;
+    }
+}
+
+// Group the tag checkboxes visually under their label.
+#fitem_id_selectedtags_label {
+    margin-bottom: 0.25rem;
+
+    // Style the static text label.
+    .form-control-static {
+        font-weight: 600;
+    }
+}
+
+// Hide the hidden selectedtags field row completely.
+#fitem_id_selectedtags {
+    display: none;
+}
