@@ -17,6 +17,7 @@
  * Design image switcher for course settings form.
  *
  * Updates tag preview images when the design variant dropdown is changed.
+ * Image URLs are read from data-designimages attributes on each tag option.
  *
  * @module     format_minimoodlewall/design_image_switcher
  * @copyright  2025 Your Name
@@ -25,18 +26,14 @@
 
 const SELECTORS = {
     DESIGN_SELECT: '#id_designvariant',
+    TAG_OPTION: '.mmw-tag-option[data-designimages]',
     TAG_IMAGE: '[data-tagimage]',
 };
 
-let tagImageData = {};
-
 /**
  * Initialize the design image switcher.
- *
- * @param {Object} imageData Object mapping tagid -> {designname: imageurl}
  */
-export const init = (imageData) => {
-    tagImageData = imageData;
+export const init = () => {
     registerEventListeners();
 };
 
@@ -60,22 +57,36 @@ const registerEventListeners = () => {
  * @param {string} designName The selected design name
  */
 const updateTagImages = (designName) => {
-    const tagImages = document.querySelectorAll(SELECTORS.TAG_IMAGE);
+    const tagOptions = document.querySelectorAll(SELECTORS.TAG_OPTION);
 
-    tagImages.forEach((element) => {
-        const tagId = element.dataset.tagimage;
-        if (!tagId || !tagImageData[tagId]) {
+    tagOptions.forEach((optionElement) => {
+        const designImagesJson = optionElement.dataset.designimages;
+        if (!designImagesJson) {
             return;
         }
 
-        const newImageUrl = tagImageData[tagId][designName];
+        let designImages;
+        try {
+            designImages = JSON.parse(designImagesJson);
+        } catch (e) {
+            return;
+        }
 
-        if (element.tagName === 'IMG') {
+        const newImageUrl = designImages[designName];
+        const imageElement = optionElement.querySelector(SELECTORS.TAG_IMAGE);
+
+        if (!imageElement) {
+            return;
+        }
+
+        const tagId = imageElement.dataset.tagimage;
+
+        if (imageElement.tagName === 'IMG') {
             if (newImageUrl) {
-                element.src = newImageUrl;
-                element.style.display = '';
+                imageElement.src = newImageUrl;
+                imageElement.style.display = '';
             } else {
-                element.style.display = 'none';
+                imageElement.style.display = 'none';
             }
         } else {
             // It's a placeholder span, replace with image if URL exists.
@@ -86,7 +97,7 @@ const updateTagImages = (designName) => {
                 img.dataset.tagimage = tagId;
                 img.alt = '';
                 img.setAttribute('aria-hidden', 'true');
-                element.parentNode.replaceChild(img, element);
+                imageElement.parentNode.replaceChild(img, imageElement);
             }
         }
     });

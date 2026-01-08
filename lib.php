@@ -248,20 +248,19 @@ class format_minimoodlewall extends core_courseformat\base {
         // Get current design variant for displaying correct images.
         $currentdesign = $course->designvariant ?? 'classic';
 
-        // Get all designs for passing image URLs to JS.
+        // Get all designs for passing image URLs to template data attributes.
         $designs = \format_minimoodlewall\design_manager::get_all_designs();
-        $tagimagedata = [];
 
         // Add individual checkbox for each tag with image.
         foreach ($tags as $tag) {
             // Get the image URL for the current design.
             $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentdesign);
 
-            // Collect image URLs for all designs (for JS to update on design change).
-            $tagimagedata[$tag->id] = [];
+            // Collect image URLs for all designs (stored as data attribute for JS).
+            $designimages = [];
             foreach ($designs as $design) {
                 $designimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $design->name);
-                $tagimagedata[$tag->id][$design->name] = $designimageurl ? $designimageurl->out(false) : null;
+                $designimages[$design->name] = $designimageurl ? $designimageurl->out(false) : null;
             }
 
             // Render label using mustache template.
@@ -269,6 +268,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'name' => $tag->name,
                 'imageurl' => $imageurl ? $imageurl->out(false) : null,
                 'tagid' => $tag->id,
+                'designimages' => json_encode($designimages),
             ];
             $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
@@ -284,7 +284,7 @@ class format_minimoodlewall extends core_courseformat\base {
         // Initialize JS modules.
         $tagids = array_keys($tags);
         $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$tagids]);
-        $PAGE->requires->js_call_amd('format_minimoodlewall/design_image_switcher', 'init', [$tagimagedata]);
+        $PAGE->requires->js_call_amd('format_minimoodlewall/design_image_switcher', 'init');
 
         return $elements;
     }

@@ -23,10 +23,11 @@
     {
         "name": "Lesen",
         "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
-        "tagid": 1
+        "tagid": 1,
+        "designimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}"
     }
 }}
-<span class="mmw-tag-option d-flex align-items-center" data-tagid="{{tagid}}">
+<span class="mmw-tag-option d-flex align-items-center" data-tagid="{{tagid}}" data-designimages="{{designimages}}">
     {{#imageurl}}
     <img src="{{imageurl}}" class="mmw-tag-preview me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
     {{/imageurl}}

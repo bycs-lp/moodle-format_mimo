@@ -65,6 +65,12 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['activitytype', 'description'],
                 'switchids' => ['desctag' => 'desctagid'],
             ],
+            'designs' => [
+                'singular' => 'design',
+                'datagenerator' => 'design',
+                'required' => ['name', 'displayname'],
+                'switchids' => [],
+            ],
         ];
     }
 

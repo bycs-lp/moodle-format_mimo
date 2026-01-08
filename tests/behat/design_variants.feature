@@ -8,6 +8,11 @@ Feature: Design variants in minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | student1 | Student   | One      | student1@example.com |
+    And the following "format_minimoodlewall > designs" exist:
+      | name    | displayname |
+      | classic | Classic     |
+      | light   | Light       |
+      | dark    | Dark        |
     And the following "format_minimoodlewall > tags" exist:
       | name    | activitytype1 | activitytype2 |
       | Reading | page          | book          |
@@ -22,8 +27,8 @@ Feature: Design variants in minimoodlewall format
       | Course short name | TC1                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Course tags" to "Reading"
-    And I set the field "Design" to "classic"
+    And I click on "Reading" "checkbox"
+    And I set the field "Design" to "Classic"
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |

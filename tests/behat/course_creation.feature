@@ -26,8 +26,9 @@ Feature: Course creation with minimoodlewall format
       | Course short name   | TC1                  |
       | Format              | Minimal Moodle Wall  |
       | Enable tag filtering| 1                    |
-      | Design              | classic              |
-    And I set the field "Course tags" to "Reading, Practice"
+      | Design              | Classic              |
+    And I click on "Reading" "checkbox"
+    And I click on "Practice" "checkbox"
     And I press "Save and display"
     Then I should see "Test Course 1"
 
@@ -56,7 +57,8 @@ Feature: Course creation with minimoodlewall format
     When I am on "Test Course 1" course homepage
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
-    Then the "Course tags" "field" should be enabled
+    Then I should see "Course tags"
+    And "Reading" "checkbox" should exist
 
   @javascript
   Scenario: Course displays activities in wall format

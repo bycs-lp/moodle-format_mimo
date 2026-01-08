@@ -48,8 +48,10 @@ class content extends content_base {
         // Get the course format options.
         $course = $this->format->get_course();
         $designvariant = $course->designvariant ?? 'classic';
-        $allowedvariants = ['classic', 'light', 'dark'];
-        if (!in_array($designvariant, $allowedvariants, true)) {
+
+        // Validate design exists in database, fallback to classic if not.
+        $design = \format_minimoodlewall\design_manager::get_design_by_name($designvariant);
+        if (!$design) {
             $designvariant = 'classic';
         }
 

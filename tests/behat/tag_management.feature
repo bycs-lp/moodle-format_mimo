@@ -12,9 +12,13 @@ Feature: Tag management in minimoodlewall format
     And the following "role assigns" exist:
       | user   | role    | contextlevel | reference |
       | admin1 | manager | System       |           |
+    And the following "format_minimoodlewall > designs" exist:
+      | name    | displayname |
+      | classic | Classic     |
+      | light   | Light       |
 
   @javascript @_file_upload
-  Scenario: Admin can create a new tag
+  Scenario: Admin can create a new tag with design-specific images
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
@@ -23,7 +27,7 @@ Feature: Tag management in minimoodlewall format
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
       | Second Suggested Activity Type    | quiz         |
-    And I upload "course/format/minimoodlewall/pix/tags/lab.svg" file to "Card Image" filemanager
+    And I upload "course/format/minimoodlewall/pix/tags/lab.svg" file to "Card Image (Classic)" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     Then I should see "Biology"
@@ -39,7 +43,7 @@ Feature: Tag management in minimoodlewall format
     When I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
-    And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image" filemanager
+    And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image (Classic)" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     Then I should see "Advanced Biology"
