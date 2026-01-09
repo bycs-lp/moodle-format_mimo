@@ -68,7 +68,7 @@ Feature: Activity pagination in minimoodlewall format
     And I wait until ".minimoodlewall-activities .col-12:not([style*='display: none'])" "css_element" exists
     Then I should see "Page 9"
     And I should see "Page 10"
-    And I should not see "Page 1" in the ".minimoodlewall-activities" "css_element"
+    And I should not see "Page 2" in the ".minimoodlewall-activities" "css_element"
 
   @javascript
   Scenario: Previous button works correctly
