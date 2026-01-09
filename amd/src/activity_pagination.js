@@ -113,8 +113,8 @@ export const init = () => {
         return;
     }
 
-    const activityCards = Array.from(container.querySelectorAll('.col-12'));
-    if (activityCards.length === 0) {
+    const allActivityCards = Array.from(container.querySelectorAll('.col-12'));
+    if (allActivityCards.length === 0) {
         return;
     }
 
@@ -127,6 +127,23 @@ export const init = () => {
     let touchStartX = 0;
     let touchEndX = 0;
     let paginationEnabled = true;
+    let filterActive = false;
+
+    /**
+     * Get the list of visible activity cards (not hidden by filters).
+     *
+     * When filtering is active, returns only cards without the hidden attribute.
+     * When no filter is active, returns all cards.
+     *
+     * @returns {HTMLElement[]} Array of visible activity card elements
+     */
+    const getVisibleCards = () => {
+        if (!filterActive) {
+            return Array.from(container.querySelectorAll('.col-12'));
+        }
+        // Return cards that are not hidden by filter (no hidden attribute).
+        return Array.from(container.querySelectorAll('.col-12:not([hidden])'));
+    };
 
     /**
      * Check if bulk mode is active via reactive state.
@@ -157,10 +174,9 @@ export const init = () => {
     };
 
     /**
-     * Show all activities and disable pagination.
+     * Show all activities and disable pagination (for bulk mode).
      *
      * Called when:
-     * - Filter is activated (all activities visible for filtering)
      * - Bulk mode is enabled (all checkboxes need to be accessible)
      *
      * Side effects:
@@ -177,7 +193,10 @@ export const init = () => {
             card.style.transition = 'none';
             card.style.opacity = '1';
             card.style.transform = 'translateX(0)';
-            card.style.display = 'block';
+            // Only show cards that aren't filtered out.
+            if (!card.hidden) {
+                card.style.display = 'block';
+            }
         });
 
         // Hide navigation controls and remove pagination class.
@@ -194,6 +213,20 @@ export const init = () => {
             nextBtn.disabled = true;
             nextBtn.setAttribute('aria-disabled', 'true');
         }
+    };
+
+    /**
+     * Recalculate pagination when filter changes.
+     *
+     * Called when filtering is activated or deactivated.
+     * Resets to page 0 and shows the first page of visible items.
+     *
+     * @returns {void}
+     */
+    const recalculateForFilter = () => {
+        currentPage = 0;
+        showPageDirect();
+        updateNavigationButtons();
     };
 
     /**
@@ -236,11 +269,12 @@ export const init = () => {
     };
 
     /**
-     * Calculate total pages.
+     * Calculate total pages based on visible cards.
      * @returns {number}
      */
     const getTotalPages = () => {
-        return Math.ceil(activityCards.length / getItemsPerPage());
+        const visibleCards = getVisibleCards();
+        return Math.ceil(visibleCards.length / getItemsPerPage());
     };
 
     /**
@@ -253,6 +287,8 @@ export const init = () => {
      * - Shows only cards for target page, hides others
      * - Measures scrollHeight of clone
      * - Removes clone from DOM
+     *
+     * When filtering is active, indices refer to visible cards only.
      *
      * This prevents layout thrashing and provides accurate height before animation starts.
      *
@@ -274,16 +310,39 @@ export const init = () => {
         clone.style.transition = 'none';
 
         const cloneCards = Array.from(clone.querySelectorAll('.col-12'));
-        cloneCards.forEach((card, index) => {
-            card.style.transition = 'none';
-            card.style.transform = 'none';
-            card.style.opacity = '1';
-            if (index >= startIndex && index < endIndex) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+
+        if (filterActive) {
+            // Filter-aware: use visible card indices.
+            let visibleIndex = 0;
+            cloneCards.forEach((card) => {
+                card.style.transition = 'none';
+                card.style.transform = 'none';
+                card.style.opacity = '1';
+
+                if (card.hidden) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                if (visibleIndex >= startIndex && visibleIndex < endIndex) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+                visibleIndex++;
+            });
+        } else {
+            cloneCards.forEach((card, index) => {
+                card.style.transition = 'none';
+                card.style.transform = 'none';
+                card.style.opacity = '1';
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
 
         document.body.appendChild(clone);
         const height = clone.scrollHeight;
@@ -293,6 +352,9 @@ export const init = () => {
 
     /**
      * Show activities for current page without animation (for resizing/initial load).
+     *
+     * When filtering is active, paginates only the visible (non-hidden) cards.
+     * Hidden cards remain hidden regardless of pagination.
      */
     const showPageDirect = () => {
         if (!paginationEnabled) {
@@ -302,18 +364,45 @@ export const init = () => {
         const itemsPerPage = getItemsPerPage();
         const startIndex = currentPage * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
-        const currentCards = Array.from(container.querySelectorAll('.col-12'));
 
-        currentCards.forEach((card, index) => {
-            card.style.transition = 'none';
-            card.style.opacity = '1';
-            card.style.transform = 'translateX(0)';
-            if (index >= startIndex && index < endIndex) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+        if (filterActive) {
+            // When filter is active, paginate only visible cards.
+            const allCards = Array.from(container.querySelectorAll('.col-12'));
+            let visibleIndex = 0;
+
+            allCards.forEach((card) => {
+                card.style.transition = 'none';
+                card.style.opacity = '1';
+                card.style.transform = 'translateX(0)';
+
+                // Skip cards hidden by filter.
+                if (card.hidden) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // Paginate visible cards.
+                if (visibleIndex >= startIndex && visibleIndex < endIndex) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+                visibleIndex++;
+            });
+        } else {
+            // Normal pagination - all cards.
+            const currentCards = Array.from(container.querySelectorAll('.col-12'));
+            currentCards.forEach((card, index) => {
+                card.style.transition = 'none';
+                card.style.opacity = '1';
+                card.style.transform = 'translateX(0)';
+                if (index >= startIndex && index < endIndex) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
         updateNavigationButtons();
     };
 
@@ -405,11 +494,19 @@ export const init = () => {
         startHeightTransition();
 
         // Re-query activity cards to get fresh list after reordering.
-        const currentCards = Array.from(container.querySelectorAll('.col-12'));
+        const allCards = Array.from(container.querySelectorAll('.col-12'));
 
-        // Identify old (currently visible) and new cards.
-        const oldCards = currentCards.filter(card => card.style.display !== 'none');
-        const newCards = currentCards.filter((card, index) => index >= startIndex && index < endIndex);
+        // Build list of visible cards (for filter-aware pagination).
+        let visibleCardsList = [];
+        if (filterActive) {
+            visibleCardsList = allCards.filter(card => !card.hidden);
+        } else {
+            visibleCardsList = allCards;
+        }
+
+        // Identify old (currently displayed) and new cards based on visible card indices.
+        const oldCards = visibleCardsList.filter(card => card.style.display !== 'none');
+        const newCards = visibleCardsList.filter((card, index) => index >= startIndex && index < endIndex);
 
         const oldCardPositions = new Map();
         oldCards.forEach((card) => {
@@ -485,19 +582,44 @@ export const init = () => {
 
         // After animation completes, hide old cards and reset visibility.
         setTimeout(() => {
-            currentCards.forEach((card, index) => {
-                card.style.transition = '';
-                card.style.transform = '';
-                card.style.opacity = '1';
-                delete card.dataset.mmwOffsetX;
-                delete card.dataset.mmwOffsetY;
+            if (filterActive) {
+                // Filter-aware: paginate only visible cards.
+                let visibleIndex = 0;
+                allCards.forEach((card) => {
+                    card.style.transition = '';
+                    card.style.transform = '';
+                    card.style.opacity = '1';
+                    delete card.dataset.mmwOffsetX;
+                    delete card.dataset.mmwOffsetY;
 
-                if (index < startIndex || index >= endIndex) {
-                    card.style.display = 'none';
-                } else {
-                    card.style.display = 'block';
-                }
-            });
+                    if (card.hidden) {
+                        card.style.display = 'none';
+                        return;
+                    }
+
+                    if (visibleIndex < startIndex || visibleIndex >= endIndex) {
+                        card.style.display = 'none';
+                    } else {
+                        card.style.display = 'block';
+                    }
+                    visibleIndex++;
+                });
+            } else {
+                // Normal pagination.
+                allCards.forEach((card, index) => {
+                    card.style.transition = '';
+                    card.style.transform = '';
+                    card.style.opacity = '1';
+                    delete card.dataset.mmwOffsetX;
+                    delete card.dataset.mmwOffsetY;
+
+                    if (index < startIndex || index >= endIndex) {
+                        card.style.display = 'none';
+                    } else {
+                        card.style.display = 'block';
+                    }
+                });
+            }
 
             cardsReset = true;
             finalizeAnimation();
@@ -547,11 +669,11 @@ export const init = () => {
 
         // Announce current page status to screen readers
         if (paginationEnabled && totalPages > 1) {
-            const currentCards = Array.from(container.querySelectorAll('.col-12'));
+            const visibleCards = getVisibleCards();
             const itemsPerPage = getItemsPerPage();
             const startIndex = currentPage * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            announcePaginationStatus(currentPage, totalPages, startIndex, endIndex, currentCards.length);
+            announcePaginationStatus(currentPage, totalPages, startIndex, endIndex, visibleCards.length);
         }
     };
 
@@ -586,14 +708,15 @@ export const init = () => {
 
     // React when the filter bar toggles a filter on/off.
     document.addEventListener(FILTER_EVENT, (event) => {
-        const filterActive = !!(event && event.detail && event.detail.active);
-        if (filterActive) {
-            paginationEnabled = false;
-            showAllActivities();
-        } else {
-            paginationEnabled = true;
-            enablePagination();
-        }
+        const isFilterActive = !!(event && event.detail && event.detail.active);
+        filterActive = isFilterActive;
+
+        // Defer recalculation to next frame so filter has time to update hidden attributes.
+        // The filter dispatches this event before applying display changes to cards.
+        requestAnimationFrame(() => {
+            // Reset to first page and recalculate based on visible items.
+            recalculateForFilter();
+        });
     });
 
     // Touch gesture support for swipe navigation.
