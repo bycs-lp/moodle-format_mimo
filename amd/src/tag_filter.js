@@ -378,6 +378,7 @@ const updateCompletionPills = (statusRegion, activeCompleted) => {
 const updateCompletionCounts = (statusRegion, items) => {
     let completedCount = 0;
     let incompleteCount = 0;
+    let totalWithCompletion = 0;
 
     items.forEach((item) => {
         // Skip hidden items when a tag filter is active.
@@ -388,8 +389,10 @@ const updateCompletionCounts = (statusRegion, items) => {
         const completed = item.dataset.completed;
         if (completed === 'true') {
             completedCount++;
+            totalWithCompletion++;
         } else if (completed === 'false') {
             incompleteCount++;
+            totalWithCompletion++;
         }
     });
 
@@ -401,6 +404,32 @@ const updateCompletionCounts = (statusRegion, items) => {
     if (incompleteEl) {
         incompleteEl.textContent = incompleteCount;
     }
+
+    // Update the all-complete star visibility.
+    updateAllCompleteStar(statusRegion, completedCount, totalWithCompletion);
+};
+
+/**
+ * Show or hide the sparkle star when all activities are complete.
+ *
+ * The star appears when:
+ * - There is at least one activity with completion tracking
+ * - All activities with completion tracking are complete (incomplete count is 0)
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {number} completedCount - Number of completed activities
+ * @param {number} totalWithCompletion - Total activities with completion tracking
+ * @returns {void}
+ */
+const updateAllCompleteStar = (statusRegion, completedCount, totalWithCompletion) => {
+    const star = statusRegion.querySelector('[data-region="all-complete-star"]');
+    if (!star) {
+        return;
+    }
+
+    // Show star only when there are activities with completion AND all are complete.
+    const allComplete = totalWithCompletion > 0 && completedCount === totalWithCompletion;
+    star.classList.toggle('is-visible', allComplete);
 };
 
 /**
@@ -655,6 +684,9 @@ const initFilterBar = (bar) => {
                     }
                 }
             });
+
+            // Initial update to show star if all activities are already complete.
+            updateCompletionCounts(statusRegion, activityItems);
         }
     } catch (error) {
         Notification.exception(error);
@@ -739,6 +771,9 @@ const initCompletionStatusOnly = (statusRegion) => {
                 }
             }
         });
+
+        // Initial update to show star if all activities are already complete.
+        updateCompletionCounts(statusRegion, activityItems);
     } catch (error) {
         Notification.exception(error);
     }

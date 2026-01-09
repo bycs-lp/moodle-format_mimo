@@ -1541,3 +1541,206 @@ body.format-minimoodlewall #page-wrapper #page {
         border: 3px solid #e9ecef;
     }
 }
+
+// ============================================================================
+// All Complete Star - Animated Sparkle Star
+// ============================================================================
+
+// Sparkle keyframes for star animation.
+@keyframes mmw-sparkle-star {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
+    }
+    25% {
+        transform: scale(1.15) rotate(5deg);
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
+    }
+    50% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+    }
+    75% {
+        transform: scale(1.1) rotate(-5deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1));
+    }
+}
+
+// Sparkle rays that radiate from the star.
+@keyframes mmw-sparkle-rays {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+// Twinkle effect for small sparkles around the star.
+@keyframes mmw-twinkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0) translate(0, 0);
+    }
+    20% {
+        opacity: 1;
+        transform: scale(1) translate(-3px, -5px);
+    }
+    40% {
+        opacity: 0.6;
+        transform: scale(0.8) translate(4px, -3px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.1) translate(-2px, 4px);
+    }
+    80% {
+        opacity: 0.4;
+        transform: scale(0.6) translate(3px, 2px);
+    }
+}
+
+// All complete star container.
+.completion-all-complete-star {
+    display: none; // Hidden by default, shown via JS when all complete.
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-left: 0.5rem;
+    
+    &.is-visible {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    // Main star icon.
+    .star-icon {
+        font-size: 1.5rem;
+        color: #ffd700;
+        animation: mmw-sparkle-star 2s ease-in-out infinite;
+        z-index: 2;
+        position: relative;
+        text-shadow: 
+            0 0 5px rgba(255, 215, 0, 0.8),
+            0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    
+    // Sparkle rays behind the star.
+    .star-rays {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 215, 0, 0.4) 0%,
+                rgba(255, 215, 0, 0.1) 40%,
+                transparent 70%
+            );
+            border-radius: 50%;
+            animation: mmw-sparkle-rays 1.5s ease-in-out infinite;
+        }
+        
+        &::after {
+            animation-delay: 0.75s;
+            transform: scale(1.2);
+        }
+    }
+    
+    // Small sparkle dots around the star.
+    .star-sparkles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        pointer-events: none;
+        
+        // Create 4 sparkle dots.
+        &::before,
+        &::after {
+            content: '✦';
+            position: absolute;
+            font-size: 0.5rem;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
+        }
+        
+        &::before {
+            top: 0;
+            right: 2px;
+            animation: mmw-twinkle 2s ease-in-out infinite;
+        }
+        
+        &::after {
+            top: 2px;
+            left: 0;
+            animation: mmw-twinkle 2s ease-in-out infinite 0.5s;
+        }
+    }
+    
+    // Additional sparkles using spans inside.
+    .star-sparkle-dot {
+        position: absolute;
+        font-size: 0.45rem;
+        color: #fffacd;
+        text-shadow: 0 0 3px rgba(255, 215, 0, 0.8);
+        
+        &:nth-child(4) {
+            top: 0;
+            left: 4px;
+            animation: mmw-twinkle 2.2s ease-in-out infinite 0.3s;
+        }
+        
+        &:nth-child(5) {
+            top: 4px;
+            right: 0;
+            animation: mmw-twinkle 1.8s ease-in-out infinite 0.8s;
+        }
+    }
+}
+
+// Design variant adjustments for star.
+.minimoodlewall-completion-status.minimoodlewall-design-dark {
+    .completion-all-complete-star {
+        .star-icon {
+            color: #ffdf00;
+            text-shadow: 
+                0 0 8px rgba(255, 223, 0, 0.9),
+                0 0 15px rgba(255, 223, 0, 0.6);
+        }
+    }
+}
+
+.minimoodlewall-completion-status.minimoodlewall-design-classic {
+    .completion-all-complete-star {
+        .star-icon {
+            color: #ffc107;
+        }
+        
+        .star-rays::before,
+        .star-rays::after {
+            background: radial-gradient(
+                circle,
+                rgba(255, 193, 7, 0.5) 0%,
+                rgba(255, 193, 7, 0.15) 40%,
+                transparent 70%
+            );
+        }
+    }
+}

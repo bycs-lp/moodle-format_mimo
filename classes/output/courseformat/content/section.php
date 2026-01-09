@@ -176,12 +176,14 @@ class section extends section_base {
             }
         }
 
+        $total = $completedcount + $incompletecount;
         return (object) [
             'completedcount' => $completedcount,
             'incompletecount' => $incompletecount,
-            'total' => $completedcount + $incompletecount,
+            'total' => $total,
             'hascompleted' => $completedcount > 0,
             'hasincomplete' => $incompletecount > 0,
+            'allcomplete' => $total > 0 && $incompletecount === 0,
         ];
     }
 

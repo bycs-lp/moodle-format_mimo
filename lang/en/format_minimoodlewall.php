@@ -41,6 +41,7 @@ $string['cardimage_for_design'] = 'Card Image ({$a})';
 $string['cardimage_help'] = 'Upload the SVG that should appear at the top of the activity card.';
 $string['closedrawers'] = 'Close drawers in distraction-free mode';
 $string['closedrawers_desc'] = 'When enabled, side drawers will be automatically closed when entering distraction-free mode.';
+$string['allcomplete'] = 'All activities complete!';
 $string['completed'] = 'Completed';
 $string['completionfilter'] = 'Completion status filter';
 $string['confirmdeletedestag'] = 'Are you sure you want to delete the description tag "{$a}"?';
