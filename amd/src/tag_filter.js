@@ -37,10 +37,43 @@ const filterState = {
 };
 
 /**
+ * Selectors for sibling elements that should be included in the animated wrapper.
+ * These elements follow .minimoodlewall-activities and should animate together.
+ */
+const WRAPPER_SIBLING_SELECTORS = [
+    '.minimoodlewall-navigation-wrapper',
+    '[data-region="completion-status"]',
+];
+
+/**
+ * Collect sibling elements that should be wrapped together with the container.
+ *
+ * @param {HTMLElement} container - The .minimoodlewall-activities container
+ * @returns {HTMLElement[]} Array of sibling elements to include in wrapper
+ */
+const collectWrappableSiblings = (container) => {
+    const siblings = [];
+    const parent = container.parentElement;
+    if (!parent) {
+        return siblings;
+    }
+
+    WRAPPER_SIBLING_SELECTORS.forEach((selector) => {
+        const sibling = parent.querySelector(selector);
+        if (sibling && sibling !== container) {
+            siblings.push(sibling);
+        }
+    });
+
+    return siblings;
+};
+
+/**
  * Animate container height change when filtering changes visible rows.
  *
  * Creates a temporary wrapper to animate height independently of the grid.
  * The wrapper captures the height, while the inner content reflows freely.
+ * Also wraps sibling elements (navigation, completion status) to prevent layout jumps.
  *
  * @param {HTMLElement} container - The .minimoodlewall-activities container
  * @param {Function} applyChanges - Callback that applies the filter changes
@@ -55,14 +88,28 @@ const animateContainerHeight = (container, applyChanges) => {
     // Get or create wrapper element around container.
     let wrapper = container.parentElement;
     let createdWrapper = false;
+    let wrappedSiblings = [];
 
     // If parent isn't already a dedicated wrapper, create one.
     if (!wrapper.classList.contains('minimoodlewall-height-animator')) {
+        const originalParent = container.parentElement;
+
+        // Collect siblings to wrap before modifying DOM.
+        wrappedSiblings = collectWrappableSiblings(container);
+
         wrapper = document.createElement('div');
         wrapper.className = 'minimoodlewall-height-animator';
         wrapper.style.overflow = 'hidden';
-        container.parentElement.insertBefore(wrapper, container);
+
+        // Insert wrapper before container and move container into it.
+        originalParent.insertBefore(wrapper, container);
         wrapper.appendChild(container);
+
+        // Move sibling elements into wrapper (preserving order).
+        wrappedSiblings.forEach((sibling) => {
+            wrapper.appendChild(sibling);
+        });
+
         createdWrapper = true;
     }
 
@@ -88,19 +135,40 @@ const animateContainerHeight = (container, applyChanges) => {
     // Get newly visible cards.
     const visibleCards = Array.from(container.querySelectorAll('li[data-id]:not([hidden])'));
 
-    // Measure new natural height of container (wrapper is still locked).
-    const endHeight = container.offsetHeight;
+    // Measure new natural height of wrapper content (wrapper is still locked but content reflows).
+    // We need to measure all wrapped content, not just the container.
+    let endHeight = container.offsetHeight;
+    wrappedSiblings.forEach((sibling) => {
+        endHeight += sibling.offsetHeight;
+        // Account for margins between siblings.
+        const style = window.getComputedStyle(sibling);
+        endHeight += parseInt(style.marginTop, 10) || 0;
+        endHeight += parseInt(style.marginBottom, 10) || 0;
+    });
 
-    // Skip animation if height didn't change significantly.
-    if (Math.abs(endHeight - startHeight) < 1) {
-        wrapper.style.height = '';
-        wrapper.style.transition = '';
-        if (createdWrapper) {
-            // Unwrap.
-            wrapper.parentElement.insertBefore(container, wrapper);
-            wrapper.remove();
+    /**
+     * Unwrap elements and restore them to original parent.
+     */
+    const unwrapElements = () => {
+        if (!createdWrapper) {
+            return;
         }
-        // Just show cards with fade.
+        const wrapperParent = wrapper.parentElement;
+        // Move container back before wrapper.
+        wrapperParent.insertBefore(container, wrapper);
+        // Move siblings back after container (in original order).
+        let insertAfter = container;
+        wrappedSiblings.forEach((sibling) => {
+            insertAfter.after(sibling);
+            insertAfter = sibling;
+        });
+        wrapper.remove();
+    };
+
+    /**
+     * Fade in visible cards with animation.
+     */
+    const fadeInCards = () => {
         visibleCards.forEach((card) => {
             card.style.visibility = '';
             card.style.opacity = '0';
@@ -117,6 +185,14 @@ const animateContainerHeight = (container, applyChanges) => {
                 });
             }, 200);
         });
+    };
+
+    // Skip animation if height didn't change significantly.
+    if (Math.abs(endHeight - startHeight) < 1) {
+        wrapper.style.height = '';
+        wrapper.style.transition = '';
+        unwrapElements();
+        fadeInCards();
         return;
     }
 
@@ -131,29 +207,8 @@ const animateContainerHeight = (container, applyChanges) => {
         wrapper.style.transition = '';
         wrapper.style.overflow = '';
 
-        if (createdWrapper) {
-            // Unwrap - move container back and remove wrapper.
-            wrapper.parentElement.insertBefore(container, wrapper);
-            wrapper.remove();
-        }
-
-        // Show cards with fade.
-        visibleCards.forEach((card) => {
-            card.style.visibility = '';
-            card.style.opacity = '0';
-        });
-        requestAnimationFrame(() => {
-            visibleCards.forEach((card) => {
-                card.style.transition = 'opacity 150ms ease';
-                card.style.opacity = '1';
-            });
-            setTimeout(() => {
-                visibleCards.forEach((card) => {
-                    card.style.transition = '';
-                    card.style.opacity = '';
-                });
-            }, 200);
-        });
+        unwrapElements();
+        fadeInCards();
     }, HEIGHT_TRANSITION_MS);
 };
 
