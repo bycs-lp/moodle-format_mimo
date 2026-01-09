@@ -248,7 +248,19 @@ $activity-icon-colors: (
     // Gray out hidden/stealth activities
     .activity.dimmed {
         .minimoodlewall-card-content {
-            opacity: 0.5;
+            // Apply dimming to card image and body, but not to visibility controls.
+            // We target specific children because opacity cascades and cannot be
+            // overridden by child elements.
+            .minimoodlewall-card-image,
+            .minimoodlewall-card-body,
+            .minimoodlewall-completion-badge {
+                opacity: 0.5;
+            }
+        }
+        
+        // Ensure dropdown menu escapes card stacking context when open
+        .minimoodlewall-card:has(.visibility-icon-control .show) {
+            z-index: 100;
         }
     }
     
@@ -273,7 +285,8 @@ $activity-icon-colors: (
         box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
     }
 
-    &:focus-within {
+    // Focus effect when stretched-link is focused, but NOT when visibility control is focused
+    &:focus-within:not(:has(.visibility-icon-control:focus-within)) {
         transform: translateY(-4px);
         box-shadow: 4px 8px 0px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.1);
     }
