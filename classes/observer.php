@@ -69,4 +69,34 @@ class observer {
             unset($SESSION->format_minimoodlewall_pending_tag);
         }
     }
+
+    /**
+     * Handle course_module_deleted event to clean up orphaned cmtag records.
+     *
+     * @param \core\event\course_module_deleted $event The event object
+     */
+    public static function course_module_deleted(\core\event\course_module_deleted $event) {
+        global $DB;
+
+        $cmid = $event->objectid;
+        $DB->delete_records('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+        tag_manager::clear_mapping_cache();
+    }
+
+    /**
+     * Handle course_deleted event to clean up all cmtag records for the course.
+     *
+     * @param \core\event\course_deleted $event The event object
+     */
+    public static function course_deleted(\core\event\course_deleted $event) {
+        global $DB;
+
+        // Delete all cmtag records for course modules that belonged to this course.
+        // By the time the course is deleted, course_modules may already be gone,
+        // so we rely on the cmids stored in the cmtags table.
+        $sql = "DELETE FROM {format_minimoodlewall_cmtags}
+                 WHERE cmid NOT IN (SELECT id FROM {course_modules})";
+        $DB->execute($sql);
+        tag_manager::clear_mapping_cache();
+    }
 }
