@@ -28,4 +28,6 @@
 function xmldb_format_minimoodlewall_install() {
     // Initialize default tags.
     \format_minimoodlewall\tag_manager::initialize_default_tags();
+    // Initialize default design variants (classic, light, dark).
+    \format_minimoodlewall\design_manager::initialize_default_designs();
 }
