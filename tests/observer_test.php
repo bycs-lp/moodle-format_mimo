@@ -24,6 +24,9 @@
 
 namespace format_minimoodlewall;
 
+global $CFG;
+require_once($CFG->dirroot . '/course/lib.php');
+
 /**
  * Observer test case.
  *
@@ -281,5 +284,63 @@ final class observer_test extends \advanced_testcase {
 
         // Session should be cleared.
         $this->assertObjectNotHasProperty('format_minimoodlewall_pending_tag', $SESSION);
+    }
+
+    /**
+     * Test that deleting a course module cleans up its cmtag record.
+     */
+    public function test_course_module_deleted_cleans_cmtags(): void {
+        global $DB;
+
+        // Create a module and assign a tag.
+        $module = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
+        tag_manager::assign_tag_to_cm($module->cmid, $this->tagid);
+
+        // Verify the cmtag exists.
+        $cmtag = tag_manager::get_cm_tag($module->cmid);
+        $this->assertNotFalse($cmtag, 'cmtag should exist before deletion');
+
+        // Delete the module (this fires course_module_deleted event).
+        course_delete_module($module->cmid);
+
+        // Verify the cmtag record was cleaned up.
+        $exists = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module->cmid]);
+        $this->assertFalse($exists, 'cmtag should be deleted when module is deleted');
+    }
+
+    /**
+     * Test that deleting a course cleans up orphaned cmtag records.
+     */
+    public function test_course_deleted_cleans_orphaned_cmtags(): void {
+        global $DB;
+
+        // Create a second course to prove we don't wipe all cmtags.
+        $course2 = $this->getDataGenerator()->create_course(['format' => 'minimoodlewall']);
+        $module2 = $this->getDataGenerator()->create_module('page', ['course' => $course2->id]);
+        tag_manager::assign_tag_to_cm($module2->cmid, $this->tagid);
+
+        // Create modules in the course that will be deleted.
+        $module1a = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
+        $module1b = $this->getDataGenerator()->create_module('quiz', ['course' => $this->course->id]);
+        tag_manager::assign_tag_to_cm($module1a->cmid, $this->tagid);
+        tag_manager::assign_tag_to_cm($module1b->cmid, $this->tagid);
+
+        // Verify cmtags exist.
+        $this->assertNotFalse(tag_manager::get_cm_tag($module1a->cmid));
+        $this->assertNotFalse(tag_manager::get_cm_tag($module1b->cmid));
+        $this->assertNotFalse(tag_manager::get_cm_tag($module2->cmid));
+
+        // Delete the first course (this fires course_deleted event).
+        delete_course($this->course, false);
+
+        // Verify cmtags for deleted course are gone.
+        $exists1a = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module1a->cmid]);
+        $exists1b = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module1b->cmid]);
+        $this->assertFalse($exists1a, 'cmtag for deleted course module should be removed');
+        $this->assertFalse($exists1b, 'cmtag for deleted course module should be removed');
+
+        // Verify cmtag for the other course is untouched.
+        $exists2 = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module2->cmid]);
+        $this->assertTrue($exists2, 'cmtag for unrelated course should survive');
     }
 }
