@@ -387,5 +387,81 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026010800, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2026020900) {
+        // Reintroduce tagset architecture: tags are grouped into tagsets,
+        // courses select one tagset and then pick individual tags from it.
+
+        // Step 1: Create tagsets table.
+        $table = new xmldb_table('format_minimoodlewall_tagsets');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('description', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('sortorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_index('name_unique', XMLDB_INDEX_UNIQUE, ['name']);
+        $table->add_index('sortorder', XMLDB_INDEX_NOTUNIQUE, ['sortorder']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Step 2: Create a "Default" tagset and assign all existing tags to it.
+        $now = time();
+        $defaulttagsetid = null;
+
+        if ($DB->record_exists('format_minimoodlewall_tags', [])) {
+            $defaulttagset = new stdClass();
+            $defaulttagset->name = 'Default';
+            $defaulttagset->description = 'Auto-created tagset for existing tags.';
+            $defaulttagset->sortorder = 0;
+            $defaulttagset->timecreated = $now;
+            $defaulttagset->timemodified = $now;
+            $defaulttagsetid = $DB->insert_record('format_minimoodlewall_tagsets', $defaulttagset);
+        }
+
+        // Step 3: Add tagsetid column to tags table (nullable first for migration).
+        $tagtable = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('tagsetid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'id');
+
+        if (!$dbman->field_exists($tagtable, $field)) {
+            $dbman->add_field($tagtable, $field);
+        }
+
+        // Step 4: Assign all existing tags to the default tagset.
+        if ($defaulttagsetid) {
+            $DB->set_field('format_minimoodlewall_tags', 'tagsetid', $defaulttagsetid);
+        }
+
+        // Step 5: Make tagsetid NOT NULL.
+        $field = new xmldb_field('tagsetid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+        $dbman->change_field_notnull($tagtable, $field);
+
+        // Step 6: Drop standalone sortorder index, add composite tagsetid_sortorder index and FK.
+        $oldindex = new xmldb_index('sortorder', XMLDB_INDEX_NOTUNIQUE, ['sortorder']);
+        if ($dbman->index_exists($tagtable, $oldindex)) {
+            $dbman->drop_index($tagtable, $oldindex);
+        }
+
+        $newindex = new xmldb_index('tagsetid_sortorder', XMLDB_INDEX_NOTUNIQUE, ['tagsetid', 'sortorder']);
+        if (!$dbman->index_exists($tagtable, $newindex)) {
+            $dbman->add_index($tagtable, $newindex);
+        }
+
+        $key = new xmldb_key('tagsetid', XMLDB_KEY_FOREIGN, ['tagsetid'], 'format_minimoodlewall_tagsets', ['id']);
+        $dbman->add_key($tagtable, $key);
+
+        // Step 7: Clear caches.
+        $cache = cache::make('format_minimoodlewall', 'tagconfigurations');
+        $cache->purge();
+        $cache = cache::make('format_minimoodlewall', 'activitytagmappings');
+        $cache->purge();
+
+        upgrade_plugin_savepoint(true, 2026020900, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

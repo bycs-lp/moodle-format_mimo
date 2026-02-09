@@ -33,6 +33,9 @@ namespace format_minimoodlewall;
  * @covers     \format_minimoodlewall\design_manager
  */
 final class design_manager_test extends \advanced_testcase {
+    /** @var int Test tagset ID */
+    private int $tagsetid;
+
     /**
      * Set up before each test.
      */
@@ -40,6 +43,8 @@ final class design_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        tagset_manager::clear_tagset_cache();
+        $this->tagsetid = tagset_manager::create_tagset('Design Test Tagset');
     }
 
     /**
@@ -145,7 +150,7 @@ final class design_manager_test extends \advanced_testcase {
 
         // Create a design and a tag.
         $designid = design_manager::create_design('cascade', 'Cascade Test', 1);
-        $tagid = tag_manager::create_tag('Test Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag($this->tagsetid, 'Test Tag', null, null, 'page');
 
         // Create a tag image record for this design.
         $tagimage = design_manager::get_or_create_tag_image($tagid, $designid);
@@ -166,7 +171,7 @@ final class design_manager_test extends \advanced_testcase {
      */
     public function test_get_or_create_tag_image_creates(): void {
         $designid = design_manager::create_design('imgtest', 'Image Test', 1);
-        $tagid = tag_manager::create_tag('Img Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag($this->tagsetid, 'Img Tag', null, null, 'page');
 
         $tagimage = design_manager::get_or_create_tag_image($tagid, $designid);
 
@@ -180,7 +185,7 @@ final class design_manager_test extends \advanced_testcase {
      */
     public function test_get_or_create_tag_image_returns_existing(): void {
         $designid = design_manager::create_design('existing', 'Existing Test', 1);
-        $tagid = tag_manager::create_tag('Existing Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag($this->tagsetid, 'Existing Tag', null, null, 'page');
 
         // Create first time.
         $tagimage1 = design_manager::get_or_create_tag_image($tagid, $designid);
@@ -196,7 +201,7 @@ final class design_manager_test extends \advanced_testcase {
      */
     public function test_get_cardimage_url_by_name_no_image(): void {
         $designid = design_manager::create_design('noimg', 'No Image', 1);
-        $tagid = tag_manager::create_tag('No Img Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag($this->tagsetid, 'No Img Tag', null, null, 'page');
 
         $url = design_manager::get_cardimage_url_by_name($tagid, 'noimg');
 
@@ -241,7 +246,7 @@ final class design_manager_test extends \advanced_testcase {
 
         // Create design and tag.
         $designid = design_manager::create_design('fallback', 'Fallback Test', 1);
-        $tagid = tag_manager::create_tag('Fallback Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag($this->tagsetid, 'Fallback Tag', null, null, 'page');
 
         // Create tag image record with a filename.
         $tagimage = design_manager::get_or_create_tag_image($tagid, $designid);

@@ -46,9 +46,14 @@ final class observer_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        tagset_manager::clear_tagset_cache();
+
+        // Create a tagset.
+        $tagsetid = tagset_manager::create_tagset('Test Tagset');
 
         // Create a tag.
         $this->tagid = tag_manager::create_tag(
+            $tagsetid,
             'Test Tag',
             'test.svg',
             'test-small.svg',
@@ -145,7 +150,8 @@ final class observer_test extends \advanced_testcase {
         global $SESSION;
 
         // Create a tag.
-        $tagid = tag_manager::create_tag('Test Tag', 'test.svg', 'test-small.svg', 'page');
+        $tagsetid = tagset_manager::create_tagset('Observer Tagset');
+        $tagid = tag_manager::create_tag($tagsetid, 'Test Tag', 'test.svg', 'test-small.svg', 'page');
 
         // Create a course with specified format.
         $courseoptions = ['format' => $format];
@@ -219,7 +225,8 @@ final class observer_test extends \advanced_testcase {
             'invalid_tag_id' => [
                 'setup' => function ($course, $SESSION) {
                     // Create a tag.
-                    $tagid = tag_manager::create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
+                    $tagsetid = tagset_manager::create_tagset('Reject Tagset');
+                    $tagid = tag_manager::create_tag($tagsetid, 'Valid Tag', 'test.svg', 'test-small.svg', 'page');
 
                     // Set course selected tags.
                     $format = course_get_format($course->id);
@@ -233,8 +240,9 @@ final class observer_test extends \advanced_testcase {
             'tag_not_selected_for_course' => [
                 'setup' => function ($course, $SESSION) {
                     // Create two tags.
-                    $tagid1 = tag_manager::create_tag('Tag 1', 'test1.svg', 'test1-small.svg', 'page');
-                    $tagid2 = tag_manager::create_tag('Tag 2', 'test2.svg', 'test2-small.svg', 'url');
+                    $tagsetid = tagset_manager::create_tagset('Multi Tagset');
+                    $tagid1 = tag_manager::create_tag($tagsetid, 'Tag 1', 'test1.svg', 'test1-small.svg', 'page');
+                    $tagid2 = tag_manager::create_tag($tagsetid, 'Tag 2', 'test2.svg', 'test2-small.svg', 'url');
 
                     // Set course to only use tag 1.
                     $format = course_get_format($course->id);

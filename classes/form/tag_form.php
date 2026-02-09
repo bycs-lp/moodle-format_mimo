@@ -51,6 +51,10 @@ class tag_form extends \moodleform {
         $mform->addElement('hidden', 'tagid');
         $mform->setType('tagid', PARAM_INT);
 
+        // Tagset ID (hidden).
+        $mform->addElement('hidden', 'tagsetid');
+        $mform->setType('tagsetid', PARAM_INT);
+
         // Tag name.
         $mform->addElement('text', 'name', get_string('tagname', 'format_minimoodlewall'), ['size' => 60]);
         $mform->setType('name', PARAM_TEXT);

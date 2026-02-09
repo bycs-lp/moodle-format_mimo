@@ -24,11 +24,14 @@
  */
 
 /**
- * Recreate minimoodlewall tag data during course restores.
+ * Recreate minimoodlewall tagset and tag data during course restores.
  */
 class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     /** @var array Tag IDs restored for this course, used to update selectedtags format option */
     protected $restoredtagids = [];
+
+    /** @var int|null The tagset ID restored for this course, used to update tagsetid format option */
+    protected $restoredtagsetid = null;
 
     /**
      * Declare structures to be processed by the restore task.
@@ -38,24 +41,14 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     protected function define_course_plugin_structure() {
         $paths = [];
 
-        // Current backup format: tags directly under plugin wrapper.
-        $paths[] = new restore_path_element('format_minimoodlewall_tag', $this->get_pathfor('/mmw_tags/mmw_tag'));
-
-        // Legacy backup format: tags nested under tagsets (for compatibility with old backups).
+        // Current backup format: tagsets with nested tags.
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_tagset_legacy',
+            'format_minimoodlewall_tagset',
             $this->get_pathfor('/mmw_tagsets/mmw_tagset')
         );
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_tag_legacy',
+            'format_minimoodlewall_tag',
             $this->get_pathfor('/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag')
-        );
-
-        // Very old backups without plugin wrapper.
-        $paths[] = new restore_path_element('format_minimoodlewall_tagset_very_legacy', '/course/mmw_tagsets/mmw_tagset');
-        $paths[] = new restore_path_element(
-            'format_minimoodlewall_tag_very_legacy',
-            '/course/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag'
         );
 
         return $paths;
@@ -70,13 +63,37 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $paths = [];
         // Standard module-level plugin payload.
         $paths[] = new restore_path_element('format_minimoodlewall_cmtag', $this->get_pathfor('/mmw_cmtag'));
-        // Old backups lacked the plugin prefix for module-level data.
-        $paths[] = new restore_path_element('format_minimoodlewall_cmtag_legacy', '/module/mmw_cmtag');
         return $paths;
     }
 
     /**
-     * Restore tag definitions.
+     * Restore tagset definitions. Reuse existing tagset if name matches.
+     *
+     * @param array $data raw backup data
+     */
+    public function process_format_minimoodlewall_tagset($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        // Tagsets are unique by name; reuse existing ones when merging courses.
+        if ($existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $data->name])) {
+            $this->set_mapping('format_minimoodlewall_tagset', $oldid, $existing->id);
+            $this->restoredtagsetid = $existing->id;
+            return;
+        }
+
+        unset($data->id);
+        $data->timecreated = time();
+        $data->timemodified = time();
+        $newid = $DB->insert_record('format_minimoodlewall_tagsets', $data);
+        $this->set_mapping('format_minimoodlewall_tagset', $oldid, $newid);
+        $this->restoredtagsetid = $newid;
+    }
+
+    /**
+     * Restore tag definitions. Tags are children of tagsets in the backup.
      *
      * @param array $data raw backup data
      */
@@ -86,8 +103,11 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $data = (object)$data;
         $oldid = $data->id;
 
-        // Remove tagsetid if present (from legacy backups).
-        unset($data->tagsetid);
+        // Map tagsetid to the restored tagset ID.
+        $newtagsetid = $this->get_mappingid('format_minimoodlewall_tagset', $data->tagsetid);
+        if ($newtagsetid) {
+            $data->tagsetid = $newtagsetid;
+        }
 
         // Tags are unique by name; reuse existing ones when merging courses.
         if ($existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $data->name])) {
@@ -122,7 +142,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
     /**
      * Reattach tag card/filter files after the course structure has been recreated.
-     * Also update the course's selectedtags format option with restored tag IDs.
+     * Also update the course's tagsetid and selectedtags format options with restored IDs.
      */
     public function after_execute_course() {
         global $DB;
@@ -138,9 +158,15 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'format_minimoodlewall_tag'
         );
 
+        $courseid = $this->task->get_courseid();
+
+        // Update course format option with restored tagset ID.
+        if ($this->restoredtagsetid) {
+            $this->update_format_option($courseid, 'tagsetid', $this->restoredtagsetid);
+        }
+
         // Update course format option with restored tag IDs.
         if (!empty($this->restoredtagids)) {
-            $courseid = $this->task->get_courseid();
             $selectedtags = implode(',', array_keys($this->restoredtagids));
 
             // Check if format option already exists.
@@ -157,15 +183,38 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
                 $existing->value = implode(',', $mergedtags);
                 $DB->update_record('course_format_options', $existing);
             } else {
-                // Insert new format option.
-                $DB->insert_record('course_format_options', (object)[
-                    'courseid' => $courseid,
-                    'format' => 'minimoodlewall',
-                    'sectionid' => 0,
-                    'name' => 'selectedtags',
-                    'value' => $selectedtags,
-                ]);
+                $this->update_format_option($courseid, 'selectedtags', $selectedtags);
             }
+        }
+    }
+
+    /**
+     * Insert or update a course format option.
+     *
+     * @param int $courseid
+     * @param string $name
+     * @param string $value
+     */
+    private function update_format_option(int $courseid, string $name, string $value): void {
+        global $DB;
+
+        $existing = $DB->get_record('course_format_options', [
+            'courseid' => $courseid,
+            'format' => 'minimoodlewall',
+            'name' => $name,
+        ]);
+
+        if ($existing) {
+            $existing->value = $value;
+            $DB->update_record('course_format_options', $existing);
+        } else {
+            $DB->insert_record('course_format_options', (object)[
+                'courseid' => $courseid,
+                'format' => 'minimoodlewall',
+                'sectionid' => 0,
+                'name' => $name,
+                'value' => $value,
+            ]);
         }
     }
 
@@ -175,51 +224,6 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     public function after_restore_course() {
         \format_minimoodlewall\tag_manager::clear_mapping_cache();
         \format_minimoodlewall\tag_manager::clear_tag_cache();
-    }
-
-    /**
-     * Legacy handler for tagsets - we skip them now since tagsets no longer exist.
-     *
-     * @param array $data
-     */
-    public function process_format_minimoodlewall_tagset_legacy($data) {
-        // Tagsets are no longer used, so we just skip this.
-        // Tags will be processed separately and added without tagset reference.
-    }
-
-    /**
-     * Very old legacy handler for tagsets.
-     *
-     * @param array $data
-     */
-    public function process_format_minimoodlewall_tagset_very_legacy($data) {
-        // Tagsets are no longer used.
-    }
-
-    /**
-     * Legacy handler that processes tags from old backup format (nested under tagsets).
-     *
-     * @param array $data
-     */
-    public function process_format_minimoodlewall_tag_legacy($data) {
-        $this->process_format_minimoodlewall_tag($data);
-    }
-
-    /**
-     * Very old legacy handler for tags.
-     *
-     * @param array $data
-     */
-    public function process_format_minimoodlewall_tag_very_legacy($data) {
-        $this->process_format_minimoodlewall_tag($data);
-    }
-
-    /**
-     * Legacy handler that reuses the regular cm/tag mapping logic.
-     *
-     * @param array $data
-     */
-    public function process_format_minimoodlewall_cmtag_legacy($data) {
-        $this->process_format_minimoodlewall_cmtag($data);
+        \format_minimoodlewall\tagset_manager::clear_tagset_cache();
     }
 }

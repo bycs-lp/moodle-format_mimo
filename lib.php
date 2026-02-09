@@ -151,6 +151,10 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
+            'tagsetid' => [
+                'default' => 0,
+                'type' => PARAM_INT,
+            ],
             // selectedtags is handled manually in create_edit_form_elements() with custom checkboxes.
             'selectedtags' => [
                 'default' => '',
@@ -194,6 +198,11 @@ class format_minimoodlewall extends core_courseformat\base {
                 'label' => '',
                 'element_type' => 'hidden',
             ];
+            // tagsetid is a hidden element - custom select is added in create_edit_form_elements().
+            $courseformatoptions['tagsetid'] += [
+                'label' => '',
+                'element_type' => 'hidden',
+            ];
         }
 
         return $courseformatoptions;
@@ -215,31 +224,54 @@ class format_minimoodlewall extends core_courseformat\base {
         // Let parent handle all standard elements first.
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
-        // Only add tag checkboxes for course edit form (not sections).
+        // Only add tagset/tag elements for course edit form (not sections).
         if ($forsection) {
             return $elements;
         }
 
-        // Get all available tags.
-        $tags = \format_minimoodlewall\tag_manager::get_all_tags();
-        if (empty($tags)) {
+        // Get all tagsets.
+        $tagsets = \format_minimoodlewall\tagset_manager::get_all_tagsets();
+        if (empty($tagsets)) {
             return $elements;
         }
 
+        // Get current course data.
+        $course = $this->get_course();
+        $currenttagsetid = $course->tagsetid ?? 0;
+
         // Get currently selected tags from course format options.
         $selectedtagids = [];
-        $course = $this->get_course();
         if (!empty($course->selectedtags)) {
             $selectedtagids = array_map('intval', explode(',', $course->selectedtags));
         }
         $selectedtagsvalue = implode(',', $selectedtagids);
 
-        // Set default value for the hidden selectedtags field (created by parent).
-        // The JS module syncs checkbox states to this hidden field.
+        // Set default values for the hidden fields (created by parent).
         $mform->setDefault('selectedtags', $selectedtagsvalue);
+        $mform->setDefault('tagsetid', $currenttagsetid);
+
+        // Build tagset dropdown options.
+        $tagsetoptions = [0 => get_string('selecttagset', 'format_minimoodlewall')];
+        foreach ($tagsets as $tagset) {
+            $tagsetoptions[$tagset->id] = format_string($tagset->name);
+        }
+
+        // Add tagset select dropdown.
+        $elements[] = $mform->addElement(
+            'select',
+            'tagsetid_select',
+            get_string('setting_tagsetid', 'format_minimoodlewall'),
+            $tagsetoptions
+        );
+        $mform->addHelpButton('tagsetid_select', 'setting_tagsetid', 'format_minimoodlewall');
+        $mform->setDefault('tagsetid_select', $currenttagsetid);
 
         // Create a label/header for the tag checkboxes section.
-        $elements[] = $mform->addElement('static', 'selectedtags_label', get_string('setting_selectedtags', 'format_minimoodlewall'));
+        $elements[] = $mform->addElement(
+            'static',
+            'selectedtags_label',
+            get_string('setting_selectedtags', 'format_minimoodlewall')
+        );
         $mform->addHelpButton('selectedtags_label', 'setting_selectedtags', 'format_minimoodlewall');
 
         // Prepare renderer for mustache templates.
@@ -251,40 +283,54 @@ class format_minimoodlewall extends core_courseformat\base {
         // Get all designs for passing image URLs to template data attributes.
         $designs = \format_minimoodlewall\design_manager::get_all_designs();
 
-        // Add individual checkbox for each tag with image.
-        foreach ($tags as $tag) {
-            // Get the image URL for the current design.
-            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentdesign);
+        // Add checkboxes for ALL tags across ALL tagsets, with data-tagsetid for JS filtering.
+        $alltagids = [];
+        foreach ($tagsets as $tagset) {
+            $tagsinthistagset = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagset->id);
+            foreach ($tagsinthistagset as $tag) {
+                $alltagids[] = $tag->id;
 
-            // Collect image URLs for all designs (stored as data attribute for JS).
-            $designimages = [];
-            foreach ($designs as $design) {
-                $designimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $design->name);
-                $designimages[$design->name] = $designimageurl ? $designimageurl->out(false) : null;
-            }
+                // Get the image URL for the current design.
+                $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentdesign);
 
-            // Render label using mustache template.
-            $templatecontext = [
-                'name' => $tag->name,
-                'imageurl' => $imageurl ? $imageurl->out(false) : null,
-                'tagid' => $tag->id,
-                'designimages' => json_encode($designimages),
-            ];
-            $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
+                // Collect image URLs for all designs (stored as data attribute for JS).
+                $designimages = [];
+                foreach ($designs as $design) {
+                    $designimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $design->name);
+                    $designimages[$design->name] = $designimageurl ? $designimageurl->out(false) : null;
+                }
 
-            $checkboxname = 'selectedtag_' . $tag->id;
-            $elements[] = $mform->addElement('advcheckbox', $checkboxname, '', $labelhtml, null, [0, $tag->id]);
+                // Render label using mustache template.
+                $templatecontext = [
+                    'name' => $tag->name,
+                    'imageurl' => $imageurl ? $imageurl->out(false) : null,
+                    'tagid' => $tag->id,
+                    'designimages' => json_encode($designimages),
+                ];
+                $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
-            // Set default checked state based on current selection.
-            if (in_array($tag->id, $selectedtagids)) {
-                $mform->setDefault($checkboxname, $tag->id);
+                $checkboxname = 'selectedtag_' . $tag->id;
+                $attrs = ['data-tagsetid' => $tagset->id];
+                $elements[] = $mform->addElement(
+                    'advcheckbox',
+                    $checkboxname,
+                    '',
+                    $labelhtml,
+                    $attrs,
+                    [0, $tag->id]
+                );
+
+                // Set default checked state based on current selection.
+                if (in_array($tag->id, $selectedtagids)) {
+                    $mform->setDefault($checkboxname, $tag->id);
+                }
             }
         }
 
         // Initialize JS modules.
-        $tagids = array_keys($tags);
-        $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$tagids]);
+        $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$alltagids]);
         $PAGE->requires->js_call_amd('format_minimoodlewall/design_image_switcher', 'init');
+        $PAGE->requires->js_call_amd('format_minimoodlewall/tagset_tag_filter', 'init');
 
         return $elements;
     }
@@ -299,6 +345,12 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function edit_form_validation($data, $files, $errors) {
         $errors = parent::edit_form_validation($data, $files, $errors);
+
+        // Validate tagset is selected.
+        $tagsetid = $data['tagsetid_select'] ?? ($data['tagsetid'] ?? 0);
+        if (empty($tagsetid)) {
+            $errors['tagsetid_select'] = get_string('error_required_tagset', 'format_minimoodlewall');
+        }
 
         // Collect selected tags from individual checkboxes.
         $selectedtags = [];
@@ -338,6 +390,11 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function update_course_format_options($data, $oldcourse = null) {
         $data = (array)$data;
+
+        // Sync tagsetid from the custom select to the hidden format option.
+        if (isset($data['tagsetid_select'])) {
+            $data['tagsetid'] = (int)$data['tagsetid_select'];
+        }
 
         // Collect selected tags from individual checkbox fields (selectedtag_1, selectedtag_2, etc.).
         $selectedtags = [];

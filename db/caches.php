@@ -30,7 +30,7 @@ $definitions = [
         'simplekeys' => true,
         'simpledata' => false,
         'staticacceleration' => true,
-        'staticaccelerationsize' => 10,
+        'staticaccelerationsize' => 20,
     ],
     'activitytagmappings' => [
         'mode' => cache_store::MODE_APPLICATION,

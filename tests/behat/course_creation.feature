@@ -8,12 +8,15 @@ Feature: Course creation with minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
+    And the following "format_minimoodlewall > tagsets" exist:
+      | name          |
+      | Test Tagset   |
     And the following "format_minimoodlewall > tags" exist:
-      | name      | description       | activitytype1 | activitytype2 |
-      | Reading   | Reading materials | page          | book          |
-      | Practice  | Practice tasks    | assign        | quiz          |
-      | Biology   | Life science      | assign        | forum         |
-      | Chemistry | Matter            | quiz          | workshop      |
+      | name      | description       | activitytype1 | activitytype2 | tagset      |
+      | Reading   | Reading materials | page          | book          | Test Tagset |
+      | Practice  | Practice tasks    | assign        | quiz          | Test Tagset |
+      | Biology   | Life science      | assign        | forum         | Test Tagset |
+      | Chemistry | Matter            | quiz          | workshop      | Test Tagset |
 
   @javascript
   Scenario: Create a course with minimoodlewall format and select tags
@@ -27,6 +30,7 @@ Feature: Course creation with minimoodlewall format
       | Format              | Minimal Moodle Wall  |
       | Enable tag filtering| 1                    |
       | Design              | Classic              |
+      | Tagset              | Test Tagset          |
     And I click on "Reading" "checkbox"
     And I click on "Practice" "checkbox"
     And I press "Save and display"
@@ -43,7 +47,7 @@ Feature: Course creation with minimoodlewall format
       | Course short name | TC2                 |
       | Format            | Minimal Moodle Wall |
     When I press "Save and display"
-    Then I should see "Please select at least one tag"
+    Then I should see "Please select a tagset"
 
   @javascript
   Scenario: Tags can be changed after course creation

@@ -17,131 +17,136 @@
 {{!
     @template format_minimoodlewall/tag_management
 
-    Tag management page template.
+    Tag management page template with collapsible tagset sections.
 
     Context variables:
-    * createtagurl - URL to create new tag
-    * createtagtext - Text for create tag button
-    * notagstext - Text when no tags exist
-    * hastags - Boolean if tags exist
+    * createtagseturl - URL to create new tagset
+    * createtagsettext - Text for create tagset button
+    * notagsetstext - Text when no tagsets exist
+    * notagstext - Text when no tags exist in a tagset
+    * hastagsets - Boolean if tagsets exist
     * tableheaders - Object with table header strings
-    * tags - Array of tag objects with:
-        - id: Tag ID
-        - name: Tag name
-        - cardimageurl: URL to card image
-        - bgcolor: Background color hex
-        - activitytype1: First activity type
-        - activitytype2: Second activity type (or dash)
-        - activitytype3: Third activity type (or dash)
-        - editurl: Edit URL
-        - deleteurl: Delete URL
-        - edittitle: Edit button title
-        - deletetitle: Delete button title
-
-    Example context (json):
-    {
-        "createtagurl": "/path/to/create",
-        "createtagtext": "Create tag",
-        "hastags": true,
-        "tableheaders": {
-            "cardimage": "Card image",
-            "name": "Name",
-            "bgcolor": "Background colour",
-            "activitytype1": "Activity type 1",
-            "activitytype2": "Activity type 2",
-            "activitytype3": "Activity type 3",
-            "actions": "Actions"
-        },
-        "tags": [
-            {
-                "id": 1,
-                "name": "Reading",
-                "cardimageurl": "/path/to/image.svg",
-                "bgcolor": "#dcecff",
-                "activitytype1": "page",
-                "activitytype2": "resource",
-                "activitytype3": "-",
-                "editurl": "/path/to/edit",
-                "deleteurl": "/path/to/delete",
-                "edittitle": "Edit tag",
-                "deletetitle": "Delete tag"
-            }
-        ]
-    }
+    * tagsets - Array of tagset objects
 }}
 
 <div class="tag-management" data-region="tag-management">
     <div class="mb-3">
-        <a href="{{createtagurl}}" class="btn btn-primary" data-testid="create-tag-button">
-            {{createtagtext}}
+        <a href="{{createtagseturl}}" class="btn btn-primary" data-testid="create-tagset-button">
+            {{createtagsettext}}
         </a>
     </div>
 
-    {{^hastags}}
+    {{^hastagsets}}
         <div class="alert alert-info">
-            {{notagstext}}
+            {{notagsetstext}}
         </div>
-    {{/hastags}}
+    {{/hastagsets}}
 
-    {{#hastags}}
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped generaltable" data-testid="tag-list-table">
-                        <thead>
-                            <tr>
-                                <th>{{tableheaders.cardimage}}</th>
-                                <th>{{tableheaders.name}}</th>
-                                <th>{{tableheaders.bgcolor}}</th>
-                                <th>{{tableheaders.activitytype1}}</th>
-                                <th>{{tableheaders.activitytype2}}</th>
-                                <th>{{tableheaders.activitytype3}}</th>
-                                <th>{{tableheaders.actions}}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#tags}}
-                                <tr data-testid="tag-row" data-tag-id="{{id}}" data-tag-name="{{name}}">
-                                    <td>
-                                        {{#cardimageurl}}
-                                            <img src="{{cardimageurl}}" 
-                                                 alt="{{name}}" 
-                                                 style="width: 80px; height: 50px; object-fit: cover;">
-                                        {{/cardimageurl}}
-                                        {{^cardimageurl}}
-                                            <span class="text-muted">-</span>
-                                        {{/cardimageurl}}
-                                    </td>
-                                    <td>{{name}}</td>
-                                    <td class="align-middle">
-                                        <span style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
-                                        <span class="ms-2 text-muted small fw-semibold">{{bgcolor}}</span>
-                                    </td>
-                                    <td>{{activitytype1}}</td>
-                                    <td>{{activitytype2}}</td>
-                                    <td>{{activitytype3}}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button">
-                                                {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
-                                            </a>
-                                            <a href="{{deleteurl}}"
-                                               title="{{deletetitle}}"
-                                               class="btn btn-sm btn-icon"
-                                               data-action="delete-tag"
-                                               data-testid="delete-tag-button"
-                                               data-tag-id="{{id}}"
-                                               data-tag-name="{{name}}">
-                                                {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {{/tags}}
-                        </tbody>
-                    </table>
+    {{#hastagsets}}
+        <div class="accordion" id="tagset-accordion">
+            {{#tagsets}}
+                <div class="accordion-item mb-3" data-tagset-id="{{id}}">
+                    <h2 class="accordion-header" id="tagset-heading-{{id}}">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#tagset-collapse-{{id}}"
+                                aria-expanded="false" aria-controls="tagset-collapse-{{id}}">
+                            <span class="fw-bold">{{name}}</span>
+                            {{#description}}
+                                <span class="text-muted ms-2 small">— {{description}}</span>
+                            {{/description}}
+                        </button>
+                        <div class="d-flex gap-2 position-absolute" style="right: 3.5rem; top: 50%; transform: translateY(-50%); z-index: 1;">
+                            <a href="{{edittagseturl}}" title="{{edittagsettitle}}" class="btn btn-sm btn-icon"
+                               data-testid="edit-tagset-button" onclick="event.stopPropagation();">
+                                {{#pix}}i/edit, core, {{edittagsettitle}}{{/pix}}
+                            </a>
+                            <a href="{{deletetagseturl}}" title="{{deletetagsettitle}}"
+                               class="btn btn-sm btn-icon"
+                               data-action="delete-tagset"
+                               data-testid="delete-tagset-button"
+                               data-tagset-id="{{id}}"
+                               data-tagset-name="{{name}}"
+                               onclick="event.stopPropagation();">
+                                {{#pix}}t/delete, core, {{deletetagsettitle}}{{/pix}}
+                            </a>
+                        </div>
+                    </h2>
+                    <div id="tagset-collapse-{{id}}" class="accordion-collapse collapse"
+                         aria-labelledby="tagset-heading-{{id}}" data-bs-parent="#tagset-accordion">
+                        <div class="accordion-body">
+                            <div class="mb-3">
+                                <a href="{{createtagurl}}" class="btn btn-outline-primary btn-sm" data-testid="create-tag-button">
+                                    {{#str}}createtag, format_minimoodlewall{{/str}}
+                                </a>
+                            </div>
+
+                            {{^hastags}}
+                                <div class="alert alert-info">
+                                    {{notagstext}}
+                                </div>
+                            {{/hastags}}
+
+                            {{#hastags}}
+                                <div class="table-responsive">
+                                    <table class="table table-striped generaltable" data-testid="tag-list-table">
+                                        <thead>
+                                            <tr>
+                                                <th>{{tableheaders.cardimage}}</th>
+                                                <th>{{tableheaders.name}}</th>
+                                                <th>{{tableheaders.bgcolor}}</th>
+                                                <th>{{tableheaders.activitytype1}}</th>
+                                                <th>{{tableheaders.activitytype2}}</th>
+                                                <th>{{tableheaders.activitytype3}}</th>
+                                                <th>{{tableheaders.actions}}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{#tags}}
+                                                <tr data-testid="tag-row" data-tag-id="{{id}}" data-tag-name="{{name}}">
+                                                    <td>
+                                                        {{#cardimageurl}}
+                                                            <img src="{{cardimageurl}}"
+                                                                 alt="{{name}}"
+                                                                 style="width: 80px; height: 50px; object-fit: cover;">
+                                                        {{/cardimageurl}}
+                                                        {{^cardimageurl}}
+                                                            <span class="text-muted">-</span>
+                                                        {{/cardimageurl}}
+                                                    </td>
+                                                    <td>{{name}}</td>
+                                                    <td class="align-middle">
+                                                        <span style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
+                                                        <span class="ms-2 text-muted small fw-semibold">{{bgcolor}}</span>
+                                                    </td>
+                                                    <td>{{activitytype1}}</td>
+                                                    <td>{{activitytype2}}</td>
+                                                    <td>{{activitytype3}}</td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button">
+                                                                {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
+                                                            </a>
+                                                            <a href="{{deleteurl}}"
+                                                               title="{{deletetitle}}"
+                                                               class="btn btn-sm btn-icon"
+                                                               data-action="delete-tag"
+                                                               data-testid="delete-tag-button"
+                                                               data-tag-id="{{id}}"
+                                                               data-tag-name="{{name}}">
+                                                                {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {{/tags}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {{/hastags}}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {{/tagsets}}
         </div>
-    {{/hastags}}
+    {{/hastagsets}}
 </div>

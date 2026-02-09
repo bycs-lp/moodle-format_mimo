@@ -28,7 +28,51 @@ class format_minimoodlewall_generator extends component_generator_base {
     protected $tagcount = 0;
 
     /**
+     * @var int Counter for tagset creation
+     */
+    protected $tagsetcount = 0;
+
+    /**
+     * Create a tagset.
+     *
+     * @param array|stdClass $record Tagset data (name, description, sortorder)
+     * @return stdClass The created tagset record
+     */
+    public function create_tagset($record = null) {
+        global $DB;
+
+        $this->tagsetcount++;
+        $record = (object)(array)$record;
+
+        if (!isset($record->name)) {
+            $record->name = 'Test Tagset ' . $this->tagsetcount;
+        }
+
+        // Reuse existing tagset with same name.
+        $existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $record->name]);
+        if ($existing) {
+            return $existing;
+        }
+
+        if (!isset($record->sortorder)) {
+            $record->sortorder = $this->tagsetcount;
+        }
+        if (!isset($record->timecreated)) {
+            $record->timecreated = time();
+        }
+        if (!isset($record->timemodified)) {
+            $record->timemodified = time();
+        }
+
+        $record->id = $DB->insert_record('format_minimoodlewall_tagsets', $record);
+
+        return $record;
+    }
+
+    /**
      * Create a tag.
+     *
+     * If no tagsetid is provided, a default tagset is created/reused automatically.
      *
      * @param array|stdClass $record Tag data
      * @return stdClass The created tag record
@@ -43,6 +87,12 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->name = 'Test Tag ' . $this->tagcount;
         }
 
+        // Ensure a tagsetid is set — auto-create a default tagset if needed.
+        if (empty($record->tagsetid)) {
+            $defaulttagset = $this->create_tagset(['name' => 'Default Tagset']);
+            $record->tagsetid = $defaulttagset->id;
+        }
+
         // Check if a tag with this name already exists and update it instead of creating a duplicate.
         $existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $record->name]);
         if ($existing) {
@@ -50,13 +100,14 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->id = $existing->id;
             $record->timecreated = $existing->timecreated;
             $record->timemodified = time();
-            
+
             // Set activity types.
             $record->activitytype1 = $record->activitytype1 ?? $existing->activitytype1;
             $record->activitytype2 = $record->activitytype2 ?? $existing->activitytype2;
             $record->activitytype3 = $record->activitytype3 ?? $existing->activitytype3 ?? null;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
-            
+            $record->tagsetid = $record->tagsetid ?? $existing->tagsetid;
+
             $DB->update_record('format_minimoodlewall_tags', $record);
         } else {
             // Create new tag.

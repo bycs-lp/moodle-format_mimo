@@ -16,13 +16,21 @@ Feature: Tag management in minimoodlewall format
       | name    | displayname |
       | classic | Classic     |
       | light   | Light       |
+    And the following "format_minimoodlewall > tagsets" exist:
+      | name          |
+      | Test Tagset   |
 
   @javascript @_file_upload
   Scenario: Admin can create a new tag with design-specific images
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "[data-testid='create-tag-button']" "css_element"
+    When I click on "[data-testid='create-tagset-button']" "css_element"
+    And I set the following fields to these values:
+      | Tagset Name | My Tagset |
+    And I press "Save changes"
+    And I wait until the page is ready
+    And I click on "[data-testid='create-tag-button']" "css_element"
     And I set the following fields to these values:
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
@@ -35,8 +43,8 @@ Feature: Tag management in minimoodlewall format
   @javascript @_file_upload
   Scenario: Admin can edit existing tags
     Given the following "format_minimoodlewall > tags" exist:
-      | name    | activitytype1 | activitytype2 |
-      | Biology | assign        | quiz          |
+      | name    | activitytype1 | activitytype2 | tagset        |
+      | Biology | assign        | quiz          | Test Tagset   |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
@@ -51,9 +59,9 @@ Feature: Tag management in minimoodlewall format
   @javascript
   Scenario: Admin can delete tags
     Given the following "format_minimoodlewall > tags" exist:
-      | name    | activitytype1 | activitytype2 |
-      | Biology | assign        | quiz          |
-      | Physics | assign        | forum         |
+      | name    | activitytype1 | activitytype2 | tagset        |
+      | Biology | assign        | quiz          | Test Tagset   |
+      | Physics | assign        | forum         | Test Tagset   |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"

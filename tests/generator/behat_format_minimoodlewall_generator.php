@@ -35,11 +35,17 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['fullname', 'shortname'],
                 'switchids' => [],
             ],
+            'tagsets' => [
+                'singular' => 'tagset',
+                'datagenerator' => 'tagset',
+                'required' => ['name'],
+                'switchids' => [],
+            ],
             'tags' => [
                 'singular' => 'tag',
                 'datagenerator' => 'tag',
                 'required' => ['name'],
-                'switchids' => [],
+                'switchids' => ['tagset' => 'tagsetid'],
             ],
             'cmtags' => [
                 'singular' => 'cmtag',
@@ -185,13 +191,43 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
+     * Look up tagset id from name.
+     *
+     * @param string $tagsetname
+     * @return int
+     */
+    protected function get_tagset_id(string $tagsetname): int {
+        global $DB;
+
+        $id = $DB->get_field('format_minimoodlewall_tagsets', 'id', ['name' => $tagsetname]);
+        if (!$id) {
+            throw new Exception('The specified tagset with name "' . $tagsetname . '" does not exist');
+        }
+        return (int)$id;
+    }
+
+    /**
+     * Preprocess tagset data before creating.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function preprocess_tagset($data) {
+        return $data;
+    }
+
+    /**
      * Preprocess tag data before creating.
      *
      * @param array $data
      * @return array
      */
     protected function preprocess_tag($data) {
-        // No preprocessing needed for tags - they are now standalone.
+        // Resolve tagset name to ID if provided.
+        if (isset($data['tagset'])) {
+            $data['tagsetid'] = $this->get_tagset_id($data['tagset']);
+            unset($data['tagset']);
+        }
         return $data;
     }
 
@@ -263,6 +299,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'selectedtags' => $data['selectedtags'],
             'enablefiltering' => $data['enablefiltering'],
             'designvariant' => $data['designvariant'],
+            'tagsetid' => $data['tagsetid'] ?? 0,
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
 
@@ -300,6 +337,19 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             // Default to all available tags if none specified.
             $alltags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder', 'id');
             $data['selectedtags'] = implode(',', array_keys($alltags));
+        }
+
+        // Handle tagsetid - resolve from tagset name or auto-detect from selected tags.
+        if (!empty($data['tagset'])) {
+            $data['tagsetid'] = $this->get_tagset_id($data['tagset']);
+            unset($data['tagset']);
+        } else if (empty($data['tagsetid']) && !empty($data['selectedtags'])) {
+            // Auto-detect tagsetid from the first selected tag.
+            $firsttagid = explode(',', $data['selectedtags'])[0];
+            $tagsetid = $DB->get_field('format_minimoodlewall_tags', 'tagsetid', ['id' => $firsttagid]);
+            if ($tagsetid) {
+                $data['tagsetid'] = $tagsetid;
+            }
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);

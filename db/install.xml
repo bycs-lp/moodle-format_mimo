@@ -37,12 +37,30 @@
         <KEY NAME="designid" TYPE="foreign" FIELDS="designid" REFTABLE="format_minimoodlewall_designs" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="tagid_designid_unique" UNIQUE="true" FIELDS="tagid,designid" COMMENT="Each tag can have only one image set per design"/>
+        <INDEX NAME="tagid_designid_unique" UNIQUE="true" FIELDS="tagid, designid" COMMENT="Each tag can have only one image set per design"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="format_minimoodlewall_tagsets" COMMENT="Tag set containers grouping related tags">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Tag set name"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional description"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Display order"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="name_unique" UNIQUE="true" FIELDS="name"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="format_minimoodlewall_tags" COMMENT="Activity tags for course wall display">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="tagsetid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to parent tag set"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the tag"/>
         <FIELD NAME="cardimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for card image"/>
         <FIELD NAME="imgplacement" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="center" SEQUENCE="false" COMMENT="Image placement (center or lower)"/>
@@ -57,9 +75,10 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="tagsetid" TYPE="foreign" FIELDS="tagsetid" REFTABLE="format_minimoodlewall_tagsets" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
+        <INDEX NAME="tagsetid_sortorder" UNIQUE="false" FIELDS="tagsetid, sortorder"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="format_minimoodlewall_cmtags" COMMENT="Maps course modules to tags">

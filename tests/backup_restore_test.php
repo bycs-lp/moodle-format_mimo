@@ -44,9 +44,11 @@ final class backup_restore_test extends \advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
+        tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
-        $tagid = tag_manager::create_tag('Backup Tag');
+        $tagsetid = tagset_manager::create_tagset('Backup Tagset');
+        $tagid = tag_manager::create_tag($tagsetid, 'Backup Tag');
         
         // Create course with selectedtags set.
         $course = $generator->create_course([

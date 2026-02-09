@@ -408,6 +408,31 @@ class tag_manager {
     }
 
     /**
+     * Get tags belonging to a specific tagset.
+     *
+     * @param int $tagsetid Tagset ID
+     * @return array Array of tag records sorted by sortorder
+     */
+    public static function get_tags_by_tagset(int $tagsetid): array {
+        global $DB;
+        self::init_caches();
+
+        $cachekey = 'tagset_tags_' . $tagsetid;
+        $tags = self::$tagcache->get($cachekey);
+
+        if ($tags === false) {
+            $tags = $DB->get_records(
+                'format_minimoodlewall_tags',
+                ['tagsetid' => $tagsetid],
+                'sortorder ASC, id ASC'
+            );
+            self::$tagcache->set($cachekey, $tags);
+        }
+
+        return $tags;
+    }
+
+    /**
      * Get tags selected for a specific course.
      *
      * @param int $courseid Course ID
@@ -471,6 +496,7 @@ class tag_manager {
     /**
      * Create a new tag.
      *
+     * @param int $tagsetid ID of the parent tagset
      * @param string $name Tag name
      * @param string|null $cardimage Card image filename
      * @param string|null $filterimage Filter image filename
@@ -482,6 +508,7 @@ class tag_manager {
      * @return int ID of the created tag
      */
     public static function create_tag(
+        int $tagsetid,
         string $name,
         ?string $cardimage = null,
         ?string $filterimage = null,
@@ -493,15 +520,16 @@ class tag_manager {
     ): int {
         global $DB;
 
-        // Get next sort order.
+        // Get next sort order within the tagset.
         $maxsort = $DB->get_field(
             'format_minimoodlewall_tags',
             'MAX(sortorder)',
-            []
+            ['tagsetid' => $tagsetid]
         );
         $sortorder = $maxsort ? (int)$maxsort + 1 : 0;
 
         $record = new \stdClass();
+        $record->tagsetid = $tagsetid;
         $record->name = $name;
         $record->cardimage = $cardimage;
         $record->filterimage = $filterimage;
@@ -516,9 +544,10 @@ class tag_manager {
 
         $id = $DB->insert_record('format_minimoodlewall_tags', $record);
 
-        // Invalidate all tags cache and cache the new tag.
+        // Invalidate all tags cache, tagset tags cache, and cache the new tag.
         self::init_caches();
         self::$tagcache->delete('all_tags');
+        self::$tagcache->delete('tagset_tags_' . $tagsetid);
 
         // Fetch and cache the created tag to ensure consistency.
         $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
@@ -562,6 +591,10 @@ class tag_manager {
     public static function update_tag(int $id, array $data): bool {
         global $DB;
 
+        // Get tagsetid before update for cache invalidation.
+        $oldtag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
+        $oldtagsetid = $oldtag ? $oldtag->tagsetid : null;
+
         $record = new \stdClass();
         $record->id = $id;
         $record->timemodified = time();
@@ -580,6 +613,15 @@ class tag_manager {
         self::$tagcache->delete('tag_' . $id);
         self::$tagcache->delete('all_tags');
 
+        // Invalidate tagset tags cache.
+        if ($oldtagsetid) {
+            self::$tagcache->delete('tagset_tags_' . $oldtagsetid);
+        }
+        // If tagsetid changed, also invalidate the new tagset.
+        if (isset($data['tagsetid']) && $data['tagsetid'] != $oldtagsetid) {
+            self::$tagcache->delete('tagset_tags_' . $data['tagsetid']);
+        }
+
         return $result;
     }
 
@@ -592,6 +634,10 @@ class tag_manager {
     public static function delete_tag(int $id): bool {
         global $DB;
 
+        // Get tagsetid for cache invalidation before deletion.
+        $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
+        $tagsetid = $tag ? $tag->tagsetid : null;
+
         // Delete all mappings for this tag.
         $DB->delete_records('format_minimoodlewall_cmtags', ['tagid' => $id]);
 
@@ -601,6 +647,9 @@ class tag_manager {
         self::init_caches();
         self::$tagcache->delete('tag_' . $id);
         self::$tagcache->delete('all_tags');
+        if ($tagsetid) {
+            self::$tagcache->delete('tagset_tags_' . $tagsetid);
+        }
         self::clear_mapping_cache();
 
         return $result;
@@ -747,6 +796,18 @@ class tag_manager {
             return true; // Already initialized.
         }
 
+        // Create or find the default tagset.
+        $defaulttagsetname = get_string('defaulttags', 'format_minimoodlewall');
+        $existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $defaulttagsetname]);
+        if ($existing) {
+            $tagsetid = $existing->id;
+        } else {
+            $tagsetid = tagset_manager::create_tagset(
+                $defaulttagsetname,
+                'Default tag set created during installation.'
+            );
+        }
+
         // Create default tags.
         $defaulttags = [
             ['name' => get_string('tag_reading', 'format_minimoodlewall'),
@@ -782,6 +843,7 @@ class tag_manager {
         foreach ($defaulttags as $tag) {
             $bgcolor = $palettecount ? $palette[$index % $palettecount] : null;
             $tagid = self::create_tag(
+                $tagsetid,
                 $tag['name'],
                 $tag['cardimage'],
                 $tag['filterimage'],
