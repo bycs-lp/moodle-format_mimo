@@ -41,6 +41,12 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     protected function define_course_plugin_structure() {
         $paths = [];
 
+        // Designs (global, restored before tags so design IDs can be mapped).
+        $paths[] = new restore_path_element(
+            'format_minimoodlewall_design',
+            $this->get_pathfor('/mmw_designs/mmw_design')
+        );
+
         // Current backup format: tagsets with nested tags.
         $paths[] = new restore_path_element(
             'format_minimoodlewall_tagset',
@@ -49,6 +55,12 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $paths[] = new restore_path_element(
             'format_minimoodlewall_tag',
             $this->get_pathfor('/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag')
+        );
+
+        // Design-specific tag images (nested under tags).
+        $paths[] = new restore_path_element(
+            'format_minimoodlewall_tag_image',
+            $this->get_pathfor('/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag/mmw_tag_images/mmw_tag_image')
         );
 
         return $paths;
@@ -64,6 +76,30 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         // Standard module-level plugin payload.
         $paths[] = new restore_path_element('format_minimoodlewall_cmtag', $this->get_pathfor('/mmw_cmtag'));
         return $paths;
+    }
+
+    /**
+     * Restore design definitions. Reuse existing design if name matches.
+     *
+     * @param array $data raw backup data
+     */
+    public function process_format_minimoodlewall_design($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        // Designs are unique by name; reuse existing ones.
+        if ($existing = $DB->get_record('format_minimoodlewall_designs', ['name' => $data->name])) {
+            $this->set_mapping('format_minimoodlewall_design', $oldid, $existing->id);
+            return;
+        }
+
+        unset($data->id);
+        $data->timecreated = time();
+        $data->timemodified = time();
+        $newid = $DB->insert_record('format_minimoodlewall_designs', $data);
+        $this->set_mapping('format_minimoodlewall_design', $oldid, $newid);
     }
 
     /**
@@ -123,6 +159,45 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
+     * Restore design-specific tag images. Reuse existing record if tagid/designid combo exists.
+     *
+     * @param array $data raw backup data
+     */
+    public function process_format_minimoodlewall_tag_image($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        // Map tagid and designid to restored IDs.
+        $newtagid = $this->get_mappingid('format_minimoodlewall_tag', $data->tagid);
+        $newdesignid = $this->get_mappingid('format_minimoodlewall_design', $data->designid);
+
+        if (!$newtagid || !$newdesignid) {
+            return;
+        }
+
+        $data->tagid = $newtagid;
+        $data->designid = $newdesignid;
+
+        // Reuse existing tag_image record if the combination already exists.
+        $existing = $DB->get_record('format_minimoodlewall_tag_images', [
+            'tagid' => $newtagid,
+            'designid' => $newdesignid,
+        ]);
+        if ($existing) {
+            $this->set_mapping('format_minimoodlewall_tag_image', $oldid, $existing->id);
+            return;
+        }
+
+        unset($data->id);
+        $data->timecreated = time();
+        $data->timemodified = time();
+        $newid = $DB->insert_record('format_minimoodlewall_tag_images', $data);
+        $this->set_mapping('format_minimoodlewall_tag_image', $oldid, $newid);
+    }
+
+    /**
      * Restore cm/tag mapping for each activity.
      *
      * @param array $data raw backup data
@@ -156,6 +231,16 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'format_minimoodlewall',
             \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
             'format_minimoodlewall_tag'
+        );
+        $this->add_related_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\design_manager::FILEAREA_DESIGN_CARDIMAGE,
+            'format_minimoodlewall_tag_image'
+        );
+        $this->add_related_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\design_manager::FILEAREA_DESIGN_FILTERIMAGE,
+            'format_minimoodlewall_tag_image'
         );
 
         $courseid = $this->task->get_courseid();
