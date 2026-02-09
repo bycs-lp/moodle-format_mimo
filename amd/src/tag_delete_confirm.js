@@ -47,6 +47,7 @@ const registerEventListeners = () => {
         const deleteTagButton = event.target.closest(SELECTORS.DELETE_TAG);
         if (deleteTagButton) {
             event.preventDefault();
+            event.stopPropagation();
             handleDeleteTag(deleteTagButton);
             return;
         }
@@ -55,9 +56,10 @@ const registerEventListeners = () => {
         const deleteTagsetButton = event.target.closest(SELECTORS.DELETE_TAGSET);
         if (deleteTagsetButton) {
             event.preventDefault();
+            event.stopPropagation();
             handleDeleteTagset(deleteTagsetButton);
         }
-    });
+    }, true);
 };
 
 /**
