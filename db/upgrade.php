@@ -460,6 +460,33 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         $cache = cache::make('format_minimoodlewall', 'activitytagmappings');
         $cache->purge();
 
+        // Step 8: Set tagsetid on all existing minimoodlewall courses.
+        // Without this, editing a course post-upgrade fails validation (tagsetid = 0).
+        if ($defaulttagsetid) {
+            $courses = $DB->get_records('course', ['format' => 'minimoodlewall']);
+            foreach ($courses as $course) {
+                $existing = $DB->get_record('course_format_options', [
+                    'courseid' => $course->id,
+                    'format' => 'minimoodlewall',
+                    'name' => 'tagsetid',
+                ]);
+                if ($existing) {
+                    if (empty($existing->value) || $existing->value == '0') {
+                        $existing->value = $defaulttagsetid;
+                        $DB->update_record('course_format_options', $existing);
+                    }
+                } else {
+                    $DB->insert_record('course_format_options', (object)[
+                        'courseid' => $course->id,
+                        'format' => 'minimoodlewall',
+                        'sectionid' => 0,
+                        'name' => 'tagsetid',
+                        'value' => $defaulttagsetid,
+                    ]);
+                }
+            }
+        }
+
         upgrade_plugin_savepoint(true, 2026020900, 'format', 'minimoodlewall');
     }
 
