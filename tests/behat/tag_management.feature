@@ -30,6 +30,7 @@ Feature: Tag management in minimoodlewall format
       | Tagset Name | My Tagset |
     And I press "Save changes"
     And I wait until the page is ready
+    And I wait "60" seconds
     And I click on "[data-testid='create-tag-button']" "css_element"
     And I set the following fields to these values:
       | Name                              | Biology      |
@@ -48,7 +49,8 @@ Feature: Tag management in minimoodlewall format
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
+    When I wait until the page is ready
+    And I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
     And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image (Classic)" filemanager
@@ -65,7 +67,8 @@ Feature: Tag management in minimoodlewall format
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"
-    When I click on "[data-testid='delete-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Physics']" "css_element"
+    When I wait until the page is ready
+    And I click on "[data-testid='delete-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Physics']" "css_element"
     And I click on "Delete" "button" in the ".modal-dialog" "css_element"
     And I wait until the page is ready
     Then I should see "Biology"
