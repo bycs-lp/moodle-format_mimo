@@ -59,3 +59,20 @@ $string['stylename_help'] = 'Eine eindeutige Kennung für diesen Stil (z. B. „
 $string['styleupdated'] = 'Stil wurde erfolgreich aktualisiert.';
 $string['stylevariant'] = 'Stilvariante';
 $string['stylevariant_help'] = 'Wählen Sie eine Stilvariante für die Kursanzeige. Optionen: Klassisch, Hell oder Dunkel.';
+
+// Tag group (tagset) and selected tags strings.
+$string['confirmdeletetagset'] = 'Möchten Sie die Tag-Gruppe „{$a}" wirklich löschen? Alle Tags darin werden ebenfalls gelöscht.';
+$string['createtagset'] = 'Tag-Gruppe erstellen';
+$string['deletetagset'] = 'Tag-Gruppe löschen';
+$string['edittagset'] = 'Tag-Gruppe bearbeiten';
+$string['error_required_tags'] = 'Bitte wählen Sie mindestens einen Tag aus, bevor Sie den Kurs erstellen.';
+$string['error_required_tagset'] = 'Bitte wählen Sie eine Tag-Gruppe aus, bevor Sie den Kurs erstellen.';
+$string['notagsets'] = 'Es wurden noch keine Tag-Gruppen erstellt. Erstellen Sie zuerst eine Tag-Gruppe und fügen Sie dann Tags hinzu.';
+$string['selecttagset'] = 'Tag-Gruppe auswählen...';
+$string['setting_selectedtags'] = 'Ausgewählte Tags';
+$string['setting_selectedtags_help'] = 'Wählen Sie, welche Tags für diesen Kurs aktiviert werden sollen. Aktivitäten können jedem der ausgewählten Tags zugeordnet werden.';
+$string['setting_tagsetid'] = 'Tag-Gruppe';
+$string['setting_tagsetid_help'] = 'Wählen Sie die Tag-Gruppe für diesen Kurs. Nur Tags innerhalb der gewählten Tag-Gruppe stehen für Aktivitäten zur Verfügung.';
+$string['tagsetdescription'] = 'Beschreibung der Tag-Gruppe';
+$string['tagsetname'] = 'Name der Tag-Gruppe';
+$string['tagsetname_exists'] = 'Eine Tag-Gruppe mit diesem Namen existiert bereits.';
