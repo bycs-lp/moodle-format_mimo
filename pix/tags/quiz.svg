@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="400" height="250">
-  <rect width="400" height="250" fill="#4caf50"/>
-  <g transform="translate(200,125)">
-    <rect x="-45" y="-45" width="90" height="80" fill="#fff" opacity="0.9" rx="5"/>
-    <text x="0" y="-10" font-family="Arial, sans-serif" font-size="48" fill="#4caf50" text-anchor="middle" font-weight="bold">?</text>
-  </g>
-  <text x="200" y="230" font-family="Arial, sans-serif" font-size="24" fill="#fff" text-anchor="middle" font-weight="bold">📝 Quiz</text>
-</svg>

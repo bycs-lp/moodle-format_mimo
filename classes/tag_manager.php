@@ -52,14 +52,15 @@ class tag_manager {
 
     /** Pastel accents used by the "starters" design when no custom colour is set. */
     private const STARTER_ACCENT_COLORS = [
-        '#dcecff',
+        '#cfe5fa',
         '#fde9c9',
-        '#f8ddff',
-        '#dff5d1',
+        '#eadaf8',
+        '#fff3b0',
+        '#d3f2c2',
+        '#f0f1f0',
+        '#dcecff',
         '#ffe1db',
-        '#e0f0ff',
-        '#fff3c9',
-        '#fddaea',
+        '#dff5d1',
     ];
 
     /**
@@ -811,37 +812,46 @@ class tag_manager {
         // Create default tags.
         $defaulttags = [
             ['name' => get_string('tag_reading', 'format_minimoodlewall'),
-                'cardimage' => 'reading.svg', 'filterimage' => 'reading_small.svg',
-                'activitytype1' => 'page', 'activitytype2' => 'resource'],
-            ['name' => get_string('tag_video', 'format_minimoodlewall'),
-                'cardimage' => 'video.svg', 'filterimage' => 'video_small.svg',
-                'activitytype1' => 'url', 'activitytype2' => 'resource'],
+                'cardimage' => 'reading.svg', 'filterimage' => 'reading.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#cfe5fa'],
+            ['name' => get_string('tag_discover', 'format_minimoodlewall'),
+                'cardimage' => 'discover.svg', 'filterimage' => 'discover.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#fde9c9'],
             ['name' => get_string('tag_writing', 'format_minimoodlewall'),
-                'cardimage' => 'writing.svg', 'filterimage' => 'writing_small.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'forum'],
-            ['name' => get_string('tag_quiz', 'format_minimoodlewall'),
-                'cardimage' => 'quiz.svg', 'filterimage' => 'quiz_small.svg',
-                'activitytype1' => 'quiz', 'activitytype2' => 'choice'],
-            ['name' => get_string('tag_discussion', 'format_minimoodlewall'),
-                'cardimage' => 'discussion.svg', 'filterimage' => 'discussion_small.svg',
-                'activitytype1' => 'forum', 'activitytype2' => 'chat'],
-            ['name' => get_string('tag_data', 'format_minimoodlewall'),
-                'cardimage' => 'data.svg', 'filterimage' => 'data_small.svg',
-                'activitytype1' => 'data', 'activitytype2' => 'questionnaire'],
-            ['name' => get_string('tag_lab', 'format_minimoodlewall'),
-                'cardimage' => 'lab.svg', 'filterimage' => 'lab_small.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'workshop'],
+                'cardimage' => 'writing.svg', 'filterimage' => 'writing.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#cfe5fa'],
+            ['name' => get_string('tag_show', 'format_minimoodlewall'),
+                'cardimage' => 'show.svg', 'filterimage' => 'show.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'glossary', 'activitytype3' => null,
+                'bgcolor' => '#eadaf8'],
             ['name' => get_string('tag_practice', 'format_minimoodlewall'),
-                'cardimage' => 'practice.svg', 'filterimage' => 'practice_small.svg',
-                'activitytype1' => 'quiz', 'activitytype2' => 'lesson'],
+                'cardimage' => 'practice.svg', 'filterimage' => 'practice.svg',
+                'activitytype1' => 'h5pactivity', 'activitytype2' => 'quiz', 'activitytype3' => null,
+                'bgcolor' => '#fff3b0'],
+            ['name' => get_string('tag_teamwork', 'format_minimoodlewall'),
+                'cardimage' => 'teamwork.svg', 'filterimage' => 'teamwork.svg',
+                'activitytype1' => 'forum', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#fff3b0'],
+            ['name' => get_string('tag_watch', 'format_minimoodlewall'),
+                'cardimage' => 'watch.svg', 'filterimage' => 'watch.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#d3f2c2'],
+            ['name' => get_string('tag_calculations', 'format_minimoodlewall'),
+                'cardimage' => 'calculations.svg', 'filterimage' => 'calculations.svg',
+                'activitytype1' => 'h5pactivity', 'activitytype2' => 'assign', 'activitytype3' => 'quiz',
+                'bgcolor' => '#cfe5fa'],
+            ['name' => get_string('tag_listen', 'format_minimoodlewall'),
+                'cardimage' => 'listen.svg', 'filterimage' => 'listen.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#f0f1f0'],
         ];
 
-        $palette = self::STARTER_ACCENT_COLORS;
-        $palettecount = count($palette);
         $index = 0;
 
         foreach ($defaulttags as $tag) {
-            $bgcolor = $palettecount ? $palette[$index % $palettecount] : null;
             $tagid = self::create_tag(
                 $tagsetid,
                 $tag['name'],
@@ -849,8 +859,9 @@ class tag_manager {
                 $tag['filterimage'],
                 $tag['activitytype1'],
                 $tag['activitytype2'],
-                null,
-                $bgcolor
+                $tag['activitytype3'],
+                $tag['bgcolor'],
+                'lower'
             );
 
             $index++;

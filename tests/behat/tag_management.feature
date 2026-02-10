@@ -36,7 +36,7 @@ Feature: Tag management in minimoodlewall format
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
       | Second Suggested Activity Type    | quiz         |
-    And I upload "course/format/minimoodlewall/pix/tags/lab.svg" file to "Card Image (Classic)" filemanager
+    And I upload "course/format/minimoodlewall/pix/tags/discover.svg" file to "Card Image (Classic)" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     And I click on "My Tagset" "button"
@@ -55,7 +55,7 @@ Feature: Tag management in minimoodlewall format
     And I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
-    And I upload "course/format/minimoodlewall/pix/tags/data.svg" file to "Card Image (Classic)" filemanager
+    And I upload "course/format/minimoodlewall/pix/tags/reading.svg" file to "Card Image (Classic)" filemanager
     And I press "Save changes"
     And I wait until the page is ready
     And I click on "Test Tagset" "button"

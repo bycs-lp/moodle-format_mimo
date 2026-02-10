@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 250" width="400" height="250">
-  <rect width="400" height="250" fill="#795548"/>
-  <g transform="translate(200,125)">
-    <ellipse cx="0" cy="-15" rx="40" ry="30" fill="#fff" opacity="0.9"/>
-    <rect x="-5" y="-15" width="10" height="40" fill="#fff" opacity="0.9"/>
-    <ellipse cx="0" cy="25" rx="25" ry="15" fill="#fff" opacity="0.9"/>
-  </g>
-  <text x="200" y="230" font-family="Arial, sans-serif" font-size="24" fill="#fff" text-anchor="middle" font-weight="bold">🔬 Lab</text>
-</svg>
