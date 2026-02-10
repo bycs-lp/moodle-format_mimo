@@ -1100,6 +1100,7 @@ body.format-minimoodlewall-theme-colorful {
         text-decoration: none;
         color: inherit;
         height: 100%;
+        cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         &:hover {
@@ -1148,6 +1149,16 @@ body.format-minimoodlewall-theme-colorful {
             color: #555;
             margin-bottom: 0.5rem;
             flex: 1;
+
+            a {
+                color: #0073e6;
+                text-decoration: underline;
+
+                &:hover {
+                    color: #005bb5;
+                    text-decoration: underline;
+                }
+            }
         }
 
         $size-icon: 82px;

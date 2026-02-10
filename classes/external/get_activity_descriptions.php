@@ -85,9 +85,14 @@ class get_activity_descriptions extends external_api {
             $purpose = plugin_supports('mod', $type, FEATURE_MOD_PURPOSE, MOD_PURPOSE_OTHER);
             $purposeclass = self::get_purpose_classname($purpose);
 
+            $description = $descdata->description ?? '';
+            if (!empty($description)) {
+                $description = format_text($description, FORMAT_HTML, ['context' => \context_system::instance()]);
+            }
+
             $descriptions[] = [
                 'activitytype' => $type,
-                'description' => $descdata->description ?? '',
+                'description' => $description,
                 'iconhtml' => $iconhtml,
                 'purpose' => $purposeclass,
                 'tagname' => $descdata->tagname ?? '',

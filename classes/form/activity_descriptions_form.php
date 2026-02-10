@@ -98,7 +98,7 @@ class activity_descriptions_form extends \moodleform {
             if ($currentdesc && isset($currentdesc->desctagid)) {
                 $mform->setDefault('desctag_' . $type['name'], $currentdesc->desctagid ?? 0);
             }
-            $mform->setType('description_' . $type['name'], PARAM_TEXT);
+            $mform->setType('description_' . $type['name'], PARAM_CLEANHTML);
             if ($currentdesc) {
                 $mform->setDefault('description_' . $type['name'], $currentdesc->description ?? '');
             }

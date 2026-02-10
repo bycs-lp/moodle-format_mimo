@@ -25,7 +25,7 @@
         "tagcolor": "#ff6b6b"
     }
 }}
-<a href="#" class="mmw-activity-card" data-activity-type="{{activitytype}}" data-testid="activity-card">
+<div class="mmw-activity-card" data-activity-type="{{activitytype}}" data-testid="activity-card" role="button" tabindex="0">
     <div class="mmw-activity-card-content">
         {{#tagname}}
         <div class="mmw-activity-card-tag" data-testid="activity-tag" data-tag-name="{{tagname}}" style="background-color: {{tagcolor}};">
@@ -33,9 +33,9 @@
         </div>
         {{/tagname}}
         <h3 class="mmw-activity-card-title">{{label}}</h3>
-        <p class="mmw-activity-card-description">{{description}}</p>
+        <p class="mmw-activity-card-description">{{{description}}}</p>
         <div class="mmw-activity-card-icon activityiconcontainer {{purpose}} modicon_{{activitytype}}">
             {{{icon}}}
         </div>
     </div>
-</a>
+</div>

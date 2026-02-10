@@ -831,6 +831,7 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   text-decoration: none;
   color: inherit;
   height: 100%;
+  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .format-minimoodlewall-activity-options .mmw-activity-card:hover {
@@ -875,6 +876,14 @@ body.format-minimoodlewall-theme-colorful .minimoodlewall-filter-bar .filter-tag
   color: #555;
   margin-bottom: 0.5rem;
   flex: 1;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-description a {
+  color: #0073e6;
+  text-decoration: underline;
+}
+.format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-description a:hover {
+  color: #005bb5;
+  text-decoration: underline;
 }
 .format-minimoodlewall-activity-options .mmw-activity-card .mmw-activity-card-icon {
   position: absolute;

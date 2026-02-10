@@ -204,6 +204,10 @@ const showActivityTypeModal = async(
 
         // Handle option selection (updated selector for new template structure)
         modal.getRoot().on('click', '.mmw-activity-card, .mmw-activity-chooser-link', async(e) => {
+            // Allow clicks on links inside the description to navigate normally.
+            if (e.target.closest('.mmw-activity-card-description a')) {
+                return;
+            }
             e.preventDefault();
             const activityType = e.currentTarget.dataset.activityType;
 
