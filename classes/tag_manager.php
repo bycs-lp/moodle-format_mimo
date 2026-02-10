@@ -50,7 +50,7 @@ class tag_manager {
     /** @var \cache_application Cache for activity-tag mappings */
     private static $mappingcache = null;
 
-    /** Pastel accents used by the "starters" design when no custom colour is set. */
+    /** Pastel accents used by the "starters" style when no custom colour is set. */
     private const STARTER_ACCENT_COLORS = [
         '#cfe5fa',
         '#fde9c9',
@@ -215,13 +215,13 @@ class tag_manager {
      * Build the display URL for the card image.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $designname Optional design name to get design-specific image
+     * @param string|null $stylename Optional style name to get style-specific image
      * @return moodle_url|null
      */
-    public static function get_cardimage_url(\stdClass $tag, ?string $designname = null): ?moodle_url {
-        // If design specified, try to get design-specific image first.
-        if ($designname !== null) {
-            $url = design_manager::get_cardimage_url_by_name($tag->id, $designname);
+    public static function get_cardimage_url(\stdClass $tag, ?string $stylename = null): ?moodle_url {
+        // If style specified, try to get style-specific image first.
+        if ($stylename !== null) {
+            $url = style_manager::get_cardimage_url_by_name($tag->id, $stylename);
             if ($url) {
                 return $url;
             }
@@ -234,13 +234,13 @@ class tag_manager {
      * Build the display URL for the filter image area.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $designname Optional design name to get design-specific image
+     * @param string|null $stylename Optional style name to get style-specific image
      * @return moodle_url|null
      */
-    public static function get_filterimage_url(\stdClass $tag, ?string $designname = null): ?moodle_url {
-        // If design specified, try to get design-specific image first.
-        if ($designname !== null) {
-            $url = design_manager::get_filterimage_url_by_name($tag->id, $designname);
+    public static function get_filterimage_url(\stdClass $tag, ?string $stylename = null): ?moodle_url {
+        // If style specified, try to get style-specific image first.
+        if ($stylename !== null) {
+            $url = style_manager::get_filterimage_url_by_name($tag->id, $stylename);
             if ($url) {
                 return $url;
             }

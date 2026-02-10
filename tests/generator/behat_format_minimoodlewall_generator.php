@@ -71,9 +71,9 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['activitytype', 'description'],
                 'switchids' => ['desctag' => 'desctagid'],
             ],
-            'designs' => [
-                'singular' => 'design',
-                'datagenerator' => 'design',
+            'styles' => [
+                'singular' => 'style',
+                'datagenerator' => 'style',
                 'required' => ['name', 'displayname'],
                 'switchids' => [],
             ],
@@ -298,7 +298,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'id' => $course->id,
             'selectedtags' => $data['selectedtags'],
             'enablefiltering' => $data['enablefiltering'],
-            'designvariant' => $data['designvariant'],
+            'stylevariant' => $data['stylevariant'],
             'tagsetid' => $data['tagsetid'] ?? 0,
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
@@ -353,7 +353,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
-        $data['designvariant'] = $data['designvariant'] ?? 'classic';
+        $data['stylevariant'] = $data['stylevariant'] ?? 'classic';
         $data['numsections'] = 1;
 
         return $data;

@@ -52,12 +52,12 @@ Tests for activity reordering:
 - Drag operation reorders activities
 - Visual feedback (cursor, highlighting)
 
-### 7. design_variants.feature
-Tests for design customization:
-- Classic design variant
-- Light design variant
-- Dark design variant
-- Changing design in course settings
+### 7. style_variants.feature
+Tests for style customization:
+- Classic style variant
+- Light style variant
+- Dark style variant
+- Changing style in course settings
 
 ## Running the Tests
 

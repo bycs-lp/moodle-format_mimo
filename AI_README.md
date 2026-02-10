@@ -5,12 +5,12 @@
 ## TL;DR
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards.
 - **Core concept**: Every course selects a *tagset* and one or more *tags* from it; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
-- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/tagset_manager.php` (tagset CRUD + cascade), `classes/design_manager.php` (design variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (design variants), `amd/` (JS helpers).
+- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/tagset_manager.php` (tagset CRUD + cascade), `classes/style_manager.php` (style variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
   - Enforces single-section behavior, course index support, and hides section crumbs on activity pages.
-  - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `designvariant`.
+  - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`.
   - `edit_form_validation()` forces at least one tag selection.
 - **Tagset domain model** (`classes/tagset_manager.php`)
   - Table: `*_tagsets` (name unique, description, sortorder).
@@ -22,12 +22,12 @@
   - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_minimoodlewall_pluginfile()`.
   - Key methods: `create_tag($tagsetid, $name, ...)`, `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`, `assign_tag_to_cm($cmid, $tagid)`, `get_cm_tag($cmid)`.
   - Cache invalidation: `clear_tag_cache()`, `clear_mapping_cache()`, `clear_course_tags_cache($courseid)`.
-- **Design system** (`classes/design_manager.php`)
-  - Table: `*_designs` (name unique, displayname, sortorder).
-  - Table: `*_tag_images` (tagid+designid unique, cardimage, filterimage filenames).
-  - File areas: `FILEAREA_DESIGN_CARDIMAGE = 'designtagcard'`, `FILEAREA_DESIGN_FILTERIMAGE = 'designtagfilter'`.
-  - Key methods: `create_design($name, $displayname)`, `get_all_designs()`, `get_design_by_name($name)`, `get_or_create_tag_image($tagid, $designid)`, `get_tag_image_for_design($tagid, $designid)`.
-  - Designs allow different card/filter images per tag per visual theme.
+- **Style system** (`classes/style_manager.php`)
+  - Table: `*_styles` (name unique, displayname, sortorder).
+  - Table: `*_tag_images` (tagid+styleid unique, cardimage, filterimage filenames).
+  - File areas: `FILEAREA_STYLE_CARDIMAGE = 'styletagcard'`, `FILEAREA_STYLE_FILTERIMAGE = 'styletagfilter'`.
+  - Key methods: `create_style($name, $displayname)`, `get_all_styles()`, `get_style_by_name($name)`, `get_or_create_tag_image($tagid, $styleid)`, `get_tag_image_for_style($tagid, $styleid)`.
+  - Styles allow different card/filter images per tag per visual theme.
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
@@ -37,14 +37,14 @@
   - `course_module_created`: Auto-assign pending tag from session (guided creation flow).
   - `course_module_deleted`: Delete cmtag record for the deleted module + clear cache.
   - `course_deleted`: Delete all orphaned cmtag records (cmid NOT IN course_modules) + clear cache.
-- **Admin UX** (`settings.php`, `tag_management.php`, `design_management.php`, `classes/form/*`)
+- **Admin UX** (`settings.php`, `tag_management.php`, `style_management.php`, `classes/form/*`)
   - Tag management: Accordion-based UI with tagsets as expandable sections, tags as forms within. `data-tagset-name` attribute for Behat targeting.
-  - Design management: Tab-based design image management per tag.
-  - Only admins (`moodle/site:config`) can manage tags/tagsets/designs; links exposed under Site administration > Courses.
+  - Style management: Tab-based style image management per tag.
+  - Only admins (`moodle/site:config`) can manage tags/tagsets/styles; links exposed under Site administration > Courses.
 - **Rendering** (`format.php`, `classes/output/courseformat/*`, `templates/local/content/*.mustache`)
   - Modern Moodle 4.x component-based stack: base content → section → `cmitem` templates.
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
-  - `styles.scss` hosts shared wall styles + design variants (`classic`, `light`, `dark`).
+  - `styles.scss` hosts shared wall styles + style variants (`classic`, `light`, `dark`).
 - **Caching** (`db/caches.php`)
   - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`).
   - `activitytagmappings`: cm→tag lookup.
@@ -53,13 +53,13 @@
 
 ## Backup & Restore Architecture
 - **Backup** (`backup/moodle2/backup_format_minimoodlewall_plugin.class.php`)
-  - Course-level: Backs up designs (only those referenced by course tags), tagsets, tags (all fields incl. bgcolor, imgplacement, activitytype3), and tag_images. File annotations for all image file areas.
+  - Course-level: Backs up styles (only those referenced by course tags), tagsets, tags (all fields incl. bgcolor, imgplacement, activitytype3), and tag_images. File annotations for all image file areas.
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
-  - XML tree: `pluginwrapper → mmw_designs → mmw_design` + `pluginwrapper → mmw_tagsets → mmw_tagset → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image`.
+  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tagsets → mmw_tagset → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image`.
 - **Restore** (`backup/moodle2/restore_format_minimoodlewall_plugin.class.php`)
-  - **Same-instance**: Reuses existing tagsets/tags/designs/tag_images by name/unique-combo (no duplicates).
+  - **Same-instance**: Reuses existing tagsets/tags/styles/tag_images by name/unique-combo (no duplicates).
   - **Cross-instance**: Creates new records when matching names don't exist.
-  - ID mapping: Sets `format_minimoodlewall_tagset`, `format_minimoodlewall_tag`, `format_minimoodlewall_design`, `format_minimoodlewall_tag_image` mappings.
+  - ID mapping: Sets `format_minimoodlewall_tagset`, `format_minimoodlewall_tag`, `format_minimoodlewall_style`, `format_minimoodlewall_tag_image` mappings.
   - `after_execute_course()`: Restores file areas + updates `tagsetid` and `selectedtags` course format options with remapped IDs.
   - `after_restore_course()`: Clears all caches.
 
@@ -72,9 +72,9 @@
    - Tags within each tagset have forms for name, color, images, activity types.
    - Deleting a tagset cascade-deletes all its tags (via `tagset_manager::delete_tagset()`).
    - `tag_delete_confirm.js` uses event capturing phase to intercept clicks before `stopPropagation` on accordion buttons.
-3. **Design management**
-   - Admin page (`design_management.php`) manages design variants.
-   - Per-tag images for each design variant via `tag_images` table.
+3. **Style management**
+   - Admin page (`style_management.php`) manages style variants.
+   - Per-tag images for each style variant via `tag_images` table.
 4. **Course editing**
   - Teachers see a tag-based activity chooser: clicking the "+" button reveals a dropdown of configured tags.
   - Selecting a tag opens a modal with three options: two quick-create shortcuts (pre-configured activity types) and a link to the full activity chooser.
@@ -98,12 +98,12 @@
 - **Enhance filtering UX**
   - Extend `amd/src/*` to add reactive filtering, track active tag, and animate card visibility.
   - Expose filter data via `section.mustache` context.
-- **Design variants**
-  - Expand `designvariant` option and `styles.scss` tokens (background, accent, typography).
-  - Upload design-specific tag images via `design_manager`.
+- **Style variants**
+  - Expand `stylevariant` option and `styles.scss` tokens (background, accent, typography).
+  - Upload style-specific tag images via `style_manager`.
 - **Testing**
   - Behat: cover tag selection workflow, filter interactions, and admin CRUD.
-  - PHPUnit: tag/tagset/design CRUD, backup/restore, observer handlers, cache invalidation.
+  - PHPUnit: tag/tagset/style CRUD, backup/restore, observer handlers, cache invalidation.
 
 ## Moodle-Specific Linter Considerations
 Moodle has several unique patterns that cause issues with standard PHP linters and static analysis tools:
@@ -116,7 +116,7 @@ Moodle has several unique patterns that cause issues with standard PHP linters a
   - Legacy classes in root or subdirectories require explicit `require_once()`
 - **Mixed paradigms in same plugin**:
   - `lib.php`: Legacy global class `format_minimoodlewall` (NO namespace, extends `core_courseformat\base`)
-  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`, `tagset_manager`, `design_manager`
+  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`, `tagset_manager`, `style_manager`
   - `backup/moodle2/*.class.php`: Legacy classes `backup_format_minimoodlewall_plugin` (NO namespace)
   - `classes/form/*.php`: Modern but extend legacy `\moodleform` which requires explicit `require_once($CFG->libdir.'/formslib.php')`
 
@@ -152,7 +152,7 @@ This plugin demonstrates the hybrid approach:
 - `lib.php` (68 lines): Global `format_minimoodlewall` class, extends namespaced base
 - `classes/tag_manager.php`: Fully namespaced, modern PSR-4
 - `classes/tagset_manager.php`: Fully namespaced, cascade-deletes tags
-- `classes/design_manager.php`: Fully namespaced, manages designs + tag_images
+- `classes/style_manager.php`: Fully namespaced, manages styles + tag_images
 - `classes/form/tag_form.php`: Namespaced but extends global `\moodleform`, requires explicit include
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
 
@@ -160,9 +160,9 @@ This plugin demonstrates the hybrid approach:
 - Respect single-section assumption; avoid introducing multiple sections unless architecture is revisited.
 - Never bypass selectedtags requirement—every course must have at least one tag selected for the wall to function properly.
 - Every course must have a valid `tagsetid` — the upgrade step (Step 8 in `db/upgrade.php`) sets this on existing courses; new courses get it from the course edit form.
-- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `design_manager` helpers to avoid orphans.
-- Update caches after any tag/tagset/design change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
-- Tagsets/tags/designs are **global** — shared across all courses; courses reference them via format options.
+- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` helpers to avoid orphans.
+- Update caches after any tag/tagset/style change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
+- Tagsets/tags/styles are **global** — shared across all courses; courses reference them via format options.
 - Backup/restore reuses by name on same instance. Don't create duplicate-prevention logic elsewhere.
 - Observer cleanup: `course_module_deleted` and `course_deleted` handle orphan cmtag records. Don't add manual cleanup in other code paths.
 - `tag_delete_confirm.js` uses event capturing (`addEventListener('click', handler, true)`) to intercept before `stopPropagation` on accordion buttons. Maintain this pattern.
@@ -195,13 +195,13 @@ This plugin demonstrates the hybrid approach:
 - `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, navigation tweaks, pluginfile hook.
 - `classes/tagset_manager.php` – tagset CRUD, cascade delete to tags, cache management.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`.
-- `classes/design_manager.php` – design CRUD, per-tag design images (tag_images table), file areas for design card/filter images.
+- `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
 - `classes/observer.php` – event handlers: auto-tag on module create, cleanup on module/course delete.
 - `classes/privacy/` – Privacy API provider.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags.
-- `design_management.php` – admin UI for design variants and per-tag images.
+- `style_management.php` – admin UI for style variants and per-tag images.
 - `description_tags.php` – admin UI for managing description tags (name + hex color).
 - `activity_descriptions.php` – admin UI for editing activity type descriptions and assigning description tags.
 - `classes/form/tag_form.php` – mform definition for tag create/edit (name, color, images, activity types).
@@ -214,14 +214,14 @@ This plugin demonstrates the hybrid approach:
 - `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates.
 - `templates/tag_management.mustache` – accordion-based tagset/tag admin UI with `data-tagset-name` attributes.
-- `templates/design_management.mustache` – design admin with per-tag image tabs.
+- `templates/style_management.mustache` – style admin with per-tag image tabs.
 - `templates/local/content/activitychooserbutton.mustache` – **Moodle 5.1+ tag chooser template**.
 - `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
 - `templates/tagchooserbutton.mustache` – **Legacy Moodle 4.x tag chooser template**.
 - `templates/activitytype_chooser_modal.mustache` – modal body for activity type selection.
 - `templates/activitytype_card.mustache` – activity type card with optional description tag pill.
 - `templates/description_tags_list.mustache` – table view for description tags management page.
-- `styles.scss` / `styles.css` – wall styling + design variants + activity card styles + description tag pill styling.
+- `styles.scss` / `styles.css` – wall styling + style variants + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (version-agnostic).
 - `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags and tagsets (event capturing phase).
 - `amd/src/tag_filter.js` – client-side tag filtering.
@@ -229,31 +229,31 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/activity_pagination.js` – responsive pagination with swipe.
 - `amd/src/activity_dragdrop.js` – drag and drop reordering.
 - `amd/src/tag_checkbox_sync.js` – tag selection checkbox sync.
-- `amd/src/design_delete_confirm.js` – design deletion confirmation modal.
-- `amd/src/design_image_switcher.js` – design image tab switching.
+- `amd/src/style_delete_confirm.js` – style deletion confirmation modal.
+- `amd/src/style_image_switcher.js` – style image tab switching.
 - `amd/src/description_tag_management.js` – description tag admin helpers.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
-- `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags, designs, tag_images, cmtags, files).
+- `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags, styles, tag_images, cmtags, files).
 - `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (reuse-by-name, ID mapping, format option remapping).
-- `db/install.xml` – 7 tables: tagsets, tags, cmtags, designs, tag_images, desc_tags, actdesc.
-- `db/install.php` – creates default tagset, default tags, and default designs on install.
+- `db/install.xml` – 7 tables: tagsets, tags, cmtags, styles, tag_images, desc_tags, actdesc.
+- `db/install.php` – creates default tagset, default tags, and default styles on install.
 - `db/upgrade.php` – migration steps including tagset introduction (Step 8: sets tagsetid on existing courses).
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
 - `db/hooks.php` – hook registrations.
 - `db/services.php` – web service definitions.
 - `db/caches.php` – cache definitions (tagconfigurations, activitytagmappings, activity_descriptions).
 - `tests/behat/tag_management.feature` – 6 scenarios for tag/tagset CRUD (create, edit, delete).
-- `tests/behat/design_variants.feature` – 2 scenarios for design variant selection during course creation.
-- `tests/behat/design_management.feature` – design admin scenarios.
+- `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
+- `tests/behat/style_management.feature` – style admin scenarios.
 - `tests/tag_manager_test.php` – tag CRUD, assignment, caching, defaults.
 - `tests/tagset_manager_test.php` – tagset CRUD, cascade delete, caching.
-- `tests/design_manager_test.php` – design CRUD, tag_images.
-- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, design/tag_image restore, tagsetid restore.
+- `tests/style_manager_test.php` – style CRUD, tag_images.
+- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, style/tag_image restore, tagsetid restore.
 - `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection, module deletion cleanup, course deletion cleanup.
 
 ## Open Questions / TODO Hooks
 - Teacher-side workflow for assigning/changing tags per activity is not implemented.
 - JS filter bar enhancements (persist active filter, animate cards) planned but not shipped.
-- Additional design variants + documentation for recommended SVG sizing still pending.
+- Additional style variants + documentation for recommended SVG sizing still pending.
 
 Keep this document synchronized with functional changes so future AI runs can reason about intent without re-deriving it from the whole codebase.

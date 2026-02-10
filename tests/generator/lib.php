@@ -245,46 +245,46 @@ class format_minimoodlewall_generator extends component_generator_base {
     }
 
     /**
-     * @var int Counter for design creation
+     * @var int Counter for style creation
      */
-    protected $designcount = 0;
+    protected $stylecount = 0;
 
     /**
-     * Create a design.
+     * Create a style.
      *
-     * @param array|stdClass $record Design data with name and displayname
-     * @return stdClass The created design record
+     * @param array|stdClass $record Style data with name and displayname
+     * @return stdClass The created style record
      */
-    public function create_design($record = null) {
+    public function create_style($record = null) {
         global $DB;
 
-        $this->designcount++;
+        $this->stylecount++;
         $record = (object)(array)$record;
 
         if (!isset($record->name)) {
-            $record->name = 'testdesign' . $this->designcount;
+            $record->name = 'teststyle' . $this->stylecount;
         }
 
-        // Check if a design with this name already exists.
-        $existing = $DB->get_record('format_minimoodlewall_designs', ['name' => $record->name]);
+        // Check if a style with this name already exists.
+        $existing = $DB->get_record('format_minimoodlewall_styles', ['name' => $record->name]);
         if ($existing) {
-            // Update existing design with new values.
+            // Update existing style with new values.
             $record->id = $existing->id;
             $record->timecreated = $existing->timecreated;
             $record->timemodified = time();
             $record->displayname = $record->displayname ?? $existing->displayname;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
 
-            $DB->update_record('format_minimoodlewall_designs', $record);
+            $DB->update_record('format_minimoodlewall_styles', $record);
             return $record;
         }
 
-        // Create new design.
+        // Create new style.
         if (!isset($record->displayname)) {
-            $record->displayname = 'Test Design ' . $this->designcount;
+            $record->displayname = 'Test Style ' . $this->stylecount;
         }
         if (!isset($record->sortorder)) {
-            $record->sortorder = $this->designcount;
+            $record->sortorder = $this->stylecount;
         }
         if (!isset($record->timecreated)) {
             $record->timecreated = time();
@@ -293,7 +293,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->timemodified = time();
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_designs', $record);
+        $record->id = $DB->insert_record('format_minimoodlewall_styles', $record);
 
         return $record;
     }

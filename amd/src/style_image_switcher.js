@@ -14,24 +14,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Design image switcher for course settings form.
+ * Style image switcher for course settings form.
  *
- * Updates tag preview images when the design variant dropdown is changed.
- * Image URLs are read from data-designimages attributes on each tag option.
+ * Updates tag preview images when the style variant dropdown is changed.
+ * Image URLs are read from data-styleimages attributes on each tag option.
  *
- * @module     format_minimoodlewall/design_image_switcher
+ * @module     format_minimoodlewall/style_image_switcher
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 const SELECTORS = {
-    DESIGN_SELECT: '#id_designvariant',
-    TAG_OPTION: '.mmw-tag-option[data-designimages]',
+    STYLE_SELECT: '#id_stylevariant',
+    TAG_OPTION: '.mmw-tag-option[data-styleimages]',
     TAG_IMAGE: '[data-tagimage]',
 };
 
 /**
- * Initialize the design image switcher.
+ * Initialize the style image switcher.
  */
 export const init = () => {
     registerEventListeners();
@@ -41,38 +41,38 @@ export const init = () => {
  * Register event listeners.
  */
 const registerEventListeners = () => {
-    const designSelect = document.querySelector(SELECTORS.DESIGN_SELECT);
-    if (!designSelect) {
+    const styleSelect = document.querySelector(SELECTORS.STYLE_SELECT);
+    if (!styleSelect) {
         return;
     }
 
-    designSelect.addEventListener('change', () => {
-        updateTagImages(designSelect.value);
+    styleSelect.addEventListener('change', () => {
+        updateTagImages(styleSelect.value);
     });
 };
 
 /**
- * Update all tag images for the selected design.
+ * Update all tag images for the selected style.
  *
- * @param {string} designName The selected design name
+ * @param {string} styleName The selected style name
  */
-const updateTagImages = (designName) => {
+const updateTagImages = (styleName) => {
     const tagOptions = document.querySelectorAll(SELECTORS.TAG_OPTION);
 
     tagOptions.forEach((optionElement) => {
-        const designImagesJson = optionElement.dataset.designimages;
-        if (!designImagesJson) {
+        const styleImagesJson = optionElement.dataset.styleimages;
+        if (!styleImagesJson) {
             return;
         }
 
-        let designImages;
+        let styleImages;
         try {
-            designImages = JSON.parse(designImagesJson);
+            styleImages = JSON.parse(styleImagesJson);
         } catch (e) {
             return;
         }
 
-        const newImageUrl = designImages[designName];
+        const newImageUrl = styleImages[styleName];
         const imageElement = optionElement.querySelector(SELECTORS.TAG_IMAGE);
 
         if (!imageElement) {

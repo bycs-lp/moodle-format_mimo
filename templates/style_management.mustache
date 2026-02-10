@@ -15,30 +15,30 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/design_management
+    @template format_minimoodlewall/style_management
 
-    Design management page template.
+    Style management page template.
 
     Context variables:
-    * createdesignurl - URL to create new design
-    * createdesigntext - Text for create design button
-    * nodesignstext - Text when no designs exist
-    * hasdesigns - Boolean if designs exist
+    * createstyleurl - URL to create new style
+    * createstyletext - Text for create style button
+    * nostylestext - Text when no styles exist
+    * hasstyles - Boolean if styles exist
     * tableheaders - Object with table header strings
-    * designs - Array of design objects
+    * styles - Array of style objects
 
     Example context (json):
     {
-        "createdesignurl": "/path/to/create",
-        "createdesigntext": "Create design",
-        "hasdesigns": true,
+        "createstyleurl": "/path/to/create",
+        "createstyletext": "Create style",
+        "hasstyles": true,
         "tableheaders": {
             "name": "Name",
             "displayname": "Display name",
             "sortorder": "Sort order",
             "actions": "Actions"
         },
-        "designs": [
+        "styles": [
             {
                 "id": 1,
                 "name": "classic",
@@ -46,31 +46,31 @@
                 "sortorder": 1,
                 "editurl": "/path/to/edit",
                 "deleteurl": "/path/to/delete",
-                "edittitle": "Edit design",
-                "deletetitle": "Delete design"
+                "edittitle": "Edit style",
+                "deletetitle": "Delete style"
             }
         ]
     }
 }}
 
-<div class="design-management" data-region="design-management">
+<div class="style-management" data-region="style-management">
     <div class="mb-3">
-        <a href="{{createdesignurl}}" class="btn btn-primary" data-testid="create-design-button">
-            {{createdesigntext}}
+        <a href="{{createstyleurl}}" class="btn btn-primary" data-testid="create-style-button">
+            {{createstyletext}}
         </a>
     </div>
 
-    {{^hasdesigns}}
+    {{^hasstyles}}
         <div class="alert alert-info">
-            {{nodesignstext}}
+            {{nostylestext}}
         </div>
-    {{/hasdesigns}}
+    {{/hasstyles}}
 
-    {{#hasdesigns}}
+    {{#hasstyles}}
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped generaltable" data-testid="design-list-table">
+                    <table class="table table-striped generaltable" data-testid="style-list-table">
                         <thead>
                             <tr>
                                 <th>{{tableheaders.name}}</th>
@@ -80,33 +80,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{#designs}}
-                                <tr data-testid="design-row" data-design-id="{{id}}" data-design-name="{{name}}">
+                            {{#styles}}
+                                <tr data-testid="style-row" data-style-id="{{id}}" data-style-name="{{name}}">
                                     <td><code>{{name}}</code></td>
                                     <td>{{displayname}}</td>
                                     <td>{{sortorder}}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-design-button">
+                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-style-button">
                                                 {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                             </a>
                                             <a href="{{deleteurl}}"
                                                title="{{deletetitle}}"
                                                class="btn btn-sm btn-icon"
-                                               data-action="delete-design"
-                                               data-testid="delete-design-button"
-                                               data-design-id="{{id}}"
-                                               data-design-name="{{name}}">
+                                               data-action="delete-style"
+                                               data-testid="delete-style-button"
+                                               data-style-id="{{id}}"
+                                               data-style-name="{{name}}">
                                                 {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-                            {{/designs}}
+                            {{/styles}}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    {{/hasdesigns}}
+    {{/hasstyles}}
 </div>

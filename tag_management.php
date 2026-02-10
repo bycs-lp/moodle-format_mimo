@@ -27,7 +27,7 @@ require_once($CFG->libdir . '/adminlib.php');
 
 use format_minimoodlewall\tag_manager;
 use format_minimoodlewall\tagset_manager;
-use format_minimoodlewall\design_manager;
+use format_minimoodlewall\style_manager;
 use format_minimoodlewall\form\tag_form;
 use format_minimoodlewall\form\tagset_form;
 
@@ -106,28 +106,28 @@ if ($action === 'createtag' || $action === 'edittag') {
     $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagid' => $tagid, 'tagsetid' => $tagsetid]);
     $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
 
-    // Prepare form data with design-specific image drafts.
+    // Prepare form data with style-specific image drafts.
     $formdata = [];
-    $designs = design_manager::get_all_designs();
-    $designids = array_keys($designs);
+    $styles = style_manager::get_all_styles();
+    $styleids = array_keys($styles);
 
     if ($tag) {
         $formdata = (array) $tag;
         $formdata['tagsetid'] = $tagsetid;
-        // Prepare draft areas for each design's images.
-        foreach ($designs as $design) {
-            $formdata['cardimage_design_' . $design->id] = design_manager::prepare_cardimage_draft($tag->id, $design->id);
-            $formdata['filterimage_design_' . $design->id] = design_manager::prepare_filterimage_draft($tag->id, $design->id);
+        // Prepare draft areas for each style's images.
+        foreach ($styles as $style) {
+            $formdata['cardimage_style_' . $style->id] = style_manager::prepare_cardimage_draft($tag->id, $style->id);
+            $formdata['filterimage_style_' . $style->id] = style_manager::prepare_filterimage_draft($tag->id, $style->id);
         }
-        $formdata['designids'] = implode(',', $designids);
+        $formdata['styleids'] = implode(',', $styleids);
     } else {
         $formdata['tagsetid'] = $tagsetid;
         // New tag - prepare empty draft areas.
-        foreach ($designs as $design) {
-            $formdata['cardimage_design_' . $design->id] = 0;
-            $formdata['filterimage_design_' . $design->id] = 0;
+        foreach ($styles as $style) {
+            $formdata['cardimage_style_' . $style->id] = 0;
+            $formdata['filterimage_style_' . $style->id] = 0;
         }
-        $formdata['designids'] = implode(',', $designids);
+        $formdata['styleids'] = implode(',', $styleids);
     }
     $mform->set_data($formdata);
 
@@ -166,17 +166,17 @@ if ($action === 'createtag' || $action === 'edittag') {
             $message = get_string('createtag', 'format_minimoodlewall');
         }
 
-        // Save design-specific images.
-        $saveddesignids = !empty($data->designids) ? explode(',', $data->designids) : [];
-        foreach ($saveddesignids as $designid) {
-            $cardfield = 'cardimage_design_' . $designid;
-            $filterfield = 'filterimage_design_' . $designid;
+        // Save style-specific images.
+        $savedstyleids = !empty($data->styleids) ? explode(',', $data->styleids) : [];
+        foreach ($savedstyleids as $styleid) {
+            $cardfield = 'cardimage_style_' . $styleid;
+            $filterfield = 'filterimage_style_' . $styleid;
 
             if (isset($data->$cardfield)) {
-                design_manager::save_cardimage_from_draft($currenttagid, (int)$designid, (int)$data->$cardfield);
+                style_manager::save_cardimage_from_draft($currenttagid, (int)$styleid, (int)$data->$cardfield);
             }
             if (isset($data->$filterfield)) {
-                design_manager::save_filterimage_from_draft($currenttagid, (int)$designid, (int)$data->$filterfield);
+                style_manager::save_filterimage_from_draft($currenttagid, (int)$styleid, (int)$data->$filterfield);
             }
         }
 

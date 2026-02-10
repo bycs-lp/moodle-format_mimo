@@ -147,7 +147,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 0,
                 'type' => PARAM_BOOL,
             ],
-            'designvariant' => [
+            'stylevariant' => [
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
@@ -176,22 +176,22 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
             ];
-            // Load designs dynamically from database.
-            $designoptions = [];
-            $designs = \format_minimoodlewall\design_manager::get_all_designs();
-            foreach ($designs as $design) {
-                $designoptions[$design->name] = $design->displayname;
+            // Load styles dynamically from database.
+            $styleoptions = [];
+            $styles = \format_minimoodlewall\style_manager::get_all_styles();
+            foreach ($styles as $style) {
+                $styleoptions[$style->name] = $style->displayname;
             }
-            // Fallback to default if no designs exist.
-            if (empty($designoptions)) {
-                $designoptions['classic'] = get_string('design_classic', 'format_minimoodlewall');
+            // Fallback to default if no styles exist.
+            if (empty($styleoptions)) {
+                $styleoptions['classic'] = get_string('style_classic', 'format_minimoodlewall');
             }
-            $courseformatoptions['designvariant'] += [
-                'label' => get_string('setting_design', 'format_minimoodlewall'),
-                'help' => 'setting_design',
+            $courseformatoptions['stylevariant'] += [
+                'label' => get_string('setting_style', 'format_minimoodlewall'),
+                'help' => 'setting_style',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
-                'element_attributes' => [$designoptions],
+                'element_attributes' => [$styleoptions],
             ];
             // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
             $courseformatoptions['selectedtags'] += [
@@ -277,11 +277,11 @@ class format_minimoodlewall extends core_courseformat\base {
         // Prepare renderer for mustache templates.
         $output = $PAGE->get_renderer('format_minimoodlewall');
 
-        // Get current design variant for displaying correct images.
-        $currentdesign = $course->designvariant ?? 'classic';
+        // Get current style variant for displaying correct images.
+        $currentstyle = $course->stylevariant ?? 'classic';
 
-        // Get all designs for passing image URLs to template data attributes.
-        $designs = \format_minimoodlewall\design_manager::get_all_designs();
+        // Get all styles for passing image URLs to template data attributes.
+        $styles = \format_minimoodlewall\style_manager::get_all_styles();
 
         // Add checkboxes for ALL tags across ALL tagsets, with data-tagsetid for JS filtering.
         $alltagids = [];
@@ -290,14 +290,14 @@ class format_minimoodlewall extends core_courseformat\base {
             foreach ($tagsinthistagset as $tag) {
                 $alltagids[] = $tag->id;
 
-                // Get the image URL for the current design.
-                $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentdesign);
+                // Get the image URL for the current style.
+                $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentstyle);
 
-                // Collect image URLs for all designs (stored as data attribute for JS).
-                $designimages = [];
-                foreach ($designs as $design) {
-                    $designimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $design->name);
-                    $designimages[$design->name] = $designimageurl ? $designimageurl->out(false) : null;
+                // Collect image URLs for all styles (stored as data attribute for JS).
+                $styleimages = [];
+                foreach ($styles as $style) {
+                    $styleimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $style->name);
+                    $styleimages[$style->name] = $styleimageurl ? $styleimageurl->out(false) : null;
                 }
 
                 // Render label using mustache template.
@@ -305,7 +305,7 @@ class format_minimoodlewall extends core_courseformat\base {
                     'name' => $tag->name,
                     'imageurl' => $imageurl ? $imageurl->out(false) : null,
                     'tagid' => $tag->id,
-                    'designimages' => json_encode($designimages),
+                    'styleimages' => json_encode($styleimages),
                 ];
                 $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
@@ -329,7 +329,7 @@ class format_minimoodlewall extends core_courseformat\base {
 
         // Initialize JS modules.
         $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$alltagids]);
-        $PAGE->requires->js_call_amd('format_minimoodlewall/design_image_switcher', 'init');
+        $PAGE->requires->js_call_amd('format_minimoodlewall/style_image_switcher', 'init');
         $PAGE->requires->js_call_amd('format_minimoodlewall/tagset_tag_filter', 'init');
 
         return $elements;
@@ -527,8 +527,8 @@ function format_minimoodlewall_pluginfile(
     $allowedareas = [
         \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
         \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
-        \format_minimoodlewall\design_manager::FILEAREA_DESIGN_CARDIMAGE,
-        \format_minimoodlewall\design_manager::FILEAREA_DESIGN_FILTERIMAGE,
+        \format_minimoodlewall\style_manager::FILEAREA_STYLE_CARDIMAGE,
+        \format_minimoodlewall\style_manager::FILEAREA_STYLE_FILTERIMAGE,
     ];
     if (!in_array($filearea, $allowedareas, true)) {
         return false;

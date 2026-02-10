@@ -10,8 +10,8 @@ A modern Moodle course format that displays activities in a card-based wall layo
 - **Pagination** — Responsive breakpoints with swipe support on mobile
 - **Drag & Drop** — Reorder activities in editing mode
 - **Guided Activity Creation** — Tag-based chooser recommends activity types per tag
-- **Design Variants** — Multiple visual themes with per-design tag images
-- **Backup & Restore** — Full backup of tagsets, tags, designs, and mappings; reuses existing data on same instance, creates new records on different instances
+- **Style Variants** — Multiple visual themes with per-style tag images
+- **Backup & Restore** — Full backup of tagsets, tags, styles, and mappings; reuses existing data on same instance, creates new records on different instances
 - **Accessibility** — WCAG 2.1 compliant with ARIA live regions and keyboard navigation
 
 ## Installation
@@ -23,7 +23,7 @@ A modern Moodle course format that displays activities in a card-based wall layo
 ## Configuration
 
 ### Course Settings
-- **Design Variant** — Visual theme (standard, compact, modern)
+- **Style Variant** — Visual theme (standard, compact, modern)
 - **Tagset** — Which tagset to use (determines available tags)
 - **Enable Filtering** — Toggle tag filter bar for students
 
@@ -31,8 +31,8 @@ A modern Moodle course format that displays activities in a card-based wall layo
 - **Tagsets** — Grouping containers for tags (accordion UI)
 - **Tags** — Name, background color, image placement, card/filter images, up to 3 activity types
 
-### Design Management (Site Admin > Courses > Manage designs)
-- Create design variants with per-tag card/filter images
+### Style Management (Site Admin > Courses > Manage styles)
+- Create style variants with per-tag card/filter images
 
 ## How It Works
 

@@ -490,5 +490,63 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026020900, 'format', 'minimoodlewall');
     }
 
+    if ($oldversion < 2026021000) {
+        // Rename "design" to "style" across all tables, columns, file areas, and format options.
+
+        // Step 1: Rename table format_minimoodlewall_designs -> format_minimoodlewall_styles.
+        $table = new xmldb_table('format_minimoodlewall_designs');
+        if ($dbman->table_exists($table)) {
+            $dbman->rename_table($table, 'format_minimoodlewall_styles');
+        }
+
+        // Step 2: Rename column designid -> styleid in tag_images table.
+        $table = new xmldb_table('format_minimoodlewall_tag_images');
+
+        // Drop the old foreign key and index first.
+        $key = new xmldb_key('designid', XMLDB_KEY_FOREIGN, ['designid'], 'format_minimoodlewall_styles', ['id']);
+        $dbman->drop_key($table, $key);
+
+        $index = new xmldb_index('tagid_designid_unique', XMLDB_INDEX_UNIQUE, ['tagid', 'designid']);
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+        // Rename the column.
+        $field = new xmldb_field('designid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'tagid');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'styleid');
+        }
+
+        // Re-add index and foreign key with new names.
+        $index = new xmldb_index('tagid_styleid_unique', XMLDB_INDEX_UNIQUE, ['tagid', 'styleid']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        $key = new xmldb_key('styleid', XMLDB_KEY_FOREIGN, ['styleid'], 'format_minimoodlewall_styles', ['id']);
+        $dbman->add_key($table, $key);
+
+        // Step 3: Rename course format option designvariant -> stylevariant.
+        $DB->execute(
+            "UPDATE {course_format_options}
+                SET name = 'stylevariant'
+              WHERE format = 'minimoodlewall' AND name = 'designvariant'"
+        );
+
+        // Step 4: Migrate file areas in mdl_files.
+        $DB->execute(
+            "UPDATE {files}
+                SET filearea = 'styletagcard'
+              WHERE component = 'format_minimoodlewall' AND filearea = 'designtagcard'"
+        );
+        $DB->execute(
+            "UPDATE {files}
+                SET filearea = 'styletagfilter'
+              WHERE component = 'format_minimoodlewall' AND filearea = 'designtagfilter'"
+        );
+
+        upgrade_plugin_savepoint(true, 2026021000, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

@@ -29,7 +29,7 @@ Feature: Course creation with minimoodlewall format
       | Course short name   | TC1                  |
       | Format              | Minimal Moodle Wall  |
       | Enable tag filtering| 1                    |
-      | Design              | Classic              |
+      | Style               | Classic              |
       | Tagset              | Test Tagset          |
     And I click on "Reading" "checkbox"
     And I click on "Practice" "checkbox"

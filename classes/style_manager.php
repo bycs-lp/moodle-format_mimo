@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Design manager for format_minimoodlewall.
+ * Style manager for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -31,25 +31,25 @@ use stdClass;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Design manager class for handling design variants.
+ * Style manager class for handling style variants.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class design_manager {
+class style_manager {
 
-    /** Database table for designs. */
-    private const TABLE_DESIGNS = 'format_minimoodlewall_designs';
+    /** Database table for styles. */
+    private const TABLE_STYLES = 'format_minimoodlewall_styles';
 
     /** Database table for tag images. */
     private const TABLE_TAG_IMAGES = 'format_minimoodlewall_tag_images';
 
-    /** File area for design-specific card images. */
-    public const FILEAREA_DESIGN_CARDIMAGE = 'designtagcard';
+    /** File area for style-specific card images. */
+    public const FILEAREA_STYLE_CARDIMAGE = 'styletagcard';
 
-    /** File area for design-specific filter images. */
-    public const FILEAREA_DESIGN_FILTERIMAGE = 'designtagfilter';
+    /** File area for style-specific filter images. */
+    public const FILEAREA_STYLE_FILTERIMAGE = 'styletagfilter';
 
     /** Filemanager options for image uploads. */
     private const FILEMANAGER_OPTIONS = [
@@ -60,53 +60,53 @@ class design_manager {
     ];
 
     /**
-     * Get all designs ordered by sortorder.
+     * Get all styles ordered by sortorder.
      *
-     * @return array Array of design objects keyed by id
+     * @return array Array of style objects keyed by id
      */
-    public static function get_all_designs(): array {
+    public static function get_all_styles(): array {
         global $DB;
-        return $DB->get_records(self::TABLE_DESIGNS, null, 'sortorder ASC, id ASC');
+        return $DB->get_records(self::TABLE_STYLES, null, 'sortorder ASC, id ASC');
     }
 
     /**
-     * Get a single design by ID.
+     * Get a single style by ID.
      *
-     * @param int $id Design ID
+     * @param int $id Style ID
      * @return stdClass|null
      */
-    public static function get_design(int $id): ?stdClass {
+    public static function get_style(int $id): ?stdClass {
         global $DB;
-        $record = $DB->get_record(self::TABLE_DESIGNS, ['id' => $id]);
+        $record = $DB->get_record(self::TABLE_STYLES, ['id' => $id]);
         return $record ?: null;
     }
 
     /**
-     * Get a design by its internal name.
+     * Get a style by its internal name.
      *
-     * @param string $name Design name (e.g., 'classic', 'light', 'dark')
+     * @param string $name Style name (e.g., 'classic', 'light', 'dark')
      * @return stdClass|null
      */
-    public static function get_design_by_name(string $name): ?stdClass {
+    public static function get_style_by_name(string $name): ?stdClass {
         global $DB;
-        $record = $DB->get_record(self::TABLE_DESIGNS, ['name' => $name]);
+        $record = $DB->get_record(self::TABLE_STYLES, ['name' => $name]);
         return $record ?: null;
     }
 
     /**
-     * Create a new design.
+     * Create a new style.
      *
      * @param string $name Internal identifier
      * @param string $displayname Human-readable name
      * @param int|null $sortorder Sort order (auto-calculated if null)
-     * @return int The new design ID
+     * @return int The new style ID
      */
-    public static function create_design(string $name, string $displayname, ?int $sortorder = null): int {
+    public static function create_style(string $name, string $displayname, ?int $sortorder = null): int {
         global $DB;
 
         if ($sortorder === null) {
             $maxorder = $DB->get_field_sql(
-                "SELECT MAX(sortorder) FROM {" . self::TABLE_DESIGNS . "}"
+                "SELECT MAX(sortorder) FROM {" . self::TABLE_STYLES . "}"
             );
             $sortorder = ($maxorder ?? 0) + 1;
         }
@@ -119,17 +119,17 @@ class design_manager {
         $record->timecreated = $now;
         $record->timemodified = $now;
 
-        return $DB->insert_record(self::TABLE_DESIGNS, $record);
+        return $DB->insert_record(self::TABLE_STYLES, $record);
     }
 
     /**
-     * Update an existing design.
+     * Update an existing style.
      *
-     * @param int $id Design ID
+     * @param int $id Style ID
      * @param array $data Fields to update
      * @return bool
      */
-    public static function update_design(int $id, array $data): bool {
+    public static function update_style(int $id, array $data): bool {
         global $DB;
 
         $record = new stdClass();
@@ -142,65 +142,65 @@ class design_manager {
             }
         }
 
-        return $DB->update_record(self::TABLE_DESIGNS, $record);
+        return $DB->update_record(self::TABLE_STYLES, $record);
     }
 
     /**
-     * Delete a design and all associated tag images.
+     * Delete a style and all associated tag images.
      *
-     * @param int $id Design ID
+     * @param int $id Style ID
      * @return bool
      */
-    public static function delete_design(int $id): bool {
+    public static function delete_style(int $id): bool {
         global $DB;
 
         // Delete associated tag images files.
-        $tagimages = $DB->get_records(self::TABLE_TAG_IMAGES, ['designid' => $id]);
+        $tagimages = $DB->get_records(self::TABLE_TAG_IMAGES, ['styleid' => $id]);
         foreach ($tagimages as $tagimage) {
             self::delete_tag_image_files($tagimage->id);
         }
 
         // Delete tag image records.
-        $DB->delete_records(self::TABLE_TAG_IMAGES, ['designid' => $id]);
+        $DB->delete_records(self::TABLE_TAG_IMAGES, ['styleid' => $id]);
 
-        // Delete the design.
-        return $DB->delete_records(self::TABLE_DESIGNS, ['id' => $id]);
+        // Delete the style.
+        return $DB->delete_records(self::TABLE_STYLES, ['id' => $id]);
     }
 
     /**
-     * Get designs as options array for select elements.
+     * Get styles as options array for select elements.
      *
      * @return array name => displayname
      */
-    public static function get_design_options(): array {
-        $designs = self::get_all_designs();
+    public static function get_style_options(): array {
+        $styles = self::get_all_styles();
         $options = [];
-        foreach ($designs as $design) {
-            $options[$design->name] = $design->displayname;
+        foreach ($styles as $style) {
+            $options[$style->name] = $style->displayname;
         }
         return $options;
     }
 
     /**
-     * Get or create tag_images record for a tag/design combination.
+     * Get or create tag_images record for a tag/style combination.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return stdClass
      */
-    public static function get_or_create_tag_image(int $tagid, int $designid): stdClass {
+    public static function get_or_create_tag_image(int $tagid, int $styleid): stdClass {
         global $DB;
 
         $record = $DB->get_record(self::TABLE_TAG_IMAGES, [
             'tagid' => $tagid,
-            'designid' => $designid,
+            'styleid' => $styleid,
         ]);
 
         if (!$record) {
             $now = time();
             $record = new stdClass();
             $record->tagid = $tagid;
-            $record->designid = $designid;
+            $record->styleid = $styleid;
             $record->cardimage = null;
             $record->filterimage = null;
             $record->timecreated = $now;
@@ -227,31 +227,31 @@ class design_manager {
      * Get all tag_images records for a tag.
      *
      * @param int $tagid Tag ID
-     * @return array Array of tag_images objects keyed by designid
+     * @return array Array of tag_images objects keyed by styleid
      */
     public static function get_tag_images_for_tag(int $tagid): array {
         global $DB;
-        return $DB->get_records(self::TABLE_TAG_IMAGES, ['tagid' => $tagid], '', '*', 0, 0, 'designid');
+        return $DB->get_records(self::TABLE_TAG_IMAGES, ['tagid' => $tagid], '', '*', 0, 0, 'styleid');
     }
 
     /**
-     * Get tag_images record for a specific tag and design.
+     * Get tag_images record for a specific tag and style.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return stdClass|null
      */
-    public static function get_tag_image_for_design(int $tagid, int $designid): ?stdClass {
+    public static function get_tag_image_for_style(int $tagid, int $styleid): ?stdClass {
         global $DB;
         $record = $DB->get_record(self::TABLE_TAG_IMAGES, [
             'tagid' => $tagid,
-            'designid' => $designid,
+            'styleid' => $styleid,
         ]);
         return $record ?: null;
     }
 
     /**
-     * Retrieve the shared filemanager options for design image uploads.
+     * Retrieve the shared filemanager options for style image uploads.
      *
      * @return array
      */
@@ -263,19 +263,19 @@ class design_manager {
      * Prepare a draft area for the card image filemanager field.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return int Draft item id
      */
-    public static function prepare_cardimage_draft(int $tagid, int $designid): int {
-        $tagimage = self::get_tag_image_for_design($tagid, $designid);
+    public static function prepare_cardimage_draft(int $tagid, int $styleid): int {
+        $tagimage = self::get_tag_image_for_style($tagid, $styleid);
         $itemid = $tagimage ? $tagimage->id : 0;
 
-        $draftitemid = file_get_submitted_draft_itemid("cardimage_design_{$designid}");
+        $draftitemid = file_get_submitted_draft_itemid("cardimage_style_{$styleid}");
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
             'format_minimoodlewall',
-            self::FILEAREA_DESIGN_CARDIMAGE,
+            self::FILEAREA_STYLE_CARDIMAGE,
             $itemid,
             self::get_image_filemanager_options()
         );
@@ -287,19 +287,19 @@ class design_manager {
      * Prepare a draft area for the filter image filemanager field.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return int Draft item id
      */
-    public static function prepare_filterimage_draft(int $tagid, int $designid): int {
-        $tagimage = self::get_tag_image_for_design($tagid, $designid);
+    public static function prepare_filterimage_draft(int $tagid, int $styleid): int {
+        $tagimage = self::get_tag_image_for_style($tagid, $styleid);
         $itemid = $tagimage ? $tagimage->id : 0;
 
-        $draftitemid = file_get_submitted_draft_itemid("filterimage_design_{$designid}");
+        $draftitemid = file_get_submitted_draft_itemid("filterimage_style_{$styleid}");
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
             'format_minimoodlewall',
-            self::FILEAREA_DESIGN_FILTERIMAGE,
+            self::FILEAREA_STYLE_FILTERIMAGE,
             $itemid,
             self::get_image_filemanager_options()
         );
@@ -311,36 +311,36 @@ class design_manager {
      * Save card image from draft area.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @param int $draftitemid Draft area ID
      */
-    public static function save_cardimage_from_draft(int $tagid, int $designid, int $draftitemid): void {
-        self::save_image_from_draft($tagid, $designid, $draftitemid, self::FILEAREA_DESIGN_CARDIMAGE, 'cardimage');
+    public static function save_cardimage_from_draft(int $tagid, int $styleid, int $draftitemid): void {
+        self::save_image_from_draft($tagid, $styleid, $draftitemid, self::FILEAREA_STYLE_CARDIMAGE, 'cardimage');
     }
 
     /**
      * Save filter image from draft area.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @param int $draftitemid Draft area ID
      */
-    public static function save_filterimage_from_draft(int $tagid, int $designid, int $draftitemid): void {
-        self::save_image_from_draft($tagid, $designid, $draftitemid, self::FILEAREA_DESIGN_FILTERIMAGE, 'filterimage');
+    public static function save_filterimage_from_draft(int $tagid, int $styleid, int $draftitemid): void {
+        self::save_image_from_draft($tagid, $styleid, $draftitemid, self::FILEAREA_STYLE_FILTERIMAGE, 'filterimage');
     }
 
     /**
      * Shared helper to move files from a draft area into storage.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @param int $draftitemid Draft area ID
      * @param string $filearea File area
      * @param string $dbfield Database field to update
      */
     private static function save_image_from_draft(
         int $tagid,
-        int $designid,
+        int $styleid,
         int $draftitemid,
         string $filearea,
         string $dbfield
@@ -348,7 +348,7 @@ class design_manager {
         global $DB;
 
         // Ensure tag_images record exists.
-        $tagimage = self::get_or_create_tag_image($tagid, $designid);
+        $tagimage = self::get_or_create_tag_image($tagid, $styleid);
 
         file_save_draft_area_files(
             $draftitemid,
@@ -368,63 +368,63 @@ class design_manager {
     }
 
     /**
-     * Get card image URL for a tag and design.
+     * Get card image URL for a tag and style.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return moodle_url|null
      */
-    public static function get_cardimage_url(int $tagid, int $designid): ?moodle_url {
-        $tagimage = self::get_tag_image_for_design($tagid, $designid);
+    public static function get_cardimage_url(int $tagid, int $styleid): ?moodle_url {
+        $tagimage = self::get_tag_image_for_style($tagid, $styleid);
         if (!$tagimage) {
             return null;
         }
-        return self::get_image_url($tagimage->id, self::FILEAREA_DESIGN_CARDIMAGE);
+        return self::get_image_url($tagimage->id, self::FILEAREA_STYLE_CARDIMAGE);
     }
 
     /**
-     * Get filter image URL for a tag and design.
+     * Get filter image URL for a tag and style.
      *
      * @param int $tagid Tag ID
-     * @param int $designid Design ID
+     * @param int $styleid Style ID
      * @return moodle_url|null
      */
-    public static function get_filterimage_url(int $tagid, int $designid): ?moodle_url {
-        $tagimage = self::get_tag_image_for_design($tagid, $designid);
+    public static function get_filterimage_url(int $tagid, int $styleid): ?moodle_url {
+        $tagimage = self::get_tag_image_for_style($tagid, $styleid);
         if (!$tagimage) {
             return null;
         }
-        return self::get_image_url($tagimage->id, self::FILEAREA_DESIGN_FILTERIMAGE);
+        return self::get_image_url($tagimage->id, self::FILEAREA_STYLE_FILTERIMAGE);
     }
 
     /**
-     * Get card image URL for a tag and design name.
+     * Get card image URL for a tag and style name.
      *
      * @param int $tagid Tag ID
-     * @param string $designname Design name (e.g., 'classic')
+     * @param string $stylename Style name (e.g., 'classic')
      * @return moodle_url|null
      */
-    public static function get_cardimage_url_by_name(int $tagid, string $designname): ?moodle_url {
-        $design = self::get_design_by_name($designname);
-        if (!$design) {
+    public static function get_cardimage_url_by_name(int $tagid, string $stylename): ?moodle_url {
+        $style = self::get_style_by_name($stylename);
+        if (!$style) {
             return null;
         }
-        return self::get_cardimage_url($tagid, $design->id);
+        return self::get_cardimage_url($tagid, $style->id);
     }
 
     /**
-     * Get filter image URL for a tag and design name.
+     * Get filter image URL for a tag and style name.
      *
      * @param int $tagid Tag ID
-     * @param string $designname Design name (e.g., 'classic')
+     * @param string $stylename Style name (e.g., 'classic')
      * @return moodle_url|null
      */
-    public static function get_filterimage_url_by_name(int $tagid, string $designname): ?moodle_url {
-        $design = self::get_design_by_name($designname);
-        if (!$design) {
+    public static function get_filterimage_url_by_name(int $tagid, string $stylename): ?moodle_url {
+        $style = self::get_style_by_name($stylename);
+        if (!$style) {
             return null;
         }
-        return self::get_filterimage_url($tagid, $design->id);
+        return self::get_filterimage_url($tagid, $style->id);
     }
 
     /**
@@ -483,8 +483,8 @@ class design_manager {
         $fs = get_file_storage();
         $contextid = context_system::instance()->id;
 
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_DESIGN_CARDIMAGE, $tagimagesid);
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_DESIGN_FILTERIMAGE, $tagimagesid);
+        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_STYLE_CARDIMAGE, $tagimagesid);
+        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_STYLE_FILTERIMAGE, $tagimagesid);
     }
 
     /**
@@ -504,19 +504,19 @@ class design_manager {
     }
 
     /**
-     * Initialize default designs if they don't exist.
+     * Initialize default styles if they don't exist.
      * Called during plugin installation.
      */
-    public static function initialize_default_designs(): void {
+    public static function initialize_default_styles(): void {
         $defaults = [
             ['name' => 'classic', 'displayname' => 'Classic', 'sortorder' => 1],
             ['name' => 'light', 'displayname' => 'Light', 'sortorder' => 2],
             ['name' => 'dark', 'displayname' => 'Dark', 'sortorder' => 3],
         ];
 
-        foreach ($defaults as $design) {
-            if (!self::get_design_by_name($design['name'])) {
-                self::create_design($design['name'], $design['displayname'], $design['sortorder']);
+        foreach ($defaults as $style) {
+            if (!self::get_style_by_name($style['name'])) {
+                self::create_style($style['name'], $style['displayname'], $style['sortorder']);
             }
         }
     }

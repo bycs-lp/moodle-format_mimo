@@ -47,16 +47,16 @@ class content extends content_base {
 
         // Get the course format options.
         $course = $this->format->get_course();
-        $designvariant = $course->designvariant ?? 'classic';
+        $stylevariant = $course->stylevariant ?? 'classic';
 
-        // Validate design exists in database, fallback to classic if not.
-        $design = \format_minimoodlewall\design_manager::get_design_by_name($designvariant);
-        if (!$design) {
-            $designvariant = 'classic';
+        // Validate style exists in database, fallback to classic if not.
+        $style = \format_minimoodlewall\style_manager::get_style_by_name($stylevariant);
+        if (!$style) {
+            $stylevariant = 'classic';
         }
 
-        $data->designvariant = $designvariant;
-        $data->designclass = 'minimoodlewall-design-' . $designvariant;
+        $data->stylevariant = $stylevariant;
+        $data->styleclass = 'minimoodlewall-style-' . $stylevariant;
 
         // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
         $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);

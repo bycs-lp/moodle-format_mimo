@@ -64,10 +64,10 @@ class cmitem extends cmitem_base {
         $modinfo = get_fast_modinfo($mod->course);
         $cm = $modinfo->get_cm($cmid);
 
-        // Get course format options to determine design variant.
+        // Get course format options to determine style variant.
         $format = course_get_format($mod->course);
         $options = $format->get_format_options();
-        $designvariant = $options['designvariant'] ?? 'classic';
+        $stylevariant = $options['stylevariant'] ?? 'classic';
 
         // Initialize cmformat if not set.
         if (!isset($data->cmformat)) {
@@ -88,12 +88,12 @@ class cmitem extends cmitem_base {
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';
 
-            $cardurl = tag_manager::get_cardimage_url($tag, $designvariant);
+            $cardurl = tag_manager::get_cardimage_url($tag, $stylevariant);
             if ($cardurl) {
                 $data->cmformat->tagimage = $cardurl->out(false);
             }
 
-            $filterurl = tag_manager::get_filterimage_url($tag, $designvariant);
+            $filterurl = tag_manager::get_filterimage_url($tag, $stylevariant);
             if ($filterurl) {
                 $data->cmformat->filterimage = $filterurl->out(false);
             }

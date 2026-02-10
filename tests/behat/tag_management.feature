@@ -12,7 +12,7 @@ Feature: Tag management in minimoodlewall format
     And the following "role assigns" exist:
       | user   | role    | contextlevel | reference |
       | admin1 | manager | System       |           |
-    And the following "format_minimoodlewall > designs" exist:
+    And the following "format_minimoodlewall > styles" exist:
       | name    | displayname |
       | classic | Classic     |
       | light   | Light       |
@@ -21,7 +21,7 @@ Feature: Tag management in minimoodlewall format
       | Test Tagset   |
 
   @javascript @_file_upload
-  Scenario: Admin can create a new tag with design-specific images
+  Scenario: Admin can create a new tag with style-specific images
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/tag_management.php"

@@ -74,14 +74,14 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ]
         );
 
-        // Design-specific tag images (nested under each tag).
+        // Style-specific tag images (nested under each tag).
         $tagimages = new backup_nested_element('mmw_tag_images');
         $tagimage = new backup_nested_element(
             'mmw_tag_image',
             ['id'],
             [
                 'tagid',
-                'designid',
+                'styleid',
                 'cardimage',
                 'filterimage',
                 'timecreated',
@@ -89,10 +89,10 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ]
         );
 
-        // Designs referenced by tag images.
-        $designs = new backup_nested_element('mmw_designs');
-        $design = new backup_nested_element(
-            'mmw_design',
+        // Styles referenced by tag images.
+        $styles = new backup_nested_element('mmw_styles');
+        $style = new backup_nested_element(
+            'mmw_style',
             ['id'],
             [
                 'name',
@@ -104,8 +104,8 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         );
 
         $plugin->add_child($pluginwrapper);
-        $pluginwrapper->add_child($designs);
-        $designs->add_child($design);
+        $pluginwrapper->add_child($styles);
+        $styles->add_child($style);
         $pluginwrapper->add_child($tagsets);
         $tagsets->add_child($tagset);
         $tagset->add_child($tags);
@@ -121,27 +121,27 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE, 'id');
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE, 'id');
 
-        // Design IDs are annotated for mapping on restore.
-        $design->annotate_ids('format_minimoodlewall_design', 'id');
+        // Style IDs are annotated for mapping on restore.
+        $style->annotate_ids('format_minimoodlewall_style', 'id');
 
         // Tag image IDs and file annotations.
         $tagimage->annotate_ids('format_minimoodlewall_tag_image', 'id');
         $tagimage->annotate_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\design_manager::FILEAREA_DESIGN_CARDIMAGE,
+            \format_minimoodlewall\style_manager::FILEAREA_STYLE_CARDIMAGE,
             'id'
         );
         $tagimage->annotate_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\design_manager::FILEAREA_DESIGN_FILTERIMAGE,
+            \format_minimoodlewall\style_manager::FILEAREA_STYLE_FILTERIMAGE,
             'id'
         );
 
-        // Export all designs (global, not course-specific — needed for tag image mapping).
-        $design->set_source_sql(
+        // Export all styles (global, not course-specific — needed for tag image mapping).
+        $style->set_source_sql(
             "SELECT DISTINCT d.*
-               FROM {format_minimoodlewall_designs} d
-               JOIN {format_minimoodlewall_tag_images} ti ON ti.designid = d.id
+               FROM {format_minimoodlewall_styles} d
+               JOIN {format_minimoodlewall_tag_images} ti ON ti.styleid = d.id
                JOIN {format_minimoodlewall_tags} t ON t.id = ti.tagid
                JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
                JOIN {course_modules} cm ON cm.id = cmt.cmid
@@ -177,7 +177,7 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ]
         );
 
-        // Export design-specific images for each tag.
+        // Export style-specific images for each tag.
         $tagimage->set_source_table('format_minimoodlewall_tag_images', ['tagid' => backup::VAR_PARENTID]);
 
         return $plugin;

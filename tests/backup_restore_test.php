@@ -138,9 +138,9 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
-     * Test that designs and tag_images are backed up and restored.
+     * Test that styles and tag_images are backed up and restored.
      */
-    public function test_backup_and_restore_preserves_designs(): void {
+    public function test_backup_and_restore_preserves_styles(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -149,15 +149,15 @@ final class backup_restore_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
 
-        // Create a design.
-        $designid = design_manager::create_design('testdesign', 'Test Design');
+        // Create a style.
+        $styleid = style_manager::create_style('teststyle', 'Test Style');
 
         // Create a tagset and tag.
-        $tagsetid = tagset_manager::create_tagset('Design Tagset');
-        $tagid = tag_manager::create_tag($tagsetid, 'Design Tag');
+        $tagsetid = tagset_manager::create_tagset('Style Tagset');
+        $tagid = tag_manager::create_tag($tagsetid, 'Style Tag');
 
-        // Create a tag_image entry linking the tag to the design.
-        $tagimage = design_manager::get_or_create_tag_image($tagid, $designid);
+        // Create a tag_image entry linking the tag to the style.
+        $tagimage = style_manager::get_or_create_tag_image($tagid, $styleid);
         $this->assertNotEmpty($tagimage->id, 'Tag image record should be created');
 
         // Create the course and assign the tag.
@@ -169,14 +169,14 @@ final class backup_restore_test extends \advanced_testcase {
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_design_' . random_string(6);
+        $backupid = 'mmw_style_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
-        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored design test');
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored style test');
 
-        // Verify the design exists (reused by name or recreated).
-        $design = design_manager::get_design_by_name('testdesign');
-        $this->assertNotNull($design, 'Design should exist after restore');
-        $this->assertEquals('Test Design', $design->displayname);
+        // Verify the style exists (reused by name or recreated).
+        $style = style_manager::get_style_by_name('teststyle');
+        $this->assertNotNull($style, 'Style should exist after restore');
+        $this->assertEquals('Test Style', $style->displayname);
 
         // Verify the tag_image record was restored.
         $restoredtag = $DB->get_record_sql(
@@ -189,7 +189,7 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $this->assertNotFalse($restoredtag, 'Tag should be restored');
 
-        $restoredtagimage = design_manager::get_tag_image_for_design($restoredtag->id, $design->id);
+        $restoredtagimage = style_manager::get_tag_image_for_style($restoredtag->id, $style->id);
         $this->assertNotNull($restoredtagimage, 'Tag image should exist after restore');
     }
 

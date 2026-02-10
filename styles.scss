@@ -142,7 +142,7 @@ $activity-icon-colors: (
 
 .minimoodlewall-activities {
 
-    &.minimoodlewall-design-classic {
+    &.minimoodlewall-style-classic {
         background: #7fb566;
         box-shadow: 0 32px 70px rgba(66, 93, 60, 0.35);
         border: none;
@@ -171,12 +171,12 @@ $activity-icon-colors: (
         }
     }
 
-    &.minimoodlewall-design-light {
+    &.minimoodlewall-style-light {
         background: var(--bs-body-bg, #fff);
         box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
     }
 
-    &.minimoodlewall-design-dark {
+    &.minimoodlewall-style-dark {
         background: #1a202c;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         border: 1px solid #4a5568;
@@ -215,7 +215,7 @@ $activity-icon-colors: (
     }
 }
 
-.minimoodlewall-navigation-wrapper.minimoodlewall-design-dark {
+.minimoodlewall-navigation-wrapper.minimoodlewall-style-dark {
     .minimoodlewall-navigation {
         .minimoodlewall-nav-btn {
             background: #4a5568;
@@ -699,7 +699,7 @@ $activity-icon-colors: (
     }
 }
 
-.minimoodlewall-filterbar.minimoodlewall-design-light {
+.minimoodlewall-filterbar.minimoodlewall-style-light {
     background: transparent;
     padding: 0;
     gap: 0.75rem;
@@ -1496,11 +1496,11 @@ body.format-minimoodlewall #page-wrapper #page {
 }
 
 // ============================================================================
-// Completion Status - Design Variants
+// Completion Status - Style Variants
 // ============================================================================
 
-// Light design variant.
-.minimoodlewall-completion-status.minimoodlewall-design-light {
+// Light style variant.
+.minimoodlewall-completion-status.minimoodlewall-style-light {
     .completion-status-tag-image {
         border: 3px solid #fff;
     }
@@ -1514,8 +1514,8 @@ body.format-minimoodlewall #page-wrapper #page {
     }
 }
 
-// Dark design variant.
-.minimoodlewall-completion-status.minimoodlewall-design-dark {
+// Dark style variant.
+.minimoodlewall-completion-status.minimoodlewall-style-dark {
     .completion-status-tag-image {
         border: 3px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -1535,8 +1535,8 @@ body.format-minimoodlewall #page-wrapper #page {
     }
 }
 
-// Classic design variant.
-.minimoodlewall-completion-status.minimoodlewall-design-classic {
+// Classic style variant.
+.minimoodlewall-completion-status.minimoodlewall-style-classic {
     .completion-status-tag-image {
         border: 3px solid #e9ecef;
     }
@@ -1715,8 +1715,8 @@ body.format-minimoodlewall #page-wrapper #page {
     }
 }
 
-// Design variant adjustments for star.
-.minimoodlewall-completion-status.minimoodlewall-design-dark {
+// Style variant adjustments for star.
+.minimoodlewall-completion-status.minimoodlewall-style-dark {
     .completion-all-complete-star {
         .star-icon {
             color: #ffdf00;
@@ -1727,7 +1727,7 @@ body.format-minimoodlewall #page-wrapper #page {
     }
 }
 
-.minimoodlewall-completion-status.minimoodlewall-design-classic {
+.minimoodlewall-completion-status.minimoodlewall-style-classic {
     .completion-all-complete-star {
         .star-icon {
             color: #ffc107;

@@ -29,7 +29,7 @@
         {{! Live region for pagination status announcements }}
         <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="pagination-status"></div>
         {{#filterbar.hasitems}}
-        <div class="minimoodlewall-filterbar {{designclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-design="{{designvariant}}">
+        <div class="minimoodlewall-filterbar {{styleclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
             {{#filterbar.tags}}
             <button
                 type="button"
@@ -58,7 +58,7 @@
         </div>
         {{/filterbar.hasitems}}
         {{#cmlist}}
-        <ul class="section m-0 minimoodlewall-activities row g-3 {{designclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}" data-for="cmlist" data-design="{{designvariant}}" style="list-style: none;">
+        <ul class="section m-0 minimoodlewall-activities row g-3 {{styleclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}" data-for="cmlist" data-style="{{stylevariant}}" style="list-style: none;">
             {{#cms}}
             {{#cmitem}}
                 {{$ core_courseformat/local/content/section/cmitem}}
@@ -67,7 +67,7 @@
             {{/cmitem}}
             {{/cms}}
         </ul>
-        <div class="minimoodlewall-navigation-wrapper {{designclass}}" data-design="{{designvariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_minimoodlewall{{/str}}">
+        <div class="minimoodlewall-navigation-wrapper {{styleclass}}" data-style="{{stylevariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_minimoodlewall{{/str}}">
             {{! Pagination navigation }}
             <div
                 class="minimoodlewall-navigation justify-content-end align-items-center gap-3 is-booting"
@@ -103,7 +103,7 @@
         </div>
         {{#completionstatus}}
         {{! Completion status indicator region }}
-        <div class="minimoodlewall-completion-status {{designclass}}" data-region="completion-status" data-design="{{designvariant}}">
+        <div class="minimoodlewall-completion-status {{styleclass}}" data-region="completion-status" data-style="{{stylevariant}}">
             {{! Active tag image overlay - shown when tag filter is active }}
             <div class="completion-status-tag-image" data-region="active-tag-image" hidden>
                 <img src="" alt="" class="completion-status-tag-img">
