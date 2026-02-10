@@ -10,7 +10,7 @@
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
   - Enforces single-section behavior, course index support, and hides section crumbs on activity pages.
-  - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`.
+  - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`).
   - `edit_form_validation()` forces at least one tag selection.
 - **Tagset domain model** (`classes/tagset_manager.php`)
   - Table: `*_tagsets` (name unique, description, sortorder).

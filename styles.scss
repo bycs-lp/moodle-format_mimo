@@ -143,7 +143,7 @@ $activity-icon-colors: (
 .minimoodlewall-activities {
 
     &.minimoodlewall-style-classic {
-        background: #7fb566;
+        background-color: #7fb566;
         box-shadow: 0 32px 70px rgba(66, 93, 60, 0.35);
         border: none;
 
@@ -172,12 +172,12 @@ $activity-icon-colors: (
     }
 
     &.minimoodlewall-style-light {
-        background: var(--bs-body-bg, #fff);
+        background-color: var(--bs-body-bg, #fff);
         box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
     }
 
     &.minimoodlewall-style-dark {
-        background: #1a202c;
+        background-color: #1a202c;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         border: 1px solid #4a5568;
 
@@ -212,6 +212,19 @@ $activity-icon-colors: (
                 }
             }
         }
+    }
+
+    // Wallcolor overrides — per-course background colour that overrides the style default.
+    &.mmw-wallcolor-green {
+        background-color: #7fb566;
+    }
+
+    &.mmw-wallcolor-white {
+        background-color: var(--bs-body-bg, #fff);
+    }
+
+    &.mmw-wallcolor-dark {
+        background-color: #1a202c;
     }
 }
 

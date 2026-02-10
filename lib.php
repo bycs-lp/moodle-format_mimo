@@ -151,6 +151,10 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
+            'wallcolor' => [
+                'default' => 'default',
+                'type' => PARAM_ALPHANUMEXT,
+            ],
             'tagsetid' => [
                 'default' => 0,
                 'type' => PARAM_INT,
@@ -192,6 +196,19 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
                 'element_attributes' => [$styleoptions],
+            ];
+            $wallcoloroptions = [
+                'default' => get_string('wallcolor_default', 'format_minimoodlewall'),
+                'green'   => get_string('wallcolor_green', 'format_minimoodlewall'),
+                'white'   => get_string('wallcolor_white', 'format_minimoodlewall'),
+                'dark'    => get_string('wallcolor_dark', 'format_minimoodlewall'),
+            ];
+            $courseformatoptions['wallcolor'] += [
+                'label' => get_string('setting_wallcolor', 'format_minimoodlewall'),
+                'help' => 'setting_wallcolor',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'select',
+                'element_attributes' => [$wallcoloroptions],
             ];
             // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
             $courseformatoptions['selectedtags'] += [

@@ -299,6 +299,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'selectedtags' => $data['selectedtags'],
             'enablefiltering' => $data['enablefiltering'],
             'stylevariant' => $data['stylevariant'],
+            'wallcolor' => $data['wallcolor'] ?? 'default',
             'tagsetid' => $data['tagsetid'] ?? 0,
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);

@@ -58,6 +58,10 @@ class content extends content_base {
         $data->stylevariant = $stylevariant;
         $data->styleclass = 'minimoodlewall-style-' . $stylevariant;
 
+        // Resolve wallcolor: "default" means no override (style's own background applies).
+        $wallcolor = $course->wallcolor ?? 'default';
+        $data->wallcolorclass = ($wallcolor !== 'default') ? 'mmw-wallcolor-' . $wallcolor : '';
+
         // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
         $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
         if ($PAGE->user_is_editing() && !empty($tags)) {
