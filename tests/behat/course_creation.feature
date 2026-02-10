@@ -30,7 +30,7 @@ Feature: Course creation with minimoodlewall format
       | Format              | Minimal Moodle Wall  |
       | Enable tag filtering| 1                    |
       | Style               | Classic              |
-      | Tagset              | Test Tagset          |
+      | Tag group           | Test Tagset          |
     And I click on "Reading" "checkbox"
     And I click on "Practice" "checkbox"
     And I press "Save and display"
@@ -47,7 +47,7 @@ Feature: Course creation with minimoodlewall format
       | Course short name | TC2                 |
       | Format            | Minimal Moodle Wall |
     When I press "Save and display"
-    Then I should see "Please select a tagset"
+    Then I should see "Please select a tag group"
 
   @javascript
   Scenario: Tags can be changed after course creation
@@ -61,7 +61,7 @@ Feature: Course creation with minimoodlewall format
     When I am on "Test Course 1" course homepage
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
-    Then I should see "Course tags"
+    Then I should see "Selected tags"
     And "Reading" "checkbox" should exist
 
   @javascript

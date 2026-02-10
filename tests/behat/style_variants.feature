@@ -27,7 +27,7 @@ Feature: Style variants in minimoodlewall format
       | Course short name | TC1                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Tagset" to "Default Tagset"
+    And I set the field "Tag group" to "Default Tagset"
     And I click on "Reading" "checkbox"
     And I set the field "Style" to "Classic"
     And I press "Save and display"
@@ -89,7 +89,7 @@ Feature: Style variants in minimoodlewall format
       | Course short name | TC5                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Tagset" to "Default Tagset"
+    And I set the field "Tag group" to "Default Tagset"
     And I click on "Reading" "checkbox"
     And I set the field "Style" to "Classic"
     And I set the field "Wall colour" to "Green"

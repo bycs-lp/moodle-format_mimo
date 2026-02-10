@@ -27,7 +27,7 @@ Feature: Tag management in minimoodlewall format
     And I visit "/course/format/minimoodlewall/tag_management.php"
     When I click on "[data-testid='create-tagset-button']" "css_element"
     And I set the following fields to these values:
-      | Tagset Name | My Tagset |
+      | Tag Group Name | My Tagset |
     And I press "Save changes"
     And I wait until the page is ready
     And I click on "My Tagset" "button"
@@ -86,7 +86,7 @@ Feature: Tag management in minimoodlewall format
     And I visit "/course/format/minimoodlewall/tag_management.php"
     When I click on "[data-testid='edit-tagset-button']" "css_element" in the "[data-tagset-name='Test Tagset']" "css_element"
     And I set the following fields to these values:
-      | Tagset Name | Renamed Tagset |
+      | Tag Group Name | Renamed Tagset |
     And I press "Save changes"
     And I wait until the page is ready
     Then I should see "Renamed Tagset"

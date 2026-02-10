@@ -49,7 +49,7 @@ Feature: Activity card action controls in minimoodlewall format
     And I am on "Test Course 1" course homepage with editing mode on
     And I wait until ".minimoodlewall-card" "css_element" exists
     When I click on ".mmw-icon-btn .fa-cog" "css_element" in the "Page 1" "activity"
-    Then I should see "Updating Page"
+    Then I should see "Edit settings"
 
   @javascript
   Scenario: Clicking delete icon triggers delete confirmation

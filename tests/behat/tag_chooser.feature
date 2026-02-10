@@ -42,7 +42,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I should see "Choose a fitting activity for the area of Reading" in the ".modal-body" "css_element"
     And I should see "Page" in the ".modal-body" "css_element"
     And I should see "Book" in the ".modal-body" "css_element"
-    And I click on "Page" "link" in the ".modal-body" "css_element"
+    And I click on "Page" "button" in the ".modal-body" "css_element"
     And I wait until the page is ready
     And I set the following fields to these values:
       | Name         | Reading Material 1 |
@@ -79,7 +79,7 @@ Feature: Tag-based activity chooser in minimoodlewall format
     And I wait until ".format-minimoodlewall-tagchooser .dropdown-menu.show" "css_element" exists
     And I click on "[data-tag-name='Practice']" "css_element" in the ".format-minimoodlewall-tagchooser .dropdown-menu" "css_element"
     And I wait until ".modal-dialog" "css_element" exists
-    And I click on "Assignment" "link" in the ".modal-body" "css_element"
+    And I click on "Assignment" "button" in the ".modal-body" "css_element"
     And I wait until the page is ready
     And I set the following fields to these values:
       | Assignment name | Practice Assignment 1 |
