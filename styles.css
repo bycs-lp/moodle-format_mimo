@@ -6,7 +6,6 @@
 
 .visibility-icon-control {
   position: relative;
-  z-index: 10;
 }
 .visibility-icon-control .dropdown-toggle {
   background: transparent !important;
@@ -51,6 +50,36 @@
   right: 0;
   top: 100%;
   z-index: 9999 !important;
+}
+
+.mmw-card-controls {
+  z-index: 10;
+}
+
+.mmw-card-controls .mmw-icon-btn {
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+  z-index: 1;
+}
+.mmw-card-controls .mmw-icon-btn:hover, .mmw-card-controls .mmw-icon-btn:focus {
+  background: rgba(0, 0, 0, 0.1);
+  color: #495057;
+  text-decoration: none;
+}
+.mmw-card-controls .mmw-icon-btn .fa {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .minimoodlewall-activities {

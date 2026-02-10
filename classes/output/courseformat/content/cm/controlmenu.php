@@ -25,6 +25,7 @@
 namespace format_minimoodlewall\output\courseformat\content\cm;
 
 use core_courseformat\output\local\content\cm\controlmenu as controlmenu_base;
+use moodle_url;
 use stdClass;
 
 /**
@@ -50,26 +51,40 @@ class controlmenu extends controlmenu_base {
             return null;
         }
 
-        // Only check visibility capability.
-        if (!has_capability('moodle/course:activityvisibility', $this->modcontext)) {
+        $hasvisibility = has_capability('moodle/course:activityvisibility', $this->modcontext);
+        $hasmanage = has_capability('moodle/course:manageactivities', $this->modcontext);
+
+        // No permissions at all.
+        if (!$hasvisibility && !$hasmanage) {
             return null;
         }
 
-        // Get the visibility output class.
-        $visibilityclass = $this->format->get_output_classname('content\\cm\\visibility');
-        $visibility = new $visibilityclass($this->format, $this->section, $this->mod);
-        
-        // Get the editor data directly (which includes the dropdown).
-        $visibilitydata = $visibility->build_editor_data($output);
-        
-        if (empty($visibilitydata)) {
-            return null;
-        }
-
-        return (object)[
+        $data = (object)[
             'hasmenu' => true,
             'id' => $this->menuid,
-            'visibility' => $visibilitydata,
         ];
+
+        // Visibility dropdown.
+        if ($hasvisibility) {
+            $visibilityclass = $this->format->get_output_classname('content\\cm\\visibility');
+            $visibility = new $visibilityclass($this->format, $this->section, $this->mod);
+            $visibilitydata = $visibility->build_editor_data($output);
+            if (!empty($visibilitydata)) {
+                $data->visibility = $visibilitydata;
+            }
+        }
+
+        // Settings link.
+        if ($hasmanage) {
+            $settingsurl = new moodle_url('/course/mod.php', ['update' => $this->mod->id]);
+            $data->settingsurl = $settingsurl->out(false);
+        }
+
+        // Delete action (uses Moodle reactive component JS for confirmation).
+        if ($hasmanage) {
+            $data->cmid = $this->mod->id;
+        }
+
+        return $data;
     }
 }

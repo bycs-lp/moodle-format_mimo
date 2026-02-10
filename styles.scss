@@ -9,7 +9,6 @@
 // Icon-only visibility control - global override
 .visibility-icon-control {
     position: relative;
-    z-index: 10; // Must be higher than stretched-link (z-index: 1)
     
     .dropdown-toggle {
         background: transparent !important;
@@ -61,6 +60,42 @@
         right: 0;
         top: 100%;
         z-index: 9999 !important;
+    }
+}
+
+// Card controls container (visibility + settings + delete icons)
+.mmw-card-controls {
+    z-index: 10; // Must be higher than stretched-link (z-index: 1)
+}
+
+// Shared icon button style for settings and delete
+// Scoped under parent for specificity over theme's `a:not(.btn-outline-primary)` rule.
+.mmw-card-controls .mmw-icon-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+    position: relative;
+    z-index: 1;
+
+    &:hover,
+    &:focus {
+        background: rgba(0, 0, 0, 0.1);
+        color: #495057;
+        text-decoration: none;
+    }
+
+    .fa {
+        font-size: 1rem;
+        line-height: 1;
     }
 }
 

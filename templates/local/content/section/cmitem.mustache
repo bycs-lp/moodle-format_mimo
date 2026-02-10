@@ -50,9 +50,9 @@
     {{/cmbulk}}
     {{! Activity card region for drag-drop }}
     <div data-region="activity-card" class="minimoodlewall-card-content">
-    {{! Visibility control in top-right corner }}
+    {{! Controls (visibility, settings, delete) in top-right corner }}
     {{#controlmenu}}
-    <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center" style="z-index: 10;">
+    <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-end" style="z-index: 10;">
         {{$ core_courseformat/local/content/cm/controlmenu }}
             {{> format_minimoodlewall/local/content/cm/controlmenu }}
         {{/ core_courseformat/local/content/cm/controlmenu }}

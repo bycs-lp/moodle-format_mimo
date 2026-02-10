@@ -20,13 +20,30 @@
     Displays visibility dropdown directly without three-dots menu wrapper.
 }}
 {{#hasmenu}}
-<div class="visibility-icon-control" style="position: relative; z-index: 100;">
+<div class="mmw-card-controls d-flex flex-column align-items-center gap-1" style="position: relative; z-index: 100;">
 {{#visibility}}
+<div class="visibility-icon-control">
 {{#isInteractive}}
 {{#dropwdown}}
 {{> core/local/dropdown/status }}
 {{/dropwdown}}
 {{/isInteractive}}
+</div>
 {{/visibility}}
+{{#settingsurl}}
+<a href="{{settingsurl}}" class="mmw-icon-btn" role="button"
+   title="{{#str}}editsettings, moodle{{/str}}">
+    <i class="fa fa-cog" aria-hidden="true"></i>
+    <span class="visually-hidden">{{#str}}editsettings, moodle{{/str}}</span>
+</a>
+{{/settingsurl}}
+{{#cmid}}
+<a href="#" class="mmw-icon-btn mmw-icon-btn-danger" role="button"
+   data-action="cmDelete" data-id="{{cmid}}"
+   title="{{#str}}delete, moodle{{/str}}">
+    <i class="fa fa-trash" aria-hidden="true"></i>
+    <span class="visually-hidden">{{#str}}delete, moodle{{/str}}</span>
+</a>
+{{/cmid}}
 </div>
 {{/hasmenu}}

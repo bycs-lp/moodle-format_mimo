@@ -59,6 +59,15 @@ Tests for style customization:
 - Dark style variant
 - Changing style in course settings
 
+### 8. activity_card_actions.feature
+Tests for card-level action controls (settings/delete icons):
+- Settings icon visible in editing mode
+- Delete icon visible in editing mode
+- Settings icon links to activity settings page
+- Delete icon triggers delete confirmation dialog
+- Icons not visible for students
+- Icons not visible when editing mode is off
+
 ## Running the Tests
 
 ### Run all format_minimoodlewall tests:
