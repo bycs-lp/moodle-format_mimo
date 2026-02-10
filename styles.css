@@ -1,4 +1,3 @@
-@charset "UTF-8";
 :root {
   --mmw-completion-complete: #28a745;
   --mmw-completion-incomplete: #dc3545;
@@ -1254,151 +1253,55 @@ body.format-minimoodlewall #page-wrapper #page {
   border: 3px solid #e9ecef;
 }
 
-@keyframes mmw-sparkle-star {
-  0%, 100% {
-    transform: scale(1) rotate(0deg);
-    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
-  }
-  25% {
-    transform: scale(1.15) rotate(5deg);
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
-  }
-  50% {
-    transform: scale(1) rotate(0deg);
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
-  }
-  75% {
-    transform: scale(1.1) rotate(-5deg);
-    filter: drop-shadow(0 0 10px rgb(255, 215, 0));
-  }
-}
-@keyframes mmw-sparkle-rays {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-@keyframes mmw-twinkle {
-  0%, 100% {
+@keyframes mmw-star-enter {
+  0% {
     opacity: 0;
-    transform: scale(0) translate(0, 0);
-  }
-  20% {
-    opacity: 1;
-    transform: scale(1) translate(-3px, -5px);
-  }
-  40% {
-    opacity: 0.6;
-    transform: scale(0.8) translate(4px, -3px);
+    transform: scale(0) rotate(-45deg);
   }
   60% {
+    transform: scale(1.3) rotate(10deg);
+  }
+  100% {
     opacity: 1;
-    transform: scale(1.1) translate(-2px, 4px);
-  }
-  80% {
-    opacity: 0.4;
-    transform: scale(0.6) translate(3px, 2px);
+    transform: scale(1) rotate(0deg);
   }
 }
-.completion-all-complete-star {
-  display: none;
-  position: relative;
-  width: 32px;
-  height: 32px;
-  margin-left: 0.5rem;
+@keyframes mmw-stars-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+  }
 }
-.completion-all-complete-star.is-visible {
+.completion-stars {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 2px;
+  margin-left: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 200px;
 }
-.completion-all-complete-star .star-icon {
-  font-size: 1.5rem;
+.completion-stars .star-icon {
+  font-size: 0.9rem;
   color: #ffd700;
-  animation: mmw-sparkle-star 2s ease-in-out infinite;
-  z-index: 2;
-  position: relative;
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
+  transition: transform 0.2s ease;
 }
-.completion-all-complete-star .star-rays {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+.completion-stars .star-new {
+  animation: mmw-star-enter 0.4s ease-out forwards;
 }
-.completion-all-complete-star .star-rays::before, .completion-all-complete-star .star-rays::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0.1) 40%, transparent 70%);
-  border-radius: 50%;
-  animation: mmw-sparkle-rays 1.5s ease-in-out infinite;
-}
-.completion-all-complete-star .star-rays::after {
-  animation-delay: 0.75s;
-  transform: scale(1.2);
-}
-.completion-all-complete-star .star-sparkles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
-}
-.completion-all-complete-star .star-sparkles::before, .completion-all-complete-star .star-sparkles::after {
-  content: "✦";
-  position: absolute;
-  font-size: 0.5rem;
-  color: #fff;
-  text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
-}
-.completion-all-complete-star .star-sparkles::before {
-  top: 0;
-  right: 2px;
-  animation: mmw-twinkle 2s ease-in-out infinite;
-}
-.completion-all-complete-star .star-sparkles::after {
-  top: 2px;
-  left: 0;
-  animation: mmw-twinkle 2s ease-in-out infinite 0.5s;
-}
-.completion-all-complete-star .star-sparkle-dot {
-  position: absolute;
-  font-size: 0.45rem;
-  color: #fffacd;
-  text-shadow: 0 0 3px rgba(255, 215, 0, 0.8);
-}
-.completion-all-complete-star .star-sparkle-dot:nth-child(4) {
-  top: 0;
-  left: 4px;
-  animation: mmw-twinkle 2.2s ease-in-out infinite 0.3s;
-}
-.completion-all-complete-star .star-sparkle-dot:nth-child(5) {
-  top: 4px;
-  right: 0;
-  animation: mmw-twinkle 1.8s ease-in-out infinite 0.8s;
+.completion-stars.all-complete {
+  animation: mmw-stars-pulse 2.5s ease-in-out infinite;
 }
 
-.minimoodlewall-completion-status.minimoodlewall-style-dark .completion-all-complete-star .star-icon {
+.minimoodlewall-completion-status.minimoodlewall-style-dark .completion-stars .star-icon {
   color: #ffdf00;
-  text-shadow: 0 0 8px rgba(255, 223, 0, 0.9), 0 0 15px rgba(255, 223, 0, 0.6);
+  text-shadow: 0 0 4px rgba(255, 223, 0, 0.7);
 }
 
-.minimoodlewall-completion-status.minimoodlewall-style-classic .completion-all-complete-star .star-icon {
+.minimoodlewall-completion-status.minimoodlewall-style-classic .completion-stars .star-icon {
   color: #ffc107;
-}
-.minimoodlewall-completion-status.minimoodlewall-style-classic .completion-all-complete-star .star-rays::before,
-.minimoodlewall-completion-status.minimoodlewall-style-classic .completion-all-complete-star .star-rays::after {
-  background: radial-gradient(circle, rgba(255, 193, 7, 0.5) 0%, rgba(255, 193, 7, 0.15) 40%, transparent 70%);
+  text-shadow: 0 0 2px rgba(255, 193, 7, 0.4);
 }

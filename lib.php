@@ -147,6 +147,10 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 0,
                 'type' => PARAM_BOOL,
             ],
+            'enablecompletionstars' => [
+                'default' => 1,
+                'type' => PARAM_BOOL,
+            ],
             'stylevariant' => [
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
@@ -177,6 +181,12 @@ class format_minimoodlewall extends core_courseformat\base {
             $courseformatoptions['distractionfree'] += [
                 'label' => get_string('setting_distractionfree', 'format_minimoodlewall'),
                 'help' => 'setting_distractionfree',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'advcheckbox',
+            ];
+            $courseformatoptions['enablecompletionstars'] += [
+                'label' => get_string('setting_enablecompletionstars', 'format_minimoodlewall'),
+                'help' => 'setting_enablecompletionstars',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
             ];

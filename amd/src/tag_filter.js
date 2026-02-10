@@ -405,31 +405,58 @@ const updateCompletionCounts = (statusRegion, items) => {
         incompleteEl.textContent = incompleteCount;
     }
 
-    // Update the all-complete star visibility.
-    updateAllCompleteStar(statusRegion, completedCount, totalWithCompletion);
+    // Update the completion stars display.
+    updateCompletionStars(statusRegion, completedCount, totalWithCompletion);
 };
 
 /**
- * Show or hide the sparkle star when all activities are complete.
+ * Update the completion stars display to show one star per completed activity.
  *
- * The star appears when:
- * - There is at least one activity with completion tracking
- * - All activities with completion tracking are complete (incomplete count is 0)
+ * Stars are rendered dynamically based on the current completed count.
+ * A subtle entrance animation is applied to newly appearing stars.
+ * When all activities are complete, the container gets an all-complete class.
  *
  * @param {HTMLElement} statusRegion - Completion status region element
  * @param {number} completedCount - Number of completed activities
  * @param {number} totalWithCompletion - Total activities with completion tracking
  * @returns {void}
  */
-const updateAllCompleteStar = (statusRegion, completedCount, totalWithCompletion) => {
-    const star = statusRegion.querySelector('[data-region="all-complete-star"]');
-    if (!star) {
+const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion) => {
+    const starsContainer = statusRegion.querySelector('[data-region="completion-stars"]');
+    if (!starsContainer) {
         return;
     }
 
-    // Show star only when there are activities with completion AND all are complete.
+    const currentStarCount = starsContainer.querySelectorAll('.star-icon').length;
     const allComplete = totalWithCompletion > 0 && completedCount === totalWithCompletion;
-    star.classList.toggle('is-visible', allComplete);
+
+    // Only rebuild if count changed.
+    if (currentStarCount !== completedCount) {
+        // Build new star icons.
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < completedCount; i++) {
+            const span = document.createElement('span');
+            span.className = 'star-icon';
+            span.setAttribute('aria-hidden', 'true');
+            const icon = document.createElement('i');
+            icon.className = 'fa fa-star';
+            span.appendChild(icon);
+            // Animate only newly added stars.
+            if (i >= currentStarCount) {
+                span.classList.add('star-new');
+            }
+            fragment.appendChild(span);
+        }
+        starsContainer.innerHTML = '';
+        starsContainer.appendChild(fragment);
+
+        // Update aria label.
+        starsContainer.setAttribute('aria-label', completedCount + ' activities completed');
+    }
+
+    // Update data attribute and all-complete state.
+    starsContainer.dataset.completedCount = completedCount;
+    starsContainer.classList.toggle('all-complete', allComplete);
 };
 
 /**

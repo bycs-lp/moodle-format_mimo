@@ -136,14 +136,15 @@
                     </span>
                     <span class="completion-pill-count" data-count="incomplete">{{incompletecount}}</span>
                 </button>
-                {{! Sparkle star - shown when all activities are complete }}
-                <div class="completion-all-complete-star{{#allcomplete}} is-visible{{/allcomplete}}" data-region="all-complete-star" aria-label="{{#str}}allcomplete, format_minimoodlewall{{/str}}">
-                    <span class="star-rays" aria-hidden="true"></span>
-                    <span class="star-icon" aria-hidden="true"><i class="fa fa-star"></i></span>
-                    <span class="star-sparkles" aria-hidden="true"></span>
-                    <span class="star-sparkle-dot" aria-hidden="true">✦</span>
-                    <span class="star-sparkle-dot" aria-hidden="true">✦</span>
+                {{#enablecompletionstars}}
+                {{! Completion stars - one gold star per completed activity }}
+                <div class="completion-stars{{#allcomplete}} all-complete{{/allcomplete}}"
+                     data-region="completion-stars"
+                     data-completed-count="{{completedcount}}"
+                     role="img"
+                     aria-label="{{#str}}completionstars, format_minimoodlewall, {{completedcount}}{{/str}}">
                 </div>
+                {{/enablecompletionstars}}
             </div>
             {{! No activities message - shown when filters result in 0 items }}
             <div class="completion-status-empty" data-region="no-activities" hidden>
