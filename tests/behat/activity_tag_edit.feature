@@ -21,8 +21,8 @@ Feature: Change activity tag via module edit form
       | teacher1 | TC1    | editingteacher |
     And the following "activities" exist:
       | activity | name       | intro          | course | section |
-      | page     | Test Page  | A test page    | TC1    | 1       |
-      | assign   | Test Assign| A test assign  | TC1    | 1       |
+      | page     | Test Page  | A test page    | TC1    | 0       |
+      | assign   | Test Assign| A test assign  | TC1    | 0       |
     And the following "format_minimoodlewall > cmtags" exist:
       | cm          | course | tag      |
       | Test Page   | TC1    | Reading  |

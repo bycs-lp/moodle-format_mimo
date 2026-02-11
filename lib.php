@@ -48,7 +48,7 @@ class format_minimoodlewall extends core_courseformat\base {
      * @return bool
      */
     public function uses_course_index() {
-        return true;
+        return false;
     }
 
     /**
@@ -489,6 +489,31 @@ class format_minimoodlewall extends core_courseformat\base {
             // Initialize JavaScript module for toggle functionality.
             $page->requires->js_call_amd('format_minimoodlewall/distraction_free', 'init');
         }
+    }
+
+    /**
+     * Minimal Moodle Wall uses only section 0.
+     *
+     * @return int
+     */
+    #[\Override]
+    public function get_sectionnum(): int {
+        return 0;
+    }
+
+    /**
+     * Returns if a specific section is visible to the current user.
+     *
+     * Minimal Moodle Wall only uses section 0. Any other included section
+     * should be a delegated one (subsections).
+     *
+     * @param \section_info $section the section modinfo
+     * @return bool
+     */
+    #[\Override]
+    public function is_section_visible(\section_info $section): bool {
+        $visible = parent::is_section_visible($section);
+        return $visible && ($section->sectionnum == 0 || $section->is_delegated());
     }
 
     /**

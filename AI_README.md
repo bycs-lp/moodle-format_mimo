@@ -9,7 +9,9 @@
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
-  - Enforces single-section behavior, course index support, and hides section crumbs on activity pages.
+  - Enforces single-section behavior (section 0 only), course index disabled, and hides section crumbs on activity pages.
+  - `get_sectionnum()` returns `0` — all activities live in section 0 (the "general" section).
+  - `is_section_visible()` only shows section 0 and delegated sections (subsections).
   - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`).
   - `edit_form_validation()` forces at least one tag selection.
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
@@ -70,6 +72,7 @@
 1. **Course creation**
    - User selects Minimal Moodle Wall format.
    - Must select a tagset and at least one tag from it.
+   - Only section 0 is created (no additional sections).
 2. **Tag & tagset management**
    - Admin page (`tag_management.php`) uses accordion UI for tagsets.
    - Tags within each tagset have forms for name, color, images, activity types.
@@ -93,6 +96,8 @@
 5. **Learner view**
    - Wall shows all activities from section 0 in a responsive grid.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
+6. **Course index drawer**
+   - Disabled via `uses_course_index()` returning `false`. The wall format has its own filter bar for navigation.
 
 ## Common Extension Tasks
 - **Add teacher UI for tagging**
@@ -160,7 +165,8 @@ This plugin demonstrates the hybrid approach:
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
 
 ## Guardrails for Future Agents
-- Respect single-section assumption; avoid introducing multiple sections unless architecture is revisited.
+- Respect section-0-only assumption; all activities live in section 0. `get_sectionnum()` returns 0; `is_section_visible()` hides all non-0, non-delegated sections. Avoid introducing multiple sections unless architecture is revisited.
+- The course index is disabled (`uses_course_index()` returns `false`). Do not re-enable it without revisiting the single-section UX.
 - Never bypass selectedtags requirement—every course must have at least one tag selected for the wall to function properly.
 - Every course must have a valid `tagsetid` — the upgrade step (Step 8 in `db/upgrade.php`) sets this on existing courses; new courses get it from the course edit form.
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` helpers to avoid orphans.
@@ -195,7 +201,7 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
+- `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, `get_sectionnum()→0`, `is_section_visible()` (section 0 only), navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
 - `classes/tagset_manager.php` – tagset CRUD, cascade delete to tags, cache management.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`.
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.

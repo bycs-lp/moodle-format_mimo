@@ -355,7 +355,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
         $data['stylevariant'] = $data['stylevariant'] ?? 'classic';
-        $data['numsections'] = 1;
+        $data['numsections'] = 0;
 
         return $data;
     }

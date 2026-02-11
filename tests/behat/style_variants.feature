@@ -33,7 +33,7 @@ Feature: Style variants in minimoodlewall format
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC1    | 1       |
+      | page     | Page 1 | First page | TC1    | 0       |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | TC1    | student |
@@ -96,6 +96,6 @@ Feature: Style variants in minimoodlewall format
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC5    | 1       |
+      | page     | Page 1 | First page | TC5    | 0       |
     When I am on "Test Course 5" course homepage
     Then ".minimoodlewall-activities.mmw-wallcolor-green" "css_element" should exist

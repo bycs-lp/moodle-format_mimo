@@ -548,5 +548,63 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026021000, 'format', 'minimoodlewall');
     }
 
+    // Step 11: Move all activities from section 1 to section 0 for minimoodlewall courses.
+    // The format now uses section 0 as the sole activity container (previously section 1).
+    if ($oldversion < 2026021102) {
+        // Find all courses using minimoodlewall format.
+        $courses = $DB->get_records('course', ['format' => 'minimoodlewall'], '', 'id');
+
+        foreach ($courses as $course) {
+            // Get section 0 and section 1 records for this course.
+            $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+            $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+
+            if (!$section0 || !$section1) {
+                // If either section doesn't exist, skip this course.
+                continue;
+            }
+
+            // Move all course modules from section 1 to section 0.
+            $modulesinsection1 = $DB->get_records('course_modules', ['course' => $course->id, 'section' => $section1->id]);
+            if (!empty($modulesinsection1)) {
+                // Update all modules to point to section 0.
+                $DB->execute(
+                    "UPDATE {course_modules} SET section = :section0id WHERE course = :courseid AND section = :section1id",
+                    ['section0id' => $section0->id, 'courseid' => $course->id, 'section1id' => $section1->id]
+                );
+
+                // Merge the sequence: append section 1's module sequence to section 0's.
+                $seq0 = trim($section0->sequence ?? '', ',');
+                $seq1 = trim($section1->sequence ?? '', ',');
+                $newsequence = '';
+                if ($seq0 !== '' && $seq1 !== '') {
+                    $newsequence = $seq0 . ',' . $seq1;
+                } else if ($seq0 !== '') {
+                    $newsequence = $seq0;
+                } else {
+                    $newsequence = $seq1;
+                }
+                $DB->set_field('course_sections', 'sequence', $newsequence, ['id' => $section0->id]);
+            }
+
+            // Clear section 1's sequence and delete it if it has no summary.
+            $section1 = $DB->get_record('course_sections', ['id' => $section1->id]);
+            if ($section1) {
+                $hassummary = !empty(trim($section1->summary ?? ''));
+                if (!$hassummary) {
+                    $DB->delete_records('course_sections', ['id' => $section1->id]);
+                } else {
+                    // Just clear the sequence if there's a summary we don't want to lose.
+                    $DB->set_field('course_sections', 'sequence', '', ['id' => $section1->id]);
+                }
+            }
+
+            // Rebuild the course cache for this course.
+            rebuild_course_cache($course->id, true);
+        }
+
+        upgrade_plugin_savepoint(true, 2026021102, 'format', 'minimoodlewall');
+    }
+
     return true;
 }
