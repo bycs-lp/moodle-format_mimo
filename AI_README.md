@@ -12,6 +12,9 @@
   - Enforces single-section behavior, course index support, and hides section crumbs on activity pages.
   - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`).
   - `edit_form_validation()` forces at least one tag selection.
+  - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
+    - `format_minimoodlewall_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for minimoodlewall courses). Pre-selects current tag on edit, or pending session tag on create.
+    - `format_minimoodlewall_coursemodule_edit_post_actions()` — persists the tag selection via `tag_manager::assign_tag_to_cm()` (upsert) or `remove_cm_tag()` on save. Returns `$data` for callback chaining.
 - **Tagset domain model** (`classes/tagset_manager.php`)
   - Table: `*_tagsets` (name unique, description, sortorder).
   - Key methods: `create_tagset($name, $description)`, `get_all_tagsets()`, `get_tagset($id)`, `update_tagset($id, $data)`, `delete_tagset($id)` (cascade-deletes all tags via `tag_manager::delete_tag()`).
@@ -192,7 +195,7 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, navigation tweaks, pluginfile hook.
+- `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
 - `classes/tagset_manager.php` – tagset CRUD, cascade delete to tags, cache management.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`.
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
@@ -243,6 +246,7 @@ This plugin demonstrates the hybrid approach:
 - `db/services.php` – web service definitions.
 - `db/caches.php` – cache definitions (tagconfigurations, activitytagmappings, activity_descriptions).
 - `tests/behat/tag_management.feature` – 6 scenarios for tag/tagset CRUD (create, edit, delete).
+- `tests/behat/activity_tag_edit.feature` – 4 scenarios for changing/removing tags on activities via the module edit form.
 - `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
 - `tests/behat/style_management.feature` – style admin scenarios.
 - `tests/tag_manager_test.php` – tag CRUD, assignment, caching, defaults.
@@ -252,7 +256,7 @@ This plugin demonstrates the hybrid approach:
 - `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection, module deletion cleanup, course deletion cleanup.
 
 ## Open Questions / TODO Hooks
-- Teacher-side workflow for assigning/changing tags per activity is not implemented.
+- ~~Teacher-side workflow for assigning/changing tags per activity~~ — **Implemented** via legacy `coursemodule_standard_elements` / `coursemodule_edit_post_actions` callbacks in `lib.php`. Teachers see a tag dropdown in the module edit form.
 - JS filter bar enhancements (persist active filter, animate cards) planned but not shipped.
 - Additional style variants + documentation for recommended SVG sizing still pending.
 

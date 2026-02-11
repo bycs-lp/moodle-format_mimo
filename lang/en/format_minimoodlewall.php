@@ -23,6 +23,8 @@
  */
 
 $string['activitydescription_placeholder'] = 'Enter a short description for the modal...';
+$string['activitytag'] = 'Activity tag';
+$string['activitytag_help'] = 'Select a tag for this activity. The tag determines which icon and category the activity will have on the course wall.';
 $string['activitydescriptiondeleted'] = 'Activity description deleted successfully.';
 $string['activitydescriptions'] = 'Activity Descriptions';
 $string['activitydescriptions_help'] = 'Add short descriptions for activity types that will be shown in the tag chooser modal. Description Tags can be assigned to each description to help categorise activities.';
@@ -139,6 +141,7 @@ $string['selectactivitytype'] = 'Select activity type...';
 $string['selectactivitytypedesc'] = 'Or open all activities below.';
 $string['selecttag'] = 'Select a tag';
 $string['selecttaghelp'] = 'Choose a tag that describes this activity. The tag determines which icon and category the activity will have.';
+$string['selecttaghelp_help'] = 'Choose a tag that describes this activity. The tag determines which icon and category the activity will have on the course wall.';
 $string['selecttags'] = 'Select tags...';
 $string['selecttagset'] = 'Select a tag group...';
 $string['setting_activitydescriptions_link'] = 'Manage activity descriptions';

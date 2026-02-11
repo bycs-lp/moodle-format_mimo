@@ -580,3 +580,84 @@ function format_minimoodlewall_pluginfile(
 
     send_stored_file($file, 0, 0, $forcedownload, $options);
 }
+
+/**
+ * Adds a tag selector to the module edit form for courses using the minimoodlewall format.
+ *
+ * This callback is invoked by Moodle core for every module form. It adds a dropdown
+ * that lets teachers assign or change the tag on an activity.
+ *
+ * @param \moodleform_mod $formwrapper The module form wrapper
+ * @param \MoodleQuickForm $mform The form object
+ * @return void
+ */
+function format_minimoodlewall_coursemodule_standard_elements($formwrapper, $mform): void {
+    global $SESSION;
+
+    $course = $formwrapper->get_course();
+    if ($course->format !== 'minimoodlewall') {
+        return;
+    }
+
+    $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+    if (empty($tags)) {
+        return;
+    }
+
+    // Build options: 0 = no tag, then each available tag.
+    $options = [0 => get_string('notag', 'format_minimoodlewall')];
+    foreach ($tags as $tag) {
+        $options[$tag->id] = $tag->name;
+    }
+
+    $mform->addElement('header', 'mmw_tagsection', get_string('activitytag', 'format_minimoodlewall'));
+    $mform->addElement('select', 'mmw_cmtag', get_string('selecttag', 'format_minimoodlewall'), $options);
+    $mform->addHelpButton('mmw_cmtag', 'selecttaghelp', 'format_minimoodlewall');
+
+    // Determine default value.
+    $defaulttagid = 0;
+    $cm = $formwrapper->get_coursemodule();
+    if ($cm) {
+        // Editing existing module — load current tag assignment.
+        $currenttag = \format_minimoodlewall\tag_manager::get_cm_tag($cm->id);
+        if ($currenttag) {
+            $defaulttagid = $currenttag->id;
+        }
+    } else if (!empty($SESSION->format_minimoodlewall_pending_tag)) {
+        // Creating new module — pre-select tag from chooser flow.
+        $defaulttagid = (int)$SESSION->format_minimoodlewall_pending_tag;
+    }
+
+    $mform->setDefault('mmw_cmtag', $defaulttagid);
+}
+
+/**
+ * Saves/updates the tag assignment after a module form is submitted.
+ *
+ * This callback is invoked by Moodle core after a module is created or updated.
+ * It reads the tag selection from the form and assigns or removes the tag.
+ *
+ * @param \stdClass $data The form submission data (includes $data->coursemodule)
+ * @param \stdClass $course The course object
+ * @return \stdClass The (possibly modified) data object — must be returned for chaining
+ */
+function format_minimoodlewall_coursemodule_edit_post_actions($data, $course) {
+    if ($course->format !== 'minimoodlewall') {
+        return $data;
+    }
+
+    if (!isset($data->mmw_cmtag)) {
+        return $data;
+    }
+
+    $cmid = $data->coursemodule;
+    $tagid = (int)$data->mmw_cmtag;
+
+    if ($tagid > 0) {
+        \format_minimoodlewall\tag_manager::assign_tag_to_cm($cmid, $tagid);
+    } else {
+        \format_minimoodlewall\tag_manager::remove_cm_tag($cmid);
+    }
+
+    return $data;
+}
