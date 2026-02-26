@@ -13,8 +13,8 @@ Feature: Drag and drop activity reordering in minimoodlewall format
       | Reading  | page          | book          |
       | Practice | assign        | quiz          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags     |
-      | Test Course 1 | TC1       | minimoodlewall | Reading,Practice |
+      | fullname      | shortname | format         |
+      | Test Course 1 | TC1       | minimoodlewall |
     And the following "activities" exist:
       | activity | name         | intro            | course | section |
       | page     | Page 1       | First page       | TC1    | 0       |

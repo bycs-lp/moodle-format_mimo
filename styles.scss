@@ -1359,18 +1359,27 @@ body.format-minimoodlewall #page-wrapper #page {
 }
 
 // ============================================
-// Course Form: Tag Checkbox Styling
+// Course Form: Tag Preview Styling
 // ============================================
 
-// Tag option label (used in checkboxes and potentially autocomplete).
-.mmw-tag-option {
+// Tag preview container in the course settings form.
+.mmw-tag-preview-container {
+    padding: 0.5rem 0;
+}
+
+// Individual tag preview item.
+.mmw-tag-preview-item {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
 }
 
 // Small inline tag preview image.
-.mmw-tag-preview {
+.mmw-tag-preview-img {
     width: 24px;
     height: 24px;
     object-fit: contain;
@@ -1392,42 +1401,11 @@ body.format-minimoodlewall #page-wrapper #page {
     white-space: nowrap;
 }
 
-// Tag checkbox container styling - ensure vertical stacking.
-// Each checkbox is in a fitem row, we want them to stack nicely.
-[id^="fitem_id_selectedtag_"] {
-    // Remove default horizontal layout, keep checkboxes in a clean list.
-    .form-check {
-        display: flex;
-        align-items: center;
-        padding-left: 0;
-        margin-bottom: 0.25rem;
-    }
-
-    .form-check-input {
-        margin-right: 0.5rem;
-        margin-top: 0;
-        flex-shrink: 0;
-    }
-
-    .form-check-label {
-        display: flex;
-        align-items: center;
-    }
-}
-
-// Group the tag checkboxes visually under their label.
-#fitem_id_selectedtags_label {
-    margin-bottom: 0.25rem;
-
-    // Style the static text label.
+// Style the tag preview label.
+#fitem_id_tag_preview {
     .form-control-static {
         font-weight: 600;
     }
-}
-
-// Hide the hidden selectedtags field row completely.
-#fitem_id_selectedtags {
-    display: none;
 }
 
 // ============================================================================

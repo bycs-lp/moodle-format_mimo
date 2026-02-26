@@ -14,8 +14,8 @@ Feature: Tag-based activity chooser in minimoodlewall format
       | Practice | assign        | quiz          |
       | Discuss  | forum         | chat          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags              | enablefiltering |
-      | Test Course 1 | TC1       | minimoodlewall | Reading, Practice, Discuss| 1               |
+      | fullname      | shortname | format         | enablefiltering |
+      | Test Course 1 | TC1       | minimoodlewall | 1               |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |

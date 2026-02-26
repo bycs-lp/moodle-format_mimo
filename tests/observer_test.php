@@ -49,24 +49,18 @@ final class observer_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
-
-        // Create a tagset.
-        $tagsetid = tagset_manager::create_tagset('Test Tagset');
 
         // Create a tag.
         $this->tagid = tag_manager::create_tag(
-            $tagsetid,
             'Test Tag',
             'test.svg',
             'test-small.svg',
             'page'
         );
 
-        // Create a course with minimoodlewall format and this tag selected.
+        // Create a course with minimoodlewall format.
         $this->course = $this->getDataGenerator()->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => $this->tagid,
         ]);
     }
 
@@ -153,17 +147,11 @@ final class observer_test extends \advanced_testcase {
         global $SESSION;
 
         // Create a tag.
-        $tagsetid = tagset_manager::create_tagset('Observer Tagset');
-        $tagid = tag_manager::create_tag($tagsetid, 'Test Tag', 'test.svg', 'test-small.svg', 'page');
+        $tagid = tag_manager::create_tag('Test Tag', 'test.svg', 'test-small.svg', 'page');
 
         // Create a course with specified format.
         $courseoptions = ['format' => $format];
-        if ($format === 'minimoodlewall') {
-            $courseoptions['selectedtags'] = $tagid;
-        }
         $course = $this->getDataGenerator()->create_course($courseoptions);
-
-        // Note: For minimoodlewall format, selectedtags is already set during course creation.
 
         // Set pending tag in session if requested.
         if ($haspending) {
@@ -228,33 +216,32 @@ final class observer_test extends \advanced_testcase {
             'invalid_tag_id' => [
                 'setup' => function ($course, $SESSION) {
                     // Create a tag.
-                    $tagsetid = tagset_manager::create_tagset('Reject Tagset');
-                    $tagid = tag_manager::create_tag($tagsetid, 'Valid Tag', 'test.svg', 'test-small.svg', 'page');
-
-                    // Set course selected tags.
-                    $format = course_get_format($course->id);
-                    $format->update_course_format_options(['selectedtags' => $tagid]);
+                    tag_manager::create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
 
                     // Set pending tag to non-existent tag ID.
                     $SESSION->format_minimoodlewall_pending_tag = 99999;
                 },
                 'message' => 'Invalid tag should not be assigned',
             ],
-            'tag_not_selected_for_course' => [
+            'tag_disabled_in_profile' => [
                 'setup' => function ($course, $SESSION) {
                     // Create two tags.
-                    $tagsetid = tagset_manager::create_tagset('Multi Tagset');
-                    $tagid1 = tag_manager::create_tag($tagsetid, 'Tag 1', 'test1.svg', 'test1-small.svg', 'page');
-                    $tagid2 = tag_manager::create_tag($tagsetid, 'Tag 2', 'test2.svg', 'test2-small.svg', 'url');
+                    $tagid1 = tag_manager::create_tag('Tag 1', 'test1.svg', 'test1-small.svg', 'page');
+                    $tagid2 = tag_manager::create_tag('Tag 2', 'test2.svg', 'test2-small.svg', 'url');
 
-                    // Set course to only use tag 1.
+                    // Create a profile and disable tag 2.
+                    $profileid = profile_manager::create_profile('testprofile', 'Test Profile');
+                    $pt = profile_manager::get_or_create_profile_tag($tagid2, $profileid);
+                    profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+
+                    // Set course to use this profile.
                     $format = course_get_format($course->id);
-                    $format->update_course_format_options(['selectedtags' => $tagid1]);
+                    $format->update_course_format_options(['activityprofile' => 'testprofile']);
 
-                    // Set pending tag to tag 2 (not selected for this course).
+                    // Set pending tag to tag 2 (disabled in profile).
                     $SESSION->format_minimoodlewall_pending_tag = $tagid2;
                 },
-                'message' => 'Tag not selected for course should not be assigned',
+                'message' => 'Tag disabled in profile should not be assigned',
             ],
         ];
     }

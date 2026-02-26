@@ -71,8 +71,8 @@ Feature: Style management in minimoodlewall format
       | name    | activitytype1 |
       | Reading | page          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname    | shortname | format         | selectedtags | stylevariant |
-      | Test Course | TC1       | minimoodlewall | Reading      | inuse         |
+      | fullname    | shortname | format         | stylevariant |
+      | Test Course | TC1       | minimoodlewall | inuse         |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/style_management.php"
@@ -111,8 +111,8 @@ Feature: Style management in minimoodlewall format
       | name    | activitytype1 |
       | Reading | page          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname    | shortname | format         | selectedtags | stylevariant |
-      | Test Course | TC1       | minimoodlewall | Reading      | mystyle      |
+      | fullname    | shortname | format         | stylevariant |
+      | Test Course | TC1       | minimoodlewall | mystyle      |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC1    | 0       |

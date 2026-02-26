@@ -4,29 +4,31 @@
 
 ## TL;DR
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards.
-- **Core concept**: Every course selects a *tagset* and one or more *tags* from it; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
-- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/tagset_manager.php` (tagset CRUD + cascade), `classes/style_manager.php` (style variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
+- **Core concept**: Courses use an *activity profile* that determines which *tags* are active and how they appear; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
+- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/profile_manager.php` (profile CRUD + per-tag overrides), `classes/style_manager.php` (style variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
   - Enforces single-section behavior (section 0 only), course index disabled, and hides section crumbs on activity pages.
   - `get_sectionnum()` returns `0` — all activities live in section 0 (the "general" section).
   - `is_section_visible()` only shows section 0 and delegated sections (subsections).
-  - Adds course options: `tagsetid` (PARAM_INT, selects which tagset to use), `selectedtags` (PARAM_SEQUENCE comma-separated tag IDs, required), `enablefiltering`, `stylevariant`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`).
-  - `edit_form_validation()` forces at least one tag selection.
+  - Adds course options: `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'classic'`), `enablefiltering`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`), `enablecompletionstars`, `distractionfree`.
+  - Course settings form shows a read-only tag preview below the activity profile dropdown, rendered via `form_tag_preview.mustache`. Tags update dynamically when the profile is changed (via `profile_image_switcher.js`).
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
     - `format_minimoodlewall_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for minimoodlewall courses). Pre-selects current tag on edit, or pending session tag on create.
     - `format_minimoodlewall_coursemodule_edit_post_actions()` — persists the tag selection via `tag_manager::assign_tag_to_cm()` (upsert) or `remove_cm_tag()` on save. Returns `$data` for callback chaining.
-- **Tagset domain model** (`classes/tagset_manager.php`)
-  - Table: `*_tagsets` (name unique, description, sortorder).
-  - Key methods: `create_tagset($name, $description)`, `get_all_tagsets()`, `get_tagset($id)`, `update_tagset($id, $data)`, `delete_tagset($id)` (cascade-deletes all tags via `tag_manager::delete_tag()`).
-  - Caching via `clear_tagset_cache()`.
 - **Tag domain model** (`db/install.xml` + `classes/tag_manager.php`)
-  - Table: `*_tags` (tagsetid FK, name, bgcolor hex, imgplacement center|lower, cardimage, filterimage, activitytype1-3, sortorder).
+  - Table: `*_tags` (name, bgcolor hex, imgplacement center|lower, cardimage, filterimage, activitytype1-3, sortorder).
   - Table: `*_cmtags` (one tag per `cm`, unique cmid).
   - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_minimoodlewall_pluginfile()`.
-  - Key methods: `create_tag($tagsetid, $name, ...)`, `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`, `assign_tag_to_cm($cmid, $tagid)`, `get_cm_tag($cmid)`.
+  - Key methods: `create_tag($name, ...)`, `get_all_tags()`, `get_tags_for_course($courseid)` (returns profile-filtered tags), `assign_tag_to_cm($cmid, $tagid)`, `get_cm_tag($cmid)`.
+  - `get_tags_for_course()` reads the course's `activityprofile` option, resolves tags through `profile_manager::resolve_tags_for_profile()`, and returns only enabled tags with profile overrides applied.
   - Cache invalidation: `clear_tag_cache()`, `clear_mapping_cache()`, `clear_course_tags_cache($courseid)`.
+- **Profile system** (`classes/profile_manager.php`)
+  - Table: `*_profiles` (name unique, displayname, sortorder).
+  - Table: `*_profile_tags` (tagid+profileid unique; nullable overrides for name, bgcolor, activitytype1-3; `enabled` flag).
+  - Key methods: `create_profile($name, $displayname)`, `get_profile_by_name($name)`, `get_or_create_profile_tag($tagid, $profileid)`, `update_profile_tag($id, $data)`, `resolve_tags_for_profile($tags, $profileid, $onlyenabled)`, `resolve_tag_for_profile($tag, $profileid)`.
+  - Profiles determine which tags are active for a course and can override tag names, colors, and activity types per profile.
 - **Style system** (`classes/style_manager.php`)
   - Table: `*_styles` (name unique, displayname, sortorder).
   - Table: `*_tag_images` (tagid+styleid unique, cardimage, filterimage filenames).
@@ -58,26 +60,27 @@
 
 ## Backup & Restore Architecture
 - **Backup** (`backup/moodle2/backup_format_minimoodlewall_plugin.class.php`)
-  - Course-level: Backs up styles (only those referenced by course tags), tagsets, tags (all fields incl. bgcolor, imgplacement, activitytype3), and tag_images. File annotations for all image file areas.
+  - Course-level: Backs up styles (only those referenced by course tags), tags (all fields incl. bgcolor, imgplacement, activitytype3), profiles, profile_tags, and tag_images. File annotations for all image file areas.
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
-  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tagsets → mmw_tagset → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image`.
+  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image`.
 - **Restore** (`backup/moodle2/restore_format_minimoodlewall_plugin.class.php`)
-  - **Same-instance**: Reuses existing tagsets/tags/styles/tag_images by name/unique-combo (no duplicates).
+  - **Same-instance**: Reuses existing tags/styles/tag_images/profiles by name/unique-combo (no duplicates).
   - **Cross-instance**: Creates new records when matching names don't exist.
-  - ID mapping: Sets `format_minimoodlewall_tagset`, `format_minimoodlewall_tag`, `format_minimoodlewall_style`, `format_minimoodlewall_tag_image` mappings.
-  - `after_execute_course()`: Restores file areas + updates `tagsetid` and `selectedtags` course format options with remapped IDs.
+  - ID mapping: Sets `format_minimoodlewall_tag`, `format_minimoodlewall_style`, `format_minimoodlewall_tag_image` mappings.
+  - `after_execute_course()`: Restores file areas.
   - `after_restore_course()`: Clears all caches.
 
 ## Workflows & Entry Points
 1. **Course creation**
    - User selects Minimal Moodle Wall format.
-   - Must select a tagset and at least one tag from it.
+   - Selects an activity profile (determines which tags are active and how they appear).
+   - A read-only tag preview shows the active tags for the selected profile.
    - Only section 0 is created (no additional sections).
-2. **Tag & tagset management**
-   - Admin page (`tag_management.php`) uses accordion UI for tagsets.
-   - Tags within each tagset have forms for name, color, images, activity types.
-   - Deleting a tagset cascade-deletes all its tags (via `tagset_manager::delete_tagset()`).
-   - `tag_delete_confirm.js` uses event capturing phase to intercept clicks before `stopPropagation` on accordion buttons.
+2. **Tag & profile management**
+   - Admin page (`tag_management.php`) manages tags with accordion UI.
+   - Tags have forms for name, color, images, activity types.
+   - Profiles determine which tags are visible/active per course.
+   - Deleting a tag cascades to profile_tags and cmtags.
 3. **Style management**
    - Admin page (`style_management.php`) manages style variants.
    - Per-tag images for each style variant via `tag_images` table.
@@ -159,7 +162,7 @@ Moodle has several unique patterns that cause issues with standard PHP linters a
 This plugin demonstrates the hybrid approach:
 - `lib.php` (68 lines): Global `format_minimoodlewall` class, extends namespaced base
 - `classes/tag_manager.php`: Fully namespaced, modern PSR-4
-- `classes/tagset_manager.php`: Fully namespaced, cascade-deletes tags
+- `classes/profile_manager.php`: Fully namespaced, profile CRUD and tag resolution
 - `classes/style_manager.php`: Fully namespaced, manages styles + tag_images
 - `classes/form/tag_form.php`: Namespaced but extends global `\moodleform`, requires explicit include
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
@@ -167,11 +170,11 @@ This plugin demonstrates the hybrid approach:
 ## Guardrails for Future Agents
 - Respect section-0-only assumption; all activities live in section 0. `get_sectionnum()` returns 0; `is_section_visible()` hides all non-0, non-delegated sections. Avoid introducing multiple sections unless architecture is revisited.
 - The course index is disabled (`uses_course_index()` returns `false`). Do not re-enable it without revisiting the single-section UX.
-- Never bypass selectedtags requirement—every course must have at least one tag selected for the wall to function properly.
-- Every course must have a valid `tagsetid` — the upgrade step (Step 8 in `db/upgrade.php`) sets this on existing courses; new courses get it from the course edit form.
-- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` helpers to avoid orphans.
-- Update caches after any tag/tagset/style change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
-- Tagsets/tags/styles are **global** — shared across all courses; courses reference them via format options.
+- Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
+- Every course should have a valid `activityprofile` option — defaults to `'classic'`.
+- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` / `profile_manager` helpers to avoid orphans.
+- Update caches after any tag/profile/style change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
+- Tags and profiles are **global** — shared across all courses; courses reference profiles via the `activityprofile` format option.
 - Backup/restore reuses by name on same instance. Don't create duplicate-prevention logic elsewhere.
 - Observer cleanup: `course_module_deleted` and `course_deleted` handle orphan cmtag records. Don't add manual cleanup in other code paths.
 - `tag_delete_confirm.js` uses event capturing (`addEventListener('click', handler, true)`) to intercept before `stopPropagation` on accordion buttons. Maintain this pattern.
@@ -201,9 +204,9 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options (tagsetid, selectedtags autocomplete), validation, `get_sectionnum()→0`, `is_section_visible()` (section 0 only), navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
-- `classes/tagset_manager.php` – tagset CRUD, cascade delete to tags, cache management.
-- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)`, `get_tags_by_tagset($tagsetid)`.
+- `lib.php` – course options (activityprofile, enablefiltering, wallcolor, enablecompletionstars, distractionfree), read-only tag preview in form, `get_sectionnum()→0`, `is_section_visible()` (section 0 only), navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
+- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered).
+- `classes/profile_manager.php` – profile CRUD, per-tag profile overrides (name, bgcolor, activity types, enabled), tag resolution. Key methods: `resolve_tags_for_profile()`, `resolve_tag_for_profile()`, `get_or_create_profile_tag()`.
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
@@ -217,12 +220,13 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/tagset_form.php` – mform for tagset create/edit.
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
-- `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns tags matching course's selectedtags option).
+- `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
 - `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.1+ tag chooser button** (extends core class).
 - `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
-- `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates.
-- `templates/tag_management.mustache` – accordion-based tagset/tag admin UI with `data-tagset-name` attributes.
+- `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates. `cmitem.php` resolves tags through profile for card rendering.
+- `templates/tag_management.mustache` – accordion-based tag admin UI.
+- `templates/form_tag_preview.mustache` – read-only tag preview for course settings form (shows active tags for selected profile).
 - `templates/style_management.mustache` – style admin with per-tag image tabs.
 - `templates/local/content/activitychooserbutton.mustache` – **Moodle 5.1+ tag chooser template**.
 - `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
@@ -232,21 +236,20 @@ This plugin demonstrates the hybrid approach:
 - `templates/description_tags_list.mustache` – table view for description tags management page.
 - `styles.scss` / `styles.css` – wall styling + style variants + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (version-agnostic).
-- `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags and tagsets (event capturing phase).
+- `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags (event capturing phase).
 - `amd/src/tag_filter.js` – client-side tag filtering.
-- `amd/src/tagset_tag_filter.js` – tagset-aware filter grouping.
 - `amd/src/activity_pagination.js` – responsive pagination with swipe.
 - `amd/src/activity_dragdrop.js` – drag and drop reordering.
-- `amd/src/tag_checkbox_sync.js` – tag selection checkbox sync.
+- `amd/src/profile_image_switcher.js` – swaps tag images/names/visibility in course form when activity profile changes.
 - `amd/src/style_delete_confirm.js` – style deletion confirmation modal.
 - `amd/src/style_image_switcher.js` – style image tab switching.
 - `amd/src/description_tag_management.js` – description tag admin helpers.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
 - `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags, styles, tag_images, cmtags, files).
 - `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (reuse-by-name, ID mapping, format option remapping).
-- `db/install.xml` – 7 tables: tagsets, tags, cmtags, styles, tag_images, desc_tags, actdesc.
-- `db/install.php` – creates default tagset, default tags, and default styles on install.
-- `db/upgrade.php` – migration steps including tagset introduction (Step 8: sets tagsetid on existing courses).
+- `db/install.xml` – 8 tables: tags, cmtags, styles, tag_images, desc_tags, actdesc, profiles, profile_tags.
+- `db/install.php` – creates default tags, default styles, and default profiles on install.
+- `db/upgrade.php` – migration steps including profile introduction and selectedtags removal.
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
 - `db/hooks.php` – hook registrations.
 - `db/services.php` – web service definitions.
@@ -255,11 +258,9 @@ This plugin demonstrates the hybrid approach:
 - `tests/behat/activity_tag_edit.feature` – 4 scenarios for changing/removing tags on activities via the module edit form.
 - `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
 - `tests/behat/style_management.feature` – style admin scenarios.
-- `tests/tag_manager_test.php` – tag CRUD, assignment, caching, defaults.
-- `tests/tagset_manager_test.php` – tagset CRUD, cascade delete, caching.
-- `tests/style_manager_test.php` – style CRUD, tag_images.
-- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, style/tag_image restore, tagsetid restore.
-- `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection, module deletion cleanup, course deletion cleanup.
+- `tests/tag_manager_test.php` – tag CRUD, assignment, caching, profile-based filtering.
+- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, style/tag_image restore, profile restore.
+- `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection (invalid tag, profile-disabled tag), module deletion cleanup, course deletion cleanup.
 
 ## Open Questions / TODO Hooks
 - ~~Teacher-side workflow for assigning/changing tags per activity~~ — **Implemented** via legacy `coursemodule_standard_elements` / `coursemodule_edit_post_actions` callbacks in `lib.php`. Teachers see a tag dropdown in the module edit form.

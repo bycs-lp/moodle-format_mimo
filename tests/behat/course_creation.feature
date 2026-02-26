@@ -52,8 +52,8 @@ Feature: Course creation with minimoodlewall format
   @javascript
   Scenario: Tags can be changed after course creation
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | selectedtags      |
-      | Test Course 1 | TC1       | Reading, Practice |
+      | fullname      | shortname |
+      | Test Course 1 | TC1       |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |
@@ -67,8 +67,8 @@ Feature: Course creation with minimoodlewall format
   @javascript
   Scenario: Course displays activities in wall format
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | selectedtags      |
-      | Test Course 1 | TC1       | Reading, Practice |
+      | fullname      | shortname |
+      | Test Course 1 | TC1       |
     And the following "activities" exist:
       | activity | name          | intro                | course | section |
       | assign   | Assignment 1  | First assignment     | TC1    | 0       |

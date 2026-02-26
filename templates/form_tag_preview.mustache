@@ -1,0 +1,51 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_minimoodlewall/form_tag_preview
+
+    Renders a read-only preview of tags enabled for the selected activity profile.
+    Displayed in the course settings form below the activity profile dropdown.
+
+    Example context (json):
+    {
+        "tags": [
+            {
+                "name": "Lesen",
+                "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
+                "tagid": 1,
+                "profileimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}",
+                "profilenames": "{\"classic\":\"Lesen\",\"dark\":\"Reading\"}",
+                "profileenabled": "{\"classic\":1,\"dark\":0}"
+            }
+        ],
+        "label": "Active tags"
+    }
+}}
+<div class="mmw-tag-preview-container d-flex flex-wrap gap-3 mt-2">
+    {{#tags}}
+    <div class="mmw-tag-preview-item d-flex align-items-center" data-tagid="{{tagid}}"
+         data-profileimages="{{profileimages}}" data-profilenames="{{profilenames}}" data-profileenabled="{{profileenabled}}">
+        {{#imageurl}}
+        <img src="{{imageurl}}" class="mmw-tag-preview-img me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
+        {{/imageurl}}
+        {{^imageurl}}
+        <span class="mmw-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
+        {{/imageurl}}
+        <span class="mmw-tag-name">{{name}}</span>
+    </div>
+    {{/tags}}
+</div>

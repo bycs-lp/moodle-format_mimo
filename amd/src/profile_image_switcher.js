@@ -16,8 +16,8 @@
 /**
  * Activity profile image switcher for course settings form.
  *
- * Updates tag preview images when the activity profile dropdown is changed.
- * Image URLs are read from data-profileimages attributes on each tag option.
+ * Updates tag preview images and visibility when the activity profile dropdown is changed.
+ * Image URLs are read from data-profileimages attributes on each tag preview item.
  *
  * @module     format_minimoodlewall/profile_image_switcher
  * @copyright  2025 Your Name
@@ -26,7 +26,7 @@
 
 const SELECTORS = {
     PROFILE_SELECT: '#id_activityprofile',
-    TAG_OPTION: '.mmw-tag-option[data-profileimages]',
+    TAG_ITEM: '.mmw-tag-preview-item[data-profileimages]',
     TAG_IMAGE: '[data-tagimage]',
     TAG_NAME: '.mmw-tag-name',
 };
@@ -58,40 +58,29 @@ const registerEventListeners = () => {
  * @param {string} profileName The selected profile name
  */
 const updateTagImages = (profileName) => {
-    const tagOptions = document.querySelectorAll(SELECTORS.TAG_OPTION);
+    const tagItems = document.querySelectorAll(SELECTORS.TAG_ITEM);
 
-    tagOptions.forEach((optionElement) => {
+    tagItems.forEach((itemElement) => {
         // --- Enabled / disabled state ---
-        const enabledJson = optionElement.dataset.profileenabled;
+        const enabledJson = itemElement.dataset.profileenabled;
         if (enabledJson) {
             try {
                 const enabledMap = JSON.parse(enabledJson);
                 const isEnabled = enabledMap[profileName] !== undefined ? !!enabledMap[profileName] : true;
-                const checkboxRow = optionElement.closest('.form-check, .fitem, [data-groupitem]');
-                if (checkboxRow) {
-                    checkboxRow.style.display = isEnabled ? '' : 'none';
-                }
-                // Also uncheck the checkbox when the tag is disabled.
-                if (!isEnabled && checkboxRow) {
-                    const cb = checkboxRow.querySelector('input[type="checkbox"]');
-                    if (cb && cb.checked) {
-                        cb.checked = false;
-                        cb.dispatchEvent(new Event('change', {bubbles: true}));
-                    }
-                }
+                itemElement.style.display = isEnabled ? '' : 'none';
             } catch (e) {
                 // Ignore parse errors.
             }
         }
 
         // --- Name override ---
-        const namesJson = optionElement.dataset.profilenames;
+        const namesJson = itemElement.dataset.profilenames;
         if (namesJson) {
             try {
                 const namesMap = JSON.parse(namesJson);
                 const newName = namesMap[profileName];
                 if (newName) {
-                    const nameElement = optionElement.querySelector(SELECTORS.TAG_NAME);
+                    const nameElement = itemElement.querySelector(SELECTORS.TAG_NAME);
                     if (nameElement) {
                         nameElement.textContent = newName;
                     }
@@ -102,7 +91,7 @@ const updateTagImages = (profileName) => {
         }
 
         // --- Image switching ---
-        const profileImagesJson = optionElement.dataset.profileimages;
+        const profileImagesJson = itemElement.dataset.profileimages;
         if (!profileImagesJson) {
             return;
         }
@@ -115,7 +104,7 @@ const updateTagImages = (profileName) => {
         }
 
         const newImageUrl = profileImages[profileName];
-        const imageElement = optionElement.querySelector(SELECTORS.TAG_IMAGE);
+        const imageElement = itemElement.querySelector(SELECTORS.TAG_IMAGE);
 
         if (!imageElement) {
             return;
@@ -135,7 +124,7 @@ const updateTagImages = (profileName) => {
             if (newImageUrl) {
                 const img = document.createElement('img');
                 img.src = newImageUrl;
-                img.className = 'mmw-tag-preview me-2';
+                img.className = 'mmw-tag-preview-img me-2';
                 img.dataset.tagimage = tagId;
                 img.alt = '';
                 img.setAttribute('aria-hidden', 'true');

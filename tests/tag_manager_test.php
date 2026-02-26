@@ -134,7 +134,7 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
-     * Test getting tags for a course.
+     * Test getting tags for a course based on its activity profile.
      */
     public function test_get_tags_for_course(): void {
         global $DB;
@@ -144,17 +144,29 @@ final class tag_manager_test extends \advanced_testcase {
         tag_manager::clear_tag_cache();
 
         // Create tags.
-        $tag1id = tag_manager::create_tag($this->tagsetid, 'Reading', 'reading.svg', 'reading-small.svg', 'page');
-        $tag2id = tag_manager::create_tag($this->tagsetid, 'Video', 'video.svg', 'video-small.svg', 'url');
-        $tag3id = tag_manager::create_tag($this->tagsetid, 'Quiz', 'quiz.svg', 'quiz-small.svg', 'quiz');
+        $tag1id = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tag2id = tag_manager::create_tag('Video', 'video.svg', 'video-small.svg', 'url');
+        $tag3id = tag_manager::create_tag('Quiz', 'quiz.svg', 'quiz-small.svg', 'quiz');
 
-        // Create a course with selected tags.
+        // Ensure a 'classic' profile exists.
+        $profile = profile_manager::get_profile_by_name('classic');
+        if (!$profile) {
+            $profileid = profile_manager::create_profile('classic', 'Classic');
+        } else {
+            $profileid = $profile->id;
+        }
+
+        // Disable 'Quiz' tag for the classic profile.
+        $pt = profile_manager::get_or_create_profile_tag($tag3id, $profileid);
+        profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+
+        // Create a course with the classic activity profile.
         $course = $this->getDataGenerator()->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => "$tag1id,$tag2id",
+            'activityprofile' => 'classic',
         ]);
 
-        // Get tags for course.
+        // Get tags for course — should return only enabled tags.
         $tags = tag_manager::get_tags_for_course($course->id);
 
         $this->assertCount(2, $tags);

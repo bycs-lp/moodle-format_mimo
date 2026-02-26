@@ -412,10 +412,13 @@ class tag_manager {
     }
 
     /**
-     * Get tags selected for a specific course.
+     * Get tags enabled for a specific course based on its activity profile.
+     *
+     * Returns all tags that are enabled in the course's activity profile,
+     * with profile-specific overrides (name, bgcolor, activity types) applied.
      *
      * @param int $courseid Course ID
-     * @return array Array of tag records selected for this course
+     * @return array Array of resolved tag records enabled for this course's profile
      */
     public static function get_tags_for_course(int $courseid): array {
         global $DB;
@@ -428,34 +431,38 @@ class tag_manager {
             return $cachedtags;
         }
 
-        // Get selectedtags course format option.
-        $selectedtags = $DB->get_field('course_format_options', 'value', [
+        // Get all base tags.
+        $alltags = self::get_all_tags();
+        if (empty($alltags)) {
+            self::$tagcache->set($cachekey, []);
+            return [];
+        }
+
+        // Get the course's activity profile.
+        $profilename = $DB->get_field('course_format_options', 'value', [
             'courseid' => $courseid,
             'format' => 'minimoodlewall',
-            'name' => 'selectedtags',
+            'name' => 'activityprofile',
         ]);
-
-        if (empty($selectedtags)) {
-            self::$tagcache->set($cachekey, []);
-            return [];
+        if (empty($profilename)) {
+            $profilename = 'classic';
         }
 
-        // Parse comma-separated tag IDs.
-        $tagids = array_filter(array_map('intval', explode(',', $selectedtags)));
-
-        if (empty($tagids)) {
-            self::$tagcache->set($cachekey, []);
-            return [];
+        // Resolve profile ID.
+        $profile = profile_manager::get_profile_by_name($profilename);
+        if (!$profile) {
+            // Fallback to classic if profile doesn't exist.
+            $profile = profile_manager::get_profile_by_name('classic');
         }
 
-        // Fetch tags in sortorder.
-        [$insql, $params] = $DB->get_in_or_equal($tagids, SQL_PARAMS_NAMED);
-        $tags = $DB->get_records_select(
-            'format_minimoodlewall_tags',
-            "id $insql",
-            $params,
-            'sortorder ASC, id ASC'
-        );
+        if (!$profile) {
+            // No profiles at all — return all tags unfiltered.
+            self::$tagcache->set($cachekey, $alltags);
+            return $alltags;
+        }
+
+        // Return only enabled tags with profile overrides applied.
+        $tags = profile_manager::resolve_tags_for_profile($alltags, $profile->id, true);
 
         self::$tagcache->set($cachekey, $tags);
 

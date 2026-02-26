@@ -44,8 +44,8 @@ Feature: Style variants in minimoodlewall format
   @javascript
   Scenario: Course retains selected style variant
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags | stylevariant |
-      | Test Course 2 | TC2       | minimoodlewall | Reading      | light         |
+      | fullname      | shortname | format         | stylevariant |
+      | Test Course 2 | TC2       | minimoodlewall | light         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC2    | 0       |
@@ -56,8 +56,8 @@ Feature: Style variants in minimoodlewall format
   @javascript
   Scenario: Wallcolor override adds CSS class to activity wall
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags | stylevariant | wallcolor |
-      | Test Course 3 | TC3       | minimoodlewall | Reading      | classic      | dark      |
+      | fullname      | shortname | format         | stylevariant | wallcolor |
+      | Test Course 3 | TC3       | minimoodlewall | classic      | dark      |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC3    | 0       |
@@ -68,8 +68,8 @@ Feature: Style variants in minimoodlewall format
   @javascript
   Scenario: Default wallcolor does not add wallcolor class
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags | stylevariant | wallcolor |
-      | Test Course 4 | TC4       | minimoodlewall | Reading      | classic      | default   |
+      | fullname      | shortname | format         | stylevariant | wallcolor |
+      | Test Course 4 | TC4       | minimoodlewall | classic      | default   |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC4    | 0       |

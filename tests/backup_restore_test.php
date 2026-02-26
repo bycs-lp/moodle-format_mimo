@@ -50,10 +50,9 @@ final class backup_restore_test extends \advanced_testcase {
         $tagsetid = tagset_manager::create_tagset('Backup Tagset');
         $tagid = tag_manager::create_tag($tagsetid, 'Backup Tag');
         
-        // Create course with selectedtags set.
+        // Create course.
         $course = $generator->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => (string)$tagid,
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
 
@@ -75,14 +74,6 @@ final class backup_restore_test extends \advanced_testcase {
 
         $this->assertNotFalse($tag);
         $this->assertEquals('Backup Tag', $tag->name);
-
-        // Verify selectedtags format option was restored.
-        $selectedtags = $DB->get_field('course_format_options', 'value', [
-            'courseid' => $restoredcourseid,
-            'format' => 'minimoodlewall',
-            'name' => 'selectedtags',
-        ]);
-        $this->assertNotEmpty($selectedtags);
     }
 
     /**
@@ -111,7 +102,6 @@ final class backup_restore_test extends \advanced_testcase {
 
         $course = $generator->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => (string) $tagid,
         ]);
         $quiz = $generator->create_module('quiz', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($quiz->cmid, $tagid);
@@ -163,7 +153,6 @@ final class backup_restore_test extends \advanced_testcase {
         // Create the course and assign the tag.
         $course = $generator->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => (string) $tagid,
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -194,9 +183,9 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
-     * Test that tagsetid format option is correctly restored.
+     * Test that profile format option is preserved through backup/restore.
      */
-    public function test_backup_and_restore_preserves_tagsetid(): void {
+    public function test_backup_and_restore_preserves_profile(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -204,36 +193,29 @@ final class backup_restore_test extends \advanced_testcase {
         tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
-        $tagsetid = tagset_manager::create_tagset('Tagsetid Test');
-        $tagid = tag_manager::create_tag($tagsetid, 'Tagsetid Tag');
+        $tagsetid = tagset_manager::create_tagset('Profile Test');
+        $tagid = tag_manager::create_tag($tagsetid, 'Profile Tag');
 
-        // Create a course with tagsetid set.
+        // Create a course with a specific activity profile.
         $course = $generator->create_course([
             'format' => 'minimoodlewall',
-            'selectedtags' => (string) $tagid,
-            'tagsetid' => (string) $tagsetid,
+            'activityprofile' => 'classic',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_tagsetid_' . random_string(6);
+        $backupid = 'mmw_profile_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
-        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored tagsetid test');
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile test');
 
-        // The tagsetid should be restored. Since restore creates/reuses tagsets by name,
-        // the restored tagsetid may differ from the original, but should point to a valid tagset.
-        $restoredtagsetid = $DB->get_field('course_format_options', 'value', [
+        // The activityprofile should be restored.
+        $restoredprofile = $DB->get_field('course_format_options', 'value', [
             'courseid' => $restoredcourseid,
             'format' => 'minimoodlewall',
-            'name' => 'tagsetid',
+            'name' => 'activityprofile',
         ]);
-        $this->assertNotEmpty($restoredtagsetid, 'tagsetid format option should be restored');
-        $this->assertGreaterThan(0, (int) $restoredtagsetid);
-
-        // Verify the tagset actually exists.
-        $tagset = tagset_manager::get_tagset((int) $restoredtagsetid);
-        $this->assertNotFalse($tagset, 'Restored tagsetid should point to a valid tagset');
+        $this->assertEquals('classic', $restoredprofile);
     }
 
     /**

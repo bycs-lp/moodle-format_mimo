@@ -159,11 +159,6 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 'default',
                 'type' => PARAM_ALPHANUMEXT,
             ],
-            // selectedtags is handled manually in create_edit_form_elements() with custom checkboxes.
-            'selectedtags' => [
-                'default' => '',
-                'type' => PARAM_SEQUENCE,
-            ],
         ];
 
         if ($forupdate) {
@@ -216,11 +211,6 @@ class format_minimoodlewall extends core_courseformat\base {
                 'element_type' => 'select',
                 'element_attributes' => [$wallcoloroptions],
             ];
-            // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
-            $courseformatoptions['selectedtags'] += [
-                'label' => '',
-                'element_type' => 'hidden',
-            ];
         }
 
         return $courseformatoptions;
@@ -229,8 +219,8 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Adds format options elements to the course/section edit form.
      *
-     * Overrides parent to create custom checkbox elements for tag selection
-     * with inline images displayed vertically.
+     * Overrides parent to add a read-only tag preview below the activity profile
+     * dropdown, showing which tags are enabled for the selected profile.
      *
      * @param MoodleQuickForm $mform form the elements are added to
      * @param bool $forsection 'true' if this is a section edit form, 'false' if this is course edit form
@@ -242,12 +232,12 @@ class format_minimoodlewall extends core_courseformat\base {
         // Let parent handle all standard elements first.
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
-        // Only add tag elements for course edit form (not sections).
+        // Only add tag preview for course edit form (not sections).
         if ($forsection) {
             return $elements;
         }
 
-        // Get all tags (flat list, no tagsets).
+        // Get all tags (flat list).
         $alltags = \format_minimoodlewall\tag_manager::get_all_tags();
         if (empty($alltags)) {
             return $elements;
@@ -255,24 +245,6 @@ class format_minimoodlewall extends core_courseformat\base {
 
         // Get current course data.
         $course = $this->get_course();
-
-        // Get currently selected tags from course format options.
-        $selectedtagids = [];
-        if (!empty($course->selectedtags)) {
-            $selectedtagids = array_map('intval', explode(',', $course->selectedtags));
-        }
-        $selectedtagsvalue = implode(',', $selectedtagids);
-
-        // Set default values for the hidden fields (created by parent).
-        $mform->setDefault('selectedtags', $selectedtagsvalue);
-
-        // Create a label/header for the tag checkboxes section.
-        $elements[] = $mform->addElement(
-            'static',
-            'selectedtags_label',
-            get_string('setting_selectedtags', 'format_minimoodlewall')
-        );
-        $mform->addHelpButton('selectedtags_label', 'setting_selectedtags', 'format_minimoodlewall');
 
         // Prepare renderer for mustache templates.
         $output = $PAGE->get_renderer('format_minimoodlewall');
@@ -283,11 +255,9 @@ class format_minimoodlewall extends core_courseformat\base {
         // Get all profiles for passing image URLs to template data attributes.
         $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();
 
-        // Add checkboxes for ALL tags with profile image data attributes.
-        $alltagids = [];
+        // Build tag preview items with profile data attributes.
+        $tagpreviews = [];
         foreach ($alltags as $tag) {
-            $alltagids[] = $tag->id;
-
             // Get the image URL for the current profile.
             $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentprofile);
 
@@ -304,8 +274,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
             }
 
-            // Render label using mustache template.
-            $templatecontext = [
+            $tagpreviews[] = [
                 'name' => $tag->name,
                 'imageurl' => $imageurl ? $imageurl->out(false) : null,
                 'tagid' => $tag->id,
@@ -313,73 +282,35 @@ class format_minimoodlewall extends core_courseformat\base {
                 'profilenames' => json_encode($profilenames),
                 'profileenabled' => json_encode($profileenabled),
             ];
-            $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
-
-            $checkboxname = 'selectedtag_' . $tag->id;
-            $elements[] = $mform->addElement(
-                'advcheckbox',
-                $checkboxname,
-                '',
-                $labelhtml,
-                ['class' => 'mb-0-override'],
-                [0, $tag->id]
-            );
-
-            // Set default checked state based on current selection.
-            if (in_array($tag->id, $selectedtagids)) {
-                $mform->setDefault($checkboxname, $tag->id);
-            }
         }
 
-        // Initialize JS modules.
-        $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$alltagids]);
+        // Render the complete tag preview section.
+        $previewhtml = $output->render_from_template('format_minimoodlewall/form_tag_preview', [
+            'tags' => $tagpreviews,
+            'label' => get_string('tag_preview_label', 'format_minimoodlewall'),
+        ]);
+
+        $elements[] = $mform->addElement(
+            'static',
+            'tag_preview',
+            get_string('tag_preview_label', 'format_minimoodlewall'),
+            $previewhtml
+        );
+        $mform->addHelpButton('tag_preview', 'tag_preview', 'format_minimoodlewall');
+
+        // Initialize JS module for profile-reactive preview.
         $PAGE->requires->js_call_amd('format_minimoodlewall/profile_image_switcher', 'init');
 
         return $elements;
     }
 
-    /**
-     * Require at least one tag to be selected when creating/editing a course with this format.
-     *
-     * @param array $data Submitted form data
-     * @param array $files Uploaded files
-     * @param array $errors Existing validation errors
-     * @return array
-     */
-    public function edit_form_validation($data, $files, $errors) {
-        $errors = parent::edit_form_validation($data, $files, $errors);
 
-        // Collect selected tags from individual checkboxes.
-        $selectedtags = [];
-        foreach ($data as $key => $value) {
-            if (strpos($key, 'selectedtag_') === 0 && !empty($value)) {
-                $selectedtags[] = $value;
-            }
-        }
-
-        // Fallback: also check the hidden selectedtags field.
-        if (empty($selectedtags)) {
-            $selectedtagsvalue = $data['selectedtags'] ?? '';
-            if (is_array($selectedtagsvalue)) {
-                $selectedtags = array_filter($selectedtagsvalue);
-            } else {
-                $selectedtags = array_filter(explode(',', $selectedtagsvalue));
-            }
-        }
-
-        if (empty($selectedtags)) {
-            $errors['selectedtags_label'] = get_string('error_required_tags', 'format_minimoodlewall');
-        }
-
-        return $errors;
-    }
 
     /**
      * Updates course format options.
      *
-     * Overrides parent to collect selectedtags from individual checkbox fields
-     * and convert to comma-separated string before storage.
-     * Also clears the course tags cache when selectedtags changes.
+     * Overrides parent to clear the course tags cache when the activity profile
+     * changes, since the profile determines which tags are active.
      *
      * @param stdClass|array $data Data to update
      * @param stdClass $oldcourse Old course object
@@ -388,26 +319,17 @@ class format_minimoodlewall extends core_courseformat\base {
     public function update_course_format_options($data, $oldcourse = null) {
         $data = (array)$data;
 
-        // Collect selected tags from individual checkbox fields (selectedtag_1, selectedtag_2, etc.).
-        $selectedtags = [];
-        foreach ($data as $key => $value) {
-            if (strpos($key, 'selectedtag_') === 0 && !empty($value)) {
-                $selectedtags[] = (int)$value;
-            }
-        }
-
-        // If we found checkbox values, use them; otherwise check if selectedtags is already set.
-        if (!empty($selectedtags)) {
-            $data['selectedtags'] = implode(',', $selectedtags);
-        } else if (isset($data['selectedtags']) && is_array($data['selectedtags'])) {
-            // Fallback for autocomplete-style array.
-            $data['selectedtags'] = implode(',', array_filter($data['selectedtags']));
+        $oldprofile = null;
+        if ($oldcourse) {
+            $oldcourse = (object)$oldcourse;
+            $oldprofile = $oldcourse->activityprofile ?? null;
         }
 
         $result = parent::update_course_format_options($data, $oldcourse);
 
-        // Clear course tags cache if selectedtags was updated.
-        if ($result && isset($data['selectedtags'])) {
+        // Clear course tags cache if the activity profile changed.
+        $newprofile = $data['activityprofile'] ?? null;
+        if ($result && $newprofile !== null && $newprofile !== $oldprofile) {
             \format_minimoodlewall\tag_manager::clear_course_tags_cache($this->courseid);
         }
 

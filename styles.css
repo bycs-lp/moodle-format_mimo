@@ -1064,13 +1064,21 @@ body.format-minimoodlewall #page-wrapper #page {
   padding: 0.75rem !important;
 }
 
-.mmw-tag-option {
+.mmw-tag-preview-container {
+  padding: 0.5rem 0;
+}
+
+.mmw-tag-preview-item {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
 }
 
-.mmw-tag-preview {
+.mmw-tag-preview-img {
   width: 24px;
   height: 24px;
   object-fit: contain;
@@ -1090,31 +1098,8 @@ body.format-minimoodlewall #page-wrapper #page {
   white-space: nowrap;
 }
 
-[id^=fitem_id_selectedtag_] .form-check {
-  display: flex;
-  align-items: center;
-  padding-left: 0;
-  margin-bottom: 0.25rem;
-}
-[id^=fitem_id_selectedtag_] .form-check-input {
-  margin-right: 0.5rem;
-  margin-top: 0;
-  flex-shrink: 0;
-}
-[id^=fitem_id_selectedtag_] .form-check-label {
-  display: flex;
-  align-items: center;
-}
-
-#fitem_id_selectedtags_label {
-  margin-bottom: 0.25rem;
-}
-#fitem_id_selectedtags_label .form-control-static {
+#fitem_id_tag_preview .form-control-static {
   font-weight: 600;
-}
-
-#fitem_id_selectedtags {
-  display: none;
 }
 
 .minimoodlewall-completion-status {

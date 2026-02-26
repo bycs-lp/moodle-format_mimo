@@ -14,8 +14,8 @@ Feature: Change activity tag via module edit form
       | Practice | assign        | quiz          |
       | Writing  | assign        | page          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname    | shortname | format         | selectedtags             |
-      | Test Course | TC1       | minimoodlewall | Reading,Practice,Writing |
+      | fullname    | shortname | format         |
+      | Test Course | TC1       | minimoodlewall |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |

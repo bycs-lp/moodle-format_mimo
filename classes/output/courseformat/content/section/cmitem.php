@@ -83,6 +83,12 @@ class cmitem extends cmitem_base {
         $tag = tag_manager::get_cm_tag($cmid);
 
         if ($tag) {
+            // Resolve tag with profile overrides applied.
+            $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($stylevariant);
+            if ($profile) {
+                $tag = \format_minimoodlewall\profile_manager::resolve_tag_for_profile($tag, $profile->id);
+            }
+
             $data->cmformat->tagname = $tag->name;
             $data->cmformat->tagid = $tag->id;
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);

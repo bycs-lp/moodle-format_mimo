@@ -15,8 +15,8 @@ Feature: Tag filtering in minimoodlewall format
       | Practice | assign        | quiz          |
       | Discuss  | forum         | chat          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags              | enablefiltering |
-      | Test Course 1 | TC1       | minimoodlewall | Reading, Practice, Discuss| 1               |
+      | fullname      | shortname | format         | enablefiltering |
+      | Test Course 1 | TC1       | minimoodlewall | 1               |
     And the following "activities" exist:
       | activity | name         | intro            | course | section |
       | assign   | Assignment 1 | First assignment | TC1    | 0       |
@@ -92,8 +92,8 @@ Feature: Tag filtering in minimoodlewall format
   @javascript
   Scenario: Filter bar is not visible when filtering is disabled
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | selectedtags              | enablefiltering |
-      | Test Course 2 | TC2       | minimoodlewall | Reading, Practice, Discuss| 0               |
+      | fullname      | shortname | format         | enablefiltering |
+      | Test Course 2 | TC2       | minimoodlewall | 0               |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | TC2    | student |

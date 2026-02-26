@@ -802,5 +802,17 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026021102, 'format', 'minimoodlewall');
     }
 
+    // Step: Remove selectedtags course format option.
+    // Tags are now determined automatically by the course's activity profile.
+    if ($oldversion < 2026022601) {
+        $DB->delete_records_select(
+            'course_format_options',
+            "format = :format AND name = :name",
+            ['format' => 'minimoodlewall', 'name' => 'selectedtags']
+        );
+
+        upgrade_plugin_savepoint(true, 2026022601, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

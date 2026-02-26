@@ -27,8 +27,6 @@
  * Recreate minimoodlewall profile and tag data during course restores.
  */
 class restore_format_minimoodlewall_plugin extends restore_format_plugin {
-    /** @var array Tag IDs restored for this course, used to update selectedtags format option */
-    protected $restoredtagids = [];
 
     /**
      * Declare structures to be processed by the restore task.
@@ -111,14 +109,12 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         // Tags are unique by name; reuse existing ones when merging courses.
         if ($existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $data->name])) {
             $this->set_mapping('format_minimoodlewall_tag', $oldid, $existing->id);
-            $this->restoredtagids[$existing->id] = $existing->id;
             return;
         }
 
         unset($data->id);
         $newid = $DB->insert_record('format_minimoodlewall_tags', $data);
         $this->set_mapping('format_minimoodlewall_tag', $oldid, $newid);
-        $this->restoredtagids[$newid] = $newid;
     }
 
     /**
@@ -179,11 +175,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
     /**
      * Reattach tag card/filter files and profile-specific files after restore.
-     * Also update the course's selectedtags format option with restored IDs.
      */
     public function after_execute_course() {
-        global $DB;
-
         $this->add_related_files(
             'format_minimoodlewall',
             \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
@@ -204,60 +197,16 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
             'format_minimoodlewall_profile_tag'
         );
-
-        $courseid = $this->task->get_courseid();
-
-        // Update course format option with restored tag IDs.
-        if (!empty($this->restoredtagids)) {
-            $selectedtags = implode(',', array_keys($this->restoredtagids));
-
-            $existing = $DB->get_record('course_format_options', [
-                'courseid' => $courseid,
-                'format' => 'minimoodlewall',
-                'name' => 'selectedtags',
-            ]);
-
-            if ($existing) {
-                $existingtags = !empty($existing->value) ? explode(',', $existing->value) : [];
-                $mergedtags = array_unique(array_merge($existingtags, array_keys($this->restoredtagids)));
-                $existing->value = implode(',', $mergedtags);
-                $DB->update_record('course_format_options', $existing);
-            } else {
-                $this->update_format_option($courseid, 'selectedtags', $selectedtags);
-            }
-        }
     }
 
     /**
-     * Insert or update a course format option.
-     *
-     * @param int $courseid
-     * @param string $name
-     * @param string $value
+     * Clear caches after full restore.
      */
-    private function update_format_option(int $courseid, string $name, string $value): void {
-        global $DB;
-
-        $existing = $DB->get_record('course_format_options', [
-            'courseid' => $courseid,
-            'format' => 'minimoodlewall',
-            'name' => $name,
-        ]);
-
-        if ($existing) {
-            $existing->value = $value;
-            $DB->update_record('course_format_options', $existing);
-        } else {
-            $DB->insert_record('course_format_options', (object)[
-                'courseid' => $courseid,
-                'format' => 'minimoodlewall',
-                'sectionid' => 0,
-                'name' => $name,
-                'value' => $value,
-            ]);
-        }
+    public function after_restore_course() {
+        \format_minimoodlewall\tag_manager::clear_tag_cache();
+        \format_minimoodlewall\tag_manager::clear_mapping_cache();
     }
-
+}
     /**
      * Clear caches when the restore finishes.
      */

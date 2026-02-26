@@ -333,28 +333,14 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                     $tagids[] = $this->get_tag_id($tagname);
                 }
             }
-            $data['selectedtags'] = implode(',', $tagids);
-        } else {
-            // Default to all available tags if none specified.
-            $alltags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder', 'id');
-            $data['selectedtags'] = implode(',', array_keys($alltags));
-        }
-
-        // Handle tagsetid - resolve from tagset name or auto-detect from selected tags.
-        if (!empty($data['tagset'])) {
-            $data['tagsetid'] = $this->get_tagset_id($data['tagset']);
-            unset($data['tagset']);
-        } else if (empty($data['tagsetid']) && !empty($data['selectedtags'])) {
-            // Auto-detect tagsetid from the first selected tag.
-            $firsttagid = explode(',', $data['selectedtags'])[0];
-            $tagsetid = $DB->get_field('format_minimoodlewall_tags', 'tagsetid', ['id' => $firsttagid]);
-            if ($tagsetid) {
-                $data['tagsetid'] = $tagsetid;
-            }
+            // selectedtags is no longer a course format option, but we still resolve tag names
+            // to IDs for backward compatibility in test data. The IDs are not stored.
+            unset($data['selectedtags']);
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
-        $data['stylevariant'] = $data['stylevariant'] ?? 'classic';
+        $data['activityprofile'] = $data['activityprofile'] ?? $data['stylevariant'] ?? 'classic';
+        unset($data['stylevariant']);
         $data['numsections'] = 0;
 
         return $data;
