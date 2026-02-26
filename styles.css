@@ -1305,3 +1305,7 @@ body.format-minimoodlewall #page-wrapper #page {
   color: #ffc107;
   text-shadow: 0 0 2px rgba(255, 193, 7, 0.4);
 }
+
+body.format-minimoodlewall .mb-0-override {
+  margin-bottom: 0 !important;
+}

@@ -28,6 +28,7 @@ const SELECTORS = {
     PROFILE_SELECT: '#id_activityprofile',
     TAG_OPTION: '.mmw-tag-option[data-profileimages]',
     TAG_IMAGE: '[data-tagimage]',
+    TAG_NAME: '.mmw-tag-name',
 };
 
 /**
@@ -52,7 +53,7 @@ const registerEventListeners = () => {
 };
 
 /**
- * Update all tag images for the selected profile.
+ * Update all tag options for the selected profile (images, names, and enabled state).
  *
  * @param {string} profileName The selected profile name
  */
@@ -60,6 +61,47 @@ const updateTagImages = (profileName) => {
     const tagOptions = document.querySelectorAll(SELECTORS.TAG_OPTION);
 
     tagOptions.forEach((optionElement) => {
+        // --- Enabled / disabled state ---
+        const enabledJson = optionElement.dataset.profileenabled;
+        if (enabledJson) {
+            try {
+                const enabledMap = JSON.parse(enabledJson);
+                const isEnabled = enabledMap[profileName] !== undefined ? !!enabledMap[profileName] : true;
+                const checkboxRow = optionElement.closest('.form-check, .fitem, [data-groupitem]');
+                if (checkboxRow) {
+                    checkboxRow.style.display = isEnabled ? '' : 'none';
+                }
+                // Also uncheck the checkbox when the tag is disabled.
+                if (!isEnabled && checkboxRow) {
+                    const cb = checkboxRow.querySelector('input[type="checkbox"]');
+                    if (cb && cb.checked) {
+                        cb.checked = false;
+                        cb.dispatchEvent(new Event('change', {bubbles: true}));
+                    }
+                }
+            } catch (e) {
+                // Ignore parse errors.
+            }
+        }
+
+        // --- Name override ---
+        const namesJson = optionElement.dataset.profilenames;
+        if (namesJson) {
+            try {
+                const namesMap = JSON.parse(namesJson);
+                const newName = namesMap[profileName];
+                if (newName) {
+                    const nameElement = optionElement.querySelector(SELECTORS.TAG_NAME);
+                    if (nameElement) {
+                        nameElement.textContent = newName;
+                    }
+                }
+            } catch (e) {
+                // Ignore parse errors.
+            }
+        }
+
+        // --- Image switching ---
         const profileImagesJson = optionElement.dataset.profileimages;
         if (!profileImagesJson) {
             return;

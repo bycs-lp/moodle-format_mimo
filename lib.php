@@ -291,11 +291,17 @@ class format_minimoodlewall extends core_courseformat\base {
             // Get the image URL for the current profile.
             $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentprofile);
 
-            // Collect image URLs for all profiles (stored as data attribute for JS).
+            // Collect per-profile image URLs, name overrides, and enabled flags.
             $profileimages = [];
+            $profilenames = [];
+            $profileenabled = [];
             foreach ($profiles as $profile) {
                 $profileimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $profile->name);
                 $profileimages[$profile->name] = $profileimageurl ? $profileimageurl->out(false) : null;
+
+                $pt = \format_minimoodlewall\profile_manager::get_profile_tag_for_profile($tag->id, $profile->id);
+                $profilenames[$profile->name] = ($pt && $pt->name !== null) ? $pt->name : $tag->name;
+                $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
             }
 
             // Render label using mustache template.
@@ -304,6 +310,8 @@ class format_minimoodlewall extends core_courseformat\base {
                 'imageurl' => $imageurl ? $imageurl->out(false) : null,
                 'tagid' => $tag->id,
                 'profileimages' => json_encode($profileimages),
+                'profilenames' => json_encode($profilenames),
+                'profileenabled' => json_encode($profileenabled),
             ];
             $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
@@ -313,7 +321,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 $checkboxname,
                 '',
                 $labelhtml,
-                [],
+                ['class' => 'mb-0-override'],
                 [0, $tag->id]
             );
 

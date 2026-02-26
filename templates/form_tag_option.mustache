@@ -24,10 +24,12 @@
         "name": "Lesen",
         "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
         "tagid": 1,
-        "profileimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}"
+        "profileimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}",
+        "profilenames": "{\"classic\":\"Lesen\",\"dark\":\"Reading\"}",
+        "profileenabled": "{\"classic\":1,\"dark\":0}"
     }
 }}
-<span class="mmw-tag-option d-flex align-items-center" data-tagid="{{tagid}}" data-profileimages="{{profileimages}}">
+<span class="mmw-tag-option d-flex align-items-center mb-3" data-tagid="{{tagid}}" data-profileimages="{{profileimages}}" data-profilenames="{{profilenames}}" data-profileenabled="{{profileenabled}}">
     {{#imageurl}}
     <img src="{{imageurl}}" class="mmw-tag-preview me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
     {{/imageurl}}
