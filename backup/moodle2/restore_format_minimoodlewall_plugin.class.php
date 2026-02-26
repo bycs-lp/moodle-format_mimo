@@ -24,14 +24,11 @@
  */
 
 /**
- * Recreate minimoodlewall tagset and tag data during course restores.
+ * Recreate minimoodlewall profile and tag data during course restores.
  */
 class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     /** @var array Tag IDs restored for this course, used to update selectedtags format option */
     protected $restoredtagids = [];
-
-    /** @var int|null The tagset ID restored for this course, used to update tagsetid format option */
-    protected $restoredtagsetid = null;
 
     /**
      * Declare structures to be processed by the restore task.
@@ -41,26 +38,22 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     protected function define_course_plugin_structure() {
         $paths = [];
 
-        // Styles (global, restored before tags so style IDs can be mapped).
+        // Profiles (global, restored before tags so profile IDs can be mapped).
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_style',
-            $this->get_pathfor('/mmw_styles/mmw_style')
+            'format_minimoodlewall_profile',
+            $this->get_pathfor('/mmw_profiles/mmw_profile')
         );
 
-        // Current backup format: tagsets with nested tags.
-        $paths[] = new restore_path_element(
-            'format_minimoodlewall_tagset',
-            $this->get_pathfor('/mmw_tagsets/mmw_tagset')
-        );
+        // Tags (flat list).
         $paths[] = new restore_path_element(
             'format_minimoodlewall_tag',
-            $this->get_pathfor('/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag')
+            $this->get_pathfor('/mmw_tags/mmw_tag')
         );
 
-        // Style-specific tag images (nested under tags).
+        // Per-profile tag overrides (nested under tags).
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_tag_image',
-            $this->get_pathfor('/mmw_tagsets/mmw_tagset/mmw_tags/mmw_tag/mmw_tag_images/mmw_tag_image')
+            'format_minimoodlewall_profile_tag',
+            $this->get_pathfor('/mmw_tags/mmw_tag/mmw_profile_tags/mmw_profile_tag')
         );
 
         return $paths;
@@ -73,63 +66,36 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      */
     protected function define_module_plugin_structure() {
         $paths = [];
-        // Standard module-level plugin payload.
         $paths[] = new restore_path_element('format_minimoodlewall_cmtag', $this->get_pathfor('/mmw_cmtag'));
         return $paths;
     }
 
     /**
-     * Restore style definitions. Reuse existing style if name matches.
+     * Restore profile definitions. Reuse existing profile if name matches.
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_style($data) {
+    public function process_format_minimoodlewall_profile($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
-        // Styles are unique by name; reuse existing ones.
-        if ($existing = $DB->get_record('format_minimoodlewall_styles', ['name' => $data->name])) {
-            $this->set_mapping('format_minimoodlewall_style', $oldid, $existing->id);
+        // Profiles are unique by name; reuse existing ones.
+        if ($existing = $DB->get_record('format_minimoodlewall_profiles', ['name' => $data->name])) {
+            $this->set_mapping('format_minimoodlewall_profile', $oldid, $existing->id);
             return;
         }
 
         unset($data->id);
         $data->timecreated = time();
         $data->timemodified = time();
-        $newid = $DB->insert_record('format_minimoodlewall_styles', $data);
-        $this->set_mapping('format_minimoodlewall_style', $oldid, $newid);
+        $newid = $DB->insert_record('format_minimoodlewall_profiles', $data);
+        $this->set_mapping('format_minimoodlewall_profile', $oldid, $newid);
     }
 
     /**
-     * Restore tagset definitions. Reuse existing tagset if name matches.
-     *
-     * @param array $data raw backup data
-     */
-    public function process_format_minimoodlewall_tagset($data) {
-        global $DB;
-
-        $data = (object)$data;
-        $oldid = $data->id;
-
-        // Tagsets are unique by name; reuse existing ones when merging courses.
-        if ($existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $data->name])) {
-            $this->set_mapping('format_minimoodlewall_tagset', $oldid, $existing->id);
-            $this->restoredtagsetid = $existing->id;
-            return;
-        }
-
-        unset($data->id);
-        $data->timecreated = time();
-        $data->timemodified = time();
-        $newid = $DB->insert_record('format_minimoodlewall_tagsets', $data);
-        $this->set_mapping('format_minimoodlewall_tagset', $oldid, $newid);
-        $this->restoredtagsetid = $newid;
-    }
-
-    /**
-     * Restore tag definitions. Tags are children of tagsets in the backup.
+     * Restore tag definitions. Tags are now flat (no tagset parent).
      *
      * @param array $data raw backup data
      */
@@ -139,11 +105,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $data = (object)$data;
         $oldid = $data->id;
 
-        // Map tagsetid to the restored tagset ID.
-        $newtagsetid = $this->get_mappingid('format_minimoodlewall_tagset', $data->tagsetid);
-        if ($newtagsetid) {
-            $data->tagsetid = $newtagsetid;
-        }
+        // Remove legacy tagsetid if present in backup data.
+        unset($data->tagsetid);
 
         // Tags are unique by name; reuse existing ones when merging courses.
         if ($existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $data->name])) {
@@ -159,42 +122,42 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
-     * Restore style-specific tag images. Reuse existing record if tagid/styleid combo exists.
+     * Restore per-profile tag overrides. Reuse existing record if tagid/profileid combo exists.
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_tag_image($data) {
+    public function process_format_minimoodlewall_profile_tag($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
-        // Map tagid and styleid to restored IDs.
+        // Map tagid and profileid to restored IDs.
         $newtagid = $this->get_mappingid('format_minimoodlewall_tag', $data->tagid);
-        $newstyleid = $this->get_mappingid('format_minimoodlewall_style', $data->styleid);
+        $newprofileid = $this->get_mappingid('format_minimoodlewall_profile', $data->profileid);
 
-        if (!$newtagid || !$newstyleid) {
+        if (!$newtagid || !$newprofileid) {
             return;
         }
 
         $data->tagid = $newtagid;
-        $data->styleid = $newstyleid;
+        $data->profileid = $newprofileid;
 
-        // Reuse existing tag_image record if the combination already exists.
-        $existing = $DB->get_record('format_minimoodlewall_tag_images', [
+        // Reuse existing profile_tag record if the combination already exists.
+        $existing = $DB->get_record('format_minimoodlewall_profile_tags', [
             'tagid' => $newtagid,
-            'styleid' => $newstyleid,
+            'profileid' => $newprofileid,
         ]);
         if ($existing) {
-            $this->set_mapping('format_minimoodlewall_tag_image', $oldid, $existing->id);
+            $this->set_mapping('format_minimoodlewall_profile_tag', $oldid, $existing->id);
             return;
         }
 
         unset($data->id);
         $data->timecreated = time();
         $data->timemodified = time();
-        $newid = $DB->insert_record('format_minimoodlewall_tag_images', $data);
-        $this->set_mapping('format_minimoodlewall_tag_image', $oldid, $newid);
+        $newid = $DB->insert_record('format_minimoodlewall_profile_tags', $data);
+        $this->set_mapping('format_minimoodlewall_profile_tag', $oldid, $newid);
     }
 
     /**
@@ -207,7 +170,6 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $newcmid = $this->get_mappingid('course_module', $data->cmid);
         $newtagid = $this->get_mappingid('format_minimoodlewall_tag', $data->tagid);
 
-        // Incomplete mapping is expected when the source course had filtered activities.
         if (!$newcmid || !$newtagid) {
             return;
         }
@@ -216,8 +178,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
-     * Reattach tag card/filter files after the course structure has been recreated.
-     * Also update the course's tagsetid and selectedtags format options with restored IDs.
+     * Reattach tag card/filter files and profile-specific files after restore.
+     * Also update the course's selectedtags format option with restored IDs.
      */
     public function after_execute_course() {
         global $DB;
@@ -234,27 +196,21 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         );
         $this->add_related_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\style_manager::FILEAREA_STYLE_CARDIMAGE,
-            'format_minimoodlewall_tag_image'
+            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+            'format_minimoodlewall_profile_tag'
         );
         $this->add_related_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\style_manager::FILEAREA_STYLE_FILTERIMAGE,
-            'format_minimoodlewall_tag_image'
+            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
+            'format_minimoodlewall_profile_tag'
         );
 
         $courseid = $this->task->get_courseid();
-
-        // Update course format option with restored tagset ID.
-        if ($this->restoredtagsetid) {
-            $this->update_format_option($courseid, 'tagsetid', $this->restoredtagsetid);
-        }
 
         // Update course format option with restored tag IDs.
         if (!empty($this->restoredtagids)) {
             $selectedtags = implode(',', array_keys($this->restoredtagids));
 
-            // Check if format option already exists.
             $existing = $DB->get_record('course_format_options', [
                 'courseid' => $courseid,
                 'format' => 'minimoodlewall',
@@ -262,7 +218,6 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             ]);
 
             if ($existing) {
-                // Merge with existing tags.
                 $existingtags = !empty($existing->value) ? explode(',', $existing->value) : [];
                 $mergedtags = array_unique(array_merge($existingtags, array_keys($this->restoredtagids)));
                 $existing->value = implode(',', $mergedtags);
@@ -304,11 +259,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
-     * Clear caches when the restore finishes to expose the imported data immediately.
+     * Clear caches when the restore finishes.
      */
     public function after_restore_course() {
         \format_minimoodlewall\tag_manager::clear_mapping_cache();
         \format_minimoodlewall\tag_manager::clear_tag_cache();
-        \format_minimoodlewall\tagset_manager::clear_tagset_cache();
     }
 }

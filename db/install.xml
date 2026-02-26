@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260108" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
+<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260226" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="format_minimoodlewall_styles" COMMENT="Style variants for minimoodlewall course format">
+    <TABLE NAME="format_minimoodlewall_profiles" COMMENT="Activity profiles for minimoodlewall course format">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="Internal identifier (e.g., classic, light, dark)"/>
@@ -21,11 +21,17 @@
         <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="format_minimoodlewall_tag_images" COMMENT="Style-specific images for tags">
+    <TABLE NAME="format_minimoodlewall_profile_tags" COMMENT="Per-profile overrides for tags (images, name, activity types, enabled state)">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="tagid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to tag"/>
-        <FIELD NAME="styleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to style"/>
+        <FIELD NAME="profileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to profile"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Override tag name (NULL = use base tag name)"/>
+        <FIELD NAME="bgcolor" TYPE="char" LENGTH="7" NOTNULL="false" SEQUENCE="false" COMMENT="Override background color (NULL = use base)"/>
+        <FIELD NAME="activitytype1" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Override first activity type (NULL = use base)"/>
+        <FIELD NAME="activitytype2" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Override second activity type (NULL = use base)"/>
+        <FIELD NAME="activitytype3" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Override third activity type (NULL = use base)"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether tag is available in this profile"/>
         <FIELD NAME="cardimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for card image"/>
         <FIELD NAME="filterimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for filter bar image"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -34,33 +40,15 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="tagid" TYPE="foreign" FIELDS="tagid" REFTABLE="format_minimoodlewall_tags" REFFIELDS="id"/>
-        <KEY NAME="styleid" TYPE="foreign" FIELDS="styleid" REFTABLE="format_minimoodlewall_styles" REFFIELDS="id"/>
+        <KEY NAME="profileid" TYPE="foreign" FIELDS="profileid" REFTABLE="format_minimoodlewall_profiles" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="tagid_styleid_unique" UNIQUE="true" FIELDS="tagid, styleid" COMMENT="Each tag can have only one image set per style"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="format_minimoodlewall_tagsets" COMMENT="Tag set containers grouping related tags">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Tag set name"/>
-        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Optional description"/>
-        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Display order"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="name_unique" UNIQUE="true" FIELDS="name"/>
-        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
+        <INDEX NAME="tagid_profileid_unique" UNIQUE="true" FIELDS="tagid, profileid" COMMENT="Each tag can have only one config per profile"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="format_minimoodlewall_tags" COMMENT="Activity tags for course wall display">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="tagsetid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Reference to parent tag set"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the tag"/>
         <FIELD NAME="cardimage" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for card image"/>
         <FIELD NAME="imgplacement" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="center" SEQUENCE="false" COMMENT="Image placement (center or lower)"/>
@@ -75,10 +63,9 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="tagsetid" TYPE="foreign" FIELDS="tagsetid" REFTABLE="format_minimoodlewall_tagsets" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
-        <INDEX NAME="tagsetid_sortorder" UNIQUE="false" FIELDS="tagsetid, sortorder"/>
+        <INDEX NAME="sortorder" UNIQUE="false" FIELDS="sortorder"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="format_minimoodlewall_cmtags" COMMENT="Maps course modules to tags">

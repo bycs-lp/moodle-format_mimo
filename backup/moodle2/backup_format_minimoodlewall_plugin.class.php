@@ -28,38 +28,38 @@
  */
 class backup_format_minimoodlewall_plugin extends backup_format_plugin {
     /**
-     * Include tagset and tag information used by the course.
+     * Include profile and tag information used by the course.
      *
-     * Structure: mmw_tagsets / mmw_tagset / mmw_tags / mmw_tag
+     * Structure: mmw_profiles / mmw_profile
+     *            mmw_tags / mmw_tag / mmw_profile_tags / mmw_profile_tag
      *
      * @return backup_plugin_element
      * @throws base_element_struct_exception
      */
     protected function define_course_plugin_structure() {
-        // Always branch through the format plugin optigroup so restore can detect the format.
         $plugin = $this->get_plugin_element(null, $this->get_format_condition(), 'minimoodlewall');
-        // Ensure predictable XML like plugin_format_minimoodlewall_course so get_pathfor() works on restore.
         $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
-        $tagsets = new backup_nested_element('mmw_tagsets');
-        $tagset = new backup_nested_element(
-            'mmw_tagset',
+        // Profiles (formerly styles).
+        $profiles = new backup_nested_element('mmw_profiles');
+        $profile = new backup_nested_element(
+            'mmw_profile',
             ['id'],
             [
                 'name',
-                'description',
+                'displayname',
                 'sortorder',
                 'timecreated',
                 'timemodified',
             ]
         );
 
+        // Tags (flat list, no tagset parent).
         $tags = new backup_nested_element('mmw_tags');
         $tag = new backup_nested_element(
             'mmw_tag',
             ['id'],
             [
-                'tagsetid',
                 'name',
                 'cardimage',
                 'imgplacement',
@@ -74,14 +74,20 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ]
         );
 
-        // Style-specific tag images (nested under each tag).
-        $tagimages = new backup_nested_element('mmw_tag_images');
-        $tagimage = new backup_nested_element(
-            'mmw_tag_image',
+        // Per-profile tag overrides (nested under each tag).
+        $profiletags = new backup_nested_element('mmw_profile_tags');
+        $profiletag = new backup_nested_element(
+            'mmw_profile_tag',
             ['id'],
             [
                 'tagid',
-                'styleid',
+                'profileid',
+                'name',
+                'bgcolor',
+                'activitytype1',
+                'activitytype2',
+                'activitytype3',
+                'enabled',
                 'cardimage',
                 'filterimage',
                 'timecreated',
@@ -89,96 +95,61 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ]
         );
 
-        // Styles referenced by tag images.
-        $styles = new backup_nested_element('mmw_styles');
-        $style = new backup_nested_element(
-            'mmw_style',
-            ['id'],
-            [
-                'name',
-                'displayname',
-                'sortorder',
-                'timecreated',
-                'timemodified',
-            ]
-        );
-
         $plugin->add_child($pluginwrapper);
-        $pluginwrapper->add_child($styles);
-        $styles->add_child($style);
-        $pluginwrapper->add_child($tagsets);
-        $tagsets->add_child($tagset);
-        $tagset->add_child($tags);
+        $pluginwrapper->add_child($profiles);
+        $profiles->add_child($profile);
+        $pluginwrapper->add_child($tags);
         $tags->add_child($tag);
-        $tag->add_child($tagimages);
-        $tagimages->add_child($tagimage);
+        $tag->add_child($profiletags);
+        $profiletags->add_child($profiletag);
 
-        // Tagset IDs are annotated for mapping on restore.
-        $tagset->annotate_ids('format_minimoodlewall_tagset', 'id');
-
-        // Tag IDs are annotated so other plugins (modules) can map references later.
+        // Tag IDs annotation.
         $tag->annotate_ids('format_minimoodlewall_tag', 'id');
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE, 'id');
         $tag->annotate_files('format_minimoodlewall', \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE, 'id');
 
-        // Style IDs are annotated for mapping on restore.
-        $style->annotate_ids('format_minimoodlewall_style', 'id');
+        // Profile IDs annotation.
+        $profile->annotate_ids('format_minimoodlewall_profile', 'id');
 
-        // Tag image IDs and file annotations.
-        $tagimage->annotate_ids('format_minimoodlewall_tag_image', 'id');
-        $tagimage->annotate_files(
+        // Profile tag IDs and file annotations.
+        $profiletag->annotate_ids('format_minimoodlewall_profile_tag', 'id');
+        $profiletag->annotate_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\style_manager::FILEAREA_STYLE_CARDIMAGE,
+            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
             'id'
         );
-        $tagimage->annotate_files(
+        $profiletag->annotate_files(
             'format_minimoodlewall',
-            \format_minimoodlewall\style_manager::FILEAREA_STYLE_FILTERIMAGE,
+            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
             'id'
         );
 
-        // Export all styles (global, not course-specific — needed for tag image mapping).
-        $style->set_source_sql(
-            "SELECT DISTINCT d.*
-               FROM {format_minimoodlewall_styles} d
-               JOIN {format_minimoodlewall_tag_images} ti ON ti.styleid = d.id
-               JOIN {format_minimoodlewall_tags} t ON t.id = ti.tagid
+        // Export profiles that have profile_tag records for tags used by this course.
+        $profile->set_source_sql(
+            "SELECT DISTINCT p.*
+               FROM {format_minimoodlewall_profiles} p
+               JOIN {format_minimoodlewall_profile_tags} pt ON pt.profileid = p.id
+               JOIN {format_minimoodlewall_tags} t ON t.id = pt.tagid
                JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
                JOIN {course_modules} cm ON cm.id = cmt.cmid
               WHERE cm.course = :courseid
-           ORDER BY d.sortorder",
+           ORDER BY p.sortorder",
             ['courseid' => backup::VAR_COURSEID]
         );
 
-        // Export all tagsets that have tags used by course modules in this course.
-        $tagset->set_source_sql(
-            "SELECT DISTINCT ts.*
-               FROM {format_minimoodlewall_tagsets} ts
-               JOIN {format_minimoodlewall_tags} t ON t.tagsetid = ts.id
-               JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
-               JOIN {course_modules} cm ON cm.id = cmt.cmid
-              WHERE cm.course = :courseid
-           ORDER BY ts.sortorder",
-            ['courseid' => backup::VAR_COURSEID]
-        );
-
-        // Export all tags within each tagset that are used by course modules.
+        // Export all tags used by course modules in this course.
         $tag->set_source_sql(
             "SELECT DISTINCT t.*
                FROM {format_minimoodlewall_tags} t
                JOIN {format_minimoodlewall_cmtags} cmt ON cmt.tagid = t.id
                JOIN {course_modules} cm ON cm.id = cmt.cmid
-              WHERE t.tagsetid = :tagsetid
-                AND cm.course = :courseid
+              WHERE cm.course = :courseid
            ORDER BY t.sortorder",
-            [
-                'tagsetid' => backup::VAR_PARENTID,
-                'courseid' => backup::VAR_COURSEID,
-            ]
+            ['courseid' => backup::VAR_COURSEID]
         );
 
-        // Export style-specific images for each tag.
-        $tagimage->set_source_table('format_minimoodlewall_tag_images', ['tagid' => backup::VAR_PARENTID]);
+        // Export profile-specific overrides for each tag.
+        $profiletag->set_source_table('format_minimoodlewall_profile_tags', ['tagid' => backup::VAR_PARENTID]);
 
         return $plugin;
     }
@@ -190,12 +161,10 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
      * @throws base_element_struct_exception
      */
     protected function define_module_plugin_structure() {
-        // Same idea for per-module data so restore finds plugin_format_minimoodlewall_module.
         $plugin = $this->get_plugin_element(null, $this->get_format_condition(), 'minimoodlewall');
         $pluginwrapper = new backup_nested_element($this->get_recommended_name());
 
         $cmtag = new backup_nested_element('mmw_cmtag', ['cmid'], ['tagid', 'timecreated']);
-        // Per-CM mapping is stored in its own plugin blob for fast lookup during restore.
         $cmtag->set_source_table('format_minimoodlewall_cmtags', ['cmid' => backup::VAR_MODID]);
 
         $plugin->add_child($pluginwrapper);

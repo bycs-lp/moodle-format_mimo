@@ -28,6 +28,6 @@
 function xmldb_format_minimoodlewall_install() {
     // Initialize default tags.
     \format_minimoodlewall\tag_manager::initialize_default_tags();
-    // Initialize default style variants (classic, light, dark).
-    \format_minimoodlewall\style_manager::initialize_default_styles();
+    // Initialize default activity profiles (classic, light, dark).
+    \format_minimoodlewall\profile_manager::initialize_default_profiles();
 }

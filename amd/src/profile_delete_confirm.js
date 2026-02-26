@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Style deletion confirmation modal.
+ * Activity profile deletion confirmation modal.
  *
- * @module     format_minimoodlewall/style_delete_confirm
+ * @module     format_minimoodlewall/profile_delete_confirm
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,11 +27,11 @@ import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 
 const SELECTORS = {
-    DELETE_STYLE: '[data-action="delete-style"]',
+    DELETE_PROFILE: '[data-action="delete-profile"]',
 };
 
 /**
- * Initialize the style deletion confirmation.
+ * Initialize the profile deletion confirmation.
  */
 export const init = () => {
     registerEventListeners();
@@ -42,27 +42,27 @@ export const init = () => {
  */
 const registerEventListeners = () => {
     document.addEventListener('click', (event) => {
-        const deleteButton = event.target.closest(SELECTORS.DELETE_STYLE);
+        const deleteButton = event.target.closest(SELECTORS.DELETE_PROFILE);
         if (deleteButton) {
             event.preventDefault();
-            handleDeleteStyle(deleteButton);
+            handleDeleteProfile(deleteButton);
         }
     });
 };
 
 /**
- * Handle style deletion with confirmation modal.
+ * Handle profile deletion with confirmation modal.
  *
  * @param {HTMLElement} button The delete button element
  */
-const handleDeleteStyle = async(button) => {
+const handleDeleteProfile = async(button) => {
     try {
-        const styleName = button.dataset.styleName;
+        const profileName = button.dataset.profileName;
         const deleteUrl = button.href;
 
         const modal = await ModalDeleteCancel.create({
-            title: getString('deletestyle', 'format_minimoodlewall'),
-            body: getString('confirmdeletestyle', 'format_minimoodlewall', styleName),
+            title: getString('deleteprofile', 'format_minimoodlewall'),
+            body: getString('confirmdeleteprofile', 'format_minimoodlewall', profileName),
         });
 
         modal.getRoot().on(ModalEvents.delete, () => {

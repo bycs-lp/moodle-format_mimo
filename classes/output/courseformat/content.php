@@ -47,16 +47,16 @@ class content extends content_base {
 
         // Get the course format options.
         $course = $this->format->get_course();
-        $stylevariant = $course->stylevariant ?? 'classic';
+        $activityprofile = $course->activityprofile ?? 'classic';
 
-        // Validate style exists in database, fallback to classic if not.
-        $style = \format_minimoodlewall\style_manager::get_style_by_name($stylevariant);
-        if (!$style) {
-            $stylevariant = 'classic';
+        // Validate profile exists in database, fallback to classic if not.
+        $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($activityprofile);
+        if (!$profile) {
+            $activityprofile = 'classic';
         }
 
-        $data->stylevariant = $stylevariant;
-        $data->styleclass = 'minimoodlewall-style-' . $stylevariant;
+        $data->stylevariant = $activityprofile;
+        $data->styleclass = 'minimoodlewall-style-' . $activityprofile;
 
         // Resolve wallcolor: "default" means no override (style's own background applies).
         $wallcolor = $course->wallcolor ?? 'default';

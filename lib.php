@@ -151,17 +151,13 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 1,
                 'type' => PARAM_BOOL,
             ],
-            'stylevariant' => [
+            'activityprofile' => [
                 'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
             'wallcolor' => [
                 'default' => 'default',
                 'type' => PARAM_ALPHANUMEXT,
-            ],
-            'tagsetid' => [
-                'default' => 0,
-                'type' => PARAM_INT,
             ],
             // selectedtags is handled manually in create_edit_form_elements() with custom checkboxes.
             'selectedtags' => [
@@ -190,22 +186,22 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'advcheckbox',
             ];
-            // Load styles dynamically from database.
-            $styleoptions = [];
-            $styles = \format_minimoodlewall\style_manager::get_all_styles();
-            foreach ($styles as $style) {
-                $styleoptions[$style->name] = $style->displayname;
+            // Load activity profiles dynamically from database.
+            $profileoptions = [];
+            $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();
+            foreach ($profiles as $profile) {
+                $profileoptions[$profile->name] = $profile->displayname;
             }
-            // Fallback to default if no styles exist.
-            if (empty($styleoptions)) {
-                $styleoptions['classic'] = get_string('style_classic', 'format_minimoodlewall');
+            // Fallback to default if no profiles exist.
+            if (empty($profileoptions)) {
+                $profileoptions['classic'] = get_string('profile_classic', 'format_minimoodlewall');
             }
-            $courseformatoptions['stylevariant'] += [
-                'label' => get_string('setting_style', 'format_minimoodlewall'),
-                'help' => 'setting_style',
+            $courseformatoptions['activityprofile'] += [
+                'label' => get_string('setting_activityprofile', 'format_minimoodlewall'),
+                'help' => 'setting_activityprofile',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
-                'element_attributes' => [$styleoptions],
+                'element_attributes' => [$profileoptions],
             ];
             $wallcoloroptions = [
                 'default' => get_string('wallcolor_default', 'format_minimoodlewall'),
@@ -222,11 +218,6 @@ class format_minimoodlewall extends core_courseformat\base {
             ];
             // selectedtags is a hidden element - custom checkboxes are added in create_edit_form_elements().
             $courseformatoptions['selectedtags'] += [
-                'label' => '',
-                'element_type' => 'hidden',
-            ];
-            // tagsetid is a hidden element - custom select is added in create_edit_form_elements().
-            $courseformatoptions['tagsetid'] += [
                 'label' => '',
                 'element_type' => 'hidden',
             ];
@@ -251,20 +242,19 @@ class format_minimoodlewall extends core_courseformat\base {
         // Let parent handle all standard elements first.
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
-        // Only add tagset/tag elements for course edit form (not sections).
+        // Only add tag elements for course edit form (not sections).
         if ($forsection) {
             return $elements;
         }
 
-        // Get all tagsets.
-        $tagsets = \format_minimoodlewall\tagset_manager::get_all_tagsets();
-        if (empty($tagsets)) {
+        // Get all tags (flat list, no tagsets).
+        $alltags = \format_minimoodlewall\tag_manager::get_all_tags();
+        if (empty($alltags)) {
             return $elements;
         }
 
         // Get current course data.
         $course = $this->get_course();
-        $currenttagsetid = $course->tagsetid ?? 0;
 
         // Get currently selected tags from course format options.
         $selectedtagids = [];
@@ -275,23 +265,6 @@ class format_minimoodlewall extends core_courseformat\base {
 
         // Set default values for the hidden fields (created by parent).
         $mform->setDefault('selectedtags', $selectedtagsvalue);
-        $mform->setDefault('tagsetid', $currenttagsetid);
-
-        // Build tagset dropdown options.
-        $tagsetoptions = [0 => get_string('selecttagset', 'format_minimoodlewall')];
-        foreach ($tagsets as $tagset) {
-            $tagsetoptions[$tagset->id] = format_string($tagset->name);
-        }
-
-        // Add tagset select dropdown.
-        $elements[] = $mform->addElement(
-            'select',
-            'tagsetid_select',
-            get_string('setting_tagsetid', 'format_minimoodlewall'),
-            $tagsetoptions
-        );
-        $mform->addHelpButton('tagsetid_select', 'setting_tagsetid', 'format_minimoodlewall');
-        $mform->setDefault('tagsetid_select', $currenttagsetid);
 
         // Create a label/header for the tag checkboxes section.
         $elements[] = $mform->addElement(
@@ -304,60 +277,55 @@ class format_minimoodlewall extends core_courseformat\base {
         // Prepare renderer for mustache templates.
         $output = $PAGE->get_renderer('format_minimoodlewall');
 
-        // Get current style variant for displaying correct images.
-        $currentstyle = $course->stylevariant ?? 'classic';
+        // Get current activity profile for displaying correct images.
+        $currentprofile = $course->activityprofile ?? 'classic';
 
-        // Get all styles for passing image URLs to template data attributes.
-        $styles = \format_minimoodlewall\style_manager::get_all_styles();
+        // Get all profiles for passing image URLs to template data attributes.
+        $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();
 
-        // Add checkboxes for ALL tags across ALL tagsets, with data-tagsetid for JS filtering.
+        // Add checkboxes for ALL tags with profile image data attributes.
         $alltagids = [];
-        foreach ($tagsets as $tagset) {
-            $tagsinthistagset = \format_minimoodlewall\tag_manager::get_tags_by_tagset($tagset->id);
-            foreach ($tagsinthistagset as $tag) {
-                $alltagids[] = $tag->id;
+        foreach ($alltags as $tag) {
+            $alltagids[] = $tag->id;
 
-                // Get the image URL for the current style.
-                $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentstyle);
+            // Get the image URL for the current profile.
+            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentprofile);
 
-                // Collect image URLs for all styles (stored as data attribute for JS).
-                $styleimages = [];
-                foreach ($styles as $style) {
-                    $styleimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $style->name);
-                    $styleimages[$style->name] = $styleimageurl ? $styleimageurl->out(false) : null;
-                }
+            // Collect image URLs for all profiles (stored as data attribute for JS).
+            $profileimages = [];
+            foreach ($profiles as $profile) {
+                $profileimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $profile->name);
+                $profileimages[$profile->name] = $profileimageurl ? $profileimageurl->out(false) : null;
+            }
 
-                // Render label using mustache template.
-                $templatecontext = [
-                    'name' => $tag->name,
-                    'imageurl' => $imageurl ? $imageurl->out(false) : null,
-                    'tagid' => $tag->id,
-                    'styleimages' => json_encode($styleimages),
-                ];
-                $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
+            // Render label using mustache template.
+            $templatecontext = [
+                'name' => $tag->name,
+                'imageurl' => $imageurl ? $imageurl->out(false) : null,
+                'tagid' => $tag->id,
+                'profileimages' => json_encode($profileimages),
+            ];
+            $labelhtml = $output->render_from_template('format_minimoodlewall/form_tag_option', $templatecontext);
 
-                $checkboxname = 'selectedtag_' . $tag->id;
-                $attrs = ['data-tagsetid' => $tagset->id];
-                $elements[] = $mform->addElement(
-                    'advcheckbox',
-                    $checkboxname,
-                    '',
-                    $labelhtml,
-                    $attrs,
-                    [0, $tag->id]
-                );
+            $checkboxname = 'selectedtag_' . $tag->id;
+            $elements[] = $mform->addElement(
+                'advcheckbox',
+                $checkboxname,
+                '',
+                $labelhtml,
+                [],
+                [0, $tag->id]
+            );
 
-                // Set default checked state based on current selection.
-                if (in_array($tag->id, $selectedtagids)) {
-                    $mform->setDefault($checkboxname, $tag->id);
-                }
+            // Set default checked state based on current selection.
+            if (in_array($tag->id, $selectedtagids)) {
+                $mform->setDefault($checkboxname, $tag->id);
             }
         }
 
         // Initialize JS modules.
         $PAGE->requires->js_call_amd('format_minimoodlewall/tag_checkbox_sync', 'init', [$alltagids]);
-        $PAGE->requires->js_call_amd('format_minimoodlewall/style_image_switcher', 'init');
-        $PAGE->requires->js_call_amd('format_minimoodlewall/tagset_tag_filter', 'init');
+        $PAGE->requires->js_call_amd('format_minimoodlewall/profile_image_switcher', 'init');
 
         return $elements;
     }
@@ -372,12 +340,6 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function edit_form_validation($data, $files, $errors) {
         $errors = parent::edit_form_validation($data, $files, $errors);
-
-        // Validate tagset is selected.
-        $tagsetid = $data['tagsetid_select'] ?? ($data['tagsetid'] ?? 0);
-        if (empty($tagsetid)) {
-            $errors['tagsetid_select'] = get_string('error_required_tagset', 'format_minimoodlewall');
-        }
 
         // Collect selected tags from individual checkboxes.
         $selectedtags = [];
@@ -417,11 +379,6 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function update_course_format_options($data, $oldcourse = null) {
         $data = (array)$data;
-
-        // Sync tagsetid from the custom select to the hidden format option.
-        if (isset($data['tagsetid_select'])) {
-            $data['tagsetid'] = (int)$data['tagsetid_select'];
-        }
 
         // Collect selected tags from individual checkbox fields (selectedtag_1, selectedtag_2, etc.).
         $selectedtags = [];
@@ -579,8 +536,8 @@ function format_minimoodlewall_pluginfile(
     $allowedareas = [
         \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
         \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
-        \format_minimoodlewall\style_manager::FILEAREA_STYLE_CARDIMAGE,
-        \format_minimoodlewall\style_manager::FILEAREA_STYLE_FILTERIMAGE,
+        \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+        \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
     ];
     if (!in_array($filearea, $allowedareas, true)) {
         return false;

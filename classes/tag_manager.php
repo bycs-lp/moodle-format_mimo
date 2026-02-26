@@ -215,13 +215,13 @@ class tag_manager {
      * Build the display URL for the card image.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $stylename Optional style name to get style-specific image
+     * @param string|null $profilename Optional profile name to get profile-specific image
      * @return moodle_url|null
      */
-    public static function get_cardimage_url(\stdClass $tag, ?string $stylename = null): ?moodle_url {
-        // If style specified, try to get style-specific image first.
-        if ($stylename !== null) {
-            $url = style_manager::get_cardimage_url_by_name($tag->id, $stylename);
+    public static function get_cardimage_url(\stdClass $tag, ?string $profilename = null): ?moodle_url {
+        // If profile specified, try to get profile-specific image first.
+        if ($profilename !== null) {
+            $url = profile_manager::get_cardimage_url_by_name($tag->id, $profilename);
             if ($url) {
                 return $url;
             }
@@ -234,13 +234,13 @@ class tag_manager {
      * Build the display URL for the filter image area.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $stylename Optional style name to get style-specific image
+     * @param string|null $profilename Optional profile name to get profile-specific image
      * @return moodle_url|null
      */
-    public static function get_filterimage_url(\stdClass $tag, ?string $stylename = null): ?moodle_url {
-        // If style specified, try to get style-specific image first.
-        if ($stylename !== null) {
-            $url = style_manager::get_filterimage_url_by_name($tag->id, $stylename);
+    public static function get_filterimage_url(\stdClass $tag, ?string $profilename = null): ?moodle_url {
+        // If profile specified, try to get profile-specific image first.
+        if ($profilename !== null) {
+            $url = profile_manager::get_filterimage_url_by_name($tag->id, $profilename);
             if ($url) {
                 return $url;
             }
@@ -377,6 +377,9 @@ class tag_manager {
      * - course_tags_{id}: Array of selected tag IDs for course {id}
      * - cm_{id}: Course module to tag ID mapping (in mappingcache)
      *
+     * Note: Tagset-related cache keys (tagset_tags_*, all_tagsets, tagset_*) were removed
+     * in the tagset→flat migration.
+     *
      * @return void
      */
     private static function init_caches(): void {
@@ -402,31 +405,6 @@ class tag_manager {
 
         if ($tags === false) {
             $tags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder ASC, id ASC');
-            self::$tagcache->set($cachekey, $tags);
-        }
-
-        return $tags;
-    }
-
-    /**
-     * Get tags belonging to a specific tagset.
-     *
-     * @param int $tagsetid Tagset ID
-     * @return array Array of tag records sorted by sortorder
-     */
-    public static function get_tags_by_tagset(int $tagsetid): array {
-        global $DB;
-        self::init_caches();
-
-        $cachekey = 'tagset_tags_' . $tagsetid;
-        $tags = self::$tagcache->get($cachekey);
-
-        if ($tags === false) {
-            $tags = $DB->get_records(
-                'format_minimoodlewall_tags',
-                ['tagsetid' => $tagsetid],
-                'sortorder ASC, id ASC'
-            );
             self::$tagcache->set($cachekey, $tags);
         }
 
@@ -497,7 +475,6 @@ class tag_manager {
     /**
      * Create a new tag.
      *
-     * @param int $tagsetid ID of the parent tagset
      * @param string $name Tag name
      * @param string|null $cardimage Card image filename
      * @param string|null $filterimage Filter image filename
@@ -509,7 +486,6 @@ class tag_manager {
      * @return int ID of the created tag
      */
     public static function create_tag(
-        int $tagsetid,
         string $name,
         ?string $cardimage = null,
         ?string $filterimage = null,
@@ -521,16 +497,15 @@ class tag_manager {
     ): int {
         global $DB;
 
-        // Get next sort order within the tagset.
+        // Get next sort order globally.
         $maxsort = $DB->get_field(
             'format_minimoodlewall_tags',
             'MAX(sortorder)',
-            ['tagsetid' => $tagsetid]
+            []
         );
         $sortorder = $maxsort ? (int)$maxsort + 1 : 0;
 
         $record = new \stdClass();
-        $record->tagsetid = $tagsetid;
         $record->name = $name;
         $record->cardimage = $cardimage;
         $record->filterimage = $filterimage;
@@ -545,10 +520,9 @@ class tag_manager {
 
         $id = $DB->insert_record('format_minimoodlewall_tags', $record);
 
-        // Invalidate all tags cache, tagset tags cache, and cache the new tag.
+        // Invalidate all tags cache and cache the new tag.
         self::init_caches();
         self::$tagcache->delete('all_tags');
-        self::$tagcache->delete('tagset_tags_' . $tagsetid);
 
         // Fetch and cache the created tag to ensure consistency.
         $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
@@ -592,10 +566,6 @@ class tag_manager {
     public static function update_tag(int $id, array $data): bool {
         global $DB;
 
-        // Get tagsetid before update for cache invalidation.
-        $oldtag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
-        $oldtagsetid = $oldtag ? $oldtag->tagsetid : null;
-
         $record = new \stdClass();
         $record->id = $id;
         $record->timemodified = time();
@@ -609,19 +579,10 @@ class tag_manager {
 
         $result = $DB->update_record('format_minimoodlewall_tags', $record);
 
-        // Invalidate specific cache entries.
+        // Invalidate cache entries.
         self::init_caches();
         self::$tagcache->delete('tag_' . $id);
         self::$tagcache->delete('all_tags');
-
-        // Invalidate tagset tags cache.
-        if ($oldtagsetid) {
-            self::$tagcache->delete('tagset_tags_' . $oldtagsetid);
-        }
-        // If tagsetid changed, also invalidate the new tagset.
-        if (isset($data['tagsetid']) && $data['tagsetid'] != $oldtagsetid) {
-            self::$tagcache->delete('tagset_tags_' . $data['tagsetid']);
-        }
 
         return $result;
     }
@@ -635,22 +596,18 @@ class tag_manager {
     public static function delete_tag(int $id): bool {
         global $DB;
 
-        // Get tagsetid for cache invalidation before deletion.
-        $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
-        $tagsetid = $tag ? $tag->tagsetid : null;
-
         // Delete all mappings for this tag.
         $DB->delete_records('format_minimoodlewall_cmtags', ['tagid' => $id]);
 
+        // Delete profile_tags records for this tag.
+        profile_manager::delete_profile_tags_for_tag($id);
+
         $result = $DB->delete_records('format_minimoodlewall_tags', ['id' => $id]);
 
-        // Invalidate specific cache entries.
+        // Invalidate cache entries.
         self::init_caches();
         self::$tagcache->delete('tag_' . $id);
         self::$tagcache->delete('all_tags');
-        if ($tagsetid) {
-            self::$tagcache->delete('tagset_tags_' . $tagsetid);
-        }
         self::clear_mapping_cache();
 
         return $result;
@@ -797,18 +754,6 @@ class tag_manager {
             return true; // Already initialized.
         }
 
-        // Create or find the default tagset.
-        $defaulttagsetname = get_string('defaulttags', 'format_minimoodlewall');
-        $existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $defaulttagsetname]);
-        if ($existing) {
-            $tagsetid = $existing->id;
-        } else {
-            $tagsetid = tagset_manager::create_tagset(
-                $defaulttagsetname,
-                'Default tag set created during installation.'
-            );
-        }
-
         // Create default tags.
         $defaulttags = [
             ['name' => get_string('tag_reading', 'format_minimoodlewall'),
@@ -853,7 +798,6 @@ class tag_manager {
 
         foreach ($defaulttags as $tag) {
             $tagid = self::create_tag(
-                $tagsetid,
                 $tag['name'],
                 $tag['cardimage'],
                 $tag['filterimage'],

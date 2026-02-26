@@ -14,24 +14,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Style image switcher for course settings form.
+ * Activity profile image switcher for course settings form.
  *
- * Updates tag preview images when the style variant dropdown is changed.
- * Image URLs are read from data-styleimages attributes on each tag option.
+ * Updates tag preview images when the activity profile dropdown is changed.
+ * Image URLs are read from data-profileimages attributes on each tag option.
  *
- * @module     format_minimoodlewall/style_image_switcher
+ * @module     format_minimoodlewall/profile_image_switcher
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 const SELECTORS = {
-    STYLE_SELECT: '#id_stylevariant',
-    TAG_OPTION: '.mmw-tag-option[data-styleimages]',
+    PROFILE_SELECT: '#id_activityprofile',
+    TAG_OPTION: '.mmw-tag-option[data-profileimages]',
     TAG_IMAGE: '[data-tagimage]',
 };
 
 /**
- * Initialize the style image switcher.
+ * Initialize the profile image switcher.
  */
 export const init = () => {
     registerEventListeners();
@@ -41,38 +41,38 @@ export const init = () => {
  * Register event listeners.
  */
 const registerEventListeners = () => {
-    const styleSelect = document.querySelector(SELECTORS.STYLE_SELECT);
-    if (!styleSelect) {
+    const profileSelect = document.querySelector(SELECTORS.PROFILE_SELECT);
+    if (!profileSelect) {
         return;
     }
 
-    styleSelect.addEventListener('change', () => {
-        updateTagImages(styleSelect.value);
+    profileSelect.addEventListener('change', () => {
+        updateTagImages(profileSelect.value);
     });
 };
 
 /**
- * Update all tag images for the selected style.
+ * Update all tag images for the selected profile.
  *
- * @param {string} styleName The selected style name
+ * @param {string} profileName The selected profile name
  */
-const updateTagImages = (styleName) => {
+const updateTagImages = (profileName) => {
     const tagOptions = document.querySelectorAll(SELECTORS.TAG_OPTION);
 
     tagOptions.forEach((optionElement) => {
-        const styleImagesJson = optionElement.dataset.styleimages;
-        if (!styleImagesJson) {
+        const profileImagesJson = optionElement.dataset.profileimages;
+        if (!profileImagesJson) {
             return;
         }
 
-        let styleImages;
+        let profileImages;
         try {
-            styleImages = JSON.parse(styleImagesJson);
+            profileImages = JSON.parse(profileImagesJson);
         } catch (e) {
             return;
         }
 
-        const newImageUrl = styleImages[styleName];
+        const newImageUrl = profileImages[profileName];
         const imageElement = optionElement.querySelector(SELECTORS.TAG_IMAGE);
 
         if (!imageElement) {

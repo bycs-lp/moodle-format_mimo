@@ -15,30 +15,30 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/style_management
+    @template format_minimoodlewall/profile_management
 
-    Style management page template.
+    Activity profile management page template.
 
     Context variables:
-    * createstyleurl - URL to create new style
-    * createstyletext - Text for create style button
-    * nostylestext - Text when no styles exist
-    * hasstyles - Boolean if styles exist
+    * createprofileurl - URL to create new profile
+    * createprofiletext - Text for create profile button
+    * noprofilestext - Text when no profiles exist
+    * hasprofiles - Boolean if profiles exist
     * tableheaders - Object with table header strings
-    * styles - Array of style objects
+    * profiles - Array of profile objects
 
     Example context (json):
     {
-        "createstyleurl": "/path/to/create",
-        "createstyletext": "Create style",
-        "hasstyles": true,
+        "createprofileurl": "/path/to/create",
+        "createprofiletext": "Create profile",
+        "hasprofiles": true,
         "tableheaders": {
             "name": "Name",
             "displayname": "Display name",
             "sortorder": "Sort order",
             "actions": "Actions"
         },
-        "styles": [
+        "profiles": [
             {
                 "id": 1,
                 "name": "classic",
@@ -46,31 +46,31 @@
                 "sortorder": 1,
                 "editurl": "/path/to/edit",
                 "deleteurl": "/path/to/delete",
-                "edittitle": "Edit style",
-                "deletetitle": "Delete style"
+                "edittitle": "Edit profile",
+                "deletetitle": "Delete profile"
             }
         ]
     }
 }}
 
-<div class="style-management" data-region="style-management">
+<div class="profile-management" data-region="profile-management">
     <div class="mb-3">
-        <a href="{{createstyleurl}}" class="btn btn-primary" data-testid="create-style-button">
-            {{createstyletext}}
+        <a href="{{createprofileurl}}" class="btn btn-primary" data-testid="create-profile-button">
+            {{createprofiletext}}
         </a>
     </div>
 
-    {{^hasstyles}}
+    {{^hasprofiles}}
         <div class="alert alert-info">
-            {{nostylestext}}
+            {{noprofilestext}}
         </div>
-    {{/hasstyles}}
+    {{/hasprofiles}}
 
-    {{#hasstyles}}
+    {{#hasprofiles}}
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped generaltable" data-testid="style-list-table">
+                    <table class="table table-striped generaltable" data-testid="profile-list-table">
                         <thead>
                             <tr>
                                 <th>{{tableheaders.name}}</th>
@@ -80,33 +80,33 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{#styles}}
-                                <tr data-testid="style-row" data-style-id="{{id}}" data-style-name="{{name}}">
+                            {{#profiles}}
+                                <tr data-testid="profile-row" data-profile-id="{{id}}" data-profile-name="{{name}}">
                                     <td><code>{{name}}</code></td>
                                     <td>{{displayname}}</td>
                                     <td>{{sortorder}}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-style-button">
+                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-profile-button">
                                                 {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                             </a>
                                             <a href="{{deleteurl}}"
                                                title="{{deletetitle}}"
                                                class="btn btn-sm btn-icon"
-                                               data-action="delete-style"
-                                               data-testid="delete-style-button"
-                                               data-style-id="{{id}}"
-                                               data-style-name="{{name}}">
+                                               data-action="delete-profile"
+                                               data-testid="delete-profile-button"
+                                               data-profile-id="{{id}}"
+                                               data-profile-name="{{name}}">
                                                 {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-                            {{/styles}}
+                            {{/profiles}}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    {{/hasstyles}}
+    {{/hasprofiles}}
 </div>

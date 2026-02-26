@@ -28,7 +28,6 @@ import {get_string as getString} from 'core/str';
 
 const SELECTORS = {
     DELETE_TAG: '[data-action="delete-tag"]',
-    DELETE_TAGSET: '[data-action="delete-tagset"]',
 };
 
 /**
@@ -43,21 +42,11 @@ export const init = () => {
  */
 const registerEventListeners = () => {
     document.addEventListener('click', (event) => {
-        // Handle tag deletion.
         const deleteTagButton = event.target.closest(SELECTORS.DELETE_TAG);
         if (deleteTagButton) {
             event.preventDefault();
             event.stopPropagation();
             handleDeleteTag(deleteTagButton);
-            return;
-        }
-
-        // Handle tagset deletion.
-        const deleteTagsetButton = event.target.closest(SELECTORS.DELETE_TAGSET);
-        if (deleteTagsetButton) {
-            event.preventDefault();
-            event.stopPropagation();
-            handleDeleteTagset(deleteTagsetButton);
         }
     }, true);
 };
@@ -75,31 +64,6 @@ const handleDeleteTag = async(button) => {
         const modal = await ModalDeleteCancel.create({
             title: getString('deletetag', 'format_minimoodlewall'),
             body: getString('confirmdeletetag', 'format_minimoodlewall', tagName),
-        });
-
-        modal.getRoot().on(ModalEvents.delete, () => {
-            window.location.href = deleteUrl;
-        });
-
-        modal.show();
-    } catch (error) {
-        Notification.exception(error);
-    }
-};
-
-/**
- * Handle tagset deletion with confirmation modal.
- *
- * @param {HTMLElement} button The delete button element
- */
-const handleDeleteTagset = async(button) => {
-    try {
-        const tagsetName = button.dataset.tagsetName;
-        const deleteUrl = button.href;
-
-        const modal = await ModalDeleteCancel.create({
-            title: getString('deletetagset', 'format_minimoodlewall'),
-            body: getString('confirmdeletetagset', 'format_minimoodlewall', tagsetName),
         });
 
         modal.getRoot().on(ModalEvents.delete, () => {

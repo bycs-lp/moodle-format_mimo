@@ -548,6 +548,202 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026021000, 'format', 'minimoodlewall');
     }
 
+    // Phase 1: Remove tagset architecture (single flat tag list).
+    // Phase 2: Rename "style" → "profile" (activity profiles).
+    // Phase 3: Extend profile_tags with name/bgcolor/activitytype overrides + enabled flag.
+    if ($oldversion < 2026022600) {
+        // ========== Phase 1: Remove tagsets ==========
+
+        // Step 1: Ensure every course has selectedtags populated from its tagset.
+        $sql = "SELECT cfo.courseid, cfo.value AS tagsetid
+                  FROM {course_format_options} cfo
+                  JOIN {course} c ON c.id = cfo.courseid
+                 WHERE cfo.format = 'minimoodlewall'
+                   AND cfo.name = 'tagsetid'
+                   AND cfo.value IS NOT NULL
+                   AND cfo.value != ''
+                   AND cfo.value != '0'";
+        $courses = $DB->get_records_sql($sql);
+
+        $tagtable = new xmldb_table('format_minimoodlewall_tags');
+        $tagsetidfield = new xmldb_field('tagsetid');
+
+        foreach ($courses as $course) {
+            if ($dbman->field_exists($tagtable, $tagsetidfield)) {
+                $tagids = $DB->get_fieldset_select(
+                    'format_minimoodlewall_tags',
+                    'id',
+                    'tagsetid = :tagsetid',
+                    ['tagsetid' => $course->tagsetid],
+                    'sortorder ASC, id ASC'
+                );
+            } else {
+                $tagids = [];
+            }
+
+            if (!empty($tagids)) {
+                $selectedtags = implode(',', $tagids);
+                $existing = $DB->get_record('course_format_options', [
+                    'courseid' => $course->courseid,
+                    'format' => 'minimoodlewall',
+                    'name' => 'selectedtags',
+                ]);
+                if ($existing) {
+                    if (empty($existing->value)) {
+                        $existing->value = $selectedtags;
+                        $DB->update_record('course_format_options', $existing);
+                    }
+                } else {
+                    $DB->insert_record('course_format_options', (object)[
+                        'courseid' => $course->courseid,
+                        'format' => 'minimoodlewall',
+                        'sectionid' => 0,
+                        'name' => 'selectedtags',
+                        'value' => $selectedtags,
+                    ]);
+                }
+            }
+        }
+
+        // Step 2: Delete tagsetid course format options.
+        $DB->delete_records_select(
+            'course_format_options',
+            "format = 'minimoodlewall' AND name = 'tagsetid'"
+        );
+
+        // Step 3: Drop tagsetid FK + index + column from tags table.
+        $tagtable = new xmldb_table('format_minimoodlewall_tags');
+
+        $key = new xmldb_key('tagsetid', XMLDB_KEY_FOREIGN, ['tagsetid'], 'format_minimoodlewall_tagsets', ['id']);
+        $dbman->drop_key($tagtable, $key);
+
+        $index = new xmldb_index('tagsetid_sortorder', XMLDB_INDEX_NOTUNIQUE, ['tagsetid', 'sortorder']);
+        if ($dbman->index_exists($tagtable, $index)) {
+            $dbman->drop_index($tagtable, $index);
+        }
+
+        $field = new xmldb_field('tagsetid');
+        if ($dbman->field_exists($tagtable, $field)) {
+            $dbman->drop_field($tagtable, $field);
+        }
+
+        // Add standalone sortorder index.
+        $index = new xmldb_index('sortorder', XMLDB_INDEX_NOTUNIQUE, ['sortorder']);
+        if (!$dbman->index_exists($tagtable, $index)) {
+            $dbman->add_index($tagtable, $index);
+        }
+
+        // Step 4: Drop tagsets table.
+        $table = new xmldb_table('format_minimoodlewall_tagsets');
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        // ========== Phase 2: Rename "style" → "profile" ==========
+
+        // Step 5: Rename table styles → profiles.
+        $table = new xmldb_table('format_minimoodlewall_styles');
+        if ($dbman->table_exists($table)) {
+            $dbman->rename_table($table, 'format_minimoodlewall_profiles');
+        }
+
+        // Step 6: Rename tag_images → profile_tags and column styleid → profileid.
+        $table = new xmldb_table('format_minimoodlewall_tag_images');
+        if ($dbman->table_exists($table)) {
+            // Drop old FK and unique index.
+            $key = new xmldb_key('styleid', XMLDB_KEY_FOREIGN, ['styleid'], 'format_minimoodlewall_profiles', ['id']);
+            $dbman->drop_key($table, $key);
+
+            $index = new xmldb_index('tagid_styleid_unique', XMLDB_INDEX_UNIQUE, ['tagid', 'styleid']);
+            if ($dbman->index_exists($table, $index)) {
+                $dbman->drop_index($table, $index);
+            }
+
+            // Rename column.
+            $field = new xmldb_field('styleid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'tagid');
+            if ($dbman->field_exists($table, $field)) {
+                $dbman->rename_field($table, $field, 'profileid');
+            }
+
+            // Re-add index and FK with new names.
+            $index = new xmldb_index('tagid_profileid_unique', XMLDB_INDEX_UNIQUE, ['tagid', 'profileid']);
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+
+            $key = new xmldb_key('profileid', XMLDB_KEY_FOREIGN, ['profileid'], 'format_minimoodlewall_profiles', ['id']);
+            $dbman->add_key($table, $key);
+
+            // Rename the table.
+            $dbman->rename_table($table, 'format_minimoodlewall_profile_tags');
+        }
+
+        // Step 7: Rename course format option stylevariant → activityprofile.
+        $DB->execute(
+            "UPDATE {course_format_options}
+                SET name = 'activityprofile'
+              WHERE format = 'minimoodlewall' AND name = 'stylevariant'"
+        );
+
+        // Step 8: Migrate file areas.
+        $DB->execute(
+            "UPDATE {files}
+                SET filearea = 'profiletagcard'
+              WHERE component = 'format_minimoodlewall' AND filearea = 'styletagcard'"
+        );
+        $DB->execute(
+            "UPDATE {files}
+                SET filearea = 'profiletagfilter'
+              WHERE component = 'format_minimoodlewall' AND filearea = 'styletagfilter'"
+        );
+
+        // ========== Phase 3: Extend profile_tags with overrides ==========
+
+        $ptable = new xmldb_table('format_minimoodlewall_profile_tags');
+
+        // Step 9: Add name override column.
+        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'profileid');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        // Step 10: Add bgcolor override column.
+        $field = new xmldb_field('bgcolor', XMLDB_TYPE_CHAR, '7', null, null, null, null, 'name');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        // Step 11: Add activitytype override columns.
+        $field = new xmldb_field('activitytype1', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'bgcolor');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        $field = new xmldb_field('activitytype2', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'activitytype1');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        $field = new xmldb_field('activitytype3', XMLDB_TYPE_CHAR, '50', null, null, null, null, 'activitytype2');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        // Step 12: Add enabled flag.
+        $field = new xmldb_field('enabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'activitytype3');
+        if (!$dbman->field_exists($ptable, $field)) {
+            $dbman->add_field($ptable, $field);
+        }
+
+        // Step 13: Purge all caches.
+        $cache = cache::make('format_minimoodlewall', 'tagconfigurations');
+        $cache->purge();
+        $cache = cache::make('format_minimoodlewall', 'activitytagmappings');
+        $cache->purge();
+
+        upgrade_plugin_savepoint(true, 2026022600, 'format', 'minimoodlewall');
+    }
+
     // Step 11: Move all activities from section 1 to section 0 for minimoodlewall courses.
     // The format now uses section 0 as the sole activity container (previously section 1).
     if ($oldversion < 2026021102) {

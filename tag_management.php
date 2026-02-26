@@ -26,16 +26,13 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use format_minimoodlewall\tag_manager;
-use format_minimoodlewall\tagset_manager;
-use format_minimoodlewall\style_manager;
+use format_minimoodlewall\profile_manager;
 use format_minimoodlewall\form\tag_form;
-use format_minimoodlewall\form\tagset_form;
 
 admin_externalpage_setup('format_minimoodlewall_tags');
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $tagid = optional_param('tagid', 0, PARAM_INT);
-$tagsetid = optional_param('tagsetid', 0, PARAM_INT);
 
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
@@ -44,48 +41,6 @@ $PAGE->set_url('/course/format/minimoodlewall/tag_management.php');
 $PAGE->set_title(get_string('tagmanagement', 'format_minimoodlewall'));
 $PAGE->set_heading(get_string('tagmanagement', 'format_minimoodlewall'));
 
-// Handle create/edit tagset.
-if ($action === 'createtagset' || $action === 'edittagset') {
-    $tagset = null;
-    if ($action === 'edittagset' && $tagsetid) {
-        $tagset = tagset_manager::get_tagset($tagsetid);
-        if ($tagset) {
-            $tagset->tagsetid = $tagset->id;
-        }
-    }
-
-    $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagsetid' => $tagsetid]);
-    $mform = new tagset_form($formurl);
-
-    if ($tagset) {
-        $mform->set_data($tagset);
-    }
-
-    if ($mform->is_cancelled()) {
-        redirect($PAGE->url);
-    } else if ($data = $mform->get_data()) {
-        if (!empty($data->tagsetid)) {
-            tagset_manager::update_tagset($data->tagsetid, [
-                'name' => $data->name,
-                'description' => $data->description ?? '',
-            ]);
-            $message = get_string('edittagset', 'format_minimoodlewall');
-        } else {
-            tagset_manager::create_tagset($data->name, $data->description ?? null);
-            $message = get_string('createtagset', 'format_minimoodlewall');
-        }
-        redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
-    }
-
-    echo $OUTPUT->header();
-    echo $OUTPUT->heading($action === 'createtagset' ?
-        get_string('createtagset', 'format_minimoodlewall') :
-        get_string('edittagset', 'format_minimoodlewall'));
-    $mform->display();
-    echo $OUTPUT->footer();
-    exit;
-}
-
 // Handle create/edit tag.
 if ($action === 'createtag' || $action === 'edittag') {
     $tag = null;
@@ -93,41 +48,35 @@ if ($action === 'createtag' || $action === 'edittag') {
         $tag = tag_manager::get_tag($tagid);
         if ($tag) {
             $tag->tagid = $tag->id;
-            $tagsetid = $tag->tagsetid;
         }
-    }
-
-    if (!$tagsetid) {
-        redirect($PAGE->url, get_string('error_required_tagset', 'format_minimoodlewall'), null,
-            \core\output\notification::NOTIFY_ERROR);
     }
 
     // Pass the current URL with action parameter to the form.
-    $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagid' => $tagid, 'tagsetid' => $tagsetid]);
+    $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagid' => $tagid]);
     $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
 
-    // Prepare form data with style-specific image drafts.
+    // Prepare form data with profile-specific image drafts.
     $formdata = [];
-    $styles = style_manager::get_all_styles();
-    $styleids = array_keys($styles);
+    $profiles = profile_manager::get_all_profiles();
+    $profileids = array_keys($profiles);
 
     if ($tag) {
         $formdata = (array) $tag;
-        $formdata['tagsetid'] = $tagsetid;
-        // Prepare draft areas for each style's images.
-        foreach ($styles as $style) {
-            $formdata['cardimage_style_' . $style->id] = style_manager::prepare_cardimage_draft($tag->id, $style->id);
-            $formdata['filterimage_style_' . $style->id] = style_manager::prepare_filterimage_draft($tag->id, $style->id);
+        // Prepare draft areas for each profile's images.
+        foreach ($profiles as $profile) {
+            $formdata['cardimage_profile_' . $profile->id] =
+                profile_manager::prepare_cardimage_draft($tag->id, $profile->id);
+            $formdata['filterimage_profile_' . $profile->id] =
+                profile_manager::prepare_filterimage_draft($tag->id, $profile->id);
         }
-        $formdata['styleids'] = implode(',', $styleids);
+        $formdata['profileids'] = implode(',', $profileids);
     } else {
-        $formdata['tagsetid'] = $tagsetid;
         // New tag - prepare empty draft areas.
-        foreach ($styles as $style) {
-            $formdata['cardimage_style_' . $style->id] = 0;
-            $formdata['filterimage_style_' . $style->id] = 0;
+        foreach ($profiles as $profile) {
+            $formdata['cardimage_profile_' . $profile->id] = 0;
+            $formdata['filterimage_profile_' . $profile->id] = 0;
         }
-        $formdata['styleids'] = implode(',', $styleids);
+        $formdata['profileids'] = implode(',', $profileids);
     }
     $mform->set_data($formdata);
 
@@ -140,7 +89,6 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->tagid,
                 [
                     'name' => $data->name,
-                    'tagsetid' => $data->tagsetid,
                     'activitytype1' => $data->activitytype1,
                     'activitytype2' => $data->activitytype2,
                     'activitytype3' => $data->activitytype3,
@@ -153,7 +101,6 @@ if ($action === 'createtag' || $action === 'edittag') {
         } else {
             // Create new tag.
             $currenttagid = tag_manager::create_tag(
-                $data->tagsetid,
                 $data->name,
                 null,
                 null,
@@ -166,17 +113,52 @@ if ($action === 'createtag' || $action === 'edittag') {
             $message = get_string('createtag', 'format_minimoodlewall');
         }
 
-        // Save style-specific images.
-        $savedstyleids = !empty($data->styleids) ? explode(',', $data->styleids) : [];
-        foreach ($savedstyleids as $styleid) {
-            $cardfield = 'cardimage_style_' . $styleid;
-            $filterfield = 'filterimage_style_' . $styleid;
+        // Save profile-specific images.
+        $savedprofileids = !empty($data->profileids) ? explode(',', $data->profileids) : [];
+        foreach ($savedprofileids as $profileid) {
+            $cardfield = 'cardimage_profile_' . $profileid;
+            $filterfield = 'filterimage_profile_' . $profileid;
 
             if (isset($data->$cardfield)) {
-                style_manager::save_cardimage_from_draft($currenttagid, (int)$styleid, (int)$data->$cardfield);
+                profile_manager::save_cardimage_from_draft($currenttagid, (int)$profileid, (int)$data->$cardfield);
             }
             if (isset($data->$filterfield)) {
-                style_manager::save_filterimage_from_draft($currenttagid, (int)$styleid, (int)$data->$filterfield);
+                profile_manager::save_filterimage_from_draft($currenttagid, (int)$profileid, (int)$data->$filterfield);
+            }
+        }
+
+        // Save profile-specific override fields.
+        foreach ($savedprofileids as $profileid) {
+            $overrides = [];
+            $namefield = 'profile_name_' . $profileid;
+            $bgcolorfield = 'profile_bgcolor_' . $profileid;
+            $at1field = 'profile_activitytype1_' . $profileid;
+            $at2field = 'profile_activitytype2_' . $profileid;
+            $at3field = 'profile_activitytype3_' . $profileid;
+            $enabledfield = 'profile_enabled_' . $profileid;
+
+            if (isset($data->$namefield)) {
+                $overrides['name'] = $data->$namefield !== '' ? $data->$namefield : null;
+            }
+            if (isset($data->$bgcolorfield)) {
+                $overrides['bgcolor'] = $data->$bgcolorfield !== '' ? $data->$bgcolorfield : null;
+            }
+            if (isset($data->$at1field)) {
+                $overrides['activitytype1'] = $data->$at1field !== '' ? $data->$at1field : null;
+            }
+            if (isset($data->$at2field)) {
+                $overrides['activitytype2'] = $data->$at2field !== '' ? $data->$at2field : null;
+            }
+            if (isset($data->$at3field)) {
+                $overrides['activitytype3'] = $data->$at3field !== '' ? $data->$at3field : null;
+            }
+            if (isset($data->$enabledfield)) {
+                $overrides['enabled'] = (int)$data->$enabledfield;
+            }
+
+            if (!empty($overrides)) {
+                $pt = profile_manager::get_or_create_profile_tag($currenttagid, (int)$profileid);
+                profile_manager::update_profile_tag($pt->id, $overrides);
             }
         }
 
@@ -190,19 +172,6 @@ if ($action === 'createtag' || $action === 'edittag') {
     $mform->display();
     echo $OUTPUT->footer();
     exit;
-}
-
-// Handle delete tagset.
-if ($action === 'deletetagset' && confirm_sesskey()) {
-    if ($tagsetid) {
-        tagset_manager::delete_tagset($tagsetid);
-        redirect(
-            $PAGE->url,
-            get_string('deletetagset', 'format_minimoodlewall'),
-            null,
-            \core\output\notification::NOTIFY_SUCCESS
-        );
-    }
 }
 
 // Handle delete tag.
@@ -224,15 +193,14 @@ echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
 // Initialize delete confirmation modal.
 $PAGE->requires->js_call_amd('format_minimoodlewall/tag_delete_confirm', 'init');
 
-// Build template context with tagsets and their tags.
-$tagsets = tagset_manager::get_all_tagsets();
+// Build template context with flat tag list.
+$tags = tag_manager::get_all_tags();
 
 $templatecontext = [
-    'createtagseturl' => (new moodle_url($PAGE->url, ['action' => 'createtagset']))->out(false),
-    'createtagsettext' => get_string('createtagset', 'format_minimoodlewall'),
-    'notagsetstext' => get_string('notagsets', 'format_minimoodlewall'),
+    'createtagurl' => (new moodle_url($PAGE->url, ['action' => 'createtag']))->out(false),
+    'createtagtext' => get_string('createtag', 'format_minimoodlewall'),
     'notagstext' => get_string('notags', 'format_minimoodlewall'),
-    'hastagsets' => !empty($tagsets),
+    'hastags' => !empty($tags),
     'tableheaders' => [
         'cardimage' => get_string('cardimage', 'format_minimoodlewall'),
         'name' => get_string('tagname', 'format_minimoodlewall'),
@@ -242,63 +210,33 @@ $templatecontext = [
         'activitytype3' => get_string('activitytype3', 'format_minimoodlewall'),
         'actions' => get_string('actions'),
     ],
-    'tagsets' => [],
+    'tags' => [],
 ];
 
-foreach ($tagsets as $tagset) {
-    $tags = tag_manager::get_tags_by_tagset($tagset->id);
+foreach ($tags as $tag) {
+    $cardimgurl = tag_manager::get_cardimage_url($tag);
+    $accentcolor = tag_manager::get_tag_accent_color($tag);
 
-    $tagsetdata = [
-        'id' => $tagset->id,
-        'name' => format_string($tagset->name),
-        'description' => format_string($tagset->description ?? ''),
-        'hastags' => !empty($tags),
-        'createtagurl' => (new moodle_url($PAGE->url, [
-            'action' => 'createtag',
-            'tagsetid' => $tagset->id,
+    $templatecontext['tags'][] = [
+        'id' => $tag->id,
+        'name' => format_string($tag->name),
+        'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : null,
+        'bgcolor' => $accentcolor,
+        'activitytype1' => $tag->activitytype1,
+        'activitytype2' => $tag->activitytype2 ?: '-',
+        'activitytype3' => $tag->activitytype3 ?: '-',
+        'editurl' => (new moodle_url($PAGE->url, [
+            'action' => 'edittag',
+            'tagid' => $tag->id,
         ]))->out(false),
-        'edittagseturl' => (new moodle_url($PAGE->url, [
-            'action' => 'edittagset',
-            'tagsetid' => $tagset->id,
-        ]))->out(false),
-        'deletetagseturl' => (new moodle_url($PAGE->url, [
-            'action' => 'deletetagset',
-            'tagsetid' => $tagset->id,
+        'deleteurl' => (new moodle_url($PAGE->url, [
+            'action' => 'deletetag',
+            'tagid' => $tag->id,
             'sesskey' => sesskey(),
         ]))->out(false),
-        'edittagsettitle' => get_string('edittagset', 'format_minimoodlewall'),
-        'deletetagsettitle' => get_string('deletetagset', 'format_minimoodlewall'),
-        'tags' => [],
+        'edittitle' => get_string('edittag', 'format_minimoodlewall'),
+        'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
     ];
-
-    foreach ($tags as $tag) {
-        $cardimgurl = tag_manager::get_cardimage_url($tag);
-        $accentcolor = tag_manager::get_tag_accent_color($tag);
-
-        $tagsetdata['tags'][] = [
-            'id' => $tag->id,
-            'name' => format_string($tag->name),
-            'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : null,
-            'bgcolor' => $accentcolor,
-            'activitytype1' => $tag->activitytype1,
-            'activitytype2' => $tag->activitytype2 ?: '-',
-            'activitytype3' => $tag->activitytype3 ?: '-',
-            'editurl' => (new moodle_url($PAGE->url, [
-                'action' => 'edittag',
-                'tagid' => $tag->id,
-                'tagsetid' => $tagset->id,
-            ]))->out(false),
-            'deleteurl' => (new moodle_url($PAGE->url, [
-                'action' => 'deletetag',
-                'tagid' => $tag->id,
-                'sesskey' => sesskey(),
-            ]))->out(false),
-            'edittitle' => get_string('edittag', 'format_minimoodlewall'),
-            'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
-        ];
-    }
-
-    $templatecontext['tagsets'][] = $tagsetdata;
 }
 
 echo $OUTPUT->render_from_template('format_minimoodlewall/tag_management', $templatecontext);

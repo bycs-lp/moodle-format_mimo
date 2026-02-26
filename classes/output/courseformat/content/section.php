@@ -53,7 +53,7 @@ class section extends section_base {
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
         $enablefiltering = !empty($options['enablefiltering']);
-        $stylevariant = $options['stylevariant'] ?? 'classic';
+        $stylevariant = $options['activityprofile'] ?? 'classic';
         $isediting = $PAGE->user_is_editing();
 
         if (!empty($data->cmlist) && isset($data->cmlist->cms)) {

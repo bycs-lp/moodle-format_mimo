@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Form for editing a tag.
+ * Form for editing a tag with per-profile overrides.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -27,7 +27,7 @@ namespace format_minimoodlewall\form;
 defined('MOODLE_INTERNAL') || die();
 
 use format_minimoodlewall\tag_manager;
-use format_minimoodlewall\style_manager;
+use format_minimoodlewall\profile_manager;
 
 global $CFG;
 require_once($CFG->libdir . '/formslib.php');
@@ -51,9 +51,9 @@ class tag_form extends \moodleform {
         $mform->addElement('hidden', 'tagid');
         $mform->setType('tagid', PARAM_INT);
 
-        // Tagset ID (hidden).
-        $mform->addElement('hidden', 'tagsetid');
-        $mform->setType('tagsetid', PARAM_INT);
+        // ---- Base tag fields ----
+        $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_minimoodlewall'));
+        $mform->setExpanded('basetagheader', true);
 
         // Tag name.
         $mform->addElement('text', 'name', get_string('tagname', 'format_minimoodlewall'), ['size' => 60]);
@@ -130,38 +130,123 @@ class tag_form extends \moodleform {
         $mform->setDefault('bgcolor', $defaultcolor);
         $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
 
-        // Style-specific images section.
-        $mform->addElement('header', 'styleimagesheader', get_string('styleimages', 'format_minimoodlewall'));
-        $mform->setExpanded('styleimagesheader', true);
+        // ---- Per-profile overrides and images ----
+        $profiles = profile_manager::get_all_profiles();
+        $tagid = $this->_customdata['tagid'] ?? 0;
 
-        // Add image uploads for each style.
-        $styles = style_manager::get_all_styles();
-        foreach ($styles as $style) {
-            // Card image for this style.
+        foreach ($profiles as $profile) {
+            $mform->addElement(
+                'header',
+                'profileheader_' . $profile->id,
+                get_string('profileoverrides', 'format_minimoodlewall', $profile->displayname)
+            );
+            $mform->setExpanded('profileheader_' . $profile->id, false);
+
+            // Enabled flag.
+            $mform->addElement(
+                'advcheckbox',
+                'profile_enabled_' . $profile->id,
+                get_string('profiletag_enabled', 'format_minimoodlewall'),
+                get_string('profiletag_enabled_desc', 'format_minimoodlewall'),
+                [],
+                [0, 1]
+            );
+            $mform->setDefault('profile_enabled_' . $profile->id, 1);
+
+            // Override: Tag name.
+            $mform->addElement(
+                'text',
+                'profile_name_' . $profile->id,
+                get_string('profiletag_name', 'format_minimoodlewall'),
+                ['size' => 60]
+            );
+            $mform->setType('profile_name_' . $profile->id, PARAM_TEXT);
+            $mform->addHelpButton('profile_name_' . $profile->id, 'profiletag_name', 'format_minimoodlewall');
+
+            // Override: Background color.
+            $mform->addElement(
+                'text',
+                'profile_bgcolor_' . $profile->id,
+                get_string('profiletag_bgcolor', 'format_minimoodlewall'),
+                ['size' => 8, 'type' => 'color']
+            );
+            $mform->setType('profile_bgcolor_' . $profile->id, PARAM_TEXT);
+            $mform->addHelpButton('profile_bgcolor_' . $profile->id, 'profiletag_bgcolor', 'format_minimoodlewall');
+
+            // Override: Activity types.
+            $overrideactivitytypes = ['' => get_string('inherit_from_base', 'format_minimoodlewall')] + $activitytypes;
+            $mform->addElement(
+                'select',
+                'profile_activitytype1_' . $profile->id,
+                get_string('profiletag_activitytype1', 'format_minimoodlewall'),
+                $overrideactivitytypes
+            );
+            $mform->setType('profile_activitytype1_' . $profile->id, PARAM_TEXT);
+
+            $mform->addElement(
+                'select',
+                'profile_activitytype2_' . $profile->id,
+                get_string('profiletag_activitytype2', 'format_minimoodlewall'),
+                $overrideactivitytypes
+            );
+            $mform->setType('profile_activitytype2_' . $profile->id, PARAM_TEXT);
+
+            $mform->addElement(
+                'select',
+                'profile_activitytype3_' . $profile->id,
+                get_string('profiletag_activitytype3', 'format_minimoodlewall'),
+                $overrideactivitytypes
+            );
+            $mform->setType('profile_activitytype3_' . $profile->id, PARAM_TEXT);
+
+            // Card image for this profile.
             $mform->addElement(
                 'filemanager',
-                'cardimage_style_' . $style->id,
-                get_string('cardimage_for_style', 'format_minimoodlewall', $style->displayname),
+                'cardimage_profile_' . $profile->id,
+                get_string('cardimage_for_profile', 'format_minimoodlewall', $profile->displayname),
                 null,
-                style_manager::get_image_filemanager_options()
+                profile_manager::get_image_filemanager_options()
             );
-            $mform->addHelpButton('cardimage_style_' . $style->id, 'cardimage', 'format_minimoodlewall');
+            $mform->addHelpButton('cardimage_profile_' . $profile->id, 'cardimage', 'format_minimoodlewall');
 
-            // Filter image for this style (optional).
+            // Filter image for this profile.
             $mform->addElement(
                 'filemanager',
-                'filterimage_style_' . $style->id,
-                get_string('filterimage_for_style', 'format_minimoodlewall', $style->displayname),
+                'filterimage_profile_' . $profile->id,
+                get_string('filterimage_for_profile', 'format_minimoodlewall', $profile->displayname),
                 null,
-                style_manager::get_image_filemanager_options()
+                profile_manager::get_image_filemanager_options()
             );
-            $mform->addHelpButton('filterimage_style_' . $style->id, 'filterimage', 'format_minimoodlewall');
+            $mform->addHelpButton('filterimage_profile_' . $profile->id, 'filterimage', 'format_minimoodlewall');
+
+            // Load existing override data if editing.
+            if ($tagid) {
+                $pt = profile_manager::get_profile_tag_for_profile($tagid, $profile->id);
+                if ($pt) {
+                    $mform->setDefault('profile_enabled_' . $profile->id, (int) $pt->enabled);
+                    if ($pt->name !== null) {
+                        $mform->setDefault('profile_name_' . $profile->id, $pt->name);
+                    }
+                    if ($pt->bgcolor !== null) {
+                        $mform->setDefault('profile_bgcolor_' . $profile->id, $pt->bgcolor);
+                    }
+                    if ($pt->activitytype1 !== null) {
+                        $mform->setDefault('profile_activitytype1_' . $profile->id, $pt->activitytype1);
+                    }
+                    if ($pt->activitytype2 !== null) {
+                        $mform->setDefault('profile_activitytype2_' . $profile->id, $pt->activitytype2);
+                    }
+                    if ($pt->activitytype3 !== null) {
+                        $mform->setDefault('profile_activitytype3_' . $profile->id, $pt->activitytype3);
+                    }
+                }
+            }
         }
 
-        // Store style IDs as hidden field for processing.
-        $styleids = array_keys($styles);
-        $mform->addElement('hidden', 'styleids', implode(',', $styleids));
-        $mform->setType('styleids', PARAM_TEXT);
+        // Store profile IDs as hidden field for processing.
+        $profileids = array_keys($profiles);
+        $mform->addElement('hidden', 'profileids', implode(',', $profileids));
+        $mform->setType('profileids', PARAM_TEXT);
 
         // Action buttons.
         $this->add_action_buttons();
@@ -214,13 +299,22 @@ class tag_form extends \moodleform {
             $errors['bgcolor'] = get_string('invalidcolor', 'format_minimoodlewall');
         }
 
-        // Check that at least one style has a card image.
+        // Check per-profile override bgcolor format.
+        $profileids = !empty($data['profileids']) ? explode(',', $data['profileids']) : [];
+        foreach ($profileids as $profileid) {
+            $fieldname = 'profile_bgcolor_' . $profileid;
+            $overridecolor = $data[$fieldname] ?? '';
+            if (!empty($overridecolor) && !preg_match('/^#([0-9a-fA-F]{6})$/', $overridecolor)) {
+                $errors[$fieldname] = get_string('invalidcolor', 'format_minimoodlewall');
+            }
+        }
+
+        // Check that at least one profile has a card image.
         $tagid = $this->_customdata['tagid'] ?? 0;
-        $styleids = !empty($data['styleids']) ? explode(',', $data['styleids']) : [];
         $hasanyimage = false;
 
-        foreach ($styleids as $styleid) {
-            $fieldname = 'cardimage_style_' . $styleid;
+        foreach ($profileids as $profileid) {
+            $fieldname = 'cardimage_profile_' . $profileid;
             $draftid = $data[$fieldname] ?? 0;
             $fileinfo = \file_get_draft_area_info($draftid);
             if (!empty($fileinfo['filecount'])) {
@@ -229,18 +323,17 @@ class tag_form extends \moodleform {
             }
             // Check if existing image exists.
             if ($tagid) {
-                $tagimage = style_manager::get_tag_image_for_style($tagid, (int)$styleid);
-                if ($tagimage && !empty($tagimage->cardimage)) {
+                $profiletag = profile_manager::get_profile_tag_for_profile($tagid, (int)$profileid);
+                if ($profiletag && !empty($profiletag->cardimage)) {
                     $hasanyimage = true;
                     break;
                 }
             }
         }
 
-        if (!$hasanyimage && !empty($styleids)) {
-            // Add error to first style's card image field.
-            $firststyleid = reset($styleids);
-            $errors['cardimage_style_' . $firststyleid] = get_string('atleastoneimage', 'format_minimoodlewall');
+        if (!$hasanyimage && !empty($profileids)) {
+            $firstprofileid = reset($profileids);
+            $errors['cardimage_profile_' . $firstprofileid] = get_string('atleastoneimage', 'format_minimoodlewall');
         }
 
         return $errors;
