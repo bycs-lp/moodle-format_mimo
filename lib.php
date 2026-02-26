@@ -151,12 +151,12 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 1,
                 'type' => PARAM_BOOL,
             ],
-            'activityprofile' => [
-                'default' => 'classic',
-                'type' => PARAM_ALPHANUMEXT,
-            ],
             'wallcolor' => [
                 'default' => 'default',
+                'type' => PARAM_ALPHANUMEXT,
+            ],
+            'activityprofile' => [
+                'default' => 'classic',
                 'type' => PARAM_ALPHANUMEXT,
             ],
         ];
@@ -191,13 +191,6 @@ class format_minimoodlewall extends core_courseformat\base {
             if (empty($profileoptions)) {
                 $profileoptions['classic'] = get_string('profile_classic', 'format_minimoodlewall');
             }
-            $courseformatoptions['activityprofile'] += [
-                'label' => get_string('setting_activityprofile', 'format_minimoodlewall'),
-                'help' => 'setting_activityprofile',
-                'help_component' => 'format_minimoodlewall',
-                'element_type' => 'select',
-                'element_attributes' => [$profileoptions],
-            ];
             $wallcoloroptions = [
                 'default' => get_string('wallcolor_default', 'format_minimoodlewall'),
                 'green'   => get_string('wallcolor_green', 'format_minimoodlewall'),
@@ -210,6 +203,13 @@ class format_minimoodlewall extends core_courseformat\base {
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
                 'element_attributes' => [$wallcoloroptions],
+            ];
+            $courseformatoptions['activityprofile'] += [
+                'label' => get_string('setting_activityprofile', 'format_minimoodlewall'),
+                'help' => 'setting_activityprofile',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'select',
+                'element_attributes' => [$profileoptions],
             ];
         }
 
@@ -293,10 +293,9 @@ class format_minimoodlewall extends core_courseformat\base {
         $elements[] = $mform->addElement(
             'static',
             'tag_preview',
-            get_string('tag_preview_label', 'format_minimoodlewall'),
+            '',
             $previewhtml
         );
-        $mform->addHelpButton('tag_preview', 'tag_preview', 'format_minimoodlewall');
 
         // Initialize JS module for profile-reactive preview.
         $PAGE->requires->js_call_amd('format_minimoodlewall/profile_image_switcher', 'init');

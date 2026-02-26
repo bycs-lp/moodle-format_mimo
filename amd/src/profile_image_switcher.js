@@ -50,6 +50,9 @@ const registerEventListeners = () => {
     profileSelect.addEventListener('change', () => {
         updateTagImages(profileSelect.value);
     });
+
+    // Apply initial state for the currently selected profile.
+    updateTagImages(profileSelect.value);
 };
 
 /**
@@ -67,7 +70,7 @@ const updateTagImages = (profileName) => {
             try {
                 const enabledMap = JSON.parse(enabledJson);
                 const isEnabled = enabledMap[profileName] !== undefined ? !!enabledMap[profileName] : true;
-                itemElement.style.display = isEnabled ? '' : 'none';
+                itemElement.classList.toggle('d-none', !isEnabled);
             } catch (e) {
                 // Ignore parse errors.
             }
