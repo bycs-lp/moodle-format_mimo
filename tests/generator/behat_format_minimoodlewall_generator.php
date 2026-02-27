@@ -35,17 +35,11 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['fullname', 'shortname'],
                 'switchids' => [],
             ],
-            'tagsets' => [
-                'singular' => 'tagset',
-                'datagenerator' => 'tagset',
-                'required' => ['name'],
-                'switchids' => [],
-            ],
             'tags' => [
                 'singular' => 'tag',
                 'datagenerator' => 'tag',
                 'required' => ['name'],
-                'switchids' => ['tagset' => 'tagsetid'],
+                'switchids' => [],
             ],
             'cmtags' => [
                 'singular' => 'cmtag',
@@ -71,9 +65,9 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
                 'required' => ['activitytype', 'description'],
                 'switchids' => ['desctag' => 'desctagid'],
             ],
-            'styles' => [
-                'singular' => 'style',
-                'datagenerator' => 'style',
+            'profiles' => [
+                'singular' => 'profile',
+                'datagenerator' => 'profile',
                 'required' => ['name', 'displayname'],
                 'switchids' => [],
             ],
@@ -191,43 +185,12 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Look up tagset id from name.
-     *
-     * @param string $tagsetname
-     * @return int
-     */
-    protected function get_tagset_id(string $tagsetname): int {
-        global $DB;
-
-        $id = $DB->get_field('format_minimoodlewall_tagsets', 'id', ['name' => $tagsetname]);
-        if (!$id) {
-            throw new Exception('The specified tagset with name "' . $tagsetname . '" does not exist');
-        }
-        return (int)$id;
-    }
-
-    /**
-     * Preprocess tagset data before creating.
-     *
-     * @param array $data
-     * @return array
-     */
-    protected function preprocess_tagset($data) {
-        return $data;
-    }
-
-    /**
      * Preprocess tag data before creating.
      *
      * @param array $data
      * @return array
      */
     protected function preprocess_tag($data) {
-        // Resolve tagset name to ID if provided.
-        if (isset($data['tagset'])) {
-            $data['tagsetid'] = $this->get_tagset_id($data['tagset']);
-            unset($data['tagset']);
-        }
         return $data;
     }
 
@@ -296,11 +259,9 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
 
         $formatoptions = [
             'id' => $course->id,
-            'selectedtags' => $data['selectedtags'],
             'enablefiltering' => $data['enablefiltering'],
-            'stylevariant' => $data['stylevariant'],
+            'activityprofile' => $data['activityprofile'] ?? 'classic',
             'wallcolor' => $data['wallcolor'] ?? 'default',
-            'tagsetid' => $data['tagsetid'] ?? 0,
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
 
@@ -339,8 +300,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
-        $data['activityprofile'] = $data['activityprofile'] ?? $data['stylevariant'] ?? 'classic';
-        unset($data['stylevariant']);
+        $data['activityprofile'] = $data['activityprofile'] ?? 'classic';
         $data['numsections'] = 0;
 
         return $data;

@@ -44,12 +44,10 @@ final class backup_restore_test extends \advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
-        $tagsetid = tagset_manager::create_tagset('Backup Tagset');
-        $tagid = tag_manager::create_tag($tagsetid, 'Backup Tag');
-        
+        $tagid = tag_manager::create_tag('Backup Tag');
+
         // Create course.
         $course = $generator->create_course([
             'format' => 'minimoodlewall',
@@ -84,12 +82,9 @@ final class backup_restore_test extends \advanced_testcase {
 
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
-        $tagsetid = tagset_manager::create_tagset('Field Test Tagset');
         $tagid = tag_manager::create_tag(
-            $tagsetid,
             'Colored Tag',
             null, // cardimage.
             null, // filterimage.
@@ -128,27 +123,25 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
-     * Test that styles and tag_images are backed up and restored.
+     * Test that profiles and profile_tags are backed up and restored.
      */
-    public function test_backup_and_restore_preserves_styles(): void {
+    public function test_backup_and_restore_preserves_profiles(): void {
         global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
 
-        // Create a style.
-        $styleid = style_manager::create_style('teststyle', 'Test Style');
+        // Create a profile.
+        $profileid = profile_manager::create_profile('teststyle', 'Test Style');
 
-        // Create a tagset and tag.
-        $tagsetid = tagset_manager::create_tagset('Style Tagset');
-        $tagid = tag_manager::create_tag($tagsetid, 'Style Tag');
+        // Create a tag.
+        $tagid = tag_manager::create_tag('Profile Tag');
 
-        // Create a tag_image entry linking the tag to the style.
-        $tagimage = style_manager::get_or_create_tag_image($tagid, $styleid);
-        $this->assertNotEmpty($tagimage->id, 'Tag image record should be created');
+        // Create a profile_tag entry linking the tag to the profile.
+        $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $this->assertNotEmpty($profiletag->id, 'Profile tag record should be created');
 
         // Create the course and assign the tag.
         $course = $generator->create_course([
@@ -158,16 +151,16 @@ final class backup_restore_test extends \advanced_testcase {
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_style_' . random_string(6);
+        $backupid = 'mmw_profile_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
-        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored style test');
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile test');
 
-        // Verify the style exists (reused by name or recreated).
-        $style = style_manager::get_style_by_name('teststyle');
-        $this->assertNotNull($style, 'Style should exist after restore');
-        $this->assertEquals('Test Style', $style->displayname);
+        // Verify the profile exists (reused by name or recreated).
+        $profile = profile_manager::get_profile_by_name('teststyle');
+        $this->assertNotNull($profile, 'Profile should exist after restore');
+        $this->assertEquals('Test Style', $profile->displayname);
 
-        // Verify the tag_image record was restored.
+        // Verify the profile_tag record was restored.
         $restoredtag = $DB->get_record_sql(
             "SELECT t.*
                FROM {format_minimoodlewall_cmtags} cmt
@@ -178,23 +171,21 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $this->assertNotFalse($restoredtag, 'Tag should be restored');
 
-        $restoredtagimage = style_manager::get_tag_image_for_style($restoredtag->id, $style->id);
-        $this->assertNotNull($restoredtagimage, 'Tag image should exist after restore');
+        $restoredprofiletag = profile_manager::get_profile_tag_for_profile($restoredtag->id, $profile->id);
+        $this->assertNotNull($restoredprofiletag, 'Profile tag should exist after restore');
     }
 
     /**
      * Test that profile format option is preserved through backup/restore.
      */
-    public function test_backup_and_restore_preserves_profile(): void {
+    public function test_backup_and_restore_preserves_profile_option(): void {
         global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
 
         $generator = $this->getDataGenerator();
-        $tagsetid = tagset_manager::create_tagset('Profile Test');
-        $tagid = tag_manager::create_tag($tagsetid, 'Profile Tag');
+        $tagid = tag_manager::create_tag('Profile Tag');
 
         // Create a course with a specific activity profile.
         $course = $generator->create_course([
@@ -205,9 +196,9 @@ final class backup_restore_test extends \advanced_testcase {
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_profile_' . random_string(6);
+        $backupid = 'mmw_profopt_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
-        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile test');
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile option test');
 
         // The activityprofile should be restored.
         $restoredprofile = $DB->get_field('course_format_options', 'value', [

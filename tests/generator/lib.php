@@ -28,51 +28,7 @@ class format_minimoodlewall_generator extends component_generator_base {
     protected $tagcount = 0;
 
     /**
-     * @var int Counter for tagset creation
-     */
-    protected $tagsetcount = 0;
-
-    /**
-     * Create a tagset.
-     *
-     * @param array|stdClass $record Tagset data (name, description, sortorder)
-     * @return stdClass The created tagset record
-     */
-    public function create_tagset($record = null) {
-        global $DB;
-
-        $this->tagsetcount++;
-        $record = (object)(array)$record;
-
-        if (!isset($record->name)) {
-            $record->name = 'Test Tagset ' . $this->tagsetcount;
-        }
-
-        // Reuse existing tagset with same name.
-        $existing = $DB->get_record('format_minimoodlewall_tagsets', ['name' => $record->name]);
-        if ($existing) {
-            return $existing;
-        }
-
-        if (!isset($record->sortorder)) {
-            $record->sortorder = $this->tagsetcount;
-        }
-        if (!isset($record->timecreated)) {
-            $record->timecreated = time();
-        }
-        if (!isset($record->timemodified)) {
-            $record->timemodified = time();
-        }
-
-        $record->id = $DB->insert_record('format_minimoodlewall_tagsets', $record);
-
-        return $record;
-    }
-
-    /**
      * Create a tag.
-     *
-     * If no tagsetid is provided, a default tagset is created/reused automatically.
      *
      * @param array|stdClass $record Tag data
      * @return stdClass The created tag record
@@ -85,12 +41,6 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         if (!isset($record->name)) {
             $record->name = 'Test Tag ' . $this->tagcount;
-        }
-
-        // Ensure a tagsetid is set — auto-create a default tagset if needed.
-        if (empty($record->tagsetid)) {
-            $defaulttagset = $this->create_tagset(['name' => 'Default Tagset']);
-            $record->tagsetid = $defaulttagset->id;
         }
 
         // Check if a tag with this name already exists and update it instead of creating a duplicate.
@@ -106,7 +56,6 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->activitytype2 = $record->activitytype2 ?? $existing->activitytype2;
             $record->activitytype3 = $record->activitytype3 ?? $existing->activitytype3 ?? null;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
-            $record->tagsetid = $record->tagsetid ?? $existing->tagsetid;
 
             $DB->update_record('format_minimoodlewall_tags', $record);
         } else {
@@ -245,46 +194,46 @@ class format_minimoodlewall_generator extends component_generator_base {
     }
 
     /**
-     * @var int Counter for style creation
+     * @var int Counter for profile creation
      */
-    protected $stylecount = 0;
+    protected $profilecount = 0;
 
     /**
-     * Create a style.
+     * Create a profile.
      *
-     * @param array|stdClass $record Style data with name and displayname
-     * @return stdClass The created style record
+     * @param array|stdClass $record Profile data with name and displayname
+     * @return stdClass The created profile record
      */
-    public function create_style($record = null) {
+    public function create_profile($record = null) {
         global $DB;
 
-        $this->stylecount++;
+        $this->profilecount++;
         $record = (object)(array)$record;
 
         if (!isset($record->name)) {
-            $record->name = 'teststyle' . $this->stylecount;
+            $record->name = 'testprofile' . $this->profilecount;
         }
 
-        // Check if a style with this name already exists.
-        $existing = $DB->get_record('format_minimoodlewall_styles', ['name' => $record->name]);
+        // Check if a profile with this name already exists.
+        $existing = $DB->get_record('format_minimoodlewall_profiles', ['name' => $record->name]);
         if ($existing) {
-            // Update existing style with new values.
+            // Update existing profile with new values.
             $record->id = $existing->id;
             $record->timecreated = $existing->timecreated;
             $record->timemodified = time();
             $record->displayname = $record->displayname ?? $existing->displayname;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
 
-            $DB->update_record('format_minimoodlewall_styles', $record);
+            $DB->update_record('format_minimoodlewall_profiles', $record);
             return $record;
         }
 
-        // Create new style.
+        // Create new profile.
         if (!isset($record->displayname)) {
-            $record->displayname = 'Test Style ' . $this->stylecount;
+            $record->displayname = 'Test Profile ' . $this->profilecount;
         }
         if (!isset($record->sortorder)) {
-            $record->sortorder = $this->stylecount;
+            $record->sortorder = $this->profilecount;
         }
         if (!isset($record->timecreated)) {
             $record->timecreated = time();
@@ -293,7 +242,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->timemodified = time();
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_styles', $record);
+        $record->id = $DB->insert_record('format_minimoodlewall_profiles', $record);
 
         return $record;
     }

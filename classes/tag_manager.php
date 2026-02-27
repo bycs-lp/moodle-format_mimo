@@ -78,7 +78,7 @@ class tag_manager {
      * @param string|null $color Raw user input
      * @return string|null
      */
-    private static function normalize_hex_color(?string $color): ?string {
+    public static function normalize_hex_color(?string $color): ?string {
         if ($color === null) {
             return null;
         }

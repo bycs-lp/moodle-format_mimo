@@ -33,9 +33,6 @@ namespace format_minimoodlewall;
  * @covers     \format_minimoodlewall\tag_manager
  */
 final class tag_manager_test extends \advanced_testcase {
-    /** @var int Test tagset ID */
-    private int $tagsetid;
-
     /**
      * Set up before each test.
      */
@@ -43,8 +40,8 @@ final class tag_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        tagset_manager::clear_tagset_cache();
-        $this->tagsetid = tagset_manager::create_tagset('Test Tagset');
+        tag_manager::clear_tag_cache();
+        tag_manager::clear_mapping_cache();
     }
 
     /**
@@ -79,7 +76,6 @@ final class tag_manager_test extends \advanced_testcase {
      */
     public function test_create_tag(): void {
         $id = tag_manager::create_tag(
-            $this->tagsetid,
             'Reading',
             'reading.svg',
             'reading-small.svg',
@@ -100,14 +96,13 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertEquals('book', $tag->activitytype2);
         $this->assertEquals('center', $tag->imgplacement);
         $this->assertEquals(0, $tag->sortorder);
-        $this->assertEquals($this->tagsetid, $tag->tagsetid);
     }
 
     /**
      * Ensure custom colours are normalised when creating a tag.
      */
     public function test_create_tag_with_bgcolor(): void {
-        $id = tag_manager::create_tag($this->tagsetid, 'Colourful', null, null, null, null, null, 'a1b2c3');
+        $id = tag_manager::create_tag('Colourful', null, null, null, null, null, 'a1b2c3');
         $tag = tag_manager::get_tag($id);
 
         $this->assertEquals('#a1b2c3', $tag->bgcolor);
@@ -124,9 +119,9 @@ final class tag_manager_test extends \advanced_testcase {
         tag_manager::clear_tag_cache();
 
         // Create multiple tags.
-        tag_manager::create_tag($this->tagsetid, 'Tag 1', 'tag1.svg', 'tag1-small.svg', 'page');
-        tag_manager::create_tag($this->tagsetid, 'Tag 2', 'tag2.svg', 'tag2-small.svg', 'quiz');
-        tag_manager::create_tag($this->tagsetid, 'Tag 3', 'tag3.svg', 'tag3-small.svg', 'forum');
+        tag_manager::create_tag('Tag 1', 'tag1.svg', 'tag1-small.svg', 'page');
+        tag_manager::create_tag('Tag 2', 'tag2.svg', 'tag2-small.svg', 'quiz');
+        tag_manager::create_tag('Tag 3', 'tag3.svg', 'tag3-small.svg', 'forum');
 
         $tags = tag_manager::get_all_tags();
 
@@ -180,7 +175,7 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tag.
      */
     public function test_update_tag(): void {
-        $id = tag_manager::create_tag($this->tagsetid, 'Original', 'orig.svg', 'orig-small.svg', 'page');
+        $id = tag_manager::create_tag('Original', 'orig.svg', 'orig-small.svg', 'page');
 
         // Update the tag.
         $result = tag_manager::update_tag($id, [
@@ -210,7 +205,7 @@ final class tag_manager_test extends \advanced_testcase {
      * The accent resolver should prefer stored colours.
      */
     public function test_get_tag_accent_color_prefers_custom_colour(): void {
-        $id = tag_manager::create_tag($this->tagsetid, 'Colourful', null, null, null, null, null, '#445566');
+        $id = tag_manager::create_tag('Colourful', null, null, null, null, null, '#445566');
         $tag = tag_manager::get_tag($id);
 
         $this->assertSame('#445566', tag_manager::get_tag_accent_color($tag));
@@ -220,7 +215,7 @@ final class tag_manager_test extends \advanced_testcase {
      * The accent resolver should fall back to the starters palette.
      */
     public function test_get_tag_accent_color_fallback_uses_palette(): void {
-        $id = tag_manager::create_tag($this->tagsetid, 'Default Colour');
+        $id = tag_manager::create_tag('Default Colour');
         $tag = tag_manager::get_tag($id);
 
         $palette = tag_manager::get_default_accent_palette();
@@ -231,7 +226,7 @@ final class tag_manager_test extends \advanced_testcase {
      * Test deleting a tag.
      */
     public function test_delete_tag(): void {
-        $id = tag_manager::create_tag($this->tagsetid, 'To Delete', 'test.svg', 'test-small.svg', 'page');
+        $id = tag_manager::create_tag('To Delete', 'test.svg', 'test-small.svg', 'page');
 
         // Delete the tag.
         $result = tag_manager::delete_tag($id);
@@ -252,7 +247,7 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Create tag.
-        $tagid = tag_manager::create_tag($this->tagsetid, 'Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tagid = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
 
         // Assign tag to module.
         $result = tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -275,7 +270,7 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Create tag.
-        $tagid = tag_manager::create_tag($this->tagsetid, 'Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tagid = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
 
         // Assign and then unassign.
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -313,11 +308,9 @@ final class tag_manager_test extends \advanced_testcase {
     public function test_initialize_default_tags(): void {
         global $DB;
 
-        // Clear any existing tags and tagsets from install.
+        // Clear any existing tags from install.
         $DB->delete_records('format_minimoodlewall_tags');
-        $DB->delete_records('format_minimoodlewall_tagsets');
         tag_manager::clear_tag_cache();
-        tagset_manager::clear_tagset_cache();
 
         tag_manager::initialize_default_tags();
 
@@ -339,11 +332,9 @@ final class tag_manager_test extends \advanced_testcase {
     public function test_initialize_default_tags_idempotent(): void {
         global $DB;
 
-        // Clear any existing tags and tagsets from install.
+        // Clear any existing tags from install.
         $DB->delete_records('format_minimoodlewall_tags');
-        $DB->delete_records('format_minimoodlewall_tagsets');
         tag_manager::clear_tag_cache();
-        tagset_manager::clear_tagset_cache();
 
         // Call twice.
         tag_manager::initialize_default_tags();

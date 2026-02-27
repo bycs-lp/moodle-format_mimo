@@ -207,11 +207,3 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         \format_minimoodlewall\tag_manager::clear_mapping_cache();
     }
 }
-    /**
-     * Clear caches when the restore finishes.
-     */
-    public function after_restore_course() {
-        \format_minimoodlewall\tag_manager::clear_mapping_cache();
-        \format_minimoodlewall\tag_manager::clear_tag_cache();
-    }
-}
