@@ -2,21 +2,21 @@
 Feature: Course creation with minimoodlewall format
   In order to use the minimal moodle wall format
   As a teacher
-  I need to select tags when creating a course
+  I need to create courses and configure them
 
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > tagsets" exist:
-      | name          |
-      | Test Tagset   |
+    And the following "format_minimoodlewall > profiles" exist:
+      | name    | displayname |
+      | classic | Classic     |
     And the following "format_minimoodlewall > tags" exist:
-      | name      | description       | activitytype1 | activitytype2 | tagset      |
-      | Reading   | Reading materials | page          | book          | Test Tagset |
-      | Practice  | Practice tasks    | assign        | quiz          | Test Tagset |
-      | Biology   | Life science      | assign        | forum         | Test Tagset |
-      | Chemistry | Matter            | quiz          | workshop      | Test Tagset |
+      | name      | activitytype1 | activitytype2 |
+      | Reading   | page          | book          |
+      | Practice  | assign        | quiz          |
+      | Biology   | assign        | forum         |
+      | Chemistry | quiz          | workshop      |
 
   @javascript
   Scenario: Create a course with minimoodlewall format and select tags
@@ -28,11 +28,8 @@ Feature: Course creation with minimoodlewall format
       | Course full name    | Test Course 1        |
       | Course short name   | TC1                  |
       | Format              | Minimal Moodle Wall  |
-      | Enable tag filtering| 1                    |
-      | Style               | Classic              |
-      | Tag group           | Test Tagset          |
-    And I click on "Reading" "checkbox"
-    And I click on "Practice" "checkbox"
+      | Show tag filter bar | 1                    |
+      | Activity Profile    | Classic              |
     And I press "Save and display"
     Then I should see "Test Course 1"
 
@@ -47,7 +44,7 @@ Feature: Course creation with minimoodlewall format
       | Course short name | TC2                 |
       | Format            | Minimal Moodle Wall |
     When I press "Save and display"
-    Then I should see "Please select a tag group"
+    Then I should see "Test Course 2"
 
   @javascript
   Scenario: Tags can be changed after course creation
@@ -61,8 +58,7 @@ Feature: Course creation with minimoodlewall format
     When I am on "Test Course 1" course homepage
     And I navigate to "Settings" in current page administration
     And I expand all fieldsets
-    Then I should see "Selected tags"
-    And "Reading" "checkbox" should exist
+    Then I should see "Activity Profile"
 
   @javascript
   Scenario: Course displays activities in wall format

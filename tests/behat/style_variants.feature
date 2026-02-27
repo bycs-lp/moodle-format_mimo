@@ -1,14 +1,14 @@
 @format @format_minimoodlewall @javascript
-Feature: Style variants in minimoodlewall format
+Feature: Activity profile variants in minimoodlewall format
   In order to customize course appearance
   As a teacher
-  I need to select different style variants
+  I need to select different activity profiles
 
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | student1 | Student   | One      | student1@example.com |
-    And the following "format_minimoodlewall > styles" exist:
+    And the following "format_minimoodlewall > profiles" exist:
       | name    | displayname |
       | classic | Classic     |
       | light   | Light       |
@@ -18,7 +18,7 @@ Feature: Style variants in minimoodlewall format
       | Reading | page          | book          |
 
   @javascript
-  Scenario: Admin can set style variant when creating course
+  Scenario: Admin can set activity profile when creating course
     Given I log in as "admin"
     And I am on site homepage
     And I navigate to "Courses > Add a new course" in site administration
@@ -27,9 +27,7 @@ Feature: Style variants in minimoodlewall format
       | Course short name | TC1                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Tag group" to "Default Tagset"
-    And I click on "Reading" "checkbox"
-    And I set the field "Style" to "Classic"
+    And I set the field "Activity Profile" to "Classic"
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
@@ -42,10 +40,10 @@ Feature: Style variants in minimoodlewall format
     Then ".minimoodlewall-activities.minimoodlewall-style-classic" "css_element" should exist
 
   @javascript
-  Scenario: Course retains selected style variant
+  Scenario: Course retains selected activity profile
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | stylevariant |
-      | Test Course 2 | TC2       | minimoodlewall | light         |
+      | fullname      | shortname | format         | activityprofile |
+      | Test Course 2 | TC2       | minimoodlewall | light           |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC2    | 0       |
@@ -56,8 +54,8 @@ Feature: Style variants in minimoodlewall format
   @javascript
   Scenario: Wallcolor override adds CSS class to activity wall
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | stylevariant | wallcolor |
-      | Test Course 3 | TC3       | minimoodlewall | classic      | dark      |
+      | fullname      | shortname | format         | activityprofile | wallcolor |
+      | Test Course 3 | TC3       | minimoodlewall | classic         | dark      |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC3    | 0       |
@@ -68,8 +66,8 @@ Feature: Style variants in minimoodlewall format
   @javascript
   Scenario: Default wallcolor does not add wallcolor class
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | stylevariant | wallcolor |
-      | Test Course 4 | TC4       | minimoodlewall | classic      | default   |
+      | fullname      | shortname | format         | activityprofile | wallcolor |
+      | Test Course 4 | TC4       | minimoodlewall | classic         | default   |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC4    | 0       |
@@ -89,9 +87,7 @@ Feature: Style variants in minimoodlewall format
       | Course short name | TC5                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    And I set the field "Tag group" to "Default Tagset"
-    And I click on "Reading" "checkbox"
-    And I set the field "Style" to "Classic"
+    And I set the field "Activity Profile" to "Classic"
     And I set the field "Wall colour" to "Green"
     And I press "Save and display"
     And the following "activities" exist:

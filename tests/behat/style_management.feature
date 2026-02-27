@@ -1,90 +1,90 @@
 @format @format_minimoodlewall @javascript
-Feature: Style management in minimoodlewall format
-  In order to customize tag appearance per style variant
+Feature: Activity profile management in minimoodlewall format
+  In order to customize tag appearance per activity profile
   As an admin
-  I need to create and manage style variants
+  I need to create and manage activity profiles
 
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > styles" exist:
+    And the following "format_minimoodlewall > profiles" exist:
       | name    | displayname |
       | classic | Classic     |
       | light   | Light       |
       | dark    | Dark        |
 
   @javascript
-  Scenario: Admin can access style management page
+  Scenario: Admin can access profile management page
     Given I log in as "admin"
     And I am on site homepage
-    When I visit "/course/format/minimoodlewall/style_management.php"
-    Then I should see "Style Management"
-    And I should see "Create Style"
+    When I visit "/course/format/minimoodlewall/profile_management.php"
+    Then I should see "Activity Profile Management"
+    And I should see "Create Activity Profile"
 
   @javascript
-  Scenario: Admin can create a new style
+  Scenario: Admin can create a new profile
     Given I log in as "admin"
     And I am on site homepage
-    And I visit "/course/format/minimoodlewall/style_management.php"
-    When I click on "Create Style" "link"
+    And I visit "/course/format/minimoodlewall/profile_management.php"
+    When I click on "Create Activity Profile" "link"
     And I set the following fields to these values:
-      | Internal Name | customstyle  |
-      | Display Name  | Custom Style |
+      | Internal Name | customprofile  |
+      | Display Name  | Custom Profile |
     And I press "Save changes"
-    Then I should see "Custom Style"
-    And I should see "customstyle"
+    Then I should see "Custom Profile"
+    And I should see "customprofile"
 
   @javascript
-  Scenario: Admin can edit existing styles
-    Given the following "format_minimoodlewall > styles" exist:
-      | name       | displayname    |
-      | teststyle | Test Style    |
+  Scenario: Admin can edit existing profiles
+    Given the following "format_minimoodlewall > profiles" exist:
+      | name        | displayname   |
+      | testprofile | Test Profile  |
     And I log in as "admin"
     And I am on site homepage
-    And I visit "/course/format/minimoodlewall/style_management.php"
-    When I click on "[data-testid='edit-style-button']" "css_element" in the "[data-testid='style-row'][data-style-name='teststyle']" "css_element"
+    And I visit "/course/format/minimoodlewall/profile_management.php"
+    When I click on "[data-testid='edit-profile-button']" "css_element" in the "[data-testid='profile-row'][data-profile-name='testprofile']" "css_element"
     And I set the following fields to these values:
-      | Display Name | Updated Test Style |
+      | Display Name | Updated Test Profile |
     And I press "Save changes"
-    Then I should see "Updated Test Style"
+    Then I should see "Updated Test Profile"
 
   @javascript
-  Scenario: Admin can delete styles that are not in use
-    Given the following "format_minimoodlewall > styles" exist:
-      | name     | displayname  |
-      | unused   | Unused Theme |
+  Scenario: Admin can delete profiles that are not in use
+    Given the following "format_minimoodlewall > profiles" exist:
+      | name     | displayname   |
+      | unused   | Unused Profile |
     And I log in as "admin"
     And I am on site homepage
-    And I visit "/course/format/minimoodlewall/style_management.php"
-    When I click on "[data-testid='delete-style-button']" "css_element" in the "[data-testid='style-row'][data-style-name='unused']" "css_element"
+    And I visit "/course/format/minimoodlewall/profile_management.php"
+    When I click on "[data-testid='delete-profile-button']" "css_element" in the "[data-testid='profile-row'][data-profile-name='unused']" "css_element"
     And I click on "Delete" "button" in the ".modal-dialog" "css_element"
     And I wait until the page is ready
-    Then I should not see "Unused Theme"
+    Then I should not see "Unused Profile"
 
   @javascript
-  Scenario: Admin cannot delete styles that are in use by courses
-    Given the following "format_minimoodlewall > styles" exist:
+  Scenario: Admin cannot delete profiles that are in use by courses
+    Given the following "format_minimoodlewall > profiles" exist:
       | name   | displayname |
       | inuse  | In Use      |
     And the following "format_minimoodlewall > tags" exist:
       | name    | activitytype1 |
       | Reading | page          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname    | shortname | format         | stylevariant |
-      | Test Course | TC1       | minimoodlewall | inuse         |
+      | fullname    | shortname | format         | activityprofile |
+      | Test Course | TC1       | minimoodlewall | inuse           |
     And I log in as "admin"
     And I am on site homepage
-    And I visit "/course/format/minimoodlewall/style_management.php"
-    When I click on "[data-testid='delete-style-button']" "css_element" in the "[data-testid='style-row'][data-style-name='inuse']" "css_element"
+    And I visit "/course/format/minimoodlewall/profile_management.php"
+    When I click on "[data-testid='delete-profile-button']" "css_element" in the "[data-testid='profile-row'][data-profile-name='inuse']" "css_element"
     And I click on "Delete" "button" in the ".modal-dialog" "css_element"
     And I wait until the page is ready
     Then I should see "In Use"
-    And I should see "Cannot delete style"
+    And I should see "Cannot delete"
 
   @javascript
-  Scenario: Styles appear dynamically in course settings dropdown
-    Given the following "format_minimoodlewall > styles" exist:
+  Scenario: Profiles appear dynamically in course settings dropdown
+    Given the following "format_minimoodlewall > profiles" exist:
       | name        | displayname      |
       | newvariant  | New Variant      |
       | anothervar  | Another Variant  |
@@ -99,20 +99,20 @@ Feature: Style management in minimoodlewall format
       | Course short name | TC1                 |
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
-    Then the "Style" select box should contain "New Variant"
-    And the "Style" select box should contain "Another Variant"
+    Then the "Activity Profile" select box should contain "New Variant"
+    And the "Activity Profile" select box should contain "Another Variant"
 
   @javascript
-  Scenario: Course uses selected style variant
-    Given the following "format_minimoodlewall > styles" exist:
+  Scenario: Course uses selected activity profile
+    Given the following "format_minimoodlewall > profiles" exist:
       | name        | displayname    |
-      | mystyle    | My Style      |
+      | mystyle     | My Style       |
     And the following "format_minimoodlewall > tags" exist:
       | name    | activitytype1 |
       | Reading | page          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname    | shortname | format         | stylevariant |
-      | Test Course | TC1       | minimoodlewall | mystyle      |
+      | fullname    | shortname | format         | activityprofile |
+      | Test Course | TC1       | minimoodlewall | mystyle         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC1    | 0       |
@@ -121,7 +121,7 @@ Feature: Style management in minimoodlewall format
     Then ".minimoodlewall-activities.minimoodlewall-style-mystyle" "css_element" should exist
 
   @javascript
-  Scenario: Teachers cannot access style management
+  Scenario: Teachers cannot access profile management
     Given the following "courses" exist:
       | fullname    | shortname | format         |
       | Test Course | TC1       | minimoodlewall |
