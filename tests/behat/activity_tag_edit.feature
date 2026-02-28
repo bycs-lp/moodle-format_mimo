@@ -19,14 +19,10 @@ Feature: Change activity tag via module edit form
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |
-    And the following "activities" exist:
-      | activity | name       | intro          | course | section |
-      | page     | Test Page  | A test page    | TC1    | 0       |
-      | assign   | Test Assign| A test assign  | TC1    | 0       |
-    And the following "format_minimoodlewall > cmtags" exist:
-      | cm          | course | tag      |
-      | Test Page   | TC1    | Reading  |
-      | Test Assign | TC1    | Practice |
+    And the following "format_minimoodlewall > activities" exist:
+      | activity | name       | intro          | course | section | tag      |
+      | page     | Test Page  | A test page    | TC1    | 0       | Reading  |
+      | assign   | Test Assign| A test assign  | TC1    | 0       | Practice |
 
   Scenario: Teacher sees current tag pre-selected when editing an activity
     Given I log in as "teacher1"

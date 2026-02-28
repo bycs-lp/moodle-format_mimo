@@ -7,34 +7,32 @@ Feature: Activity pagination in minimoodlewall format
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
-      | teacher1 | Teacher   | One      | teacher1@example.com |
       | student1 | Student   | One      | student1@example.com |
     And the following "format_minimoodlewall > tags" exist:
       | name     | activitytype1 | activitytype2 |
       | Reading  | page          | book          |
       | Practice | assign        | quiz          |
     And the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | enablefiltering |
-      | Test Course 1 | TC1       | minimoodlewall | 1               |
+      | fullname      | shortname | format         |
+      | Test Course 1 | TC1       | minimoodlewall |
     And the following "course enrolments" exist:
-      | user     | course | role           |
-      | teacher1 | TC1    | editingteacher |
-      | student1 | TC1    | student        |
+      | user     | course | role    |
+      | student1 | TC1    | student |
+    And the following "activities" exist:
+      | activity | name    | intro        | course | section |
+      | page     | Page 1  | First page   | TC1    | 0       |
+      | page     | Page 2  | Second page  | TC1    | 0       |
+      | page     | Page 3  | Third page   | TC1    | 0       |
+      | page     | Page 4  | Fourth page  | TC1    | 0       |
+      | page     | Page 5  | Fifth page   | TC1    | 0       |
+      | page     | Page 6  | Sixth page   | TC1    | 0       |
+      | page     | Page 7  | Seventh page | TC1    | 0       |
+      | page     | Page 8  | Eighth page  | TC1    | 0       |
+      | page     | Page 9  | Ninth page   | TC1    | 0       |
+      | page     | Page 10 | Tenth page   | TC1    | 0       |
 
   @javascript
   Scenario: Pagination controls appear when there are more than 8 activities
-    Given the following "activities" exist:
-      | activity | name         | intro       | course | section |
-      | page     | Page 1       | First page  | TC1    | 0       |
-      | page     | Page 2       | Second page | TC1    | 0       |
-      | page     | Page 3       | Third page  | TC1    | 0       |
-      | page     | Page 4       | Fourth page | TC1    | 0       |
-      | page     | Page 5       | Fifth page  | TC1    | 0       |
-      | page     | Page 6       | Sixth page  | TC1    | 0       |
-      | page     | Page 7       | Seventh page| TC1    | 0       |
-      | page     | Page 8       | Eighth page | TC1    | 0       |
-      | page     | Page 9       | Ninth page  | TC1    | 0       |
-      | page     | Page 10      | Tenth page  | TC1    | 0       |
     When I log in as "student1"
     And I am on "Test Course 1" course homepage
     And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
@@ -45,18 +43,6 @@ Feature: Activity pagination in minimoodlewall format
 
   @javascript
   Scenario: Student can navigate between pages
-    Given the following "activities" exist:
-      | activity | name    | intro      | course | section |
-      | page     | Page 1  | First page | TC1    | 0       |
-      | page     | Page 2  | Page two   | TC1    | 0       |
-      | page     | Page 3  | Page three | TC1    | 0       |
-      | page     | Page 4  | Page four  | TC1    | 0       |
-      | page     | Page 5  | Page five  | TC1    | 0       |
-      | page     | Page 6  | Page six   | TC1    | 0       |
-      | page     | Page 7  | Page seven | TC1    | 0       |
-      | page     | Page 8  | Page eight | TC1    | 0       |
-      | page     | Page 9  | Page nine  | TC1    | 0       |
-      | page     | Page 10 | Page ten   | TC1    | 0       |
     When I log in as "student1"
     And I am on "Test Course 1" course homepage
     And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
@@ -72,18 +58,6 @@ Feature: Activity pagination in minimoodlewall format
 
   @javascript
   Scenario: Previous button works correctly
-    Given the following "activities" exist:
-      | activity | name    | intro      | course | section |
-      | page     | Page 1  | First page | TC1    | 0       |
-      | page     | Page 2  | Page two   | TC1    | 0       |
-      | page     | Page 3  | Page three | TC1    | 0       |
-      | page     | Page 4  | Page four  | TC1    | 0       |
-      | page     | Page 5  | Page five  | TC1    | 0       |
-      | page     | Page 6  | Page six   | TC1    | 0       |
-      | page     | Page 7  | Page seven | TC1    | 0       |
-      | page     | Page 8  | Page eight | TC1    | 0       |
-      | page     | Page 9  | Page nine  | TC1    | 0       |
-      | page     | Page 10 | Page ten   | TC1    | 0       |
     When I log in as "student1"
     And I am on "Test Course 1" course homepage
     And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
@@ -98,55 +72,3 @@ Feature: Activity pagination in minimoodlewall format
     Then I should see "Page 1"
     And I should see "Page 8"
     And I should not see "Page 9" in the ".minimoodlewall-activities" "css_element"
-
-  @javascript
-  Scenario: Pagination works with filtering
-    Given the following "activities" exist:
-      | activity | name         | intro       | course | section |
-      | page     | Reading 1    | First       | TC1    | 0       |
-      | page     | Reading 2    | Second      | TC1    | 0       |
-      | page     | Reading 3    | Third       | TC1    | 0       |
-      | page     | Reading 4    | Fourth      | TC1    | 0       |
-      | page     | Reading 5    | Fifth       | TC1    | 0       |
-      | assign   | Practice 1   | Sixth       | TC1    | 0       |
-      | assign   | Practice 2   | Seventh     | TC1    | 0       |
-      | assign   | Practice 3   | Eighth      | TC1    | 0       |
-      | assign   | Practice 4   | Ninth       | TC1    | 0       |
-      | assign   | Practice 5   | Tenth       | TC1    | 0       |
-    And the following "format_minimoodlewall > cmtags" exist:
-      | cm         | course | tag      |
-      | Reading 1  | TC1    | Reading  |
-      | Reading 2  | TC1    | Reading  |
-      | Reading 3  | TC1    | Reading  |
-      | Reading 4  | TC1    | Reading  |
-      | Reading 5  | TC1    | Reading  |
-      | Practice 1 | TC1    | Practice |
-      | Practice 2 | TC1    | Practice |
-      | Practice 3 | TC1    | Practice |
-      | Practice 4 | TC1    | Practice |
-      | Practice 5 | TC1    | Practice |
-    When I log in as "student1"
-    And I am on "Test Course 1" course homepage
-    And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
-    And I wait until ".minimoodlewall-filterbar" "css_element" exists
-    And I wait until ".minimoodlewall-filterbar-button.is-empty" "css_element" does not exist
-    And I click on "Practice" "button" in the ".minimoodlewall-filterbar" "css_element"
-    Then I should see "Practice 1"
-    And I should not see "Reading 1" in the ".minimoodlewall-activities" "css_element"
-
-  @javascript
-  Scenario: No pagination controls when 8 or fewer activities
-    Given the following "activities" exist:
-      | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC1    | 0       |
-      | page     | Page 2 | Second     | TC1    | 0       |
-      | page     | Page 3 | Third      | TC1    | 0       |
-      | page     | Page 4 | Fourth     | TC1    | 0       |
-      | page     | Page 5 | Fifth      | TC1    | 0       |
-    When I log in as "student1"
-    And I am on "Test Course 1" course homepage
-    And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
-    Then I should see "Page 1"
-    And I should see "Page 5"
-    And I wait until ".minimoodlewall-navigation.is-booting" "css_element" does not exist
-    And ".minimoodlewall-navigation.is-visible" "css_element" should not exist

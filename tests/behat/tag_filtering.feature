@@ -17,20 +17,13 @@ Feature: Tag filtering in minimoodlewall format
     And the following "format_minimoodlewall > courses" exist:
       | fullname      | shortname | format         | enablefiltering |
       | Test Course 1 | TC1       | minimoodlewall | 1               |
-    And the following "activities" exist:
-      | activity | name         | intro            | course | section |
-      | assign   | Assignment 1 | First assignment | TC1    | 0       |
-      | quiz     | Quiz 1       | First quiz       | TC1    | 0       |
-      | page     | Page 1       | First page       | TC1    | 0       |
-      | forum    | Forum 1      | First forum      | TC1    | 0       |
-      | book     | Book 1       | First book       | TC1    | 0       |
-    And the following "format_minimoodlewall > cmtags" exist:
-      | cm           | course | tag      |
-      | Assignment 1 | TC1    | Practice |
-      | Quiz 1       | TC1    | Practice |
-      | Page 1       | TC1    | Reading  |
-      | Forum 1      | TC1    | Discuss  |
-      | Book 1       | TC1    | Reading  |
+    And the following "format_minimoodlewall > activities" exist:
+      | activity | name         | intro            | course | section | tag      |
+      | assign   | Assignment 1 | First assignment | TC1    | 0       | Practice |
+      | quiz     | Quiz 1       | First quiz       | TC1    | 0       | Practice |
+      | page     | Page 1       | First page       | TC1    | 0       | Reading  |
+      | forum    | Forum 1      | First forum      | TC1    | 0       | Discuss  |
+      | book     | Book 1       | First book       | TC1    | 0       | Reading  |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | teacher1 | TC1    | editingteacher |
