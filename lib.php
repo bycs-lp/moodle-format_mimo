@@ -139,8 +139,9 @@ class format_minimoodlewall extends core_courseformat\base {
                 $sectionno = $section;
             }
             if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
-                $sectioninfo = $this->get_section($sectionno);
-                return new moodle_url('/course/section.php', ['id' => $sectioninfo->id]);
+                // Use course/view.php with section parameter instead of course/section.php
+                // to preserve secondary navigation and keep users on the same page.
+                return new moodle_url('/course/view.php', ['id' => $course->id, 'section' => $sectionno]);
             }
         }
 
@@ -384,6 +385,20 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function page_set_course(moodle_page $page) {
         parent::page_set_course($page);
+
+        // Redirect course/section.php visits to course/view.php in multi-section mode
+        // to preserve secondary navigation and keep users on the same page.
+        if ($this->is_multisection_enabled()) {
+            $pageurl = $page->url->get_path();
+            if (strpos($pageurl, '/course/section.php') !== false) {
+                $sectionnum = $this->get_sectionnum();
+                $course = $this->get_course();
+                redirect(new moodle_url('/course/view.php', [
+                    'id' => $course->id,
+                    'section' => $sectionnum ?? 0,
+                ]));
+            }
+        }
 
         // In multi-section mode (learner view), add a body class so CSS can hide
         // the page-level section heading on course/section.php pages.
