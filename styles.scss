@@ -1668,3 +1668,11 @@ body.format-minimoodlewall #page-wrapper #page {
 body.format-minimoodlewall .mb-0-override {
     margin-bottom: 0 !important;
 }
+
+// Multi-section mode (learner view): hide the page-level section heading
+// and breadcrumb on course/section.php so the wall looks like single-section mode.
+body.single-section-page.format-mmw-multisection-view {
+    #page-header {
+        display: none;
+    }
+}

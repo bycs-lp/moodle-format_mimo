@@ -385,6 +385,12 @@ class format_minimoodlewall extends core_courseformat\base {
     public function page_set_course(moodle_page $page) {
         parent::page_set_course($page);
 
+        // In multi-section mode (learner view), add a body class so CSS can hide
+        // the page-level section heading on course/section.php pages.
+        if ($this->is_multisection_enabled() && !$page->user_is_editing()) {
+            $page->add_body_class('format-mmw-multisection-view');
+        }
+
         // Apply distraction-free mode if enabled for this course.
         $distractionfree = $this->get_course()->distractionfree ?? false;
         if ($distractionfree) {
