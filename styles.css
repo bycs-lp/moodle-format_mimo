@@ -278,6 +278,12 @@
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.lower img {
   transform: translate(-50%, -40%);
 }
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.imgsize-bigger img {
+  height: 125%;
+}
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.imgsize-smaller img {
+  height: 95%;
+}
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body {
   padding: 0.5rem 1rem 0.5rem;
   background: #fff;

@@ -59,7 +59,7 @@
     </div>
     {{/controlmenu}}
     {{! Tag Image at top }}
-    <div class="minimoodlewall-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}">
+    <div class="minimoodlewall-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}{{#imgsize}} imgsize-{{imgsize}}{{/imgsize}}">
         {{#tagimage}}
         <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
         {{/tagimage}}

@@ -94,6 +94,7 @@ if ($action === 'createtag' || $action === 'edittag') {
                     'activitytype3' => $data->activitytype3,
                     'bgcolor' => $data->bgcolor,
                     'imgplacement' => $data->imgplacement,
+                    'imgsize' => $data->imgsize,
                 ]
             );
             $currenttagid = $data->tagid;
@@ -108,7 +109,8 @@ if ($action === 'createtag' || $action === 'edittag') {
                 $data->activitytype2,
                 $data->activitytype3,
                 $data->bgcolor,
-                $data->imgplacement
+                $data->imgplacement,
+                $data->imgsize
             );
             $message = get_string('createtag', 'format_minimoodlewall');
         }
@@ -136,6 +138,8 @@ if ($action === 'createtag' || $action === 'edittag') {
             $at2field = 'profile_activitytype2_' . $profileid;
             $at3field = 'profile_activitytype3_' . $profileid;
             $enabledfield = 'profile_enabled_' . $profileid;
+            $imgplacementfield = 'profile_imgplacement_' . $profileid;
+            $imgsizefield = 'profile_imgsize_' . $profileid;
 
             if (isset($data->$namefield)) {
                 $overrides['name'] = $data->$namefield !== '' ? $data->$namefield : null;
@@ -154,6 +158,12 @@ if ($action === 'createtag' || $action === 'edittag') {
             }
             if (isset($data->$enabledfield)) {
                 $overrides['enabled'] = (int)$data->$enabledfield;
+            }
+            if (isset($data->$imgplacementfield)) {
+                $overrides['imgplacement'] = $data->$imgplacementfield !== '' ? $data->$imgplacementfield : null;
+            }
+            if (isset($data->$imgsizefield)) {
+                $overrides['imgsize'] = $data->$imgsizefield !== '' ? $data->$imgsizefield : null;
             }
 
             if (!empty($overrides)) {

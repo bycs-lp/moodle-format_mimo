@@ -276,7 +276,7 @@ class profile_manager {
      * Update override fields on a profile_tags record.
      *
      * Allowed override fields: name, bgcolor, activitytype1, activitytype2,
-     * activitytype3, enabled.  NULL values mean "inherit from base tag".
+     * activitytype3, enabled, imgplacement, imgsize.  NULL values mean "inherit from base tag".
      *
      * @param int $id Profile tags record ID
      * @param array $data Associative array of field => value
@@ -285,7 +285,7 @@ class profile_manager {
     public static function update_profile_tag(int $id, array $data): bool {
         global $DB;
 
-        $allowed = ['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'enabled'];
+        $allowed = ['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'enabled', 'imgplacement', 'imgsize'];
         $record = new stdClass();
         $record->id = $id;
         $record->timemodified = time();
@@ -327,7 +327,7 @@ class profile_manager {
     /**
      * Resolve a tag record with profile-specific overrides applied.
      *
-     * For each nullable override field (name, bgcolor, activitytype1-3),
+     * For each nullable override field (name, bgcolor, activitytype1-3, imgplacement, imgsize),
      * a non-NULL value in the profile_tags record replaces the base tag value.
      * The enabled flag is always taken from the profile_tags record.
      *
@@ -345,7 +345,7 @@ class profile_manager {
         }
 
         // Apply non-NULL overrides.
-        foreach (['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3'] as $field) {
+        foreach (['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'imgplacement', 'imgsize'] as $field) {
             if (property_exists($pt, $field) && $pt->$field !== null) {
                 $resolved->$field = $pt->$field;
             }

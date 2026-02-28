@@ -490,6 +490,7 @@ class tag_manager {
      * @param string|null $activitytype3 Third suggested activity type
      * @param string|null $bgcolor Background color in hex format
      * @param string|null $imgplacement Image placement (center or lower)
+     * @param string|null $imgsize Image size (bigger, normal, or smaller)
      * @return int ID of the created tag
      */
     public static function create_tag(
@@ -500,7 +501,8 @@ class tag_manager {
         ?string $activitytype2 = null,
         ?string $activitytype3 = null,
         ?string $bgcolor = null,
-        ?string $imgplacement = 'center'
+        ?string $imgplacement = 'center',
+        ?string $imgsize = 'normal'
     ): int {
         global $DB;
 
@@ -521,6 +523,7 @@ class tag_manager {
         $record->activitytype3 = $activitytype3;
         $record->bgcolor = self::normalize_hex_color($bgcolor);
         $record->imgplacement = $imgplacement ?? 'center';
+        $record->imgsize = $imgsize ?? 'normal';
         $record->sortorder = $sortorder;
         $record->timecreated = time();
         $record->timemodified = time();

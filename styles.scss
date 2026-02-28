@@ -391,6 +391,12 @@ $activity-icon-colors: (
             &.lower img {
                 transform: translate(-50%, -40%);
             }
+            &.imgsize-bigger img {
+                height: 125%;
+            }
+            &.imgsize-smaller img {
+                height: 95%;
+            }
         }
 
         // Card body with title and description.

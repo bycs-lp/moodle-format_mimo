@@ -814,5 +814,32 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026022601, 'format', 'minimoodlewall');
     }
 
+    // Step: Add imgsize column to tags table and imgplacement+imgsize overrides to profile_tags.
+    if ($oldversion < 2026022800) {
+        $dbman = $DB->get_manager();
+
+        // Add imgsize to tags table.
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('imgsize', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'normal', 'imgplacement');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add imgplacement override to profile_tags table.
+        $table = new xmldb_table('format_minimoodlewall_profile_tags');
+        $field = new xmldb_field('imgplacement', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'enabled');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add imgsize override to profile_tags table.
+        $field = new xmldb_field('imgsize', XMLDB_TYPE_CHAR, '10', null, null, null, null, 'imgplacement');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_plugin_savepoint(true, 2026022800, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

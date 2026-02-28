@@ -93,6 +93,7 @@ class cmitem extends cmitem_base {
             $data->cmformat->tagid = $tag->id;
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';
+            $data->cmformat->imgsize = $tag->imgsize ?? 'normal';
 
             $cardurl = tag_manager::get_cardimage_url($tag, $stylevariant);
             if ($cardurl) {

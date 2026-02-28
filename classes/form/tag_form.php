@@ -118,6 +118,40 @@ class tag_form extends \moodleform {
         $mform->setDefault('imgplacement', 'center');
         $mform->setType('imgplacement', PARAM_TEXT);
 
+        // Image size.
+        $sizeoptions = [
+            $mform->createElement(
+                'radio',
+                'imgsize',
+                '',
+                get_string('imgsize_bigger', 'format_minimoodlewall'),
+                'bigger'
+            ),
+            $mform->createElement(
+                'radio',
+                'imgsize',
+                '',
+                get_string('imgsize_normal', 'format_minimoodlewall'),
+                'normal'
+            ),
+            $mform->createElement(
+                'radio',
+                'imgsize',
+                '',
+                get_string('imgsize_smaller', 'format_minimoodlewall'),
+                'smaller'
+            ),
+        ];
+        $mform->addGroup(
+            $sizeoptions,
+            'imgsizegroup',
+            get_string('imgsize', 'format_minimoodlewall'),
+            ['<br>'],
+            false
+        );
+        $mform->setDefault('imgsize', 'normal');
+        $mform->setType('imgsize', PARAM_TEXT);
+
         // Background color.
         $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
         $mform->addElement(
@@ -199,6 +233,35 @@ class tag_form extends \moodleform {
             );
             $mform->setType('profile_activitytype3_' . $profile->id, PARAM_TEXT);
 
+            // Override: Image placement.
+            $overrideplacementoptions = [
+                '' => get_string('inherit_from_base', 'format_minimoodlewall'),
+                'center' => get_string('imgplacement_center', 'format_minimoodlewall'),
+                'lower' => get_string('imgplacement_lower', 'format_minimoodlewall'),
+            ];
+            $mform->addElement(
+                'select',
+                'profile_imgplacement_' . $profile->id,
+                get_string('profiletag_imgplacement', 'format_minimoodlewall'),
+                $overrideplacementoptions
+            );
+            $mform->setType('profile_imgplacement_' . $profile->id, PARAM_TEXT);
+
+            // Override: Image size.
+            $overridesizeoptions = [
+                '' => get_string('inherit_from_base', 'format_minimoodlewall'),
+                'bigger' => get_string('imgsize_bigger', 'format_minimoodlewall'),
+                'normal' => get_string('imgsize_normal', 'format_minimoodlewall'),
+                'smaller' => get_string('imgsize_smaller', 'format_minimoodlewall'),
+            ];
+            $mform->addElement(
+                'select',
+                'profile_imgsize_' . $profile->id,
+                get_string('profiletag_imgsize', 'format_minimoodlewall'),
+                $overridesizeoptions
+            );
+            $mform->setType('profile_imgsize_' . $profile->id, PARAM_TEXT);
+
             // Card image for this profile.
             $mform->addElement(
                 'filemanager',
@@ -238,6 +301,12 @@ class tag_form extends \moodleform {
                     }
                     if ($pt->activitytype3 !== null) {
                         $mform->setDefault('profile_activitytype3_' . $profile->id, $pt->activitytype3);
+                    }
+                    if ($pt->imgplacement !== null) {
+                        $mform->setDefault('profile_imgplacement_' . $profile->id, $pt->imgplacement);
+                    }
+                    if ($pt->imgsize !== null) {
+                        $mform->setDefault('profile_imgsize_' . $profile->id, $pt->imgsize);
                     }
                 }
             }
