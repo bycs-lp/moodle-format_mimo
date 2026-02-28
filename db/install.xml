@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260226" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
+<XMLDB PATH="course/format/minimoodlewall/db" VERSION="20260228" COMMENT="XMLDB file for Moodle course/format/minimoodlewall"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
@@ -117,6 +117,26 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="format_minimoodlewall_compdefs" COMMENT="Minimoodlewall default completion overrides per module type">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="module" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="FK to modules.id (the activity module type)"/>
+        <FIELD NAME="completion" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0=none, 1=manual, 2=automatic"/>
+        <FIELD NAME="completionview" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Require view for auto-completion"/>
+        <FIELD NAME="completionusegrade" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Require grade for auto-completion"/>
+        <FIELD NAME="completionpassgrade" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Require passing grade for auto-completion"/>
+        <FIELD NAME="completionexpected" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Expected completion timestamp"/>
+        <FIELD NAME="customrules" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON blob for module-specific completion rules"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="module_unique" UNIQUE="true" FIELDS="module" COMMENT="One override per module type"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

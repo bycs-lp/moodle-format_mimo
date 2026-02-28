@@ -76,13 +76,16 @@ if ($ADMIN->fulltree) {
     $activitydescurl = new moodle_url('/course/format/minimoodlewall/activity_descriptions.php');
     $desctagurl = new moodle_url('/course/format/minimoodlewall/description_tags.php');
     $profilemanageurl = new moodle_url('/course/format/minimoodlewall/profile_management.php');
+    $completiondefaultsurl = new moodle_url('/course/format/minimoodlewall/completion_defaults.php');
     $links = html_writer::link($tagmanageurl, get_string('setting_tagmanagement_link', 'format_minimoodlewall')) .
         '<br>' .
         html_writer::link($activitydescurl, get_string('setting_activitydescriptions_link', 'format_minimoodlewall')) .
         '<br>' .
         html_writer::link($desctagurl, get_string('desctagmanagement', 'format_minimoodlewall')) .
         '<br>' .
-        html_writer::link($profilemanageurl, get_string('profilemanagement', 'format_minimoodlewall'));
+        html_writer::link($profilemanageurl, get_string('profilemanagement', 'format_minimoodlewall')) .
+        '<br>' .
+        html_writer::link($completiondefaultsurl, get_string('completiondefaults', 'format_minimoodlewall'));
 
     $settingspage->add(new admin_setting_heading(
         'format_minimoodlewall/tagmanagement',
@@ -118,5 +121,12 @@ $settings->add($categoryname, new admin_externalpage(
     'format_minimoodlewall_profiles',
     get_string('profilemanagement', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/profile_management.php'),
+    'moodle/site:config'
+));
+
+$settings->add($categoryname, new admin_externalpage(
+    'format_minimoodlewall_completiondefaults',
+    get_string('completiondefaults', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/completion_defaults.php'),
     'moodle/site:config'
 ));

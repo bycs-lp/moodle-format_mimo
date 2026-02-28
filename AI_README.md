@@ -41,9 +41,16 @@
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Event observers** (`classes/observer.php` + `db/events.php`)
-  - `course_module_created`: Auto-assign pending tag from session (guided creation flow).
+  - `course_module_created`: Auto-assign pending tag from session (guided creation flow) + apply minimoodlewall completion default overrides (see below).
   - `course_module_deleted`: Delete cmtag record for the deleted module + clear cache.
   - `course_deleted`: Delete all orphaned cmtag records (cmid NOT IN course_modules) + clear cache.
+- **Completion defaults override** (`classes/completion_defaults_manager.php` + `completion_defaults.php`)
+  - Table: `*_compdefs` (module unique; completion, completionview, completionusegrade, completionpassgrade, completionexpected, customrules JSON).
+  - When a module is created in a minimoodlewall course and its completion matches Moodle's core defaults (meaning the teacher did not customize), the observer silently replaces completion with the minimoodlewall override.
+  - Comparison logic: checks core fields (completion, completionview, completionpassgrade, completiongradeitemnumber↔completionusegrade) and custom rules on the module instance table.
+  - Override applies to both `course_modules` (core fields) and the module instance table (custom rules from JSON blob).
+  - Admin page (`completion_defaults.php`): lists all module types, allows editing per-type completion defaults using core's `defaultedit_form`.
+  - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mmwdefaults, $modname)`, `pack_form_data($formdata, $suffix)`.
 - **Admin UX** (`settings.php`, `tag_management.php`, `style_management.php`, `classes/form/*`)
   - Tag management: Accordion-based UI with tagsets as expandable sections, tags as forms within. `data-tagset-name` attribute for Behat targeting.
   - Style management: Tab-based style image management per tag.
@@ -210,8 +217,10 @@ This plugin demonstrates the hybrid approach:
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
-- `classes/observer.php` – event handlers: auto-tag on module create, cleanup on module/course delete.
+- `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course delete.
+- `classes/completion_defaults_manager.php` – CRUD for minimoodlewall completion defaults (compdefs table), comparison with core defaults, application to course modules.
 - `classes/privacy/` – Privacy API provider.
+- `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags.
 - `style_management.php` – admin UI for style variants and per-tag images.
 - `description_tags.php` – admin UI for managing description tags (name + hex color).
@@ -219,6 +228,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/tag_form.php` – mform definition for tag create/edit (name, color, images, activity types).
 - `classes/form/tagset_form.php` – mform for tagset create/edit.
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
+- `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for minimoodlewall completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
@@ -247,9 +257,9 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
 - `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags, styles, tag_images, cmtags, files).
 - `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (reuse-by-name, ID mapping, format option remapping).
-- `db/install.xml` – 8 tables: tags, cmtags, styles, tag_images, desc_tags, actdesc, profiles, profile_tags.
+- `db/install.xml` – 9 tables: tags, cmtags, styles, tag_images, desc_tags, actdesc, profiles, profile_tags, compdefs.
 - `db/install.php` – creates default tags, default styles, and default profiles on install.
-- `db/upgrade.php` – migration steps including profile introduction and selectedtags removal.
+- `db/upgrade.php` – migration steps including profile introduction, selectedtags removal, and completion defaults table.
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
 - `db/hooks.php` – hook registrations.
 - `db/services.php` – web service definitions.
