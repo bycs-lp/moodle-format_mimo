@@ -1066,9 +1066,10 @@ body.format-minimoodlewall #page-wrapper #page {
 
 .mmw-tag-preview-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.5rem 0;
+  margin-top: -1rem;
 }
 
 .mmw-tag-preview-item {
@@ -1099,10 +1100,6 @@ body.format-minimoodlewall #page-wrapper #page {
 
 .mmw-tag-name {
   white-space: nowrap;
-}
-
-#fitem_id_tag_preview .form-control-static {
-  font-weight: 600;
 }
 
 .minimoodlewall-completion-status {

@@ -1362,12 +1362,13 @@ body.format-minimoodlewall #page-wrapper #page {
 // Course Form: Tag Preview Styling
 // ============================================
 
-// Tag preview container in the course settings form — 2-column grid.
+// Tag preview container in the course settings form — 3-column grid.
 .mmw-tag-preview-container {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0.5rem;
     padding: 0.5rem 0;
+    margin-top: -1rem;
 }
 
 // Individual tag preview item.
@@ -1402,13 +1403,6 @@ body.format-minimoodlewall #page-wrapper #page {
 // Tag name text.
 .mmw-tag-name {
     white-space: nowrap;
-}
-
-// Style the tag preview label.
-#fitem_id_tag_preview {
-    .form-control-static {
-        font-weight: 600;
-    }
 }
 
 // ============================================================================
