@@ -82,6 +82,7 @@ if ($action === 'createprofile' || $action === 'editprofile') {
     }
 
     echo $OUTPUT->header();
+    echo \format_minimoodlewall\admin_page_tabs::render('profiles');
     echo $OUTPUT->heading($action === 'createprofile' ?
         get_string('createprofile', 'format_minimoodlewall') :
         get_string('editprofile', 'format_minimoodlewall'));
@@ -122,6 +123,7 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
 }
 
 echo $OUTPUT->header();
+echo \format_minimoodlewall\admin_page_tabs::render('profiles');
 echo $OUTPUT->heading(get_string('profilemanagement', 'format_minimoodlewall'));
 
 // Initialize delete confirmation modal.

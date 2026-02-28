@@ -72,6 +72,7 @@ $string['desctagsaved'] = 'Beschreibungs-Tag erfolgreich aktualisiert.';
 $string['desctagusagewarning'] = '<strong>Warnung:</strong> Dieser Tag wird derzeit von {$a} Aktivitätsbeschreibung(en) verwendet. Beim Löschen wird der Tag von diesen Beschreibungen entfernt.';
 $string['desctags'] = 'Beschreibungs-Tags';
 $string['desctags_help'] = 'Weisen Sie Beschreibungs-Tags zu, um diese Aktivitätsbeschreibung zu kategorisieren.';
+$string['distractionfreemode'] = 'Ablenkungsfreier Modus';
 $string['distractionfreeselectors'] = 'Selektoren für ablenkungsfreien Modus';
 $string['distractionfreeselectors_desc'] = 'CSS-Selektoren für Elemente, die im ablenkungsfreien Modus ausgeblendet werden sollen (einer pro Zeile).';
 $string['editdesctag'] = 'Beschreibungs-Tag bearbeiten';

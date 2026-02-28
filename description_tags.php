@@ -58,6 +58,7 @@ if ($delete && $confirm && confirm_sesskey()) {
 
 // Output starts here.
 echo $OUTPUT->header();
+echo \format_minimoodlewall\admin_page_tabs::render('descriptiontags');
 
 // List all description tags.
 echo $OUTPUT->heading(get_string('desctagmanagement', 'format_minimoodlewall'));

@@ -81,6 +81,7 @@ $string['desctagsaved'] = 'Description tag updated successfully.';
 $string['desctagusagewarning'] = '<strong>Warning:</strong> This tag is currently used by {$a} activity description(s). Deleting it will remove the tag from those descriptions.';
 $string['desctags'] = 'Description Tags';
 $string['desctags_help'] = 'Assign Description Tags to categorise this activity description.';
+$string['distractionfreemode'] = 'Distraction-free mode';
 $string['distractionfreeselectors'] = 'Distraction-free mode selectors';
 $string['distractionfreeselectors_desc'] = 'CSS selectors for elements to hide in distraction-free mode (one per line).';
 $string['editdesctag'] = 'Edit Description Tag';

@@ -71,6 +71,7 @@ if ($mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
+echo \format_minimoodlewall\admin_page_tabs::render('activitydescriptions');
 echo $OUTPUT->heading(get_string('activitydescriptions', 'format_minimoodlewall'));
 
 $mform->display();

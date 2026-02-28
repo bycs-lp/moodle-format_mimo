@@ -176,6 +176,7 @@ if ($action === 'createtag' || $action === 'edittag') {
     }
 
     echo $OUTPUT->header();
+    echo \format_minimoodlewall\admin_page_tabs::render('tags');
     echo $OUTPUT->heading($action === 'createtag' ?
         get_string('createtag', 'format_minimoodlewall') :
         get_string('edittag', 'format_minimoodlewall'));
@@ -198,6 +199,7 @@ if ($action === 'deletetag' && confirm_sesskey()) {
 }
 
 echo $OUTPUT->header();
+echo \format_minimoodlewall\admin_page_tabs::render('tags');
 echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
 
 // Initialize delete confirmation modal.

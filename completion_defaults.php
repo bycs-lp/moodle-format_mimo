@@ -60,6 +60,7 @@ if ($action === 'delete' && $modid) {
     // Show confirmation.
     $module = $DB->get_record('modules', ['id' => $modid], 'id, name', MUST_EXIST);
     echo $OUTPUT->header();
+    echo \format_minimoodlewall\admin_page_tabs::render('completiondefaults');
     echo $OUTPUT->confirm(
         get_string('confirmdeletecompletiondefault', 'format_minimoodlewall', get_string('modulename', $module->name)),
         new moodle_url($pageurl, ['modid' => $modid, 'action' => 'delete', 'confirm' => 1]),
@@ -114,6 +115,7 @@ if ($modid) {
 
     // Render the edit form.
     echo $OUTPUT->header();
+    echo \format_minimoodlewall\admin_page_tabs::render('completiondefaults');
     echo $OUTPUT->heading(get_string('editcompletiondefault', 'format_minimoodlewall', $moduleinfo->formattedname));
     echo html_writer::tag('p', get_string('completiondefaults_desc', 'format_minimoodlewall'));
     $form->display();
@@ -127,6 +129,7 @@ $allmodules = $manager->get_activities_and_resources(false);
 $mmwdefaults = \format_minimoodlewall\completion_defaults_manager::get_all_defaults_by_module();
 
 echo $OUTPUT->header();
+echo \format_minimoodlewall\admin_page_tabs::render('completiondefaults');
 echo $OUTPUT->heading(get_string('completiondefaults', 'format_minimoodlewall'));
 echo html_writer::tag('p', get_string('completiondefaults_desc', 'format_minimoodlewall'));
 

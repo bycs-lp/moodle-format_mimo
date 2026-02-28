@@ -32,6 +32,10 @@ $settings = new admin_category($categoryname, new lang_string('pluginname', 'for
 $settingspage = new admin_settingpage('format_minimoodlewall', new lang_string('pluginname', 'format_minimoodlewall'));
 
 if ($ADMIN->fulltree) {
+    // Tab navigation across all admin pages.
+    require_once(__DIR__ . '/classes/admin_setting_tabs.php');
+    $settingspage->add(new format_minimoodlewall_admin_setting_tabs());
+
     // Distraction-free mode settings.
     $distractionfreeselectorsdefault = [
         'nav.fixed-top',
@@ -69,28 +73,6 @@ if ($ADMIN->fulltree) {
         get_string('closedrawers', 'format_minimoodlewall'),
         get_string('closedrawers_desc', 'format_minimoodlewall'),
         1
-    ));
-
-    // Link to tag management page.
-    $tagmanageurl = new moodle_url('/course/format/minimoodlewall/tag_management.php');
-    $activitydescurl = new moodle_url('/course/format/minimoodlewall/activity_descriptions.php');
-    $desctagurl = new moodle_url('/course/format/minimoodlewall/description_tags.php');
-    $profilemanageurl = new moodle_url('/course/format/minimoodlewall/profile_management.php');
-    $completiondefaultsurl = new moodle_url('/course/format/minimoodlewall/completion_defaults.php');
-    $links = html_writer::link($tagmanageurl, get_string('setting_tagmanagement_link', 'format_minimoodlewall')) .
-        '<br>' .
-        html_writer::link($activitydescurl, get_string('setting_activitydescriptions_link', 'format_minimoodlewall')) .
-        '<br>' .
-        html_writer::link($desctagurl, get_string('desctagmanagement', 'format_minimoodlewall')) .
-        '<br>' .
-        html_writer::link($profilemanageurl, get_string('profilemanagement', 'format_minimoodlewall')) .
-        '<br>' .
-        html_writer::link($completiondefaultsurl, get_string('completiondefaults', 'format_minimoodlewall'));
-
-    $settingspage->add(new admin_setting_heading(
-        'format_minimoodlewall/tagmanagement',
-        get_string('setting_tagmanagement', 'format_minimoodlewall'),
-        $links
     ));
 }
 
