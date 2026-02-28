@@ -182,7 +182,7 @@ class section extends section_base {
         if ($completioninfo->is_enabled()) {
             foreach ($modinfo->cms as $cm) {
                 // When scoped to a section, skip activities from other sections.
-                if ($sectionnum !== null && $cm->sectionnum !== $sectionnum) {
+                if ($sectionnum !== null && (int)$cm->sectionnum !== $sectionnum) {
                     continue;
                 }
                 // Skip hidden activities and activities without user visibility.
