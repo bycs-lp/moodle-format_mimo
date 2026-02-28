@@ -301,9 +301,10 @@ class tag_manager {
      *
      * @param int $courseid Course id
      * @param int[] $tagids List of tag ids
+     * @param int|null $sectionid Optional section id (course_sections.id) to scope counts to a specific section
      * @return array tagid => usage count
      */
-    public static function get_tag_usage_counts(int $courseid, array $tagids): array {
+    public static function get_tag_usage_counts(int $courseid, array $tagids, ?int $sectionid = null): array {
         global $DB;
 
         if (empty($tagids)) {
@@ -314,10 +315,16 @@ class tag_manager {
         [$insql, $params] = $DB->get_in_or_equal($tagids, SQL_PARAMS_NAMED);
         $params['courseid'] = $courseid;
 
+        $sectionwhere = '';
+        if ($sectionid !== null) {
+            $sectionwhere = ' AND cm.section = :sectionid';
+            $params['sectionid'] = $sectionid;
+        }
+
         $sql = "SELECT cmt.tagid, COUNT(1) AS usecount
                   FROM {format_minimoodlewall_cmtags} cmt
                   JOIN {course_modules} cm ON cm.id = cmt.cmid
-                 WHERE cm.course = :courseid AND cmt.tagid $insql
+                 WHERE cm.course = :courseid AND cmt.tagid $insql{$sectionwhere}
               GROUP BY cmt.tagid";
 
         return $DB->get_records_sql_menu($sql, $params);

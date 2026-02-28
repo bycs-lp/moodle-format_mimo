@@ -45,10 +45,13 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Returns whether this course format supports course index.
      *
+     * When multi-section mode is enabled, the course index is needed for
+     * section-to-section navigation.
+     *
      * @return bool
      */
     public function uses_course_index() {
-        return false;
+        return $this->is_multisection_enabled();
     }
 
     /**
@@ -115,18 +118,33 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
-     * Returns the URL to view a section. Always returns the main course URL.
+     * Returns the URL to view a section.
      *
-     * Since this format displays all activities in a single wall view,
-     * section-specific URLs don't make sense - always redirect to the main course page.
+     * In single-section mode, always returns the main course URL.
+     * In multi-section mode, returns a section-specific URL for non-zero sections.
      *
      * @param int|stdClass $section Section object from database or section number
+     * @param array $options Options for view URL
      * @return null|moodle_url
      */
     public function get_view_url($section, $options = []) {
         $course = $this->get_course();
-        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-        return $url;
+
+        if ($this->is_multisection_enabled()) {
+            if (array_key_exists('sr', $options) && !is_null($options['sr'])) {
+                $sectionno = $options['sr'];
+            } else if (is_object($section)) {
+                $sectionno = $section->section;
+            } else {
+                $sectionno = $section;
+            }
+            if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
+                $sectioninfo = $this->get_section($sectionno);
+                return new moodle_url('/course/section.php', ['id' => $sectioninfo->id]);
+            }
+        }
+
+        return new moodle_url('/course/view.php', ['id' => $course->id]);
     }
 
     /**
@@ -139,6 +157,10 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function course_format_options($forupdate = false) {
         $courseformatoptions = [
+            'enablemultisection' => [
+                'default' => 0,
+                'type' => PARAM_BOOL,
+            ],
             'enablefiltering' => [
                 'default' => 1,
                 'type' => PARAM_BOOL,
@@ -163,6 +185,12 @@ class format_minimoodlewall extends core_courseformat\base {
 
         if ($forupdate) {
             // Add form elements for course settings.
+            $courseformatoptions['enablemultisection'] += [
+                'label' => get_string('setting_enablemultisection', 'format_minimoodlewall'),
+                'help' => 'setting_enablemultisection',
+                'help_component' => 'format_minimoodlewall',
+                'element_type' => 'advcheckbox',
+            ];
             $courseformatoptions['enablefiltering'] += [
                 'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
                 'help' => 'setting_enablefiltering',
@@ -378,20 +406,36 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
-     * Minimal Moodle Wall uses only section 0.
+     * Check whether multi-section mode is enabled for this course.
      *
-     * @return int
+     * @return bool
+     */
+    public function is_multisection_enabled(): bool {
+        $options = $this->get_format_options();
+        return !empty($options['enablemultisection']);
+    }
+
+    /**
+     * Get the current section to display.
+     *
+     * In single-section mode, always returns 0 (section 0 only).
+     * In multi-section mode, returns the currently selected section or null for all.
+     *
+     * @return int|null
      */
     #[\Override]
-    public function get_sectionnum(): int {
-        return 0;
+    public function get_sectionnum(): ?int {
+        if (!$this->is_multisection_enabled()) {
+            return 0;
+        }
+        return $this->singlesection;
     }
 
     /**
      * Returns if a specific section is visible to the current user.
      *
-     * Minimal Moodle Wall only uses section 0. Any other included section
-     * should be a delegated one (subsections).
+     * In single-section mode, only section 0 and delegated sections are visible.
+     * In multi-section mode, all non-orphan sections are visible (delegated to parent).
      *
      * @param \section_info $section the section modinfo
      * @return bool
@@ -399,11 +443,18 @@ class format_minimoodlewall extends core_courseformat\base {
     #[\Override]
     public function is_section_visible(\section_info $section): bool {
         $visible = parent::is_section_visible($section);
+        if ($this->is_multisection_enabled()) {
+            return $visible;
+        }
         return $visible && ($section->sectionnum == 0 || $section->is_delegated());
     }
 
     /**
      * Extend course navigation to hide section nodes from breadcrumb on activity pages.
+     *
+     * In single-section mode, hides section nodes from breadcrumbs entirely.
+     * In multi-section mode, lets section breadcrumbs show normally so users
+     * can navigate back to the section they came from.
      *
      * @param global_navigation $navigation
      * @param navigation_node $node The course node within the navigation
@@ -411,21 +462,31 @@ class format_minimoodlewall extends core_courseformat\base {
     public function extend_course_navigation($navigation, navigation_node $node) {
         global $PAGE;
 
-        // First, call parent to load sections normally.
+        // In multi-section mode, expand the selected section in navigation.
+        if ($this->is_multisection_enabled()) {
+            if ($navigation->includesectionnum === false) {
+                $selectedsection = optional_param('section', null, PARAM_INT);
+                if ($selectedsection !== null && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0') &&
+                        $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)) {
+                    $navigation->includesectionnum = $selectedsection;
+                }
+            }
+        }
+
+        // Call parent to load sections normally.
         parent::extend_course_navigation($navigation, $node);
 
-        // If we're viewing an activity (module context), hide section nodes.
-        // This prevents them from appearing in the breadcrumb.
-        if ($PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->cm) {
-            // Find the active section node and mark it to not show in breadcrumb.
-            $sectionnode = $node->find($PAGE->cm->sectionnum, navigation_node::TYPE_SECTION);
-            if ($sectionnode) {
-                $sectionnode->mainnavonly = true; // This prevents it from showing in breadcrumb.
-            } else {
-                // Try to find it by searching all children.
-                foreach ($node->children as $child) {
-                    if ($child->type == navigation_node::TYPE_SECTION) {
-                        $child->mainnavonly = true;
+        // In single-section mode, hide section breadcrumbs on activity pages.
+        if (!$this->is_multisection_enabled()) {
+            if ($PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->cm) {
+                $sectionnode = $node->find($PAGE->cm->sectionnum, navigation_node::TYPE_SECTION);
+                if ($sectionnode) {
+                    $sectionnode->mainnavonly = true;
+                } else {
+                    foreach ($node->children as $child) {
+                        if ($child->type == navigation_node::TYPE_SECTION) {
+                            $child->mainnavonly = true;
+                        }
                     }
                 }
             }

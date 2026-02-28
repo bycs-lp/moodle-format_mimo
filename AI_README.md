@@ -3,16 +3,22 @@
 > Working note for autonomous agents extending the Minimal Moodle Wall course format.
 
 ## TL;DR
-- **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards.
+- **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards. Optionally supports multi-section mode where each section has its own wall.
 - **Core concept**: Courses use an *activity profile* that determines which *tags* are active and how they appear; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
+- **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts, navigation is one-section-at-a-time. When OFF (default): classic single-wall behavior with all activities in section 0.
 - **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/profile_manager.php` (profile CRUD + per-tag overrides), `classes/style_manager.php` (style variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
-  - Enforces single-section behavior (section 0 only), course index disabled, and hides section crumbs on activity pages.
-  - `get_sectionnum()` returns `0` — all activities live in section 0 (the "general" section).
-  - `is_section_visible()` only shows section 0 and delegated sections (subsections).
-  - Adds course options: `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'classic'`), `enablefiltering`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`), `enablecompletionstars`, `distractionfree`.
+  - Default: single-section behavior (section 0 only), course index disabled, section crumbs hidden on activity pages.
+  - **Multi-section mode** (`enablemultisection` course option): when ON, all methods become section-aware:
+    - `is_multisection_enabled()` — helper that reads the course option.
+    - `get_sectionnum()` returns `0` in single-section mode; returns `$this->singlesection` (nullable, set by `format.php`) in multi-section mode.
+    - `is_section_visible()` — single-section: only section 0 + delegated; multi-section: delegates to parent (all non-orphan sections visible).
+    - `uses_course_index()` — returns `true` in multi-section mode, `false` otherwise.
+    - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/section.php` for navigation.
+    - `extend_course_navigation()` — single-section: hides section breadcrumbs; multi-section: shows section breadcrumbs + expands selected section in navigation.
+  - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'classic'`), `enablefiltering`, `wallcolor` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `green`, `white`, `dark` — override only the wall background via CSS class `mmw-wallcolor-{value}`), `enablecompletionstars`, `distractionfree`.
   - Course settings form shows a read-only tag preview below the activity profile dropdown, rendered via `form_tag_preview.mustache`. Tags update dynamically when the profile is changed (via `profile_image_switcher.js`).
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
     - `format_minimoodlewall_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for minimoodlewall courses). Pre-selects current tag on edit, or pending session tag on create.
@@ -82,7 +88,7 @@
    - User selects Minimal Moodle Wall format.
    - Selects an activity profile (determines which tags are active and how they appear).
    - A read-only tag preview shows the active tags for the selected profile.
-   - Only section 0 is created (no additional sections).
+   - Only section 0 is created by default (single-section mode). If `enablemultisection` is ON, teachers can add more sections.
 2. **Tag & profile management**
    - Admin page (`tag_management.php`) manages tags with accordion UI.
    - Tags have forms for name, color, images, activity types.
@@ -104,10 +110,12 @@
     - **Moodle 5.0 and earlier**: Falls back to template overrides in `cm.php` export method with backward compatibility checks.
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 5. **Learner view**
-   - Wall shows all activities from section 0 in a responsive grid.
+   - **Single-section mode**: Wall shows all activities from section 0 in a responsive grid.
+   - **Multi-section mode**: One section visible at a time; navigate via course index. Each section has its own wall, filter bar, and completion counts scoped to that section's activities.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
 6. **Course index drawer**
-   - Disabled via `uses_course_index()` returning `false`. The wall format has its own filter bar for navigation.
+   - Disabled in single-section mode (`uses_course_index()` returns `false`).
+   - Enabled in multi-section mode — shows all sections for navigation.
 
 ## Common Extension Tasks
 - **Add teacher UI for tagging**
@@ -175,8 +183,10 @@ This plugin demonstrates the hybrid approach:
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
 
 ## Guardrails for Future Agents
-- Respect section-0-only assumption; all activities live in section 0. `get_sectionnum()` returns 0; `is_section_visible()` hides all non-0, non-delegated sections. Avoid introducing multiple sections unless architecture is revisited.
-- The course index is disabled (`uses_course_index()` returns `false`). Do not re-enable it without revisiting the single-section UX.
+- **Single-section mode** (default): all activities live in section 0. `get_sectionnum()` returns 0; `is_section_visible()` hides all non-0, non-delegated sections. Don't add activities to other sections unless multi-section is enabled.
+- **Multi-section mode** (`enablemultisection`): each section is its own wall. `get_sectionnum()` returns the currently viewed section (or `null` for all). Course index is active. Filter bars, completion counts, and tag usage counts are scoped per-section. Drag-drop is within-section only.
+- When toggling multi-section OFF, activities in sections >0 become hidden. There is no auto-migration — only a help text warning.
+- The course index is disabled in single-section mode. Do not re-enable it without also enabling multi-section.
 - Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
 - Every course should have a valid `activityprofile` option — defaults to `'classic'`.
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` / `profile_manager` helpers to avoid orphans.
@@ -211,8 +221,9 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options (activityprofile, enablefiltering, wallcolor, enablecompletionstars, distractionfree), read-only tag preview in form, `get_sectionnum()→0`, `is_section_visible()` (section 0 only), navigation tweaks, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
-- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered).
+- `lib.php` – course options (enablemultisection, activityprofile, enablefiltering, wallcolor, enablecompletionstars, distractionfree), `is_multisection_enabled()` helper, conditional `get_sectionnum()` / `is_section_visible()` / `uses_course_index()` / `get_view_url()` / `extend_course_navigation()`, read-only tag preview in form, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence).
+- `format.php` – entry point; branches on `is_multisection_enabled()`: multi-section uses `$displaysection` from core, single-section redirects non-0 and locks to section 0.
+- `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered), `get_tag_usage_counts($courseid, $tagids, $sectionid)` (optional section scoping).
 - `classes/profile_manager.php` – profile CRUD, per-tag profile overrides (name, bgcolor, activity types, enabled), tag resolution. Key methods: `resolve_tags_for_profile()`, `resolve_tag_for_profile()`, `get_or_create_profile_tag()`.
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.

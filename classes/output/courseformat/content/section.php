@@ -70,6 +70,11 @@ class section extends section_base {
         // Get tags selected for this course.
         $tags = \format_minimoodlewall\tag_manager::get_tags_for_course((int)$course->id);
 
+        // Determine the section id for scoping filter bar and completion to this section
+        // when multi-section mode is active.
+        $ismultisection = !empty($options['enablemultisection']);
+        $sectionid = $ismultisection ? (int)$this->section->id : null;
+
         if (!empty($tags)) {
             if ($isediting) {
                 $data->tags = array_values($tags);
@@ -78,7 +83,7 @@ class section extends section_base {
             }
 
             if ($enablefiltering) {
-                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $stylevariant);
+                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $stylevariant, $sectionid);
                 if (!empty($filtertags)) {
                     $data->filterbar = (object) [
                         'tags' => $filtertags,
@@ -94,7 +99,7 @@ class section extends section_base {
         // Build completion status counts for activities with completion tracking.
         // Show regardless of tags/filtering, as long as there are trackable activities.
         if (!$isediting) {
-            $completionstatus = $this->build_completion_status_data($course);
+            $completionstatus = $this->build_completion_status_data($course, $ismultisection ? $this->section->section : null);
             if ($completionstatus->total > 0) {
                 $enablecompletionstars = !empty($options['enablecompletionstars']);
                 $completionstatus->enablecompletionstars = $enablecompletionstars;
@@ -112,15 +117,22 @@ class section extends section_base {
      * @param int $courseid Course ID
      * @param bool $isediting Whether editing mode is enabled
      * @param string $stylevariant The style variant name
+     * @param int|null $sectionid Optional section id to scope tag usage counts
      * @return array
      */
-    private function build_filterbar_data(array $tags, int $courseid, bool $isediting, string $stylevariant = 'classic'): array {
+    private function build_filterbar_data(
+        array $tags,
+        int $courseid,
+        bool $isediting,
+        string $stylevariant = 'classic',
+        ?int $sectionid = null
+    ): array {
         if (empty($tags)) {
             return [];
         }
 
         $tagids = array_map('intval', array_keys($tags));
-        $usage = \format_minimoodlewall\tag_manager::get_tag_usage_counts($courseid, $tagids);
+        $usage = \format_minimoodlewall\tag_manager::get_tag_usage_counts($courseid, $tagids, $sectionid);
         $context = context_course::instance($courseid);
 
         $filtertags = [];
@@ -147,11 +159,13 @@ class section extends section_base {
      * Build completion status counts for the completion status indicator.
      *
      * Counts activities with completion tracking that are completed vs incomplete.
+     * When a section number is provided, only activities in that section are counted.
      *
      * @param \stdClass $course Course object
+     * @param int|null $sectionnum Optional section number to scope counts
      * @return \stdClass Object with completedcount, incompletecount, and total
      */
-    private function build_completion_status_data(\stdClass $course): \stdClass {
+    private function build_completion_status_data(\stdClass $course, ?int $sectionnum = null): \stdClass {
         $modinfo = get_fast_modinfo($course);
         $completioninfo = new \completion_info($course);
 
@@ -160,6 +174,10 @@ class section extends section_base {
 
         if ($completioninfo->is_enabled()) {
             foreach ($modinfo->cms as $cm) {
+                // When scoped to a section, skip activities from other sections.
+                if ($sectionnum !== null && $cm->sectionnum !== $sectionnum) {
+                    continue;
+                }
                 // Skip hidden activities and activities without user visibility.
                 if (!$cm->uservisible) {
                     continue;

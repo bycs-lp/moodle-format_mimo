@@ -30,21 +30,34 @@ require_once($CFG->libdir . '/completionlib.php');
 // Retrieve course format option fields and add them to the $course object.
 $format = course_get_format($course);
 $course = $format->get_course();
+$ismultisection = $format->is_multisection_enabled();
 
-// Redirect section URLs to the main course page since this format only uses section 0.
-$sectionnum = optional_param('section', null, PARAM_INT);
-if ($sectionnum !== null && $sectionnum != 0) {
-    // Redirect to the main course page (section 0).
-    redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
+if ($ismultisection) {
+    // Multi-section mode: allow section navigation, ensure section 0 exists.
+    course_create_sections_if_missing($course, 0);
+
+    $renderer = $PAGE->get_renderer('format_minimoodlewall');
+
+    // Use $displaysection from course/view.php to show the requested section.
+    if (!is_null($displaysection)) {
+        $format->set_sectionnum($displaysection);
+    }
+} else {
+    // Single-section mode: redirect non-zero section URLs and lock to section 0.
+    $sectionnum = optional_param('section', null, PARAM_INT);
+    if ($sectionnum !== null && $sectionnum != 0) {
+        redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
+    }
+
+    // Make sure section 0 exists.
+    course_create_sections_if_missing($course, [0]);
+
+    $renderer = $PAGE->get_renderer('format_minimoodlewall');
+
+    // Always display section 0 (the only section in this format).
+    $format->set_sectionnum(0);
 }
 
-// Make sure section 0 exists.
-course_create_sections_if_missing($course, [0]);
-
-$renderer = $PAGE->get_renderer('format_minimoodlewall');
-
-// Always display section 0 (the only section in this format).
-$format->set_sectionnum(0);
 $outputclass = $format->get_output_classname('content');
 $widget = new $outputclass($format);
 echo $renderer->render($widget);
