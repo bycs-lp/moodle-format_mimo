@@ -33,15 +33,14 @@ $course = $format->get_course();
 $ismultisection = $format->is_multisection_enabled();
 
 if ($ismultisection) {
-    // Multi-section mode: allow section navigation, ensure section 0 exists.
+    // Multi-section mode: one section at a time, default to section 0.
     course_create_sections_if_missing($course, 0);
 
     $renderer = $PAGE->get_renderer('format_minimoodlewall');
 
-    // Use $displaysection from course/view.php to show the requested section.
-    if (!is_null($displaysection)) {
-        $format->set_sectionnum($displaysection);
-    }
+    // Use $displaysection from course/view.php to show the requested section,
+    // defaulting to section 0 when no section is specified (first visit).
+    $format->set_sectionnum($displaysection ?? 0);
 } else {
     // Single-section mode: redirect non-zero section URLs and lock to section 0.
     $sectionnum = optional_param('section', null, PARAM_INT);

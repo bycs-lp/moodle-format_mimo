@@ -55,6 +55,14 @@ class section extends section_base {
         $enablefiltering = !empty($options['enablefiltering']);
         $stylevariant = $options['activityprofile'] ?? 'classic';
         $isediting = $PAGE->user_is_editing();
+        $ismultisection = !empty($options['enablemultisection']);
+
+        // In multi-section mode, hide the section header when not editing
+        // so the wall looks identical to single-section mode for learners.
+        if ($ismultisection && !$isediting) {
+            unset($data->header);
+            unset($data->singleheader);
+        }
 
         if (!empty($data->cmlist) && isset($data->cmlist->cms)) {
             $activitycount = 0;
@@ -72,7 +80,6 @@ class section extends section_base {
 
         // Determine the section id for scoping filter bar and completion to this section
         // when multi-section mode is active.
-        $ismultisection = !empty($options['enablemultisection']);
         $sectionid = $ismultisection ? (int)$this->section->id : null;
 
         if (!empty($tags)) {
