@@ -72,6 +72,15 @@ class content extends content_base {
             $data->hastags = true;
         }
 
+        // In multi-section mode the core template hides the "Add section" button
+        // when viewing a single section ({{^singlesection}}). We expose the
+        // addsection data under a separate key so our template can render it
+        // unconditionally while editing.
+        $ismultisection = $this->format->is_multisection_enabled();
+        if ($ismultisection && !empty($data->numsections) && $PAGE->user_is_editing()) {
+            $data->mmwaddsection = $data->numsections;
+        }
+
         return $data;
     }
 
