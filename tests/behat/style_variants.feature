@@ -55,27 +55,27 @@ Feature: Activity profile variants in minimoodlewall format
   Scenario: Background design override adds CSS class to activity wall
     Given the following "format_minimoodlewall > courses" exist:
       | fullname      | shortname | format         | activityprofile | backgrounddesign |
-      | Test Course 3 | TC3       | minimoodlewall | classic         | dark             |
+      | Test Course 3 | TC3       | minimoodlewall | classic         | darkmode         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC3    | 0       |
     And I log in as "admin"
     When I am on "Test Course 3" course homepage
-    Then ".minimoodlewall-activities.minimoodlewall-style-classic.mmw-bgdesign-dark" "css_element" should exist
+    Then ".mmw-bgdesign-wrapper.mmw-bgdesign-darkmode" "css_element" should exist
+    And ".minimoodlewall-activities.mmw-bgdesign-darkmode" "css_element" should exist
 
   @javascript
-  Scenario: Default background design does not add background design class
+  Scenario: New course gets primary-school background design by default
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | activityprofile | backgrounddesign |
-      | Test Course 4 | TC4       | minimoodlewall | classic         | default          |
+      | fullname      | shortname | format         | activityprofile |
+      | Test Course 4 | TC4       | minimoodlewall | classic         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC4    | 0       |
     And I log in as "admin"
     When I am on "Test Course 4" course homepage
-    Then ".minimoodlewall-activities.minimoodlewall-style-classic" "css_element" should exist
-    And ".minimoodlewall-activities.mmw-bgdesign-default" "css_element" should not exist
-    And ".minimoodlewall-activities[class*='mmw-bgdesign']" "css_element" should not exist
+    Then ".mmw-bgdesign-wrapper.mmw-bgdesign-primary-school" "css_element" should exist
+    And ".minimoodlewall-activities.mmw-bgdesign-primary-school" "css_element" should exist
 
   @javascript
   Scenario: Admin can set background design when creating course
@@ -88,10 +88,11 @@ Feature: Activity profile variants in minimoodlewall format
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
     And I set the field "Activity Profile" to "Classic"
-    And I set the field "Background design" to "Green"
+    And I set the field "Background design" to "Darkmode"
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC5    | 0       |
     When I am on "Test Course 5" course homepage
-    Then ".minimoodlewall-activities.mmw-bgdesign-green" "css_element" should exist
+    Then ".mmw-bgdesign-wrapper.mmw-bgdesign-darkmode" "css_element" should exist
+    And ".minimoodlewall-activities.mmw-bgdesign-darkmode" "css_element" should exist

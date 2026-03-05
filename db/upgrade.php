@@ -877,5 +877,42 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026030500, 'format', 'minimoodlewall');
     }
 
+    // Map legacy backgrounddesign values to the new theme names.
+    if ($oldversion < 2026030501) {
+        $mapping = [
+            'green' => 'primary-school',
+            'white' => 'whiteboard',
+            'dark'  => 'darkmode',
+        ];
+        $valuefield = $DB->sql_compare_text('value');
+        foreach ($mapping as $oldval => $newval) {
+            $DB->execute(
+                "UPDATE {course_format_options}
+                    SET value = ?
+                  WHERE format = ?
+                    AND name = ?
+                    AND {$valuefield} = ?",
+                [$newval, 'minimoodlewall', 'backgrounddesign', $oldval]
+            );
+        }
+
+        upgrade_plugin_savepoint(true, 2026030501, 'format', 'minimoodlewall');
+    }
+
+    // Remove 'default' backgrounddesign value — migrate to 'primary-school'.
+    if ($oldversion < 2026030502) {
+        $valuefield = $DB->sql_compare_text('value');
+        $DB->execute(
+            "UPDATE {course_format_options}
+                SET value = ?
+              WHERE format = ?
+                AND name = ?
+                AND {$valuefield} = ?",
+            ['primary-school', 'minimoodlewall', 'backgrounddesign', 'default']
+        );
+
+        upgrade_plugin_savepoint(true, 2026030502, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

@@ -175,7 +175,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'type' => PARAM_BOOL,
             ],
             'backgrounddesign' => [
-                'default' => 'default',
+                'default' => 'primary-school',
                 'type' => PARAM_ALPHANUMEXT,
             ],
             'activityprofile' => [
@@ -221,10 +221,11 @@ class format_minimoodlewall extends core_courseformat\base {
                 $profileoptions['classic'] = get_string('profile_classic', 'format_minimoodlewall');
             }
             $bgdesignoptions = [
-                'default' => get_string('backgrounddesign_default', 'format_minimoodlewall'),
-                'green'   => get_string('backgrounddesign_green', 'format_minimoodlewall'),
-                'white'   => get_string('backgrounddesign_white', 'format_minimoodlewall'),
-                'dark'    => get_string('backgrounddesign_dark', 'format_minimoodlewall'),
+                'primary-school' => get_string('backgrounddesign_primaryschool', 'format_minimoodlewall'),
+                'darkmode'       => get_string('backgrounddesign_darkmode', 'format_minimoodlewall'),
+                'whiteboard'     => get_string('backgrounddesign_whiteboard', 'format_minimoodlewall'),
+                'pinnwand'       => get_string('backgrounddesign_pinnwand', 'format_minimoodlewall'),
+                'paper'          => get_string('backgrounddesign_paper', 'format_minimoodlewall'),
             ];
             $courseformatoptions['backgrounddesign'] += [
                 'label' => get_string('setting_backgrounddesign', 'format_minimoodlewall'),

@@ -28,6 +28,8 @@
         <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="filter-status"></div>
         {{! Live region for pagination status announcements }}
         <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="pagination-status"></div>
+        {{! Background design wrapper — applies theme class to filter bar, board and navigation. }}
+        <div class="mmw-bgdesign-wrapper{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}">
         {{#filterbar.hasitems}}
         <div class="minimoodlewall-filterbar {{styleclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
             {{#filterbar.tags}}
@@ -152,6 +154,7 @@
             </div>
         </div>
         {{/completionstatus}}
+        </div>{{! /.mmw-bgdesign-wrapper }}
         {{/cmlist}}
     {{/ core_courseformat/local/content/section/cmlist }}
 {{/ core_courseformat/local/content/section }}
