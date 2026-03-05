@@ -780,8 +780,8 @@ $activity-icon-colors: (
     margin-bottom: 1rem;
 
     .minimoodlewall-filterbar-button {
-        background: var(--mmw-filter-accent, #fff);
-        border: 2px solid transparent;
+        background: #fff;
+        border: 2px solid var(--mmw-filter-accent, #fff);
         border-radius: 999px;
         padding: 0.5rem;
         min-width: 3rem;
@@ -810,7 +810,6 @@ $activity-icon-colors: (
         }
 
         &.is-active {
-            border-color: var(--bs-primary, #0f6cbf);
             box-shadow: 0 4px 12px rgba(15, 108, 191, 0.35);
             transform: scale(1.2);
         }
@@ -1489,6 +1488,7 @@ body.single-section-page.format-mmw-multisection-view {
 
 // --- PRIMARY SCHOOL (dark-green chalkboard with grid texture) ---
 .mmw-bgdesign-wrapper.mmw-bgdesign-primary-school {
+    // Style wall background
     .minimoodlewall-activities {
         background: #1f6f4e;
         border-radius: 2rem;
@@ -1509,9 +1509,19 @@ body.single-section-page.format-mmw-multisection-view {
         }
     }
 
-    // Step 2: Saturated card images
+    // Saturated card images
     .minimoodlewall-card .minimoodlewall-card-image {
         filter: saturate(1.25) brightness(1.08);
+    }
+
+    // Larger icon-only filter buttons
+    .minimoodlewall-filterbar-button {
+        width: 4.5rem;
+        height: 4.5rem;
+        .minimoodlewall-filterbar-symbol img {
+            width: 3rem;
+            height: 3rem;
+        }
     }
 }
 

@@ -599,8 +599,8 @@
   margin-bottom: 1rem;
 }
 .minimoodlewall-filterbar .minimoodlewall-filterbar-button {
-  background: var(--mmw-filter-accent, #fff);
-  border: 2px solid transparent;
+  background: #fff;
+  border: 2px solid var(--mmw-filter-accent, #fff);
   border-radius: 999px;
   padding: 0.5rem;
   min-width: 3rem;
@@ -627,7 +627,6 @@
   object-fit: contain;
 }
 .minimoodlewall-filterbar .minimoodlewall-filterbar-button.is-active {
-  border-color: var(--bs-primary, #0f6cbf);
   box-shadow: 0 4px 12px rgba(15, 108, 191, 0.35);
   transform: scale(1.2);
 }
@@ -1184,6 +1183,14 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-card .minimoodlewall-card-image {
   filter: saturate(1.25) brightness(1.08);
+}
+.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-filterbar-button {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-filterbar-button .minimoodlewall-filterbar-symbol img {
+  width: 3rem;
+  height: 3rem;
 }
 
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-activities {
