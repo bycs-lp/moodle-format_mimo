@@ -86,7 +86,7 @@
   margin-bottom: 1rem;
   transition: height 0.3s ease;
   border-radius: 1rem;
-  padding: 1.9rem 1rem;
+  padding: 0.65rem;
   background-color: var(--bs-body-bg, #f8f9fa);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
@@ -147,7 +147,7 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
-  aspect-ratio: 3.75/4;
+  aspect-ratio: 3/4;
 }
 .card.minimoodlewall-card:hover {
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
@@ -210,7 +210,7 @@
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body {
   padding: 0.5rem 1rem 0.5rem;
   background: #fff;
-  flex: 3.75;
+  flex: 1.3;
   border-radius: 0 0 1.2rem 1.2rem;
   display: flex;
   flex-direction: column;
@@ -969,7 +969,7 @@ body.format-minimoodlewall #page-wrapper #page {
 
 .minimoodlewall-activities li.activity {
   background: transparent !important;
-  padding: 0.75rem !important;
+  padding: 0.4rem !important;
 }
 
 .mmw-tag-preview-container {
@@ -1171,10 +1171,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 .mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-activities {
   background: #1f6f4e;
   border-radius: 2rem;
-  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.18);
-  border: none;
-  position: relative;
-  overflow: hidden;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-activities::before {
   content: "";
@@ -1183,48 +1179,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   background: radial-gradient(1100px 600px at 18% 14%, rgba(255, 255, 255, 0.1), transparent 62%), radial-gradient(900px 520px at 82% 20%, rgba(0, 0, 0, 0.22), transparent 60%), repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 22px);
   pointer-events: none;
   opacity: 0.95;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-card .minimoodlewall-card-image {
-  filter: saturate(1.25) brightness(1.08);
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-filterbar-button {
-  width: 72px;
-  height: 72px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  box-shadow: none;
-  background: #fff;
-  border-radius: 999px;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-filterbar-button .minimoodlewall-filterbar-label {
-  display: none;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-filterbar-button .minimoodlewall-filterbar-symbol img {
-  width: 3.5rem;
-  height: 3.5rem;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-card .minimoodlewall-card-content {
-  box-shadow: 0 18px 30px rgba(41, 54, 35, 0.2);
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-card .minimoodlewall-card-body .minimoodlewall-card-description {
-  color: #4e5855;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-completion-badge {
-  box-shadow: 0 8px 18px rgba(37, 53, 35, 0.2);
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-completion-badge .badge-complete {
-  background: #5fc76d;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-completion-badge .badge-incomplete {
-  background: #f9a8b8;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-completion-status .completion-status-tag-image {
-  border: 3px solid #e9ecef;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .completion-stars .star-icon {
-  color: #ffc107;
-  text-shadow: 0 0 2px rgba(255, 193, 7, 0.4);
 }
 
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-activities {
