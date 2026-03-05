@@ -1493,6 +1493,7 @@ body.single-section-page.format-mmw-multisection-view {
         background: #1f6f4e;
         border-radius: 2rem;
         position: relative;
+        overflow: hidden; // Clip ::before grid so it only shows within the green area.
 
         &::before {
             content: "";
@@ -1506,6 +1507,11 @@ body.single-section-page.format-mmw-multisection-view {
             pointer-events: none;
             opacity: 0.95;
         }
+    }
+
+    // Step 2: Saturated card images
+    .minimoodlewall-card .minimoodlewall-card-image {
+        filter: saturate(1.25) brightness(1.08);
     }
 }
 
