@@ -176,7 +176,12 @@ class profile_manager {
         $DB->delete_records(self::TABLE_PROFILE_TAGS, ['profileid' => $id]);
 
         // Delete the profile.
-        return $DB->delete_records(self::TABLE_PROFILES, ['id' => $id]);
+        $result = $DB->delete_records(self::TABLE_PROFILES, ['id' => $id]);
+
+        // Courses referencing this profile have stale course_tags_* cache entries.
+        tag_manager::clear_tag_cache();
+
+        return $result;
     }
 
     /**
@@ -299,7 +304,14 @@ class profile_manager {
             }
         }
 
-        return $DB->update_record(self::TABLE_PROFILE_TAGS, $record);
+        $result = $DB->update_record(self::TABLE_PROFILE_TAGS, $record);
+
+        // Profile overrides (name, bgcolor, activity types, etc.) are baked into the
+        // resolved course_tags_* cache entries.  Purge the tag cache so every course
+        // picks up the new override values on next request.
+        tag_manager::clear_tag_cache();
+
+        return $result;
     }
 
     /**

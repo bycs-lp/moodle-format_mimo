@@ -596,10 +596,9 @@ class tag_manager {
 
         $result = $DB->update_record('format_minimoodlewall_tags', $record);
 
-        // Invalidate cache entries.
-        self::init_caches();
-        self::$tagcache->delete('tag_' . $id);
-        self::$tagcache->delete('all_tags');
+        // Purge entire tag cache — course_tags_* entries contain resolved tag data
+        // (including bgcolor) that becomes stale when any base tag field changes.
+        self::clear_tag_cache();
 
         return $result;
     }
@@ -621,10 +620,8 @@ class tag_manager {
 
         $result = $DB->delete_records('format_minimoodlewall_tags', ['id' => $id]);
 
-        // Invalidate cache entries.
-        self::init_caches();
-        self::$tagcache->delete('tag_' . $id);
-        self::$tagcache->delete('all_tags');
+        // Purge entire tag cache — course_tags_* entries reference this tag.
+        self::clear_tag_cache();
         self::clear_mapping_cache();
 
         return $result;
