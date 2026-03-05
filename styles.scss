@@ -278,6 +278,24 @@ $activity-icon-colors: (
                 max-height: none;
                 object-fit: contain;
             }
+
+            // Tag name pill overlay.
+            .minimoodlewall-tag-pill {
+                position: absolute;
+                right: 0.6rem;
+                bottom: 0.6rem;
+                background: #fff;
+                color: #333;
+                font-size: clamp(0.6rem, 3cqw, 0.85rem);
+                font-weight: 600;
+                padding: 0.25rem 0.75rem;
+                border-radius: 999px;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+                z-index: 2;
+                pointer-events: none;
+                line-height: 1.4;
+                white-space: nowrap;
+            }
             &.lower img {
                 transform: translate(-50%, -40%);
             }
