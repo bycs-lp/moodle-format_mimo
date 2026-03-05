@@ -58,9 +58,9 @@ class content extends content_base {
         $data->stylevariant = $activityprofile;
         $data->styleclass = 'minimoodlewall-style-' . $activityprofile;
 
-        // Resolve wallcolor: "default" means no override (style's own background applies).
-        $wallcolor = $course->wallcolor ?? 'default';
-        $data->wallcolorclass = ($wallcolor !== 'default') ? 'mmw-wallcolor-' . $wallcolor : '';
+        // Resolve background design: "default" means no override (style's own background applies).
+        $bgdesign = $course->backgrounddesign ?? 'default';
+        $data->bgdesignclass = ($bgdesign !== 'default') ? 'mmw-bgdesign-' . $bgdesign : '';
 
         // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
         $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);

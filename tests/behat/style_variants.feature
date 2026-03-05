@@ -52,33 +52,33 @@ Feature: Activity profile variants in minimoodlewall format
     Then ".minimoodlewall-activities.minimoodlewall-style-light" "css_element" should exist
 
   @javascript
-  Scenario: Wallcolor override adds CSS class to activity wall
+  Scenario: Background design override adds CSS class to activity wall
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | activityprofile | wallcolor |
-      | Test Course 3 | TC3       | minimoodlewall | classic         | dark      |
+      | fullname      | shortname | format         | activityprofile | backgrounddesign |
+      | Test Course 3 | TC3       | minimoodlewall | classic         | dark             |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC3    | 0       |
     And I log in as "admin"
     When I am on "Test Course 3" course homepage
-    Then ".minimoodlewall-activities.minimoodlewall-style-classic.mmw-wallcolor-dark" "css_element" should exist
+    Then ".minimoodlewall-activities.minimoodlewall-style-classic.mmw-bgdesign-dark" "css_element" should exist
 
   @javascript
-  Scenario: Default wallcolor does not add wallcolor class
+  Scenario: Default background design does not add background design class
     Given the following "format_minimoodlewall > courses" exist:
-      | fullname      | shortname | format         | activityprofile | wallcolor |
-      | Test Course 4 | TC4       | minimoodlewall | classic         | default   |
+      | fullname      | shortname | format         | activityprofile | backgrounddesign |
+      | Test Course 4 | TC4       | minimoodlewall | classic         | default          |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC4    | 0       |
     And I log in as "admin"
     When I am on "Test Course 4" course homepage
     Then ".minimoodlewall-activities.minimoodlewall-style-classic" "css_element" should exist
-    And ".minimoodlewall-activities.mmw-wallcolor-default" "css_element" should not exist
-    And ".minimoodlewall-activities[class*='mmw-wallcolor']" "css_element" should not exist
+    And ".minimoodlewall-activities.mmw-bgdesign-default" "css_element" should not exist
+    And ".minimoodlewall-activities[class*='mmw-bgdesign']" "css_element" should not exist
 
   @javascript
-  Scenario: Admin can set wallcolor when creating course
+  Scenario: Admin can set background design when creating course
     Given I log in as "admin"
     And I am on site homepage
     And I navigate to "Courses > Add a new course" in site administration
@@ -88,10 +88,10 @@ Feature: Activity profile variants in minimoodlewall format
       | Format            | Minimal Moodle Wall |
     And I expand all fieldsets
     And I set the field "Activity Profile" to "Classic"
-    And I set the field "Wall colour" to "Green"
+    And I set the field "Background design" to "Green"
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
       | page     | Page 1 | First page | TC5    | 0       |
     When I am on "Test Course 5" course homepage
-    Then ".minimoodlewall-activities.mmw-wallcolor-green" "css_element" should exist
+    Then ".minimoodlewall-activities.mmw-bgdesign-green" "css_element" should exist

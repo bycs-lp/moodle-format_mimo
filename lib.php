@@ -174,7 +174,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'default' => 1,
                 'type' => PARAM_BOOL,
             ],
-            'wallcolor' => [
+            'backgrounddesign' => [
                 'default' => 'default',
                 'type' => PARAM_ALPHANUMEXT,
             ],
@@ -220,18 +220,18 @@ class format_minimoodlewall extends core_courseformat\base {
             if (empty($profileoptions)) {
                 $profileoptions['classic'] = get_string('profile_classic', 'format_minimoodlewall');
             }
-            $wallcoloroptions = [
-                'default' => get_string('wallcolor_default', 'format_minimoodlewall'),
-                'green'   => get_string('wallcolor_green', 'format_minimoodlewall'),
-                'white'   => get_string('wallcolor_white', 'format_minimoodlewall'),
-                'dark'    => get_string('wallcolor_dark', 'format_minimoodlewall'),
+            $bgdesignoptions = [
+                'default' => get_string('backgrounddesign_default', 'format_minimoodlewall'),
+                'green'   => get_string('backgrounddesign_green', 'format_minimoodlewall'),
+                'white'   => get_string('backgrounddesign_white', 'format_minimoodlewall'),
+                'dark'    => get_string('backgrounddesign_dark', 'format_minimoodlewall'),
             ];
-            $courseformatoptions['wallcolor'] += [
-                'label' => get_string('setting_wallcolor', 'format_minimoodlewall'),
-                'help' => 'setting_wallcolor',
+            $courseformatoptions['backgrounddesign'] += [
+                'label' => get_string('setting_backgrounddesign', 'format_minimoodlewall'),
+                'help' => 'setting_backgrounddesign',
                 'help_component' => 'format_minimoodlewall',
                 'element_type' => 'select',
-                'element_attributes' => [$wallcoloroptions],
+                'element_attributes' => [$bgdesignoptions],
             ];
             $courseformatoptions['activityprofile'] += [
                 'label' => get_string('setting_activityprofile', 'format_minimoodlewall'),

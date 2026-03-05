@@ -249,16 +249,16 @@ $activity-icon-colors: (
         }
     }
 
-    // Wallcolor overrides — per-course background colour that overrides the style default.
-    &.mmw-wallcolor-green {
+    // Background design overrides — per-course background that overrides the style default.
+    &.mmw-bgdesign-green {
         background-color: #7fb566;
     }
 
-    &.mmw-wallcolor-white {
+    &.mmw-bgdesign-white {
         background-color: var(--bs-body-bg, #fff);
     }
 
-    &.mmw-wallcolor-dark {
+    &.mmw-bgdesign-dark {
         background-color: #1a202c;
     }
 }

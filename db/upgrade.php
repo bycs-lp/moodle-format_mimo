@@ -867,5 +867,15 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026022801, 'format', 'minimoodlewall');
     }
 
+    // Rename 'wallcolor' format option to 'backgrounddesign'.
+    if ($oldversion < 2026030500) {
+        $DB->set_field('course_format_options', 'name', 'backgrounddesign', [
+            'format' => 'minimoodlewall',
+            'name' => 'wallcolor',
+        ]);
+
+        upgrade_plugin_savepoint(true, 2026030500, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

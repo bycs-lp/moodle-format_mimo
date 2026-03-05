@@ -261,7 +261,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
             'id' => $course->id,
             'enablefiltering' => $data['enablefiltering'],
             'activityprofile' => $data['activityprofile'] ?? 'classic',
-            'wallcolor' => $data['wallcolor'] ?? 'default',
+            'backgrounddesign' => $data['backgrounddesign'] ?? $data['wallcolor'] ?? 'default',
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
 

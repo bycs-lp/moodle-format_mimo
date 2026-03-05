@@ -756,6 +756,20 @@ class tag_manager {
     }
 
     /**
+     * Reset static cache references so they are re-created on next use.
+     *
+     * This is needed for PHPUnit tests where \cache_factory::reset() invalidates
+     * existing cache instances between tests. Without this, the stale static
+     * references cause silent cache misses or corrupt reads.
+     *
+     * @return void
+     */
+    public static function reset_caches(): void {
+        self::$tagcache = null;
+        self::$mappingcache = null;
+    }
+
+    /**
      * Initialize default tags for a new installation.
      *
      * @return bool Success

@@ -175,13 +175,13 @@
 .minimoodlewall-activities.minimoodlewall-style-dark .minimoodlewall-card:hover .minimoodlewall-card-content .minimoodlewall-card-body {
   background: #374151;
 }
-.minimoodlewall-activities.mmw-wallcolor-green {
+.minimoodlewall-activities.mmw-bgdesign-green {
   background-color: #7fb566;
 }
-.minimoodlewall-activities.mmw-wallcolor-white {
+.minimoodlewall-activities.mmw-bgdesign-white {
   background-color: var(--bs-body-bg, #fff);
 }
-.minimoodlewall-activities.mmw-wallcolor-dark {
+.minimoodlewall-activities.mmw-bgdesign-dark {
   background-color: #1a202c;
 }
 

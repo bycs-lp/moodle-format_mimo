@@ -40,8 +40,7 @@ final class tag_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        tag_manager::clear_tag_cache();
-        tag_manager::clear_mapping_cache();
+        tag_manager::reset_caches();
     }
 
     /**
@@ -50,20 +49,9 @@ final class tag_manager_test extends \advanced_testcase {
     protected function tearDown(): void {
         global $SESSION;
 
-        // Clear caches to prevent cross-test contamination.
-        \cache::make('format_minimoodlewall', 'tagconfigurations')->purge();
-        \cache::make('format_minimoodlewall', 'activitytagmappings')->purge();
-        tag_manager::clear_mapping_cache();
-
-        // Force tag_manager to re-initialize cache instances on next access.
-        // This prevents stale static cache references from contaminating subsequent tests.
-        $reflection = new \ReflectionClass(tag_manager::class);
-        $tagcacheprop = $reflection->getProperty('tagcache');
-        $tagcacheprop->setAccessible(true);
-        $tagcacheprop->setValue(null, null);
-        $mappingcacheprop = $reflection->getProperty('mappingcache');
-        $mappingcacheprop->setAccessible(true);
-        $mappingcacheprop->setValue(null, null);
+        // Reset static cache references to avoid stale instances after
+        // \phpunit_util::reset_all_data() resets the cache factory.
+        tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
         unset($SESSION->format_minimoodlewall_pending_tag);

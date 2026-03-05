@@ -49,6 +49,7 @@ final class observer_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        tag_manager::reset_caches();
 
         // Create a tag.
         $this->tagid = tag_manager::create_tag(
@@ -70,10 +71,9 @@ final class observer_test extends \advanced_testcase {
     protected function tearDown(): void {
         global $SESSION;
 
-        // Clear caches to prevent cross-test contamination.
-        \cache::make('format_minimoodlewall', 'tagconfigurations')->purge();
-        \cache::make('format_minimoodlewall', 'activitytagmappings')->purge();
-        tag_manager::clear_mapping_cache();
+        // Reset static cache references to avoid stale instances after
+        // \phpunit_util::reset_all_data() resets the cache factory.
+        tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
         unset($SESSION->format_minimoodlewall_pending_tag);
