@@ -147,7 +147,7 @@
   overflow: visible;
   display: flex;
   flex-direction: column;
-  aspect-ratio: 3/4;
+  aspect-ratio: 3.25/4;
 }
 .card.minimoodlewall-card:hover {
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
@@ -217,11 +217,14 @@
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.lower img {
   transform: translate(-50%, -40%);
 }
+.card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image img {
+  height: 83%;
+}
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.imgsize-bigger img {
-  height: 125%;
+  height: 103%;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-image.imgsize-smaller img {
-  height: 95%;
+  height: 75%;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body {
   padding: 0.5rem 1rem 0.5rem;

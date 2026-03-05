@@ -217,7 +217,7 @@ $activity-icon-colors: (
     // background: transparent;
     display: flex;
     flex-direction: column;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 3.25 / 4;
 
     &:hover {
         box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
@@ -299,11 +299,14 @@ $activity-icon-colors: (
             &.lower img {
                 transform: translate(-50%, -40%);
             }
+            img {
+                height: 83%;
+            }
             &.imgsize-bigger img {
-                height: 125%;
+                height: 103%;
             }
             &.imgsize-smaller img {
-                height: 95%;
+                height: 75%;
             }
         }
 
