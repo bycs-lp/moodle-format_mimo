@@ -286,7 +286,7 @@ $activity-icon-colors: (
                 bottom: 0.6rem;
                 background: rgba(255,255,255,.95);
                 color: #111827;
-                font-size: .7rem;
+                font-size: .65rem;
                 font-weight: 600;
                 padding: 0.25rem 0.75rem;
                 border-radius: 999px;
@@ -1473,13 +1473,22 @@ body.format-minimoodlewall #page-wrapper #page {
     flex-wrap: wrap;
     max-width: 200px;
 
-    // Individual star icon.
+    // Filled star for completed activities.
     .star-icon {
         font-size: 0.9rem;
         color: #ffd700;
         line-height: 1;
         text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
         transition: transform 0.2s ease;
+    }
+
+    // Unfilled star for incomplete activities — smaller outline.
+    .star-icon--incomplete {
+        font-size: 0.65rem;
+        color: #ccc;
+        line-height: 1;
+        opacity: 0.6;
+        transition: transform 0.2s ease, color 0.3s ease, opacity 0.3s ease;
     }
 
     // Entrance animation for new stars.
@@ -1605,10 +1614,6 @@ body.single-section-page.format-mmw-multisection-view {
             color: #111827;
         }
 
-        .minimoodlewall-filterbar-symbol img {
-            display: none;
-        }
-
         &.is-active {
             background: var(--mmw-filter-accent, #58d3d6) !important;
             color: #111827;
@@ -1643,6 +1648,11 @@ body.single-section-page.format-mmw-multisection-view {
     .completion-stars .star-icon {
         color: #ffdf00;
         text-shadow: 0 0 4px rgba(255, 223, 0, 0.7);
+    }
+
+    .completion-stars .star-icon--incomplete {
+        color: rgba(255, 255, 255, 0.35);
+        opacity: 0.5;
     }
 
     .minimoodlewall-navigation {
@@ -1714,10 +1724,6 @@ body.single-section-page.format-mmw-multisection-view {
 
         &.is-active {
             border: 2px solid rgba(255, 149, 85, 0.6) !important;
-        }
-
-        .minimoodlewall-filterbar-symbol img {
-            display: none;
         }
     }
 

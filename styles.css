@@ -204,7 +204,7 @@
   bottom: 0.6rem;
   background: rgba(255, 255, 255, 0.95);
   color: #111827;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
@@ -1065,6 +1065,7 @@ body.format-minimoodlewall #page-wrapper #page {
   background: rgba(255, 255, 255, 0.92);
   border: 2px solid #ebebeb;
   box-shadow: 0 10px 16px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 1rem;
 }
 
 .completion-pill {
@@ -1174,6 +1175,13 @@ body.format-minimoodlewall #page-wrapper #page {
   text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
   transition: transform 0.2s ease;
 }
+.completion-stars .star-icon--incomplete {
+  font-size: 0.65rem;
+  color: #ccc;
+  line-height: 1;
+  opacity: 0.6;
+  transition: transform 0.2s ease, color 0.3s ease, opacity 0.3s ease;
+}
 .completion-stars .star-new {
   animation: mmw-star-enter 0.4s ease-out forwards;
 }
@@ -1256,9 +1264,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-filterbar-button .minimoodlewall-filterbar-label {
   color: #111827;
 }
-.mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-filterbar-button .minimoodlewall-filterbar-symbol img {
-  display: none;
-}
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-filterbar-button.is-active {
   background: var(--mmw-filter-accent, #58d3d6) !important;
   color: #111827;
@@ -1286,6 +1291,10 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .completion-stars .star-icon {
   color: #ffdf00;
   text-shadow: 0 0 4px rgba(255, 223, 0, 0.7);
+}
+.mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .completion-stars .star-icon--incomplete {
+  color: rgba(255, 255, 255, 0.35);
+  opacity: 0.5;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-darkmode .minimoodlewall-navigation .minimoodlewall-nav-btn {
   background: rgba(255, 255, 255, 0.9);
@@ -1339,9 +1348,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard .minimoodlewall-filterbar-button.is-active {
   border: 2px solid rgba(255, 149, 85, 0.6) !important;
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard .minimoodlewall-filterbar-button .minimoodlewall-filterbar-symbol img {
-  display: none;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard .minimoodlewall-completion-status .completion-status-tag-image {
   border: 3px solid #fff;

@@ -410,9 +410,10 @@ const updateCompletionCounts = (statusRegion, items) => {
 };
 
 /**
- * Update the completion stars display to show one star per completed activity.
+ * Update the completion stars display to show filled stars for completed
+ * activities and smaller unfilled stars for incomplete activities.
  *
- * Stars are rendered dynamically based on the current completed count.
+ * Stars are rendered dynamically based on the current counts.
  * A subtle entrance animation is applied to newly appearing stars.
  * When all activities are complete, the container gets an all-complete class.
  *
@@ -427,13 +428,16 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
         return;
     }
 
-    const currentStarCount = starsContainer.querySelectorAll('.star-icon').length;
+    const incompleteCount = totalWithCompletion - completedCount;
+    const currentFilledCount = starsContainer.querySelectorAll('.star-icon:not(.star-icon--incomplete)').length;
+    const currentUnfilledCount = starsContainer.querySelectorAll('.star-icon--incomplete').length;
     const allComplete = totalWithCompletion > 0 && completedCount === totalWithCompletion;
 
-    // Only rebuild if count changed.
-    if (currentStarCount !== completedCount) {
-        // Build new star icons.
+    // Only rebuild if counts changed.
+    if (currentFilledCount !== completedCount || currentUnfilledCount !== incompleteCount) {
         const fragment = document.createDocumentFragment();
+
+        // Filled stars for completed activities.
         for (let i = 0; i < completedCount; i++) {
             const span = document.createElement('span');
             span.className = 'star-icon';
@@ -442,20 +446,36 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
             icon.className = 'fa fa-star';
             span.appendChild(icon);
             // Animate only newly added stars.
-            if (i >= currentStarCount) {
+            if (i >= currentFilledCount) {
                 span.classList.add('star-new');
             }
             fragment.appendChild(span);
         }
+
+        // Unfilled stars for incomplete activities.
+        for (let i = 0; i < incompleteCount; i++) {
+            const span = document.createElement('span');
+            span.className = 'star-icon--incomplete';
+            span.setAttribute('aria-hidden', 'true');
+            const icon = document.createElement('i');
+            icon.className = 'fa fa-star-o';
+            span.appendChild(icon);
+            fragment.appendChild(span);
+        }
+
         starsContainer.innerHTML = '';
         starsContainer.appendChild(fragment);
 
         // Update aria label.
-        starsContainer.setAttribute('aria-label', completedCount + ' activities completed');
+        starsContainer.setAttribute(
+            'aria-label',
+            completedCount + ' of ' + totalWithCompletion + ' activities completed'
+        );
     }
 
-    // Update data attribute and all-complete state.
+    // Update data attributes and all-complete state.
     starsContainer.dataset.completedCount = completedCount;
+    starsContainer.dataset.totalCount = totalWithCompletion;
     starsContainer.classList.toggle('all-complete', allComplete);
 };
 

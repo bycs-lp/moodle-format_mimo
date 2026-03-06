@@ -135,10 +135,11 @@
                     <span class="completion-pill-count" data-count="incomplete">{{incompletecount}}</span>
                 </button>
                 {{#enablecompletionstars}}
-                {{! Completion stars - one gold star per completed activity }}
+                {{! Completion stars - filled for completed, unfilled for incomplete }}
                 <div class="completion-stars{{#allcomplete}} all-complete{{/allcomplete}}"
                      data-region="completion-stars"
                      data-completed-count="{{completedcount}}"
+                     data-total-count="{{total}}"
                      role="img"
                      aria-label="{{#str}}completionstars, format_minimoodlewall, {{completedcount}}{{/str}}">
                 </div>
