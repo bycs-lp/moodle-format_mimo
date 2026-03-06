@@ -727,7 +727,7 @@ $activity-icon-colors: (
     }
 
     &.is-booting .minimoodlewall-nav-btn--prev {
-        display: none;
+        opacity: 0.35;
     }
 
     &.is-booting[data-has-next='0'] {
@@ -735,7 +735,7 @@ $activity-icon-colors: (
     }
 
     &.is-booting[data-has-next='1'] .minimoodlewall-nav-btn--next {
-        opacity: 0.4;
+        opacity: 0.35;
     }
 
     .minimoodlewall-nav-btn {
@@ -746,7 +746,7 @@ $activity-icon-colors: (
         height: 48px;
         border-radius: 50%;
         border: none;
-        background: #e8e8e8;
+        background: #fff;
         color: #555;
         display: flex;
         align-items: center;
@@ -765,26 +765,25 @@ $activity-icon-colors: (
         }
 
         .minimoodlewall-nav-arrow {
-            width: 22px;
-            height: 22px;
+            font-size: 1.1rem;
+            line-height: 1;
             color: #555;
         }
 
-        &:hover {
-            background: #d4d4d4;
-            transform: translateY(-2px);
+        &:hover:not(:disabled) {
+            background: #f0f0f0;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        &:active {
+        &:active:not(:disabled) {
             transform: translateY(0px);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
 
         &:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            opacity: 0.5;
+            cursor: default;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             transform: none;
         }
     }
@@ -1641,21 +1640,21 @@ body.single-section-page.format-mmw-multisection-view {
 
     .minimoodlewall-navigation {
         .minimoodlewall-nav-btn {
-            background: #4a5568;
-            box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            color: #555;
 
-            &:hover {
-                background: #6b7280;
-                box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
+            &:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 1);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             }
 
-            &:active {
-                box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4);
+            &:active:not(:disabled) {
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             }
 
             &:disabled {
-                box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
             }
         }
     }

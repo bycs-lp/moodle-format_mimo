@@ -633,21 +633,11 @@ export const init = () => {
         const totalPages = getTotalPages();
 
         if (prevBtn) {
-            if (currentPage === 0) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = '';
-            }
             const disablePrev = (currentPage === 0) || !paginationEnabled;
             prevBtn.disabled = disablePrev;
             prevBtn.setAttribute('aria-disabled', disablePrev ? 'true' : 'false');
         }
         if (nextBtn) {
-            if (currentPage >= totalPages - 1) {
-                nextBtn.style.display = 'none';
-            } else {
-                nextBtn.style.display = '';
-            }
             const disableNext = (currentPage >= totalPages - 1) || !paginationEnabled;
             nextBtn.disabled = disableNext;
             nextBtn.setAttribute('aria-disabled', disableNext ? 'true' : 'false');
