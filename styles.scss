@@ -217,7 +217,7 @@ $activity-icon-colors: (
     // background: transparent;
     display: flex;
     flex-direction: column;
-    aspect-ratio: 3.25 / 4;
+    aspect-ratio: 3.45 / 4;
 
     &:hover {
         box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
@@ -282,11 +282,11 @@ $activity-icon-colors: (
             // Tag name pill overlay.
             .minimoodlewall-tag-pill {
                 position: absolute;
-                right: 0.6rem;
+                right: 0.5rem;
                 bottom: 0.6rem;
-                background: #fff;
-                color: #333;
-                font-size: clamp(0.6rem, 3cqw, 0.85rem);
+                background: rgba(255,255,255,.95);
+                color: #111827;
+                font-size: .7rem;
                 font-weight: 600;
                 padding: 0.25rem 0.75rem;
                 border-radius: 999px;
