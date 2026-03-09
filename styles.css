@@ -1317,7 +1317,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-card .minimoodlewall-card-content,
 .mmw-bgdesign-wrapper.mmw-bgdesign-paper .minimoodlewall-card .minimoodlewall-card-content {
-  border-radius: 10px;
+  border-radius: 1.2rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22), 0 3px 7px rgba(0, 0, 0, 0.12);
   overflow: hidden;
@@ -1355,9 +1355,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   border: none;
   border-radius: 2rem;
   box-shadow: 0 26px 55px rgba(0, 0, 0, 0.22);
-}
-.mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-activities::before {
-  display: none;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-activities li.activity {
   transform-origin: top center;
