@@ -136,6 +136,7 @@ $string['profiletag_activitytype2'] = 'Aktivitätstyp 2 überschreiben';
 $string['profiletag_activitytype3'] = 'Aktivitätstyp 3 überschreiben';
 $string['profiletag_bgcolor'] = 'Hintergrundfarbe überschreiben';
 $string['profiletag_bgcolor_help'] = 'Überschreibt die Hintergrundfarbe für dieses spezifische Profil. Leer lassen, um vom Basis-Tag zu erben.';
+$string['profiletag_disabled'] = 'Deaktiviert';
 $string['profiletag_enabled'] = 'Aktiviert';
 $string['profiletag_enabled_desc'] = 'Wenn deaktiviert, wird dieser Tag nicht angezeigt, wenn dieses Profil aktiv ist.';
 $string['profiletag_name'] = 'Tag-Name überschreiben';

@@ -17,7 +17,7 @@
 {{!
     @template format_minimoodlewall/tag_management
 
-    Tag management page template with flat tag list.
+    Tag management page template with profile-filtered tag list.
 
     Context variables:
     * createtagurl - URL to create new tag
@@ -25,14 +25,26 @@
     * notagstext - Text when no tags exist
     * hastags - Boolean if tags exist
     * tableheaders - Object with table header strings
-    * tags - Array of tag objects
+    * profilebuttons - Array of profile button objects (name, displayname, active)
+    * tags - Array of tag objects (resolved for active profile)
+    * disabledtext - Text for disabled badge
 }}
 
 <div class="tag-management" data-region="tag-management">
-    <div class="mb-3">
+    <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
         <a href="{{createtagurl}}" class="btn btn-primary" data-testid="create-tag-button">
             {{createtagtext}}
         </a>
+        <span class="mx-2 text-muted">|</span>
+        {{#profilebuttons}}
+            <button type="button"
+                    class="btn btn-sm {{#active}}btn-primary{{/active}}{{^active}}btn-secondary{{/active}}"
+                    data-action="switch-profile"
+                    data-profile-name="{{name}}"
+                    data-testid="profile-button-{{name}}">
+                {{displayname}}
+            </button>
+        {{/profilebuttons}}
     </div>
 
     {{^hastags}}
@@ -59,8 +71,11 @@
                         </thead>
                         <tbody>
                             {{#tags}}
-                                <tr data-testid="tag-row" data-tag-id="{{id}}" data-tag-name="{{name}}">
-                                    <td>
+                                <tr data-testid="tag-row"
+                                    data-tag-id="{{id}}"
+                                    data-tag-name="{{name}}"
+                                    {{#disabled}}style="opacity: 0.45;"{{/disabled}}>
+                                    <td data-field="cardimage">
                                         {{#cardimageurl}}
                                             <img src="{{cardimageurl}}"
                                                  alt="{{name}}"
@@ -70,17 +85,22 @@
                                             <span class="text-muted">-</span>
                                         {{/cardimageurl}}
                                     </td>
-                                    <td>{{name}}</td>
-                                    <td class="align-middle">
-                                        <span style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
-                                        <span class="ms-2 text-muted small fw-semibold">{{bgcolor}}</span>
+                                    <td data-field="name">
+                                        {{name}}
+                                        {{#disabled}}
+                                            <span class="badge bg-secondary ms-1">{{disabledtext}}</span>
+                                        {{/disabled}}
                                     </td>
-                                    <td>{{activitytype1}}</td>
-                                    <td>{{activitytype2}}</td>
-                                    <td>{{activitytype3}}</td>
+                                    <td class="align-middle" data-field="bgcolor">
+                                        <span class="mmw-color-swatch" style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
+                                        <span class="ms-2 text-muted small fw-semibold mmw-color-hex">{{bgcolor}}</span>
+                                    </td>
+                                    <td data-field="activitytype1">{{activitytype1}}</td>
+                                    <td data-field="activitytype2">{{activitytype2}}</td>
+                                    <td data-field="activitytype3">{{activitytype3}}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button">
+                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button" data-action="edit-tag">
                                                 {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                             </a>
                                             <a href="{{deleteurl}}"

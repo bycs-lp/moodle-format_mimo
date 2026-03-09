@@ -33,11 +33,16 @@ admin_externalpage_setup('format_minimoodlewall_tags');
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $tagid = optional_param('tagid', 0, PARAM_INT);
+$profilename = optional_param('profile', '', PARAM_ALPHANUMEXT);
 
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
-$PAGE->set_url('/course/format/minimoodlewall/tag_management.php');
+$urlparams = [];
+if ($profilename !== '') {
+    $urlparams['profile'] = $profilename;
+}
+$PAGE->set_url('/course/format/minimoodlewall/tag_management.php', $urlparams);
 $PAGE->set_title(get_string('tagmanagement', 'format_minimoodlewall'));
 $PAGE->set_heading(get_string('tagmanagement', 'format_minimoodlewall'));
 
@@ -51,32 +56,55 @@ if ($action === 'createtag' || $action === 'edittag') {
         }
     }
 
-    // Pass the current URL with action parameter to the form.
-    $formurl = new moodle_url($PAGE->url, ['action' => $action, 'tagid' => $tagid]);
-    $mform = new tag_form($formurl, ['context' => $context, 'tagid' => $tag->id ?? 0]);
+    // Resolve selected profile ID from name.
+    $selectedprofileid = 0;
+    if ($profilename !== '') {
+        $selectedprofile = profile_manager::get_profile_by_name($profilename);
+        if ($selectedprofile) {
+            $selectedprofileid = (int) $selectedprofile->id;
+        }
+    }
 
-    // Prepare form data with profile-specific image drafts.
+    // Pass the current URL with action parameter to the form.
+    $formparams = ['action' => $action, 'tagid' => $tagid];
+    if ($profilename !== '') {
+        $formparams['profile'] = $profilename;
+    }
+    $formurl = new moodle_url($PAGE->url, $formparams);
+    $mform = new tag_form($formurl, [
+        'context' => $context,
+        'tagid' => $tag->id ?? 0,
+        'selectedprofileid' => $selectedprofileid,
+    ]);
+
+    // Prepare form data with profile-specific image drafts (only for selected profile).
     $formdata = [];
-    $profiles = profile_manager::get_all_profiles();
-    $profileids = array_keys($profiles);
 
     if ($tag) {
         $formdata = (array) $tag;
-        // Prepare draft areas for each profile's images.
-        foreach ($profiles as $profile) {
-            $formdata['cardimage_profile_' . $profile->id] =
-                profile_manager::prepare_cardimage_draft($tag->id, $profile->id);
-            $formdata['filterimage_profile_' . $profile->id] =
-                profile_manager::prepare_filterimage_draft($tag->id, $profile->id);
+        // Base image drafts.
+        $formdata['cardimagefile'] = tag_manager::prepare_cardimage_draft($tag->id);
+        $formdata['filterimagefile'] = tag_manager::prepare_filterimage_draft($tag->id);
+        if ($selectedprofileid) {
+            $formdata['cardimage_profile_' . $selectedprofileid] =
+                profile_manager::prepare_cardimage_draft($tag->id, $selectedprofileid);
+            $formdata['filterimage_profile_' . $selectedprofileid] =
+                profile_manager::prepare_filterimage_draft($tag->id, $selectedprofileid);
+            $formdata['profileids'] = (string) $selectedprofileid;
+        } else {
+            $formdata['profileids'] = '';
         }
-        $formdata['profileids'] = implode(',', $profileids);
     } else {
         // New tag - prepare empty draft areas.
-        foreach ($profiles as $profile) {
-            $formdata['cardimage_profile_' . $profile->id] = 0;
-            $formdata['filterimage_profile_' . $profile->id] = 0;
+        $formdata['cardimagefile'] = 0;
+        $formdata['filterimagefile'] = 0;
+        if ($selectedprofileid) {
+            $formdata['cardimage_profile_' . $selectedprofileid] = 0;
+            $formdata['filterimage_profile_' . $selectedprofileid] = 0;
+            $formdata['profileids'] = (string) $selectedprofileid;
+        } else {
+            $formdata['profileids'] = '';
         }
-        $formdata['profileids'] = implode(',', $profileids);
     }
     $mform->set_data($formdata);
 
@@ -115,7 +143,15 @@ if ($action === 'createtag' || $action === 'edittag') {
             $message = get_string('createtag', 'format_minimoodlewall');
         }
 
-        // Save profile-specific images.
+        // Save base images.
+        if (isset($data->cardimagefile)) {
+            tag_manager::save_cardimage_from_draft($currenttagid, (int)$data->cardimagefile);
+        }
+        if (isset($data->filterimagefile)) {
+            tag_manager::save_filterimage_from_draft($currenttagid, (int)$data->filterimagefile);
+        }
+
+        // Save profile-specific images and overrides (only for the displayed profile).
         $savedprofileids = !empty($data->profileids) ? explode(',', $data->profileids) : [];
         foreach ($savedprofileids as $profileid) {
             $cardfield = 'cardimage_profile_' . $profileid;
@@ -207,6 +243,95 @@ $PAGE->requires->js_call_amd('format_minimoodlewall/tag_delete_confirm', 'init')
 
 // Build template context with flat tag list.
 $tags = tag_manager::get_all_tags();
+$allprofiles = profile_manager::get_all_profiles();
+
+// Determine the active profile for initial render.
+$activeprofileid = 0;
+if ($profilename !== '') {
+    $activeprofileobj = profile_manager::get_profile_by_name($profilename);
+    if ($activeprofileobj) {
+        $activeprofileid = (int) $activeprofileobj->id;
+    }
+}
+
+// Build profile buttons.
+$profilebuttons = [];
+$profilebuttons[] = [
+    'name' => '',
+    'displayname' => get_string('basetagfields', 'format_minimoodlewall'),
+    'active' => ($profilename === ''),
+];
+foreach ($allprofiles as $profile) {
+    $profilebuttons[] = [
+        'name' => $profile->name,
+        'displayname' => $profile->displayname,
+        'active' => ($profilename === $profile->name),
+    ];
+}
+
+// Build per-profile tag data for JS switching.
+$tagprofiledata = [];
+foreach ($tags as $tag) {
+    $tagdata = [];
+
+    // Default view = base values.
+    $cardimgurl = tag_manager::get_cardimage_url($tag);
+    $tagdata[''] = [
+        'name' => format_string($tag->name),
+        'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : '',
+        'bgcolor' => tag_manager::get_tag_accent_color($tag),
+        'activitytype1' => $tag->activitytype1 ?: '-',
+        'activitytype2' => $tag->activitytype2 ?: '-',
+        'activitytype3' => $tag->activitytype3 ?: '-',
+        'enabled' => true,
+    ];
+
+    // Per-profile resolved views.
+    foreach ($allprofiles as $profile) {
+        $resolved = profile_manager::resolve_tag_for_profile($tag, $profile->id);
+        $profileimgurl = tag_manager::get_cardimage_url($tag, $profile->name);
+        $tagdata[$profile->name] = [
+            'name' => format_string($resolved->name),
+            'cardimageurl' => $profileimgurl ? $profileimgurl->out(false) : '',
+            'bgcolor' => tag_manager::get_tag_accent_color($resolved),
+            'activitytype1' => $resolved->activitytype1 ?: '-',
+            'activitytype2' => $resolved->activitytype2 ?: '-',
+            'activitytype3' => $resolved->activitytype3 ?: '-',
+            'enabled' => (bool) $resolved->enabled,
+        ];
+    }
+    $tagprofiledata[$tag->id] = $tagdata;
+}
+
+// Build initial tag list for the selected profile.
+$templatetags = [];
+foreach ($tags as $tag) {
+    $data = $tagprofiledata[$tag->id][$profilename] ?? $tagprofiledata[$tag->id][''];
+    $editparams = ['action' => 'edittag', 'tagid' => $tag->id];
+    if ($profilename !== '') {
+        $editparams['profile'] = $profilename;
+    }
+
+    $templatetags[] = [
+        'id' => $tag->id,
+        'name' => $data['name'],
+        'cardimageurl' => $data['cardimageurl'] ?: null,
+        'bgcolor' => $data['bgcolor'],
+        'activitytype1' => $data['activitytype1'],
+        'activitytype2' => $data['activitytype2'],
+        'activitytype3' => $data['activitytype3'],
+        'enabled' => $data['enabled'],
+        'disabled' => !$data['enabled'],
+        'editurl' => (new moodle_url($PAGE->url, $editparams))->out(false),
+        'deleteurl' => (new moodle_url($PAGE->url, [
+            'action' => 'deletetag',
+            'tagid' => $tag->id,
+            'sesskey' => sesskey(),
+        ]))->out(false),
+        'edittitle' => get_string('edittag', 'format_minimoodlewall'),
+        'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
+    ];
+}
 
 $templatecontext = [
     'createtagurl' => (new moodle_url($PAGE->url, ['action' => 'createtag']))->out(false),
@@ -222,34 +347,17 @@ $templatecontext = [
         'activitytype3' => get_string('activitytype3', 'format_minimoodlewall'),
         'actions' => get_string('actions'),
     ],
-    'tags' => [],
+    'profilebuttons' => $profilebuttons,
+    'tags' => $templatetags,
+    'disabledtext' => get_string('profiletag_disabled', 'format_minimoodlewall'),
 ];
 
-foreach ($tags as $tag) {
-    $cardimgurl = tag_manager::get_cardimage_url($tag);
-    $accentcolor = tag_manager::get_tag_accent_color($tag);
-
-    $templatecontext['tags'][] = [
-        'id' => $tag->id,
-        'name' => format_string($tag->name),
-        'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : null,
-        'bgcolor' => $accentcolor,
-        'activitytype1' => $tag->activitytype1,
-        'activitytype2' => $tag->activitytype2 ?: '-',
-        'activitytype3' => $tag->activitytype3 ?: '-',
-        'editurl' => (new moodle_url($PAGE->url, [
-            'action' => 'edittag',
-            'tagid' => $tag->id,
-        ]))->out(false),
-        'deleteurl' => (new moodle_url($PAGE->url, [
-            'action' => 'deletetag',
-            'tagid' => $tag->id,
-            'sesskey' => sesskey(),
-        ]))->out(false),
-        'edittitle' => get_string('edittag', 'format_minimoodlewall'),
-        'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
-    ];
-}
+// Initialize profile switcher JS with all profile data.
+$PAGE->requires->js_call_amd('format_minimoodlewall/tag_profile_switcher', 'init', [
+    $tagprofiledata,
+    $profilename,
+    (new moodle_url('/course/format/minimoodlewall/tag_management.php'))->out(false),
+]);
 
 echo $OUTPUT->render_from_template('format_minimoodlewall/tag_management', $templatecontext);
 

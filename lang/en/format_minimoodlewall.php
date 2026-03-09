@@ -145,6 +145,7 @@ $string['profiletag_activitytype2'] = 'Override Activity Type 2';
 $string['profiletag_activitytype3'] = 'Override Activity Type 3';
 $string['profiletag_bgcolor'] = 'Override Background Colour';
 $string['profiletag_bgcolor_help'] = 'Override the background colour for this specific profile. Leave empty to inherit from the base tag.';
+$string['profiletag_disabled'] = 'Disabled';
 $string['profiletag_enabled'] = 'Enabled';
 $string['profiletag_enabled_desc'] = 'When unchecked, this tag will not appear when this profile is active.';
 $string['profiletag_name'] = 'Override Tag Name';
