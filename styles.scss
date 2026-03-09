@@ -869,6 +869,14 @@ $activity-icon-colors: (
     }
 }
 
+// Auto-contrast for filter labels on accent backgrounds.
+// Uses oklch relative color syntax to pick black or white text
+// based on the lightness of --mmw-filter-accent.
+@mixin _mmw-accent-contrast {
+    color: #fff; // Fallback for browsers without relative color syntax.
+    color: #{"oklch(from var(--mmw-filter-accent) clamp(0, (0.6 - l) * 1000, 1) 0 0)"};
+}
+
 // ============================================================
 // Filter bar style variants (image / text / imagetext)
 // ============================================================
@@ -903,11 +911,11 @@ $activity-icon-colors: (
 
         &.is-active {
             background: var(--mmw-filter-accent) !important;
-            color: #fff;
+            @include _mmw-accent-contrast;
             transform: scale(1.05);
 
             .minimoodlewall-filterbar-label {
-                color: #fff;
+                @include _mmw-accent-contrast;
             }
         }
     }
@@ -950,7 +958,7 @@ $activity-icon-colors: (
             transform: scale(1.05);
 
             .minimoodlewall-filterbar-label {
-                color: #fff;
+                @include _mmw-accent-contrast;
             }
         }
     }
@@ -1759,10 +1767,10 @@ body.single-section-page.format-mmw-multisection-view {
 
         &.is-active {
             background: var(--mmw-filter-accent) !important;
-            color: #fff;
+            @include _mmw-accent-contrast;
 
             .minimoodlewall-filterbar-label {
-                color: #fff;
+                @include _mmw-accent-contrast;
             }
         }
     }
@@ -1780,7 +1788,7 @@ body.single-section-page.format-mmw-multisection-view {
             background: var(--mmw-filter-accent) !important;
 
             .minimoodlewall-filterbar-label {
-                color: #fff;
+                @include _mmw-accent-contrast;
             }
         }
     }
@@ -1798,7 +1806,7 @@ body.single-section-page.format-mmw-multisection-view {
             background: var(--mmw-filter-accent) !important;
 
             .minimoodlewall-filterbar-label {
-                color: #1e293b;
+                @include _mmw-accent-contrast;
             }
         }
     }
