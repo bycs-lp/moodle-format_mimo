@@ -193,6 +193,7 @@ export const init = () => {
             card.style.transition = '';
             card.style.opacity = '';
             card.style.transform = '';
+            card.style.translate = '';
             // Only show cards that aren't filtered out.
             if (!card.hidden) {
                 card.style.display = 'block';
@@ -316,7 +317,7 @@ export const init = () => {
             let visibleIndex = 0;
             cloneCards.forEach((card) => {
                 card.style.transition = 'none';
-                card.style.transform = 'none';
+                card.style.translate = 'none';
                 card.style.opacity = '1';
 
                 if (card.hidden) {
@@ -334,7 +335,7 @@ export const init = () => {
         } else {
             cloneCards.forEach((card, index) => {
                 card.style.transition = 'none';
-                card.style.transform = 'none';
+                card.style.translate = 'none';
                 card.style.opacity = '1';
                 if (index >= startIndex && index < endIndex) {
                     card.style.display = 'block';
@@ -374,6 +375,7 @@ export const init = () => {
                 card.style.transition = '';
                 card.style.opacity = '';
                 card.style.transform = '';
+                card.style.translate = '';
 
                 // Skip cards hidden by filter.
                 if (card.hidden) {
@@ -396,6 +398,7 @@ export const init = () => {
                 card.style.transition = '';
                 card.style.opacity = '';
                 card.style.transform = '';
+                card.style.translate = '';
                 if (index >= startIndex && index < endIndex) {
                     card.style.display = 'block';
                 } else {
@@ -518,13 +521,20 @@ export const init = () => {
             card.style.display = 'block';
             card.style.transition = 'none';
             card.style.opacity = '1';
-            card.style.transform = 'none';
+            card.style.translate = 'none';
         });
 
         // Determine how far below/above the container the next batch currently sits.
+        // Temporarily strip CSS rotation so getBoundingClientRect returns the pure
+        // layout position.  Pinnwand/paper cards are rotated via CSS transform which
+        // shifts the visual bounding box by a few pixels; without this correction the
+        // animated position would be slightly off and snap at the end of the transition.
         let verticalOffset = 0;
         if (newCards.length) {
-            const firstRect = newCards[0].getBoundingClientRect();
+            const firstCard = newCards[0];
+            firstCard.style.transform = 'none';
+            const firstRect = firstCard.getBoundingClientRect();
+            firstCard.style.transform = '';
             // Get the computed padding-top of the container to align properly
             const containerPaddingTop = parseFloat(getComputedStyle(container).paddingTop) || 0;
             verticalOffset = firstRect.top - containerRect.top - containerPaddingTop;
@@ -534,7 +544,7 @@ export const init = () => {
         const exitingX = -enteringX;
 
         newCards.forEach((card) => {
-            card.style.transform = `translate(${enteringX}px, ${-verticalOffset}px)`;
+            card.style.translate = `${enteringX}px ${-verticalOffset}px`;
         });
 
         // Keep old cards at their current position.
@@ -551,7 +561,7 @@ export const init = () => {
                 card.dataset.mmwOffsetX = offsetX.toString();
                 card.dataset.mmwOffsetY = offsetY.toString();
                 card.style.transition = 'none';
-                card.style.transform = `translate(${-offsetX}px, ${-offsetY}px)`;
+                card.style.translate = `${-offsetX}px ${-offsetY}px`;
             } else {
                 delete card.dataset.mmwOffsetX;
                 delete card.dataset.mmwOffsetY;
@@ -564,18 +574,18 @@ export const init = () => {
         // Start animation - move both simultaneously.
         requestAnimationFrame(() => {
             oldCards.forEach((card) => {
-                card.style.transition = 'transform 0.4s ease-in-out, opacity 0.4s ease-in-out';
+                card.style.transition = 'translate 0.4s ease-in-out, opacity 0.4s ease-in-out';
                 const offsetX = parseFloat(card.dataset.mmwOffsetX || '0');
                 const offsetY = parseFloat(card.dataset.mmwOffsetY || '0');
                 const targetX = exitingX - offsetX;
                 const targetY = -offsetY;
-                card.style.transform = `translate(${targetX}px, ${targetY}px)`;
+                card.style.translate = `${targetX}px ${targetY}px`;
                 card.style.opacity = '0.3';
             });
 
             newCards.forEach((card) => {
-                card.style.transition = 'transform 0.4s ease-in-out, opacity 0.4s ease-in-out';
-                card.style.transform = `translate(0px, ${-verticalOffset}px)`;
+                card.style.transition = 'translate 0.4s ease-in-out, opacity 0.4s ease-in-out';
+                card.style.translate = `0px ${-verticalOffset}px`;
                 card.style.opacity = '1';
             });
         });
@@ -588,6 +598,7 @@ export const init = () => {
                 allCards.forEach((card) => {
                     card.style.transition = '';
                     card.style.transform = '';
+                    card.style.translate = '';
                     card.style.opacity = '1';
                     delete card.dataset.mmwOffsetX;
                     delete card.dataset.mmwOffsetY;
@@ -609,6 +620,7 @@ export const init = () => {
                 allCards.forEach((card, index) => {
                     card.style.transition = '';
                     card.style.transform = '';
+                    card.style.translate = '';
                     card.style.opacity = '1';
                     delete card.dataset.mmwOffsetX;
                     delete card.dataset.mmwOffsetY;
