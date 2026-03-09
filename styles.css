@@ -235,7 +235,7 @@
   border-radius: 0 0 1.2rem 1.2rem;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   container-type: inline-size;
 }
 .card.minimoodlewall-card .minimoodlewall-card-content .minimoodlewall-card-body .minimoodlewall-card-description {
@@ -1331,6 +1331,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   filter: none;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard .minimoodlewall-card .minimoodlewall-card-body {
+  border-top: 1px solid rgba(128, 128, 128, 0.34);
   background: #fff;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard .minimoodlewall-card .minimoodlewall-card-body .minimoodlewall-card-description {
