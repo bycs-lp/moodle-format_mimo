@@ -830,6 +830,7 @@ $activity-icon-colors: (
         &.is-active {
             box-shadow: 0 4px 12px rgba(15, 108, 191, 0.35);
             transform: scale(1.2);
+            background: var(--mmw-filter-accent) !important;
         }
 
         &.is-empty {
@@ -1566,10 +1567,6 @@ body.single-section-page.format-mmw-multisection-view {
         border: 1px solid rgba(255, 255, 255, 0.10);
         box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
         border-radius: 2rem;
-
-        &::before {
-            display: none;
-        }
     }
 
     .minimoodlewall-card {
@@ -1594,6 +1591,7 @@ body.single-section-page.format-mmw-multisection-view {
 
         &:hover {
             border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 4px 0 rgb(0 0 0 / .15),0 12px 24px rgb(255 200 100 / .2);
 
             .minimoodlewall-card-content {
                 background: rgba(30, 41, 59, 0.95);
@@ -1615,64 +1613,18 @@ body.single-section-page.format-mmw-multisection-view {
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent, #58d3d6) !important;
+            background: var(--mmw-filter-accent) !important;
             color: #111827;
             box-shadow: 0 0 0 4px #ffffff, inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
     }
 
-    .minimoodlewall-completion-status {
-        background: rgba(0, 0, 0, 0.70);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.14);
-
-        .completion-status-tag-image {
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .completion-pill {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-
-            &:hover {
-                box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
-            }
-        }
-
-        .completion-status-empty {
-            background: rgba(220, 53, 69, 0.2);
-            color: #ffc107;
-        }
-    }
-
-    .completion-stars .star-icon {
-        color: #ffdf00;
-        text-shadow: 0 0 4px rgba(255, 223, 0, 0.7);
-    }
-
-    .completion-stars .star-icon--incomplete {
-        color: rgba(255, 255, 255, 0.35);
-        opacity: 0.5;
-    }
-
-    .minimoodlewall-navigation {
-        .minimoodlewall-nav-btn {
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            color: #555;
-
-            &:hover:not(:disabled) {
-                background: rgba(255, 255, 255, 1);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            }
-
-            &:active:not(:disabled) {
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            }
-
-            &:disabled {
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            }
+    .completion-status-pills {
+        background: #0f172a;
+        border-color: #555;
+        .completion-pill,
+        .completion-pill-icon {
+            color: #222 !important;
         }
     }
 }
