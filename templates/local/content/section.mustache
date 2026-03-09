@@ -31,7 +31,7 @@
         {{! Background design wrapper — applies theme class to filter bar, board and navigation. }}
         <div class="mmw-bgdesign-wrapper{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}">
         {{#filterbar.hasitems}}
-        <div class="minimoodlewall-filterbar {{styleclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
+        <div class="minimoodlewall-filterbar {{styleclass}} {{filterbar.styleclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
             {{#filterbar.tags}}
             <button
                 type="button"
@@ -51,9 +51,7 @@
                     {{#imageurl}}
                     <img src="{{imageurl}}" alt="{{name}}">
                     {{/imageurl}}
-                    {{^imageurl}}
                     <span class="minimoodlewall-filterbar-label">{{name}}</span>
-                    {{/imageurl}}
                 </span>
             </button>
             {{/filterbar.tags}}

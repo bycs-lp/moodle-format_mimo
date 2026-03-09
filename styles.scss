@@ -869,6 +869,125 @@ $activity-icon-colors: (
     }
 }
 
+// ============================================================
+// Filter bar style variants (image / text / imagetext)
+// ============================================================
+
+// --- IMAGE ONLY (default): hide the text label, show icon circles ---
+.minimoodlewall-filterbar.mmw-filterstyle-image {
+    .minimoodlewall-filterbar-label {
+        display: none;
+    }
+}
+
+// --- TEXT ONLY: coloured text pills, no images ---
+.minimoodlewall-filterbar.mmw-filterstyle-text {
+    gap: 0.35rem;
+
+    .minimoodlewall-filterbar-button {
+        border-radius: 999px;
+        min-width: auto;
+        min-height: auto;
+        padding: 0.35rem .7rem;
+        border-width: 3px;
+        background: #fff;
+
+        .minimoodlewall-filterbar-symbol img {
+            display: none;
+        }
+
+        .minimoodlewall-filterbar-label {
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        &.is-active {
+            background: var(--mmw-filter-accent) !important;
+            color: #fff;
+            transform: scale(1.05);
+
+            .minimoodlewall-filterbar-label {
+                color: #fff;
+            }
+        }
+    }
+}
+
+// --- IMAGE + TEXT: icon + label side-by-side in rounded pill buttons ---
+.minimoodlewall-filterbar.mmw-filterstyle-imagetext {
+    gap: 0.5rem;
+
+    .minimoodlewall-filterbar-button {
+        border-radius: 999px;
+        min-width: auto;
+        min-height: auto;
+        padding: 0.3rem 0.9rem 0.3rem 0.35rem;
+        border-width: 2px;
+        background: #fff;
+
+        .minimoodlewall-filterbar-symbol {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-direction: row;
+        }
+
+        .minimoodlewall-filterbar-symbol img {
+            width: 1.8rem;
+            height: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .minimoodlewall-filterbar-label {
+            display: inline;
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        &.is-active {
+            background: var(--mmw-filter-accent) !important;
+            transform: scale(1.05);
+
+            .minimoodlewall-filterbar-label {
+                color: #fff;
+            }
+        }
+    }
+
+    // Responsive: medium screens → fall back to text-only pills.
+    @media (max-width: 768px) {
+        .minimoodlewall-filterbar-button {
+            padding: 0.35rem 1rem;
+
+            .minimoodlewall-filterbar-symbol img {
+                display: none;
+            }
+        }
+    }
+
+    // Responsive: small screens → fall back to icon-only circles.
+    @media (max-width: 480px) {
+        gap: 0.4rem;
+
+        .minimoodlewall-filterbar-button {
+            padding: 0.4rem;
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+
+            .minimoodlewall-filterbar-symbol img {
+                display: inline;
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+
+            .minimoodlewall-filterbar-label {
+                display: none;
+            }
+        }
+    }
+}
+
 .minimoodlewall-activities {
     .is-filtered-out {
         display: none !important;
@@ -1554,13 +1673,30 @@ body.single-section-page.format-mmw-multisection-view {
         }
     }
 
-    // Larger icon-only filter buttons
-    .minimoodlewall-filterbar-button {
+    // Larger icon-only filter buttons (image mode)
+    .mmw-filterstyle-image .minimoodlewall-filterbar-button {
         width: 4.5rem;
         height: 4.5rem;
         .minimoodlewall-filterbar-symbol img {
             width: 3rem;
             height: 3rem;
+        }
+    }
+
+    // Text mode on primary school: white pills with dark text
+    .mmw-filterstyle-text .minimoodlewall-filterbar-button {
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    // Imagetext mode on primary school: larger images
+    .mmw-filterstyle-imagetext .minimoodlewall-filterbar-button {
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+
+        .minimoodlewall-filterbar-symbol img {
+            width: 2.4rem;
+            height: 2.4rem;
         }
     }
 }
@@ -1623,7 +1759,47 @@ body.single-section-page.format-mmw-multisection-view {
 
         &.is-active {
             background: var(--mmw-filter-accent) !important;
-            color: #111827;
+            color: #fff;
+
+            .minimoodlewall-filterbar-label {
+                color: #fff;
+            }
+        }
+    }
+
+    // Text pills in dark mode: dark background with accent border, light text
+    .mmw-filterstyle-text .minimoodlewall-filterbar-button {
+        background: #1e293b !important;
+        border-color: var(--mmw-filter-accent, #475569);
+
+        .minimoodlewall-filterbar-label {
+            color: #f1f5f9;
+        }
+
+        &.is-active {
+            background: var(--mmw-filter-accent) !important;
+
+            .minimoodlewall-filterbar-label {
+                color: #fff;
+            }
+        }
+    }
+
+    // Imagetext in dark mode: dark background with accent border
+    .mmw-filterstyle-imagetext .minimoodlewall-filterbar-button {
+        background: #1e293b !important;
+        border-color: var(--mmw-filter-accent, #475569);
+
+        .minimoodlewall-filterbar-label {
+            color: #f1f5f9;
+        }
+
+        &.is-active {
+            background: var(--mmw-filter-accent) !important;
+
+            .minimoodlewall-filterbar-label {
+                color: #1e293b;
+            }
         }
     }
 

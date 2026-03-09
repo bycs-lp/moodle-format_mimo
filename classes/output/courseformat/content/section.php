@@ -92,12 +92,15 @@ class section extends section_base {
             if ($enablefiltering) {
                 $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $stylevariant, $sectionid);
                 if (!empty($filtertags)) {
+                    $bgdesign = $options['backgrounddesign'] ?? 'primary-school';
+                    $filterbarstyle = self::get_filterbarstyle_for_bgdesign($bgdesign);
                     $data->filterbar = (object) [
                         'tags' => $filtertags,
                         'hasitems' => true,
                         'label' => get_string('filterbarlabel', 'format_minimoodlewall'),
                         'emptylabel' => get_string('filterbarnoactivities', 'format_minimoodlewall'),
                         'isediting' => $isediting,
+                        'styleclass' => 'mmw-filterstyle-' . $filterbarstyle,
                     ];
                 }
             }
@@ -212,6 +215,26 @@ class section extends section_base {
             'hasincomplete' => $incompletecount > 0,
             'allcomplete' => $total > 0 && $incompletecount === 0,
         ];
+    }
+
+    /**
+     * Map background design to the preferred filter bar style.
+     *
+     * Each background design ships with a hardcoded default filterbar
+     * display mode. To change the mapping simply edit this array.
+     *
+     * @param string $bgdesign Background design key (e.g. 'darkmode')
+     * @return string One of 'image', 'text', or 'imagetext'
+     */
+    private static function get_filterbarstyle_for_bgdesign(string $bgdesign): string {
+        $map = [
+            'primary-school' => 'image',
+            'darkmode'       => 'text',
+            'whiteboard'     => 'imagetext',
+            'pinnwand'       => 'image',
+            'paper'          => 'text',
+        ];
+        return $map[$bgdesign] ?? 'image';
     }
 
     /**
