@@ -1710,7 +1710,7 @@ body.single-section-page.format-mmw-multisection-view {
 
             .minimoodlewall-card-description {
                 font-family: "Patrick Hand", system-ui, sans-serif;
-                font-size: 1.1rem;
+                font-size: clamp(.95rem, 10cqw, 1.8rem);
                 letter-spacing: 0.2px;
                 color: #111827;
             }

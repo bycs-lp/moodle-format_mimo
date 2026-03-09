@@ -1341,7 +1341,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-card .minimoodlewall-card-body .minimoodlewall-card-description,
 .mmw-bgdesign-wrapper.mmw-bgdesign-paper .minimoodlewall-card .minimoodlewall-card-body .minimoodlewall-card-description {
   font-family: "Patrick Hand", system-ui, sans-serif;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 10cqw, 1.8rem);
   letter-spacing: 0.2px;
   color: #111827;
 }
