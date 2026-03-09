@@ -6,10 +6,12 @@ This directory contains comprehensive Behat acceptance tests for the Minimal Moo
 
 ### 1. tag_management.feature
 Tests for admin tag and tagset management interface:
-- Creating tag sets
-- Adding tags to tag sets
+- Creating tags with profile-specific images
 - Editing existing tags
 - Deleting tags
+- Profile selector button bar (Base + per-profile views)
+- Base tag fields collapsed when editing a profile override
+- Base image uploads always available
 - Access control (teachers cannot access)
 
 ### 2. course_creation.feature

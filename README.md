@@ -30,6 +30,8 @@ A modern Moodle course format that displays activities in a card-based wall layo
 ### Tag Management (Site Admin > Courses > Manage tags)
 - **Tagsets** — Grouping containers for tags (accordion UI)
 - **Tags** — Name, background color, image placement, card/filter images, up to 3 activity types
+- **Profile Selector** — Button bar (Base + per-profile) switches the tag list view via JS without page reload; URL persists with `?profile=` parameter
+- **Tag Form** — Shows base tag fields (collapsed when editing a profile) and a single profile override section; base images are always editable
 
 ### Style Management (Site Admin > Courses > Manage styles)
 - Create style variants with per-tag card/filter images
