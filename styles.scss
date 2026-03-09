@@ -320,7 +320,7 @@ $activity-icon-colors: (
             border-radius: 0 0 1.2rem 1.2rem;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             container-type: inline-size;
 
             .minimoodlewall-card-description {
