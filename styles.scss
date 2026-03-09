@@ -1322,6 +1322,7 @@ body.format-minimoodlewall #page-wrapper #page {
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 3px solid #fff;
 
     &[hidden] {
         display: none;
@@ -1547,6 +1548,10 @@ body.single-section-page.format-mmw-multisection-view {
     // Saturated card images
     .minimoodlewall-card .minimoodlewall-card-image {
         filter: saturate(1.25) brightness(1.08);
+        // Dont show tag name pill
+        .minimoodlewall-tag-pill {
+            display: none;
+        }
     }
 
     // Larger icon-only filter buttons
@@ -1615,7 +1620,6 @@ body.single-section-page.format-mmw-multisection-view {
         &.is-active {
             background: var(--mmw-filter-accent) !important;
             color: #111827;
-            box-shadow: 0 0 0 4px #ffffff, inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
     }
 
@@ -1633,34 +1637,27 @@ body.single-section-page.format-mmw-multisection-view {
 .mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard {
     .minimoodlewall-activities {
         background: #ffffff;
-        border: none;
         box-shadow: 0 22px 46px rgba(2, 6, 23, 0.08);
         border-radius: 2rem;
-
-        &::before {
-            display: none;
-        }
     }
 
     .minimoodlewall-card {
         .minimoodlewall-card-content {
             background: #fff;
-            border-color: rgba(15, 23, 42, 0.10);
             box-shadow: 0 10px 18px rgba(2, 6, 23, 0.06);
+        }
+
+        &:hover {
+            box-shadow: 4px 0 rgb(0 0 0 / .15),0 12px 24px rgb(255 200 100 / .2);
         }
 
         .minimoodlewall-card-image {
             background: #fff !important;
-            filter: none;
         }
 
         .minimoodlewall-card-body {
             border-top: 1px solid rgba(128, 128, 128, 0.34);
             background: #fff;
-
-            .minimoodlewall-card-description {
-                color: #111827;
-            }
         }
     }
 
@@ -1671,26 +1668,7 @@ body.single-section-page.format-mmw-multisection-view {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         &:hover {
-            transform: translateY(-2px);
             box-shadow: 0 10px 18px rgba(45, 59, 40, 0.2) !important;
-        }
-
-        &.is-active {
-            border: 2px solid rgba(255, 149, 85, 0.6) !important;
-        }
-    }
-
-    .minimoodlewall-completion-status {
-        .completion-status-tag-image {
-            border: 3px solid #fff;
-        }
-
-        .completion-pill {
-            box-shadow: 0 4px 10px rgba(45, 59, 40, 0.15);
-
-            &:hover {
-                box-shadow: 0 6px 14px rgba(45, 59, 40, 0.2);
-            }
         }
     }
 }
