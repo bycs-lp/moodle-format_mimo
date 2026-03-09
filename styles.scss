@@ -1674,7 +1674,13 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 // --- SHARED: Pinnwand + Paper note / post-it card styles ---
-@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap");
+@font-face {
+    font-family: "Patrick Hand";
+    src: url([[font:format_minimoodlewall|PatrickHand-Regular.ttf]]) format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
 
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand,
 .mmw-bgdesign-wrapper.mmw-bgdesign-paper {
@@ -1732,10 +1738,6 @@ body.single-section-page.format-mmw-multisection-view {
         border: none;
         border-radius: 2rem;
         box-shadow: 0 26px 55px rgba(0, 0, 0, 0.22);
-
-        &::before {
-            display: none;
-        }
     }
 
     // Tilted cards with push-pin effect.
