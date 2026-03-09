@@ -30,7 +30,10 @@
     * disabledtext - Text for disabled badge
 }}
 
-<div class="tag-management" data-region="tag-management">
+<div class="tag-management" data-region="tag-management"
+     data-tag-profile-data="{{tagprofiledatajson}}"
+     data-current-profile="{{currentprofile}}"
+     data-management-url="{{managementurl}}">
     <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
         <a href="{{createtagurl}}" class="btn btn-primary" data-testid="create-tag-button">
             {{createtagtext}}

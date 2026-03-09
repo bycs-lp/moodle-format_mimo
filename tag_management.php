@@ -350,14 +350,13 @@ $templatecontext = [
     'profilebuttons' => $profilebuttons,
     'tags' => $templatetags,
     'disabledtext' => get_string('profiletag_disabled', 'format_minimoodlewall'),
+    'tagprofiledatajson' => json_encode($tagprofiledata),
+    'currentprofile' => $profilename,
+    'managementurl' => (new moodle_url('/course/format/minimoodlewall/tag_management.php'))->out(false),
 ];
 
-// Initialize profile switcher JS with all profile data.
-$PAGE->requires->js_call_amd('format_minimoodlewall/tag_profile_switcher', 'init', [
-    $tagprofiledata,
-    $profilename,
-    (new moodle_url('/course/format/minimoodlewall/tag_management.php'))->out(false),
-]);
+// Initialize profile switcher JS (data is passed via data attributes in template).
+$PAGE->requires->js_call_amd('format_minimoodlewall/tag_profile_switcher', 'init');
 
 echo $OUTPUT->render_from_template('format_minimoodlewall/tag_management', $templatecontext);
 

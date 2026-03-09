@@ -47,15 +47,16 @@ let disabledText = '';
 
 /**
  * Initialize the profile switcher.
- *
- * @param {Object} data Per-tag per-profile data (tagId -> profileName -> {name, cardimageurl, ...})
- * @param {string} currentProfile Currently selected profile name
- * @param {string} managementUrl Base tag management URL
+ * Data is read from data attributes on the tag-management container element.
  */
-export const init = async(data, currentProfile, managementUrl) => {
-    tagProfileData = data;
-    activeProfile = currentProfile;
-    baseUrl = managementUrl;
+export const init = async() => {
+    const container = document.querySelector('[data-region="tag-management"]');
+    if (!container) {
+        return;
+    }
+    tagProfileData = JSON.parse(container.dataset.tagProfileData || '{}');
+    activeProfile = container.dataset.currentProfile || '';
+    baseUrl = container.dataset.managementUrl || '';
     disabledText = await getString('profiletag_disabled', 'format_minimoodlewall');
     registerEventListeners();
 };
