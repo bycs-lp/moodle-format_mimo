@@ -190,9 +190,9 @@ export const init = () => {
     const showAllActivities = () => {
         const currentCards = Array.from(container.querySelectorAll('.col-12'));
         currentCards.forEach((card) => {
-            card.style.transition = 'none';
-            card.style.opacity = '1';
-            card.style.transform = 'translateX(0)';
+            card.style.transition = '';
+            card.style.opacity = '';
+            card.style.transform = '';
             // Only show cards that aren't filtered out.
             if (!card.hidden) {
                 card.style.display = 'block';
@@ -371,9 +371,9 @@ export const init = () => {
             let visibleIndex = 0;
 
             allCards.forEach((card) => {
-                card.style.transition = 'none';
-                card.style.opacity = '1';
-                card.style.transform = 'translateX(0)';
+                card.style.transition = '';
+                card.style.opacity = '';
+                card.style.transform = '';
 
                 // Skip cards hidden by filter.
                 if (card.hidden) {
@@ -393,9 +393,9 @@ export const init = () => {
             // Normal pagination - all cards.
             const currentCards = Array.from(container.querySelectorAll('.col-12'));
             currentCards.forEach((card, index) => {
-                card.style.transition = 'none';
-                card.style.opacity = '1';
-                card.style.transform = 'translateX(0)';
+                card.style.transition = '';
+                card.style.opacity = '';
+                card.style.transform = '';
                 if (index >= startIndex && index < endIndex) {
                     card.style.display = 'block';
                 } else {
