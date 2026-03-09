@@ -1591,6 +1591,10 @@ body.single-section-page.format-mmw-multisection-view {
                 a {
                     color: #f3f4f6;
                 }
+
+                [data-inplaceeditable] .quickeditlink {
+                    background-color: transparent;
+                }            
             }
         }
 
