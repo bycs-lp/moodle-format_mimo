@@ -231,7 +231,7 @@ class section extends section_base {
             'primary-school' => 'image',
             'darkmode'       => 'text',
             'whiteboard'     => 'imagetext',
-            'pinnwand'       => 'image',
+            'pinnwand'       => 'imagetext',
             'paper'          => 'text',
         ];
         return $map[$bgdesign] ?? 'image';
