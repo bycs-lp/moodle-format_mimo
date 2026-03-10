@@ -17,10 +17,8 @@
  * Course editor reactive bridge for minimoodlewall format.
  *
  * A BaseComponent that watches the core course editor reactive state and
- * dispatches custom DOM events for other minimoodlewall modules to consume.
- *
- * This replaces ad-hoc addStateWatch calls and MutationObserver fallbacks
- * with proper reactive watchers following the learningmap bridge pattern.
+ * bridges changes into the wall state reactive. Also dispatches legacy
+ * DOM events for modules not yet converted to wall state watchers.
  *
  * @module     format_minimoodlewall/courseeditor_watcher
  * @copyright  2025 MBS
@@ -42,13 +40,15 @@ export const EVENTS = {
 export default class CourseEditorWatcher extends BaseComponent {
 
     /**
-     * Component setup — store element and reactive reference.
+     * Component setup — store element, reactive reference, and optional wall state.
      *
      * @param {object} descriptor Component descriptor
      */
     create(descriptor) {
         this.element = descriptor.element;
         this.reactive = descriptor.reactive;
+        /** @type {Reactive|null} Wall state reactive (set externally after construction). */
+        this.wallState = null;
     }
 
     /**
@@ -74,6 +74,8 @@ export default class CourseEditorWatcher extends BaseComponent {
     stateReady(state) {
         const bulkEnabled = state?.bulk?.enabled ?? false;
         if (bulkEnabled) {
+            this.wallState?.dispatch('setBulk', true);
+            // Legacy DOM event for unconverted modules.
             document.dispatchEvent(new CustomEvent(EVENTS.BULK_CHANGE, {
                 detail: {enabled: true},
             }));
@@ -88,8 +90,11 @@ export default class CourseEditorWatcher extends BaseComponent {
      * @private
      */
     _bulkUpdated({element}) {
+        const enabled = element?.enabled ?? false;
+        this.wallState?.dispatch('setBulk', enabled);
+        // Legacy DOM event for unconverted modules.
         document.dispatchEvent(new CustomEvent(EVENTS.BULK_CHANGE, {
-            detail: {enabled: element?.enabled ?? false},
+            detail: {enabled},
         }));
     }
 

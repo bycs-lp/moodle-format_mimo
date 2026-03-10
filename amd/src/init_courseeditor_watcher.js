@@ -17,9 +17,9 @@
  * Initializer for the course editor reactive bridge component.
  *
  * Creates a CourseEditorWatcher BaseComponent registered with the
- * current course editor reactive instance. The component then watches
- * state changes and dispatches custom events for other minimoodlewall
- * modules (pagination, tag filter) to consume.
+ * current course editor reactive instance. The component watches
+ * state changes and bridges them into the wall state reactive for
+ * other minimoodlewall components (pagination, tag filter) to consume.
  *
  * @module     format_minimoodlewall/init_courseeditor_watcher
  * @copyright  2025 MBS
@@ -27,6 +27,7 @@
  */
 import CourseEditorWatcher from 'format_minimoodlewall/courseeditor_watcher';
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
+import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
 
 /**
  * Initialize the course editor watcher component.
@@ -46,5 +47,10 @@ export const init = () => {
         return null;
     }
 
-    return new CourseEditorWatcher({element, reactive});
+    // Find the section container to obtain the wall state.
+    const sectionElement = element.closest('.section-item') || element.closest('[data-sectionid]') || element;
+
+    const watcher = new CourseEditorWatcher({element, reactive});
+    watcher.wallState = getWallState(sectionElement);
+    return watcher;
 };
