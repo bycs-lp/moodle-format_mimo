@@ -93,27 +93,28 @@
   margin-top: 0;
   padding-bottom: 1rem;
 }
+
 @media (min-width: 992px) {
-  .minimoodlewall-activities .col-12:nth-child(n+9),
-  .minimoodlewall-activities li.col-12:nth-child(n+9) {
+  body:not(.bulkenabled) .minimoodlewall-activities .col-12:nth-child(n+9),
+  body:not(.bulkenabled) .minimoodlewall-activities li.col-12:nth-child(n+9) {
     display: none;
   }
 }
 @media (min-width: 768px) and (max-width: 991px) {
-  .minimoodlewall-activities .col-12:nth-child(n+7),
-  .minimoodlewall-activities li.col-12:nth-child(n+7) {
+  body:not(.bulkenabled) .minimoodlewall-activities .col-12:nth-child(n+7),
+  body:not(.bulkenabled) .minimoodlewall-activities li.col-12:nth-child(n+7) {
     display: none;
   }
 }
 @media (min-width: 576px) and (max-width: 767px) {
-  .minimoodlewall-activities .col-12:nth-child(n+5),
-  .minimoodlewall-activities li.col-12:nth-child(n+5) {
+  body:not(.bulkenabled) .minimoodlewall-activities .col-12:nth-child(n+5),
+  body:not(.bulkenabled) .minimoodlewall-activities li.col-12:nth-child(n+5) {
     display: none;
   }
 }
 @media (max-width: 575px) {
-  .minimoodlewall-activities .col-12:nth-child(n+4),
-  .minimoodlewall-activities li.col-12:nth-child(n+4) {
+  body:not(.bulkenabled) .minimoodlewall-activities .col-12:nth-child(n+4),
+  body:not(.bulkenabled) .minimoodlewall-activities li.col-12:nth-child(n+4) {
     display: none;
   }
 }

@@ -132,6 +132,9 @@ $activity-icon-colors: (
         padding-bottom: 1rem;
     }
     
+}
+// Hide not when in bulkedit, duplicated activities would be hidden otherwise.
+body:not(.bulkenabled) .minimoodlewall-activities {
     // Hide activities beyond the first page by default (prevents flash on page load).
     // JavaScript will manage visibility based on screen size.
     
