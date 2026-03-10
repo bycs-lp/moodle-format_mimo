@@ -179,7 +179,7 @@ class format_minimoodlewall extends core_courseformat\base {
                 'type' => PARAM_ALPHANUMEXT,
             ],
             'activityprofile' => [
-                'default' => 'classic',
+                'default' => 'explore',
                 'type' => PARAM_ALPHANUMEXT,
             ],
         ];
@@ -218,7 +218,7 @@ class format_minimoodlewall extends core_courseformat\base {
             }
             // Fallback to default if no profiles exist.
             if (empty($profileoptions)) {
-                $profileoptions['classic'] = get_string('profile_classic', 'format_minimoodlewall');
+                $profileoptions['explore'] = get_string('profile_explore', 'format_minimoodlewall');
             }
             $bgdesignoptions = [
                 'primary-school' => get_string('backgrounddesign_primaryschool', 'format_minimoodlewall'),
@@ -280,7 +280,7 @@ class format_minimoodlewall extends core_courseformat\base {
         $output = $PAGE->get_renderer('format_minimoodlewall');
 
         // Get current activity profile for displaying correct images.
-        $currentprofile = $course->activityprofile ?? 'classic';
+        $currentprofile = $course->activityprofile ?? 'explore';
 
         // Get all profiles for passing image URLs to template data attributes.
         $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();

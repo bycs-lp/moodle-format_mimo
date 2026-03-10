@@ -67,7 +67,7 @@ class cmitem extends cmitem_base {
         // Get course format options to determine style variant.
         $format = course_get_format($mod->course);
         $options = $format->get_format_options();
-        $stylevariant = $options['activityprofile'] ?? 'classic';
+        $stylevariant = $options['activityprofile'] ?? 'explore';
 
         // Initialize cmformat if not set.
         if (!isset($data->cmformat)) {

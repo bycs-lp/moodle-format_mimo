@@ -154,4 +154,31 @@ class description_tag_manager {
     public static function is_valid_color(string $color): bool {
         return preg_match('/^#[0-9A-Fa-f]{6}$/', $color) === 1;
     }
+
+    /**
+     * Initialize default description tags for a new installation.
+     *
+     * @return bool Success
+     */
+    public static function initialize_default_description_tags(): bool {
+        global $DB;
+
+        // Check if any description tags already exist.
+        if ($DB->record_exists('format_minimoodlewall_desc_tags', [])) {
+            return true;
+        }
+
+        $defaults = [
+            ['name' => get_string('desctag_input', 'format_minimoodlewall'), 'color' => '#FFF176'],
+            ['name' => get_string('desctag_practice', 'format_minimoodlewall'), 'color' => '#81C784'],
+            ['name' => get_string('desctag_share', 'format_minimoodlewall'), 'color' => '#CE93D8'],
+            ['name' => get_string('desctag_think', 'format_minimoodlewall'), 'color' => '#64B5F6'],
+        ];
+
+        foreach ($defaults as $tag) {
+            self::create_tag($tag['name'], $tag['color']);
+        }
+
+        return true;
+    }
 }

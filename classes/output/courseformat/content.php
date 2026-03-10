@@ -47,12 +47,12 @@ class content extends content_base {
 
         // Get the course format options.
         $course = $this->format->get_course();
-        $activityprofile = $course->activityprofile ?? 'classic';
+        $activityprofile = $course->activityprofile ?? 'explore';
 
-        // Validate profile exists in database, fallback to classic if not.
+        // Validate profile exists in database, fallback to explore if not.
         $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($activityprofile);
         if (!$profile) {
-            $activityprofile = 'classic';
+            $activityprofile = 'explore';
         }
 
         $data->stylevariant = $activityprofile;

@@ -372,7 +372,7 @@ class tag_manager {
         'subdirs' => 0,
         'maxfiles' => 1,
         'maxbytes' => 0,
-        'accepted_types' => ['.svg', 'image/svg+xml'],
+        'accepted_types' => ['.svg', 'image/svg+xml', '.png', 'image/png'],
     ];
 
     /**
@@ -452,14 +452,14 @@ class tag_manager {
             'name' => 'activityprofile',
         ]);
         if (empty($profilename)) {
-            $profilename = 'classic';
+            $profilename = 'explore';
         }
 
         // Resolve profile ID.
         $profile = profile_manager::get_profile_by_name($profilename);
         if (!$profile) {
-            // Fallback to classic if profile doesn't exist.
-            $profile = profile_manager::get_profile_by_name('classic');
+            // Fallback to explore if profile doesn't exist.
+            $profile = profile_manager::get_profile_by_name('explore');
         }
 
         if (!$profile) {
@@ -784,45 +784,35 @@ class tag_manager {
 
         // Create default tags.
         $defaulttags = [
-            ['name' => get_string('tag_reading', 'format_minimoodlewall'),
-                'cardimage' => 'reading.svg', 'filterimage' => 'reading.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#cfe5fa'],
-            ['name' => get_string('tag_discover', 'format_minimoodlewall'),
-                'cardimage' => 'discover.svg', 'filterimage' => 'discover.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#fde9c9'],
-            ['name' => get_string('tag_writing', 'format_minimoodlewall'),
-                'cardimage' => 'writing.svg', 'filterimage' => 'writing.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#cfe5fa'],
-            ['name' => get_string('tag_show', 'format_minimoodlewall'),
-                'cardimage' => 'show.svg', 'filterimage' => 'show.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'glossary', 'activitytype3' => null,
-                'bgcolor' => '#eadaf8'],
+            ['name' => get_string('tag_read', 'format_minimoodlewall'),
+                'cardimage' => 'read_base.svg', 'filterimage' => 'read_base.svg',
+                'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => null,
+                'bgcolor' => '#7fc3d8'],
+            ['name' => get_string('tag_explore', 'format_minimoodlewall'),
+                'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
+                'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => 'glossary',
+                'bgcolor' => '#facc15'],
+            ['name' => get_string('tag_write', 'format_minimoodlewall'),
+                'cardimage' => 'write_base.svg', 'filterimage' => 'write_base.svg',
+                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
+            ['name' => get_string('tag_share', 'format_minimoodlewall'),
+                'cardimage' => 'share_base.svg', 'filterimage' => 'share_base.svg',
+                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
             ['name' => get_string('tag_practice', 'format_minimoodlewall'),
-                'cardimage' => 'practice.svg', 'filterimage' => 'practice.svg',
-                'activitytype1' => 'h5pactivity', 'activitytype2' => 'quiz', 'activitytype3' => null,
-                'bgcolor' => '#fff3b0'],
-            ['name' => get_string('tag_teamwork', 'format_minimoodlewall'),
-                'cardimage' => 'teamwork.svg', 'filterimage' => 'teamwork.svg',
-                'activitytype1' => 'forum', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#fff3b0'],
-            ['name' => get_string('tag_watch', 'format_minimoodlewall'),
-                'cardimage' => 'watch.svg', 'filterimage' => 'watch.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#d3f2c2'],
-            ['name' => get_string('tag_calculations', 'format_minimoodlewall'),
-                'cardimage' => 'calculations.svg', 'filterimage' => 'calculations.svg',
-                'activitytype1' => 'h5pactivity', 'activitytype2' => 'assign', 'activitytype3' => 'quiz',
-                'bgcolor' => '#cfe5fa'],
-            ['name' => get_string('tag_listen', 'format_minimoodlewall'),
-                'cardimage' => 'listen.svg', 'filterimage' => 'listen.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#f0f1f0'],
+                'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'quiz', 'activitytype3' => null,
+                'bgcolor' => '#8ccb90'],
+            ['name' => get_string('tag_collaborate', 'format_minimoodlewall'),
+                'cardimage' => 'collaborate_base.svg', 'filterimage' => 'collaborate_base.svg',
+                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
+            ['name' => get_string('tag_create', 'format_minimoodlewall'),
+                'cardimage' => 'create_base.png', 'filterimage' => 'create_base.png',
+                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
         ];
-
-        $index = 0;
 
         foreach ($defaulttags as $tag) {
             $tagid = self::create_tag(
@@ -835,8 +825,6 @@ class tag_manager {
                 $tag['bgcolor'],
                 'lower'
             );
-
-            $index++;
 
             self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
             self::copy_default_image($tagid, $tag['filterimage'], self::FILEAREA_FILTERIMAGE);

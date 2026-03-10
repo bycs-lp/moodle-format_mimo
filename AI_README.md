@@ -18,7 +18,7 @@
     - `uses_course_index()` — returns `true` in multi-section mode, `false` otherwise.
     - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/section.php` for navigation.
     - `extend_course_navigation()` — single-section: hides section breadcrumbs; multi-section: shows section breadcrumbs + expands selected section in navigation.
-  - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'classic'`), `enablefiltering`, `backgrounddesign` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `primary-school`, `darkmode`, `whiteboard`, `pinnwand`, `paper` — apply full-theme overrides to the board, cards, filter bar, navigation, and completion via a `.mmw-bgdesign-wrapper.mmw-bgdesign-{value}` wrapper and `.mmw-bgdesign-{value}` on the `<ul>` board), `enablecompletionstars`, `distractionfree`.
+  - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'explore'`), `enablefiltering`, `backgrounddesign` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `primary-school`, `darkmode`, `whiteboard`, `pinnwand`, `paper` — apply full-theme overrides to the board, cards, filter bar, navigation, and completion via a `.mmw-bgdesign-wrapper.mmw-bgdesign-{value}` wrapper and `.mmw-bgdesign-{value}` on the `<ul>` board), `enablecompletionstars`, `distractionfree`.
   - Course settings form shows a read-only tag preview below the activity profile dropdown, rendered via `form_tag_preview.mustache`. Tags update dynamically when the profile is changed (via `profile_image_switcher.js`).
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
     - `format_minimoodlewall_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for minimoodlewall courses). Pre-selects current tag on edit, or pending session tag on create.
@@ -35,6 +35,8 @@
   - Table: `*_profile_tags` (tagid+profileid unique; nullable overrides for name, bgcolor, activitytype1-3; `enabled` flag).
   - Key methods: `create_profile($name, $displayname)`, `get_profile_by_name($name)`, `get_or_create_profile_tag($tagid, $profileid)`, `update_profile_tag($id, $data)`, `resolve_tags_for_profile($tags, $profileid, $onlyenabled)`, `resolve_tag_for_profile($tag, $profileid)`.
   - Profiles determine which tags are active for a course and can override tag names, colors, and activity types per profile.
+  - Default profiles (created on install): `explore` (🌱 Explore Level, sortorder 0), `develop` (🌿 Develop Level, sortorder 1), `master` (🌳 Master Level, sortorder 2).
+  - The `develop` profile overrides first two tags with name overrides: 📖 Read → 📚 Analyze, 🔍 Explore → 🔎 Research.
 - **Style system** (`classes/style_manager.php`)
   - Table: `*_styles` (name unique, displayname, sortorder).
   - Table: `*_tag_images` (tagid+styleid unique, cardimage, filterimage filenames).
@@ -44,6 +46,7 @@
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
+  - Default description tags (created on install): 🟡 📥 Input (#FFF176), 🟢 🔁 Practice (#81C784), 🟣 📤 Share (#CE93D8), 🔵 🧠 Think (#64B5F6).
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Event observers** (`classes/observer.php` + `db/events.php`)
@@ -64,7 +67,7 @@
 - **Rendering** (`format.php`, `classes/output/courseformat/*`, `templates/local/content/*.mustache`)
   - Modern Moodle 4.x component-based stack: base content → section → `cmitem` templates.
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
-  - `styles.scss` hosts shared wall styles + style variants (`classic`, `light`, `dark`).
+  - `styles.scss` hosts shared wall styles + style variants (`explore`, `develop`, `master`).
 - **Caching** (`db/caches.php`)
   - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`).
   - `activitytagmappings`: cm→tag lookup.
@@ -188,7 +191,7 @@ This plugin demonstrates the hybrid approach:
 - When toggling multi-section OFF, activities in sections >0 become hidden. There is no auto-migration — only a help text warning.
 - The course index is disabled in single-section mode. Do not re-enable it without also enabling multi-section.
 - Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
-- Every course should have a valid `activityprofile` option — defaults to `'classic'`.
+- Every course should have a valid `activityprofile` option — defaults to `'explore'`.
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` / `profile_manager` helpers to avoid orphans.
 - Update caches after any tag/profile/style change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
 - Tags and profiles are **global** — shared across all courses; courses reference profiles via the `activityprofile` format option.

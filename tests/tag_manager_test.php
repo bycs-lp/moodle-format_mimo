@@ -131,22 +131,22 @@ final class tag_manager_test extends \advanced_testcase {
         $tag2id = tag_manager::create_tag('Video', 'video.svg', 'video-small.svg', 'url');
         $tag3id = tag_manager::create_tag('Quiz', 'quiz.svg', 'quiz-small.svg', 'quiz');
 
-        // Ensure a 'classic' profile exists.
-        $profile = profile_manager::get_profile_by_name('classic');
+        // Ensure an 'explore' profile exists.
+        $profile = profile_manager::get_profile_by_name('explore');
         if (!$profile) {
-            $profileid = profile_manager::create_profile('classic', 'Classic');
+            $profileid = profile_manager::create_profile('explore', 'Explore Level');
         } else {
             $profileid = $profile->id;
         }
 
-        // Disable 'Quiz' tag for the classic profile.
+        // Disable 'Quiz' tag for the explore profile.
         $pt = profile_manager::get_or_create_profile_tag($tag3id, $profileid);
         profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
 
-        // Create a course with the classic activity profile.
+        // Create a course with the explore activity profile.
         $course = $this->getDataGenerator()->create_course([
             'format' => 'minimoodlewall',
-            'activityprofile' => 'classic',
+            'activityprofile' => 'explore',
         ]);
 
         // Get tags for course — should return only enabled tags.

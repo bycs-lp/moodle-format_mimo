@@ -96,7 +96,7 @@ class profile_manager {
     /**
      * Get a profile by its internal name.
      *
-     * @param string $name Profile name (e.g., 'classic', 'light', 'dark')
+     * @param string $name Profile name (e.g., 'explore', 'develop', 'master')
      * @return stdClass|null
      */
     public static function get_profile_by_name(string $name): ?stdClass {
@@ -542,7 +542,7 @@ class profile_manager {
      * Get card image URL for a tag and profile name.
      *
      * @param int $tagid Tag ID
-     * @param string $profilename Profile name (e.g., 'classic')
+     * @param string $profilename Profile name (e.g., 'explore')
      * @return moodle_url|null
      */
     public static function get_cardimage_url_by_name(int $tagid, string $profilename): ?moodle_url {
@@ -557,7 +557,7 @@ class profile_manager {
      * Get filter image URL for a tag and profile name.
      *
      * @param int $tagid Tag ID
-     * @param string $profilename Profile name (e.g., 'classic')
+     * @param string $profilename Profile name (e.g., 'explore')
      * @return moodle_url|null
      */
     public static function get_filterimage_url_by_name(int $tagid, string $profilename): ?moodle_url {
@@ -642,14 +642,42 @@ class profile_manager {
      */
     public static function initialize_default_profiles(): void {
         $defaults = [
-            ['name' => 'classic', 'displayname' => 'Classic', 'sortorder' => 1],
-            ['name' => 'light', 'displayname' => 'Light', 'sortorder' => 2],
-            ['name' => 'dark', 'displayname' => 'Dark', 'sortorder' => 3],
+            ['name' => 'explore', 'displayname' => get_string('profile_explore', 'format_minimoodlewall'), 'sortorder' => 0],
+            ['name' => 'develop', 'displayname' => get_string('profile_develop', 'format_minimoodlewall'), 'sortorder' => 1],
+            ['name' => 'master', 'displayname' => get_string('profile_master', 'format_minimoodlewall'), 'sortorder' => 2],
         ];
 
+        $profileids = [];
         foreach ($defaults as $profile) {
             if (!self::get_profile_by_name($profile['name'])) {
-                self::create_profile($profile['name'], $profile['displayname'], $profile['sortorder']);
+                $profileids[$profile['name']] = self::create_profile(
+                    $profile['name'],
+                    $profile['displayname'],
+                    $profile['sortorder']
+                );
+            }
+        }
+
+        // Set up Develop profile overrides: first two tags get name overrides.
+        if (!empty($profileids['develop'])) {
+            $developid = $profileids['develop'];
+            $alltags = tag_manager::get_all_tags();
+            $taglist = array_values($alltags);
+
+            // Tag 0 (Read) → "📚 Analyze" in Develop.
+            if (isset($taglist[0])) {
+                $pt = self::get_or_create_profile_tag($taglist[0]->id, $developid);
+                self::update_profile_tag($pt->id, [
+                    'name' => get_string('tag_analyze', 'format_minimoodlewall'),
+                ]);
+            }
+
+            // Tag 1 (Explore) → "🔎 Research" in Develop.
+            if (isset($taglist[1])) {
+                $pt = self::get_or_create_profile_tag($taglist[1]->id, $developid);
+                self::update_profile_tag($pt->id, [
+                    'name' => get_string('tag_research', 'format_minimoodlewall'),
+                ]);
             }
         }
     }

@@ -53,7 +53,7 @@ class section extends section_base {
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
         $enablefiltering = !empty($options['enablefiltering']);
-        $stylevariant = $options['activityprofile'] ?? 'classic';
+        $stylevariant = $options['activityprofile'] ?? 'explore';
         $isediting = $PAGE->user_is_editing();
         $ismultisection = !empty($options['enablemultisection']);
 
@@ -134,7 +134,7 @@ class section extends section_base {
         array $tags,
         int $courseid,
         bool $isediting,
-        string $stylevariant = 'classic',
+        string $stylevariant = 'explore',
         ?int $sectionid = null
     ): array {
         if (empty($tags)) {

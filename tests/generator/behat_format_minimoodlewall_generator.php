@@ -260,7 +260,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         $formatoptions = [
             'id' => $course->id,
             'enablefiltering' => $data['enablefiltering'],
-            'activityprofile' => $data['activityprofile'] ?? 'classic',
+            'activityprofile' => $data['activityprofile'] ?? 'explore',
             'backgrounddesign' => $data['backgrounddesign'] ?? $data['wallcolor'] ?? 'primary-school',
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
@@ -300,7 +300,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
         }
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
-        $data['activityprofile'] = $data['activityprofile'] ?? 'classic';
+        $data['activityprofile'] = $data['activityprofile'] ?? 'explore';
         $data['numsections'] = 0;
 
         return $data;
