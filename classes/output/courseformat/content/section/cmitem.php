@@ -89,7 +89,7 @@ class cmitem extends cmitem_base {
                 $tag = \format_minimoodlewall\profile_manager::resolve_tag_for_profile($tag, $profile->id);
             }
 
-            $data->cmformat->tagname = $tag->name;
+            $data->cmformat->tagname = format_string($tag->name, true, ['context' => \context_system::instance()]);
             $data->cmformat->tagid = $tag->id;
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';

@@ -67,7 +67,7 @@ class get_tags extends external_api {
         foreach ($tags as $tag) {
             $result[] = [
                 'id' => $tag->id,
-                'name' => $tag->name,
+                'name' => format_string($tag->name, true, ['context' => \context_system::instance()]),
                 'cardimage' => $tag->cardimage,
                 'filterimage' => $tag->filterimage,
                 'activitytype1' => $tag->activitytype1,
