@@ -18,7 +18,7 @@
  *
  * A BaseComponent that watches the core course editor reactive state and
  * bridges changes into the wall state reactive. Also dispatches legacy
- * DOM events for modules not yet converted to wall state watchers.
+ * DOM events for completion changes (tag_filter still uses these).
  *
  * @module     format_minimoodlewall/courseeditor_watcher
  * @copyright  2025 MBS
@@ -28,8 +28,6 @@ import {BaseComponent} from 'core/reactive';
 
 /** Custom event names dispatched by this component. */
 export const EVENTS = {
-    /** Bulk editing mode toggled. Detail: {enabled: boolean} */
-    BULK_CHANGE: 'minimoodlewall:bulkchange',
     /** Activity completion state changed. Detail: {cmId: number, completed: boolean} */
     COMPLETION_CHANGE: 'minimoodlewall:completionchange',
 };
@@ -75,10 +73,6 @@ export default class CourseEditorWatcher extends BaseComponent {
         const bulkEnabled = state?.bulk?.enabled ?? false;
         if (bulkEnabled) {
             this.wallState?.dispatch('setBulk', true);
-            // Legacy DOM event for unconverted modules.
-            document.dispatchEvent(new CustomEvent(EVENTS.BULK_CHANGE, {
-                detail: {enabled: true},
-            }));
         }
     }
 
@@ -92,10 +86,6 @@ export default class CourseEditorWatcher extends BaseComponent {
     _bulkUpdated({element}) {
         const enabled = element?.enabled ?? false;
         this.wallState?.dispatch('setBulk', enabled);
-        // Legacy DOM event for unconverted modules.
-        document.dispatchEvent(new CustomEvent(EVENTS.BULK_CHANGE, {
-            detail: {enabled},
-        }));
     }
 
     /**

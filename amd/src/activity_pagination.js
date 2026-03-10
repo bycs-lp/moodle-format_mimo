@@ -21,8 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/** Custom event name for filter activation/deactivation coordination. */
-const FILTER_EVENT = 'minimoodlewall:filterchange';
+import {BaseComponent} from 'core/reactive';
+import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
 
 // Animation and timing constants.
 /** Duration in milliseconds for slide and height transition animations. */
@@ -94,7 +94,7 @@ const announcePaginationStatus = (page, totalPages, startIndex, endIndex, totalI
  * Event Coordination:
  * - Listens to FILTER_EVENT to disable pagination when filters are active
  * - Watches reactive course editor for bulk mode changes
- * - Responds to 'minimoodlewall:reorder' for drag-drop updates
+ * - Watches wall state reactive for filter, bulk, and reorder changes
  * - Handles window resize to recalculate page layout
  *
  * Animation Strategy:
@@ -680,18 +680,73 @@ export const init = () => {
         }
     });
 
-    // React when the filter bar toggles a filter on/off.
-    document.addEventListener(FILTER_EVENT, (event) => {
-        const isFilterActive = !!(event && event.detail && event.detail.active);
-        filterActive = isFilterActive;
+    // --- Reactive wall state integration ---
+    // Replace DOM event listeners with reactive watchers via a thin BaseComponent.
+    const sectionElement = container.closest('.section-item') || container.closest('[data-sectionid]') || container;
+    const wallState = getWallState(sectionElement);
 
-        // Defer recalculation to next frame so filter has time to update hidden attributes.
-        // The filter dispatches this event before applying display changes to cards.
-        requestAnimationFrame(() => {
-            // Reset to first page and recalculate based on visible items.
-            recalculateForFilter();
-        });
-    });
+    /**
+     * Thin BaseComponent that watches wall state and delegates to closure functions.
+     */
+    class PaginationWatcher extends BaseComponent {
+        // eslint-disable-next-line no-empty-function
+        create() {}
+
+        getWatchers() {
+            return [
+                {watch: 'filters:updated', handler: this._filtersUpdated},
+                {watch: 'bulk:updated', handler: this._bulkUpdated},
+                {watch: 'activityOrder:updated', handler: this._orderUpdated},
+            ];
+        }
+
+        /**
+         * React when filter state changes.
+         *
+         * @param {object} detail Watcher event detail
+         * @param {object} detail.state Full wall state
+         */
+        _filtersUpdated({state}) {
+            const isActive = state.filters.tags.length > 0 || state.filters.completion !== '';
+            filterActive = isActive;
+            // Defer so tag_filter DOM updates (hidden attrs) are applied first.
+            requestAnimationFrame(() => {
+                recalculateForFilter();
+            });
+        }
+
+        /**
+         * React when bulk editing mode changes.
+         *
+         * @param {object} detail Watcher event detail
+         * @param {object} detail.state Full wall state
+         */
+        _bulkUpdated({state}) {
+            const bulkEnabled = !!state.bulk.enabled;
+            if (bulkEnabled && paginationEnabled) {
+                paginationEnabled = false;
+                showAllActivities();
+            } else if (!bulkEnabled && !paginationEnabled) {
+                paginationEnabled = true;
+                currentPage = 0;
+                enablePagination();
+            }
+        }
+
+        /**
+         * React when activity order changes (drag-drop reorder).
+         */
+        _orderUpdated() {
+            if (!paginationEnabled) {
+                return;
+            }
+            isAnimating = false;
+            showPageDirect();
+        }
+    }
+
+    // Create the watcher component bound to the wall state reactive.
+    new PaginationWatcher({element: container, reactive: wallState});
 
     // Touch gesture support for swipe navigation.
     container.addEventListener('touchstart', (e) => {
@@ -756,21 +811,6 @@ export const init = () => {
     });
     updateNavigationButtons();
 
-    // Watch for bulk mode changes via reactive bridge component.
-    document.addEventListener('minimoodlewall:bulkchange', (event) => {
-        const bulkEnabled = !!(event?.detail?.enabled);
-        if (bulkEnabled && paginationEnabled) {
-            // Bulk mode activated - disable pagination.
-            paginationEnabled = false;
-            showAllActivities();
-        } else if (!bulkEnabled && !paginationEnabled) {
-            // Bulk mode deactivated - enable pagination.
-            paginationEnabled = true;
-            currentPage = 0;
-            enablePagination();
-        }
-    });
-
     // Handle window resize.
     let resizeTimeout;
     window.addEventListener('resize', () => {
@@ -788,12 +828,4 @@ export const init = () => {
         }, 250);
     });
 
-    // Listen for drag-drop reordering to refresh pagination.
-    window.addEventListener('minimoodlewall:reorder', () => {
-        if (!paginationEnabled) {
-            return;
-        }
-        isAnimating = false;
-        showPageDirect();
-    });
 };

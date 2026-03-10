@@ -22,9 +22,7 @@
  */
 
 import Notification from 'core/notification';
-
-/** Custom event name for coordinating with pagination module. */
-const EVENT_NAME = 'minimoodlewall:filterchange';
+import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
 
 /** Duration in milliseconds for height transition animation. */
 const HEIGHT_TRANSITION_MS = 300;
@@ -213,19 +211,16 @@ const animateContainerHeight = (container, applyChanges) => {
 };
 
 /**
- * Dispatch a custom filter change event so pagination can react.
+ * Dispatch filter state to the wall reactive so pagination can react.
  *
- * Event coordination:
- * - When active=true: Pagination disables and shows all activities
- * - When active=false: Pagination re-enables and restores page view
- *
- * @param {boolean} active - Whether a filter is currently active
+ * @param {Reactive} wallState - The wall state reactive instance
+ * @param {string} activeTag - Active tag ID, or '' for no tag filter
+ * @param {string} activeCompletion - Active completion value, or '' for no filter
  * @returns {void}
  */
-const notifyFilterChange = (active) => {
-    document.dispatchEvent(new CustomEvent(EVENT_NAME, {
-        detail: {active: active}
-    }));
+const syncFilterState = (wallState, activeTag, activeCompletion) => {
+    wallState.dispatch('setTagFilter', activeTag ? [activeTag] : []);
+    wallState.dispatch('setCompletionFilter', activeCompletion);
 };
 
 /**
@@ -559,6 +554,9 @@ const initFilterBar = (bar) => {
             return;
         }
 
+        const sectionElement = activityContainer.closest('.section-item') || activityContainer;
+        const wallState = getWallState(sectionElement);
+
         const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
         if (!activityItems.length) {
             return;
@@ -644,7 +642,7 @@ const initFilterBar = (bar) => {
                 const img = button ? button.querySelector('img') : null;
                 filterState.activeTagImageUrl = img ? img.src : '';
 
-                notifyFilterChange(true);
+                syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
                 reorderActivitiesByTag(tagid);
                 updateButtons(bar, button);
 
@@ -663,10 +661,7 @@ const initFilterBar = (bar) => {
                     updateActiveTagImage(statusRegion, '');
                 }
 
-                // Only notify pagination if no filters are active.
-                if (!filterState.activeCompletion) {
-                    notifyFilterChange(false);
-                }
+                syncFilterState(wallState, '', filterState.activeCompletion);
             }
 
             const visibleCount = applyAllFilters();
@@ -685,14 +680,10 @@ const initFilterBar = (bar) => {
         const setCompletionFilter = (completed) => {
             if (completed) {
                 filterState.activeCompletion = completed;
-                notifyFilterChange(true);
             } else {
                 filterState.activeCompletion = '';
-                // Only notify pagination if no filters are active.
-                if (!filterState.activeTag) {
-                    notifyFilterChange(false);
-                }
             }
+            syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
 
             if (statusRegion) {
                 updateCompletionPills(statusRegion, completed);
@@ -762,6 +753,9 @@ const initCompletionStatusOnly = (statusRegion) => {
             return;
         }
 
+        const sectionElement = activityContainer.closest('.section-item') || activityContainer;
+        const wallState = getWallState(sectionElement);
+
         const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
         if (!activityItems.length) {
             return;
@@ -803,11 +797,10 @@ const initCompletionStatusOnly = (statusRegion) => {
         const setCompletionFilter = (completed) => {
             if (completed) {
                 filterState.activeCompletion = completed;
-                notifyFilterChange(true);
             } else {
                 filterState.activeCompletion = '';
-                notifyFilterChange(false);
             }
+            syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
 
             updateCompletionPills(statusRegion, completed);
             applyAllFilters();

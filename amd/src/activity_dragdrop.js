@@ -23,6 +23,7 @@
 
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
 
 export const init = () => {
     // Only enable in editing mode.
@@ -34,6 +35,9 @@ export const init = () => {
     if (activityCards.length === 0) {
         return;
     }
+
+    const sectionElement = activityCards[0].closest('.section-item') || activityCards[0].closest('[data-sectionid]');
+    const wallState = sectionElement ? getWallState(sectionElement) : null;
 
     let draggedElement = null;
 
@@ -199,8 +203,12 @@ export const init = () => {
                     col.parentNode.insertBefore(draggedElement, col);
                 }
 
-                // Trigger a custom event to notify pagination to recalculate.
-                window.dispatchEvent(new CustomEvent('minimoodlewall:reorder'));
+                // Notify wall state that activity order changed.
+                if (wallState) {
+                    const allItems = col.parentNode.querySelectorAll('li[data-id]');
+                    const orderedIds = Array.from(allItems).map(item => item.dataset.id);
+                    wallState.dispatch('reorderActivities', orderedIds);
+                }
 
                 // Clean up any remaining highlights after DOM manipulation.
                 container.querySelectorAll('.drag-over').forEach(element => {

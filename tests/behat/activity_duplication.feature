@@ -1,4 +1,4 @@
-@format @format_minimoodlewall @javascript @_only_boost
+@format @format_minimoodlewall @javascript
 Feature: Bulk duplicate activity visibility in minimoodlewall format
   In order to duplicate activities in bulk
   As a teacher
