@@ -735,6 +735,13 @@ const initFilterBar = (bar) => {
             // Initial update to show star if all activities are already complete.
             updateCompletionCounts(statusRegion, activityItems);
         }
+
+        // Listen for reactive completion state changes from the course editor watcher.
+        document.addEventListener('minimoodlewall:completionchange', () => {
+            if (statusRegion) {
+                updateCompletionCounts(statusRegion, activityItems);
+            }
+        });
     } catch (error) {
         Notification.exception(error);
     }
@@ -821,6 +828,11 @@ const initCompletionStatusOnly = (statusRegion) => {
 
         // Initial update to show star if all activities are already complete.
         updateCompletionCounts(statusRegion, activityItems);
+
+        // Listen for reactive completion state changes from the course editor watcher.
+        document.addEventListener('minimoodlewall:completionchange', () => {
+            updateCompletionCounts(statusRegion, activityItems);
+        });
     } catch (error) {
         Notification.exception(error);
     }

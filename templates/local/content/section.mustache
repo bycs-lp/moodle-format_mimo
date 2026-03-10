@@ -159,6 +159,9 @@
 {{/ core_courseformat/local/content/section }}
 
 {{#js}}
+require(['format_minimoodlewall/init_courseeditor_watcher'], function(watcher) {
+    watcher.init();
+});
 require(['format_minimoodlewall/activity_pagination'], function(pagination) {
     pagination.init();
 });

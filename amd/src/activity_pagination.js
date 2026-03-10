@@ -21,8 +21,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
-
 /** Custom event name for filter activation/deactivation coordination. */
 const FILTER_EVENT = 'minimoodlewall:filterchange';
 
@@ -145,33 +143,7 @@ export const init = () => {
         return Array.from(container.querySelectorAll('.col-12:not([hidden])'));
     };
 
-    /**
-     * Check if bulk mode is active via reactive state.
-     *
-     * Strategy:
-     * 1. Try to read from reactive course editor state (Moodle 4.0+)
-     * 2. Fallback to DOM check for visible bulk checkboxes
-     *
-     * Bulk mode requires all activities visible for checkbox access,
-     * so pagination is disabled when bulk mode is active.
-     *
-     * @returns {boolean} True if bulk editing mode is currently active
-     */
-    const isBulkMode = () => {
-        try {
-            const reactiveEditor = getCurrentCourseEditor();
-            if (reactiveEditor) {
-                const bulkState = reactiveEditor.get('bulk');
-                return bulkState && bulkState.enabled === true;
-            }
-        } catch (e) {
-            // Fallback: check if bulk checkboxes are visible.
-            // This is expected when reactive editor isn't available.
-            const bulkSelect = document.querySelector('.bulkselect:not(.d-none)');
-            return bulkSelect !== null;
-        }
-        return false;
-    };
+
 
     /**
      * Show all activities and disable pagination (for bulk mode).
@@ -784,47 +756,20 @@ export const init = () => {
     });
     updateNavigationButtons();
 
-    // Watch for bulk mode changes via reactive state.
-    try {
-        const reactiveEditor = getCurrentCourseEditor();
-        if (reactiveEditor) {
-            // Add state watcher for bulk mode.
-            reactiveEditor.addStateWatch('bulk.enabled', (state) => {
-                const bulkEnabled = state?.bulk?.enabled;
-                if (bulkEnabled && paginationEnabled) {
-                    // Bulk mode activated - disable pagination.
-                    paginationEnabled = false;
-                    showAllActivities();
-                } else if (!bulkEnabled && !paginationEnabled) {
-                    // Bulk mode deactivated - enable pagination.
-                    paginationEnabled = true;
-                    currentPage = 0;
-                    enablePagination();
-                }
-            });
+    // Watch for bulk mode changes via reactive bridge component.
+    document.addEventListener('minimoodlewall:bulkchange', (event) => {
+        const bulkEnabled = !!(event?.detail?.enabled);
+        if (bulkEnabled && paginationEnabled) {
+            // Bulk mode activated - disable pagination.
+            paginationEnabled = false;
+            showAllActivities();
+        } else if (!bulkEnabled && !paginationEnabled) {
+            // Bulk mode deactivated - enable pagination.
+            paginationEnabled = true;
+            currentPage = 0;
+            enablePagination();
         }
-    } catch (e) {
-        // Fallback: watch for class changes on bulkselect elements.
-        // This is expected when reactive editor state watchers aren't available.
-        const observer = new MutationObserver(() => {
-            const bulkNow = isBulkMode();
-            if (bulkNow && paginationEnabled) {
-                paginationEnabled = false;
-                showAllActivities();
-            } else if (!bulkNow && !paginationEnabled) {
-                paginationEnabled = true;
-                currentPage = 0;
-                enablePagination();
-            }
-        });
-
-        observer.observe(document.body, {
-            attributes: true,
-            attributeFilter: ['class'],
-            subtree: true,
-            childList: true,
-        });
-    }
+    });
 
     // Handle window resize.
     let resizeTimeout;
