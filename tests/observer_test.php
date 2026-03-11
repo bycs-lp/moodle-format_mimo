@@ -296,7 +296,7 @@ final class observer_test extends \advanced_testcase {
     }
 
     /**
-     * Test that deleting a course cleans up orphaned cmtag records.
+     * Test that deleting a course cleans up cmtag records via delete_format_data().
      */
     public function test_course_deleted_cleans_orphaned_cmtags(): void {
         global $DB;
