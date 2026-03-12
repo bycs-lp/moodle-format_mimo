@@ -144,6 +144,22 @@ class profile_manager {
     public static function update_profile(int $id, array $data): bool {
         global $DB;
 
+        // If the internal name is being changed, cascade to course_format_options.
+        if (isset($data['name'])) {
+            $oldprofile = self::get_profile($id);
+            if ($oldprofile && $oldprofile->name !== $data['name']) {
+                $DB->set_field_select(
+                    'course_format_options',
+                    'value',
+                    $data['name'],
+                    "format = 'minimoodlewall' AND name = 'activityprofile' AND value = :oldname",
+                    ['oldname' => $oldprofile->name]
+                );
+                // Clear tag cache for all affected courses.
+                tag_manager::clear_tag_cache();
+            }
+        }
+
         $record = new stdClass();
         $record->id = $id;
         $record->timemodified = time();

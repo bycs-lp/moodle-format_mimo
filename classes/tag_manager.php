@@ -615,8 +615,14 @@ class tag_manager {
         // Delete all mappings for this tag.
         $DB->delete_records('format_minimoodlewall_cmtags', ['tagid' => $id]);
 
-        // Delete profile_tags records for this tag.
+        // Delete profile_tags records for this tag (includes profile-specific images).
         profile_manager::delete_profile_tags_for_tag($id);
+
+        // Delete base tag image files.
+        $fs = get_file_storage();
+        $contextid = context_system::instance()->id;
+        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_CARDIMAGE, $id);
+        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_FILTERIMAGE, $id);
 
         $result = $DB->delete_records('format_minimoodlewall_tags', ['id' => $id]);
 
