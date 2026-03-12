@@ -1658,12 +1658,12 @@ body.single-section-page.format-mmw-multisection-view {
         background: #1f6f4e;
         border-radius: 2rem;
         position: relative;
-        overflow: hidden; // Clip ::before grid so it only shows within the green area.
 
         &::before {
             content: "";
             position: absolute;
-            inset: -40px;
+            inset: 0;
+            border-radius: inherit;
             background:
                 radial-gradient(1100px 600px at 18% 14%, rgba(255, 255, 255, 0.10), transparent 62%),
                 radial-gradient(900px 520px at 82% 20%, rgba(0, 0, 0, 0.22), transparent 60%),

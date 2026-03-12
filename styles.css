@@ -1296,12 +1296,12 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   background: #1f6f4e;
   border-radius: 2rem;
   position: relative;
-  overflow: hidden;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-primary-school .minimoodlewall-activities::before {
   content: "";
   position: absolute;
-  inset: -40px;
+  inset: 0;
+  border-radius: inherit;
   background: radial-gradient(1100px 600px at 18% 14%, rgba(255, 255, 255, 0.1), transparent 62%), radial-gradient(900px 520px at 82% 20%, rgba(0, 0, 0, 0.22), transparent 60%), repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 22px), repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 22px);
   pointer-events: none;
   opacity: 0.95;
