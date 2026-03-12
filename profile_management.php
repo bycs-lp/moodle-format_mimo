@@ -26,7 +26,6 @@ require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use format_minimoodlewall\profile_manager;
-use format_minimoodlewall\form\profile_form;
 
 admin_externalpage_setup('format_minimoodlewall_profiles');
 
@@ -39,57 +38,6 @@ require_capability('moodle/site:config', $context);
 $PAGE->set_url('/course/format/minimoodlewall/profile_management.php');
 $PAGE->set_title(get_string('profilemanagement', 'format_minimoodlewall'));
 $PAGE->set_heading(get_string('profilemanagement', 'format_minimoodlewall'));
-
-// Handle create/edit profile.
-if ($action === 'createprofile' || $action === 'editprofile') {
-    $profile = null;
-    if ($action === 'editprofile' && $profileid) {
-        $profile = profile_manager::get_profile($profileid);
-        if ($profile) {
-            $profile->profileid = $profile->id;
-        }
-    }
-
-    $formurl = new moodle_url($PAGE->url, ['action' => $action, 'profileid' => $profileid]);
-    $mform = new profile_form($formurl, ['context' => $context]);
-
-    if ($profile) {
-        $mform->set_data($profile);
-    }
-
-    if ($mform->is_cancelled()) {
-        redirect($PAGE->url);
-    } else if ($data = $mform->get_data()) {
-        if (!empty($data->profileid)) {
-            profile_manager::update_profile(
-                $data->profileid,
-                [
-                    'name' => $data->name,
-                    'displayname' => $data->displayname,
-                    'sortorder' => $data->sortorder,
-                ]
-            );
-            $message = get_string('profileupdated', 'format_minimoodlewall');
-        } else {
-            profile_manager::create_profile(
-                $data->name,
-                $data->displayname,
-                $data->sortorder
-            );
-            $message = get_string('profilecreated', 'format_minimoodlewall');
-        }
-        redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
-    }
-
-    echo $OUTPUT->header();
-    echo \format_minimoodlewall\admin_page_tabs::render('profiles');
-    echo $OUTPUT->heading($action === 'createprofile' ?
-        get_string('createprofile', 'format_minimoodlewall') :
-        get_string('editprofile', 'format_minimoodlewall'));
-    $mform->display();
-    echo $OUTPUT->footer();
-    exit;
-}
 
 // Handle delete action.
 if ($action === 'deleteprofile' && confirm_sesskey()) {
@@ -129,11 +77,13 @@ echo $OUTPUT->heading(get_string('profilemanagement', 'format_minimoodlewall'));
 // Initialize delete confirmation modal.
 $PAGE->requires->js_call_amd('format_minimoodlewall/profile_delete_confirm', 'init');
 
+// Initialize modal form JS for create/edit profile.
+$PAGE->requires->js_call_amd('format_minimoodlewall/profile_management_modal', 'init');
+
 // Get all profiles.
 $profiles = profile_manager::get_all_profiles();
 
 $templatecontext = [
-    'createprofileurl' => (new moodle_url($PAGE->url, ['action' => 'createprofile']))->out(false),
     'createprofiletext' => get_string('createprofile', 'format_minimoodlewall'),
     'noprofilestext' => get_string('noprofiles', 'format_minimoodlewall'),
     'hasprofiles' => !empty($profiles),
@@ -152,7 +102,6 @@ foreach ($profiles as $profile) {
         'name' => format_string($profile->name),
         'displayname' => format_string($profile->displayname),
         'sortorder' => $profile->sortorder,
-        'editurl' => (new moodle_url($PAGE->url, ['action' => 'editprofile', 'profileid' => $profile->id]))->out(false),
         'deleteurl' => (new moodle_url($PAGE->url, [
             'action' => 'deleteprofile',
             'profileid' => $profile->id,

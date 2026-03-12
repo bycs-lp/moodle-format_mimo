@@ -45,16 +45,23 @@ let baseUrl = '';
 /** @type {string} Cached disabled badge text. */
 let disabledText = '';
 
+/** @type {Object} Profile name to ID mapping. */
+let profileIdMap = {};
+
+/** @type {HTMLElement|null} The tag-management container element. */
+let container = null;
+
 /**
  * Initialize the profile switcher.
  * Data is read from data attributes on the tag-management container element.
  */
 export const init = async() => {
-    const container = document.querySelector('[data-region="tag-management"]');
+    container = document.querySelector('[data-region="tag-management"]');
     if (!container) {
         return;
     }
     tagProfileData = JSON.parse(container.dataset.tagProfileData || '{}');
+    profileIdMap = JSON.parse(container.dataset.profileIdMap || '{}');
     activeProfile = container.dataset.currentProfile || '';
     baseUrl = container.dataset.managementUrl || '';
     disabledText = await getString('profiletag_disabled', 'format_minimoodlewall');
@@ -85,6 +92,11 @@ const switchProfile = (profileName) => {
         return;
     }
     activeProfile = profileName;
+
+    // Update the active profile ID on the container for other JS modules.
+    if (container) {
+        container.dataset.activeProfileId = profileIdMap[profileName] ?? 0;
+    }
 
     // Update button styles.
     document.querySelectorAll(SELECTORS.PROFILE_BUTTON).forEach((btn) => {

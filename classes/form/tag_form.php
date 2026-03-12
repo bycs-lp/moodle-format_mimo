@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Form for editing a tag with per-profile overrides.
+ * Dynamic form for editing a tag with per-profile overrides.
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
@@ -28,183 +28,178 @@ defined('MOODLE_INTERNAL') || die();
 
 use format_minimoodlewall\tag_manager;
 use format_minimoodlewall\profile_manager;
-
-global $CFG;
-require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->libdir . '/filelib.php');
+use core_form\dynamic_form;
+use context;
 
 /**
- * Tag edit form.
+ * Tag edit form (dynamic form for modal usage).
  *
  * @package    format_minimoodlewall
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class tag_form extends \moodleform {
+class tag_form extends dynamic_form {
     /**
      * Form definition.
      */
-    protected function definition() {
+    public function definition() {
         $mform = $this->_form;
 
         // Tag ID (hidden).
         $mform->addElement('hidden', 'tagid');
         $mform->setType('tagid', PARAM_INT);
 
-        // ---- Base tag fields ----
-        $selectedprofileid = $this->_customdata['selectedprofileid'] ?? 0;
-        $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_minimoodlewall'));
-        $mform->setExpanded('basetagheader', !$selectedprofileid);
-
-        // Tag name.
-        $mform->addElement('text', 'name', get_string('tagname', 'format_minimoodlewall'), ['size' => 60]);
-        $mform->setType('name', PARAM_TEXT);
-        if (!$selectedprofileid) {
-            $mform->addRule('name', get_string('required'), 'required', null, 'client');
-        }
-
-        // Activity type 1.
+        $selectedprofileid = $this->optional_param('selectedprofileid', 0, PARAM_INT);
+        $tagid = $this->optional_param('tagid', 0, PARAM_INT);
         $activitytypes = $this->get_activity_types();
-        $mform->addElement(
-            'select',
-            'activitytype1',
-            get_string('activitytype1', 'format_minimoodlewall'),
-            $activitytypes
-        );
-        $mform->setType('activitytype1', PARAM_TEXT);
-        if (!$selectedprofileid) {
-            $mform->addRule('activitytype1', get_string('required'), 'required', null, 'client');
-        }
-
-        // Activity type 2.
-        $activitytypes2 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
-        $mform->addElement(
-            'select',
-            'activitytype2',
-            get_string('activitytype2', 'format_minimoodlewall'),
-            $activitytypes2
-        );
-        $mform->setType('activitytype2', PARAM_TEXT);
-
-        // Activity type 3.
-        $activitytypes3 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
-        $mform->addElement(
-            'select',
-            'activitytype3',
-            get_string('activitytype3', 'format_minimoodlewall'),
-            $activitytypes3
-        );
-        $mform->setType('activitytype3', PARAM_TEXT);
-
-        // Image placement.
-        $placementoptions = [
-            $mform->createElement(
-                'radio',
-                'imgplacement',
-                '',
-                get_string('imgplacement_center', 'format_minimoodlewall'),
-                'center'
-            ),
-            $mform->createElement(
-                'radio',
-                'imgplacement',
-                '',
-                get_string('imgplacement_lower', 'format_minimoodlewall'),
-                'lower'
-            ),
-        ];
-        $mform->addGroup(
-            $placementoptions,
-            'imgplacementgroup',
-            get_string('imgplacement', 'format_minimoodlewall'),
-            ['<br>'],
-            false
-        );
-        $mform->setDefault('imgplacement', 'center');
-        $mform->setType('imgplacement', PARAM_TEXT);
-
-        // Image size.
-        $sizeoptions = [
-            $mform->createElement(
-                'radio',
-                'imgsize',
-                '',
-                get_string('imgsize_bigger', 'format_minimoodlewall'),
-                'bigger'
-            ),
-            $mform->createElement(
-                'radio',
-                'imgsize',
-                '',
-                get_string('imgsize_normal', 'format_minimoodlewall'),
-                'normal'
-            ),
-            $mform->createElement(
-                'radio',
-                'imgsize',
-                '',
-                get_string('imgsize_smaller', 'format_minimoodlewall'),
-                'smaller'
-            ),
-        ];
-        $mform->addGroup(
-            $sizeoptions,
-            'imgsizegroup',
-            get_string('imgsize', 'format_minimoodlewall'),
-            ['<br>'],
-            false
-        );
-        $mform->setDefault('imgsize', 'normal');
-        $mform->setType('imgsize', PARAM_TEXT);
-
-        // Background color.
-        $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
-        $mform->addElement(
-            'text',
-            'bgcolor',
-            get_string('tagbgcolor', 'format_minimoodlewall'),
-            ['size' => 8, 'type' => 'color']
-        );
-        $mform->setType('bgcolor', PARAM_TEXT);
-        $mform->setDefault('bgcolor', $defaultcolor);
-        $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
-
-        // Card image (base).
-        $mform->addElement(
-            'filemanager',
-            'cardimagefile',
-            get_string('cardimage', 'format_minimoodlewall'),
-            null,
-            tag_manager::get_image_filemanager_options()
-        );
-        $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
-
-        // Filter image (base).
-        $mform->addElement(
-            'filemanager',
-            'filterimagefile',
-            get_string('filterimage', 'format_minimoodlewall'),
-            null,
-            tag_manager::get_image_filemanager_options()
-        );
-        $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
-
-        // ---- Per-profile overrides and images (only for the selected profile) ----
-        $tagid = $this->_customdata['tagid'] ?? 0;
 
         if ($selectedprofileid) {
+            // ---- Profile override mode: show only profile-specific fields ----
             $profile = profile_manager::get_profile($selectedprofileid);
             if ($profile) {
                 $this->add_profile_section($mform, $profile, $activitytypes, $tagid);
             }
+        } else {
+            // ---- Base tag fields (only when no profile is selected) ----
+            $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_minimoodlewall'));
+            $mform->setExpanded('basetagheader', true);
+
+            // Tag name.
+            $mform->addElement('text', 'name', get_string('tagname', 'format_minimoodlewall'), ['size' => 60]);
+            $mform->setType('name', PARAM_TEXT);
+            $mform->addRule('name', get_string('required'), 'required', null, 'client');
+
+            // Activity type 1.
+            $mform->addElement(
+                'select',
+                'activitytype1',
+                get_string('activitytype1', 'format_minimoodlewall'),
+                $activitytypes
+            );
+            $mform->setType('activitytype1', PARAM_TEXT);
+            $mform->addRule('activitytype1', get_string('required'), 'required', null, 'client');
+
+            // Activity type 2.
+            $activitytypes2 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
+            $mform->addElement(
+                'select',
+                'activitytype2',
+                get_string('activitytype2', 'format_minimoodlewall'),
+                $activitytypes2
+            );
+            $mform->setType('activitytype2', PARAM_TEXT);
+
+            // Activity type 3.
+            $activitytypes3 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
+            $mform->addElement(
+                'select',
+                'activitytype3',
+                get_string('activitytype3', 'format_minimoodlewall'),
+                $activitytypes3
+            );
+            $mform->setType('activitytype3', PARAM_TEXT);
+
+            // Image placement.
+            $placementoptions = [
+                $mform->createElement(
+                    'radio',
+                    'imgplacement',
+                    '',
+                    get_string('imgplacement_center', 'format_minimoodlewall'),
+                    'center'
+                ),
+                $mform->createElement(
+                    'radio',
+                    'imgplacement',
+                    '',
+                    get_string('imgplacement_lower', 'format_minimoodlewall'),
+                    'lower'
+                ),
+            ];
+            $mform->addGroup(
+                $placementoptions,
+                'imgplacementgroup',
+                get_string('imgplacement', 'format_minimoodlewall'),
+                ['<br>'],
+                false
+            );
+            $mform->setDefault('imgplacement', 'center');
+            $mform->setType('imgplacement', PARAM_TEXT);
+
+            // Image size.
+            $sizeoptions = [
+                $mform->createElement(
+                    'radio',
+                    'imgsize',
+                    '',
+                    get_string('imgsize_bigger', 'format_minimoodlewall'),
+                    'bigger'
+                ),
+                $mform->createElement(
+                    'radio',
+                    'imgsize',
+                    '',
+                    get_string('imgsize_normal', 'format_minimoodlewall'),
+                    'normal'
+                ),
+                $mform->createElement(
+                    'radio',
+                    'imgsize',
+                    '',
+                    get_string('imgsize_smaller', 'format_minimoodlewall'),
+                    'smaller'
+                ),
+            ];
+            $mform->addGroup(
+                $sizeoptions,
+                'imgsizegroup',
+                get_string('imgsize', 'format_minimoodlewall'),
+                ['<br>'],
+                false
+            );
+            $mform->setDefault('imgsize', 'normal');
+            $mform->setType('imgsize', PARAM_TEXT);
+
+            // Background color.
+            $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
+            $mform->addElement(
+                'text',
+                'bgcolor',
+                get_string('tagbgcolor', 'format_minimoodlewall'),
+                ['size' => 8, 'type' => 'color']
+            );
+            $mform->setType('bgcolor', PARAM_TEXT);
+            $mform->setDefault('bgcolor', $defaultcolor);
+            $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
+
+            // Card image (base).
+            $mform->addElement(
+                'filemanager',
+                'cardimagefile',
+                get_string('cardimage', 'format_minimoodlewall'),
+                null,
+                tag_manager::get_image_filemanager_options()
+            );
+            $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
+
+            // Filter image (base).
+            $mform->addElement(
+                'filemanager',
+                'filterimagefile',
+                get_string('filterimage', 'format_minimoodlewall'),
+                null,
+                tag_manager::get_image_filemanager_options()
+            );
+            $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
         }
 
         // Store profile IDs as hidden field for processing.
         $mform->addElement('hidden', 'profileids', $selectedprofileid ? (string) $selectedprofileid : '');
         $mform->setType('profileids', PARAM_TEXT);
 
-        // Action buttons.
-        $this->add_action_buttons();
+        // Store selected profile ID as hidden field for re-rendering.
+        $mform->addElement('hidden', 'selectedprofileid', $selectedprofileid);
+        $mform->setType('selectedprofileid', PARAM_INT);
     }
 
     /**
@@ -418,7 +413,7 @@ class tag_form extends \moodleform {
 
         // Check that the displayed profile has a card image (if a profile is selected),
         // or that at least one profile has an image (when editing base only, check all profiles).
-        $tagid = $this->_customdata['tagid'] ?? 0;
+        $tagid = $this->optional_param('tagid', 0, PARAM_INT);
 
         if (!empty($profileids)) {
             // Check if base already has a card image (draft or stored).
@@ -461,5 +456,176 @@ class tag_form extends \moodleform {
         }
 
         return $errors;
+    }
+
+    /**
+     * Returns context where this form is used.
+     *
+     * @return context
+     */
+    protected function get_context_for_dynamic_submission(): context {
+        return \context_system::instance();
+    }
+
+    /**
+     * Checks if current user has sufficient permissions.
+     */
+    protected function check_access_for_dynamic_submission(): void {
+        require_capability('moodle/site:config', \context_system::instance());
+    }
+
+    /**
+     * Load in existing data as form defaults.
+     */
+    public function set_data_for_dynamic_submission(): void {
+        $tagid = $this->optional_param('tagid', 0, PARAM_INT);
+        $selectedprofileid = $this->optional_param('selectedprofileid', 0, PARAM_INT);
+
+        $formdata = [];
+        $formdata['tagid'] = $tagid;
+        $formdata['selectedprofileid'] = $selectedprofileid;
+        $formdata['profileids'] = $selectedprofileid ? (string) $selectedprofileid : '';
+
+        if ($tagid) {
+            $tag = tag_manager::get_tag($tagid);
+            if ($tag) {
+                if (!$selectedprofileid) {
+                    // Base mode: load all base tag fields.
+                    $formdata = array_merge($formdata, (array) $tag);
+                    $formdata['tagid'] = $tag->id;
+                }
+            }
+
+            if (!$selectedprofileid) {
+                // Base image drafts.
+                $formdata['cardimagefile'] = tag_manager::prepare_cardimage_draft($tagid);
+                $formdata['filterimagefile'] = tag_manager::prepare_filterimage_draft($tagid);
+            }
+
+            // Profile-specific image drafts.
+            if ($selectedprofileid) {
+                $formdata['cardimage_profile_' . $selectedprofileid] =
+                    profile_manager::prepare_cardimage_draft($tagid, $selectedprofileid);
+                $formdata['filterimage_profile_' . $selectedprofileid] =
+                    profile_manager::prepare_filterimage_draft($tagid, $selectedprofileid);
+            }
+        } else if (!$selectedprofileid) {
+            // New tag (base mode only) - prepare empty draft areas.
+            $formdata['cardimagefile'] = 0;
+            $formdata['filterimagefile'] = 0;
+        }
+
+        $this->set_data($formdata);
+    }
+
+    /**
+     * Process the form submission.
+     *
+     * @return array
+     */
+    public function process_dynamic_submission() {
+        $data = $this->get_data();
+
+        $savedprofileids = !empty($data->profileids) ? explode(',', $data->profileids) : [];
+
+        if (empty($savedprofileids)) {
+            // Base tag mode: update or create the base tag.
+            if (!empty($data->tagid)) {
+                tag_manager::update_tag(
+                    $data->tagid,
+                    [
+                        'name' => $data->name,
+                        'activitytype1' => $data->activitytype1,
+                        'activitytype2' => $data->activitytype2,
+                        'activitytype3' => $data->activitytype3,
+                        'bgcolor' => $data->bgcolor,
+                        'imgplacement' => $data->imgplacement,
+                        'imgsize' => $data->imgsize,
+                    ]
+                );
+                $currenttagid = $data->tagid;
+            } else {
+                $currenttagid = tag_manager::create_tag(
+                    $data->name,
+                    null,
+                    null,
+                    $data->activitytype1,
+                    $data->activitytype2,
+                    $data->activitytype3,
+                    $data->bgcolor,
+                    $data->imgplacement,
+                    $data->imgsize
+                );
+            }
+
+            // Save base images.
+            if (isset($data->cardimagefile)) {
+                tag_manager::save_cardimage_from_draft($currenttagid, (int)$data->cardimagefile);
+            }
+            if (isset($data->filterimagefile)) {
+                tag_manager::save_filterimage_from_draft($currenttagid, (int)$data->filterimagefile);
+            }
+        } else {
+            // Profile override mode: tag must already exist.
+            $currenttagid = $data->tagid;
+        }
+
+        // Save profile-specific images and overrides (only for the displayed profile).
+        foreach ($savedprofileids as $profileid) {
+            $cardfield = 'cardimage_profile_' . $profileid;
+            $filterfield = 'filterimage_profile_' . $profileid;
+
+            if (isset($data->$cardfield)) {
+                profile_manager::save_cardimage_from_draft($currenttagid, (int)$profileid, (int)$data->$cardfield);
+            }
+            if (isset($data->$filterfield)) {
+                profile_manager::save_filterimage_from_draft($currenttagid, (int)$profileid, (int)$data->$filterfield);
+            }
+        }
+
+        // Save profile-specific override fields.
+        foreach ($savedprofileids as $profileid) {
+            $overrides = [];
+            $fields = [
+                'name' => 'profile_name_',
+                'bgcolor' => 'profile_bgcolor_',
+                'activitytype1' => 'profile_activitytype1_',
+                'activitytype2' => 'profile_activitytype2_',
+                'activitytype3' => 'profile_activitytype3_',
+                'imgplacement' => 'profile_imgplacement_',
+                'imgsize' => 'profile_imgsize_',
+            ];
+
+            foreach ($fields as $key => $prefix) {
+                $fieldname = $prefix . $profileid;
+                if (isset($data->$fieldname)) {
+                    $overrides[$key] = $data->$fieldname !== '' ? $data->$fieldname : null;
+                }
+            }
+
+            $enabledfield = 'profile_enabled_' . $profileid;
+            if (isset($data->$enabledfield)) {
+                $overrides['enabled'] = (int)$data->$enabledfield;
+            }
+
+            if (!empty($overrides)) {
+                $pt = profile_manager::get_or_create_profile_tag($currenttagid, (int)$profileid);
+                profile_manager::update_profile_tag($pt->id, $overrides);
+            }
+        }
+
+        return [
+            'result' => true,
+            'tagid' => $currenttagid,
+        ];
+    }
+
+    /**
+     * Returns url to set in $PAGE->set_url() when form is being rendered or submitted via AJAX.
+     *
+     * @return \moodle_url
+     */
+    protected function get_page_url_for_dynamic_submission(): \moodle_url {
+        return new \moodle_url('/course/format/minimoodlewall/tag_management.php');
     }
 }

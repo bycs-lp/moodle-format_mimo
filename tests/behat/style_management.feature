@@ -27,11 +27,13 @@ Feature: Activity profile management in minimoodlewall format
     Given I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/profile_management.php"
-    When I click on "Create Activity Profile" "link"
+    When I click on "Create Activity Profile" "button"
+    And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
       | Internal Name | customprofile  |
       | Display Name  | Custom Profile |
-    And I press "Save changes"
+    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I wait until the page is ready
     Then I should see "Custom Profile"
     And I should see "customprofile"
 
@@ -44,9 +46,11 @@ Feature: Activity profile management in minimoodlewall format
     And I am on site homepage
     And I visit "/course/format/minimoodlewall/profile_management.php"
     When I click on "[data-testid='edit-profile-button']" "css_element" in the "[data-testid='profile-row'][data-profile-name='testprofile']" "css_element"
+    And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
       | Display Name | Updated Test Profile |
-    And I press "Save changes"
+    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I wait until the page is ready
     Then I should see "Updated Test Profile"
 
   @javascript

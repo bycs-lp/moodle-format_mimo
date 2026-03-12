@@ -32,12 +32,14 @@
 
 <div class="tag-management" data-region="tag-management"
      data-tag-profile-data="{{tagprofiledatajson}}"
+     data-profile-id-map="{{profileidmapjson}}"
      data-current-profile="{{currentprofile}}"
-     data-management-url="{{managementurl}}">
+     data-management-url="{{managementurl}}"
+     data-active-profile-id="{{activeprofileid}}">
     <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-        <a href="{{createtagurl}}" class="btn btn-primary" data-testid="create-tag-button">
+        <button type="button" class="btn btn-primary" data-action="create-tag" data-testid="create-tag-button">
             {{createtagtext}}
-        </a>
+        </button>
         <span class="mx-2 text-muted">|</span>
         {{#profilebuttons}}
             <button type="button"
@@ -77,7 +79,7 @@
                                 <tr data-testid="tag-row"
                                     data-tag-id="{{id}}"
                                     data-tag-name="{{name}}"
-                                    {{#disabled}}style="opacity: 0.45;"{{/disabled}}>
+                                    style="cursor: pointer;{{#disabled}} opacity: 0.45;{{/disabled}}">
                                     <td data-field="cardimage">
                                         {{#cardimageurl}}
                                             <img src="{{cardimageurl}}"
@@ -103,7 +105,7 @@
                                     <td data-field="activitytype3">{{activitytype3}}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{editurl}}" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button" data-action="edit-tag">
+                                            <a href="#" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button" data-action="edit-tag" data-tag-id="{{id}}">
                                                 {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                             </a>
                                             <a href="{{deleteurl}}"

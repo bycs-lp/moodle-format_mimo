@@ -1370,9 +1370,6 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // theme mebis rules.
-body.format-minimoodlewall #page-wrapper #page {
-    display:block;
-}
 .minimoodlewall-activities li.activity {
     background: transparent !important;
     padding: .4rem !important;
@@ -2017,5 +2014,13 @@ body.single-section-page.format-mmw-multisection-view {
         &:nth-child(even) {
             transform: rotate(0.6deg);
         }
+    }
+}
+
+/* Tag management admin page. */
+.tag-management tr[data-tag-id] {
+    &:hover [data-action="edit-tag"] {
+        background-color: rgba(0, 0, 0, 0.06);
+        border-radius: 0.25rem;
     }
 }
