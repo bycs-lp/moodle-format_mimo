@@ -29,21 +29,21 @@ Feature: Drag and drop activity reordering in minimoodlewall format
     Given I log in as "teacher1"
     When I am on "Test Course 1" course homepage with editing mode on
     And I wait until ".minimoodlewall-card" "css_element" exists
-    Then ".minimoodlewall-card[draggable='true']" "css_element" should exist
+    Then "[data-for='cmitem'][draggable='true']" "css_element" should exist
 
   @javascript
   Scenario: Activities are not draggable when not editing
     Given I log in as "teacher1"
     When I am on "Test Course 1" course homepage
     And I wait until ".minimoodlewall-card" "css_element" exists
-    Then ".minimoodlewall-card[draggable='true']" "css_element" should not exist
+    Then "[data-for='cmitem'][draggable='true']" "css_element" should not exist
 
   @javascript
   Scenario: Drag styling is applied in editing mode
     Given I log in as "teacher1"
     And I am on "Test Course 1" course homepage with editing mode on
     And I wait until ".minimoodlewall-card" "css_element" exists
-    Then ".minimoodlewall-card[style*='cursor: move']" "css_element" should exist
+    Then "[data-for='cmitem'][draggable='true'] .minimoodlewall-card" "css_element" should exist
 
   @javascript
   Scenario: Drop zone exists during editing

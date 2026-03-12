@@ -32,7 +32,7 @@ Feature: Activity profile management in minimoodlewall format
     And I set the following fields to these values:
       | Internal Name | customprofile  |
       | Display Name  | Custom Profile |
-    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Custom Profile"
     And I should see "customprofile"
@@ -49,7 +49,7 @@ Feature: Activity profile management in minimoodlewall format
     And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
       | Display Name | Updated Test Profile |
-    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Updated Test Profile"
 

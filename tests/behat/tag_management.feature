@@ -28,8 +28,8 @@ Feature: Tag management in minimoodlewall format
       | Name                              | Biology      |
       | First Suggested Activity Type     | assign       |
       | Second Suggested Activity Type    | quiz         |
-    And I upload "course/format/minimoodlewall/pix/tags/discover.svg" file to "Card Image" filemanager
-    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I upload "course/format/minimoodlewall/pix/tags/explore_base.svg" file to "Card Image" filemanager
+    And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Biology"
 
@@ -46,8 +46,8 @@ Feature: Tag management in minimoodlewall format
     And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
       | Name        | Advanced Biology     |
-    And I upload "course/format/minimoodlewall/pix/tags/reading.svg" file to "Card Image" filemanager
-    And I press "Save changes" in the "[data-region='modal']" "css_element"
+    And I upload "course/format/minimoodlewall/pix/tags/read_base.svg" file to "Card Image" filemanager
+    And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Advanced Biology"
 
