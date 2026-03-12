@@ -208,6 +208,11 @@ body:not(.bulkenabled) .minimoodlewall-activities {
     li.activity {
         border: none !important; // Remove any default borders
     }
+
+    // Lift the activity item above siblings when its visibility dropdown is open.
+    li.activity:has(.visibility-icon-control .show) {
+        z-index: 100;
+    }
 }
 
 // Drag and drop styles (editing mode): DragDrop sets draggable on the <li>, not the card.
@@ -1879,9 +1884,8 @@ body.single-section-page.format-mmw-multisection-view {
             border-radius: 1.2rem;
             border: 1px solid rgba(0, 0, 0, 0.10);
             box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22), 0 3px 7px rgba(0, 0, 0, 0.12);
-            overflow: hidden;
 
-            // Paper fiber texture.
+            // Paper fiber texture — confined via border-radius, no overflow:hidden needed.
             &::after {
                 content: "";
                 position: absolute;
@@ -1892,6 +1896,7 @@ body.single-section-page.format-mmw-multisection-view {
                 background: linear-gradient(135deg, rgba(0, 0, 0, 0.18), transparent 60%);
                 opacity: 0.12;
                 pointer-events: none;
+                border-radius: 0 1.2rem 0 0;
             }
         }
 

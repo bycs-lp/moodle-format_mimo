@@ -138,6 +138,9 @@
 .minimoodlewall-activities li.activity {
   border: none !important;
 }
+.minimoodlewall-activities li.activity:has(.visibility-icon-control .show) {
+  z-index: 100;
+}
 
 [data-for=cmitem][draggable=true] .minimoodlewall-card {
   cursor: move;
@@ -1462,7 +1465,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   border-radius: 1.2rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22), 0 3px 7px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-card .minimoodlewall-card-content::after,
 .mmw-bgdesign-wrapper.mmw-bgdesign-paper .minimoodlewall-card .minimoodlewall-card-content::after {
@@ -1475,6 +1477,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.18), transparent 60%);
   opacity: 0.12;
   pointer-events: none;
+  border-radius: 0 1.2rem 0 0;
 }
 .mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand .minimoodlewall-card .minimoodlewall-card-body,
 .mmw-bgdesign-wrapper.mmw-bgdesign-paper .minimoodlewall-card .minimoodlewall-card-body {
