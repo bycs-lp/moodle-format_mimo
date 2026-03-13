@@ -659,7 +659,13 @@ function format_minimoodlewall_pluginfile(
 ) {
     require_login();
 
-    if ($context->contextlevel !== CONTEXT_SYSTEM) {
+    // Section images use course context; tag/profile images use system context.
+    if ($filearea === \format_minimoodlewall\section_image_manager::FILEAREA) {
+        if ($context->contextlevel !== CONTEXT_COURSE) {
+            return false;
+        }
+        require_login($course, true);
+    } else if ($context->contextlevel !== CONTEXT_SYSTEM) {
         return false;
     }
 
@@ -668,6 +674,7 @@ function format_minimoodlewall_pluginfile(
         \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
         \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
         \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
+        \format_minimoodlewall\section_image_manager::FILEAREA,
     ];
     if (!in_array($filearea, $allowedareas, true)) {
         return false;

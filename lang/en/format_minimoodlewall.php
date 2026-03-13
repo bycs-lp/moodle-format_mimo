@@ -243,3 +243,7 @@ $string['overviewactivitycount'] = '{$a} activities';
 $string['overviewactivitycount_one'] = '1 activity';
 $string['overviewcompletionprogress'] = '{$a->completed} of {$a->total} completed';
 $string['overviewnosections'] = 'No sections have been created yet.';
+$string['sectionimage'] = 'Section image';
+$string['sectionimage_upload'] = 'Upload image';
+$string['sectionimage_change'] = 'Change image';
+$string['sectionimage_upload_title'] = 'Section image: {$a}';

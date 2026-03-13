@@ -202,6 +202,23 @@ class content extends content_base {
                 'hasminitiles' => !empty($minitiles),
             ];
 
+            // Check for a section overview card image.
+            $sectionimageurl = \format_minimoodlewall\section_image_manager::get_image_url(
+                $course->id,
+                $sectioninfo->id
+            );
+            if ($sectionimageurl) {
+                $sectioncard->sectionimageurl = $sectionimageurl->out(false);
+                $sectioncard->hassectionimage = true;
+            } else {
+                $sectioncard->hassectionimage = false;
+            }
+
+            // Add image management URLs in editing mode.
+            if ($isediting) {
+                $sectioncard->courseid = $course->id;
+            }
+
             // Render inplace editable for section name in editing mode.
             if ($isediting) {
                 $inplaceeditable = $format->inplace_editable_render_section_name(

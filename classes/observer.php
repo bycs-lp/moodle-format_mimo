@@ -144,5 +144,23 @@ class observer {
         tag_manager::clear_mapping_cache();
     }
 
+    /**
+     * Handle course_section_deleted event to clean up section images.
+     *
+     * @param \core\event\course_section_deleted $event The event object
+     */
+    public static function course_section_deleted(\core\event\course_section_deleted $event) {
+        $courseid = $event->courseid;
+        $sectionid = $event->objectid;
+        section_image_manager::delete_image($courseid, $sectionid);
+    }
 
+    /**
+     * Handle course_deleted event to clean up all section images for the course.
+     *
+     * @param \core\event\course_deleted $event The event object
+     */
+    public static function course_deleted(\core\event\course_deleted $event) {
+        section_image_manager::delete_all_for_course($event->objectid);
+    }
 }

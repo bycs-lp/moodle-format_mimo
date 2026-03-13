@@ -6,7 +6,7 @@
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards. Optionally supports multi-section mode where each section has its own wall.
 - **Core concept**: Courses use an *activity profile* that determines which *tags* are active and how they appear; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
 - **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts. **Overview landing page**: shows a card grid of all sections with activity counts and completion progress; clicking a card navigates to that wall; each wall has a home button ("← Back to overview") in the page header. **Sticky wall**: the last-visited section is remembered per user per course via `set_user_preference`. Returning to the course URL without `?section=` auto-redirects to the remembered wall. The home button passes `?overview=1` which clears the preference and shows the overview. Deep-linking to an activity also stores its section. When OFF (default): classic single-wall behavior with all activities in section 0.
-- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/profile_manager.php` (profile CRUD + per-tag overrides), `classes/style_manager.php` (style variants + per-tag images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
+- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/profile_manager.php` (profile CRUD + per-tag overrides), `classes/style_manager.php` (style variants + per-tag images), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
@@ -44,6 +44,13 @@
   - File areas: `FILEAREA_STYLE_CARDIMAGE = 'styletagcard'`, `FILEAREA_STYLE_FILTERIMAGE = 'styletagfilter'`.
   - Key methods: `create_style($name, $displayname)`, `get_all_styles()`, `get_style_by_name($name)`, `get_or_create_tag_image($tagid, $styleid)`, `get_tag_image_for_style($tagid, $styleid)`.
   - Styles allow different card/filter images per tag per visual theme.
+- **Section image system** (`classes/section_image_manager.php`)
+  - No dedicated table — uses Moodle File API only. File area: `FILEAREA = 'sectionimage'` in **course context** with `course_sections.id` as itemid.
+  - Accepted types: jpg, png, webp, svg.
+  - Key methods: `get_image_url($courseid, $sectionid)`, `save_image($courseid, $sectionid, $draftitemid)`, `delete_image($courseid, $sectionid)`, `has_image($courseid, $sectionid)`, `delete_all_for_course($courseid)`.
+  - When a section has an uploaded image, it replaces the miniwall tiles on the overview card.
+  - Upload/change UX: Dynamic form modal (`classes/form/section_image_form.php`, extends `dynamic_form`) opened via `amd/src/section_image_modal.js`. Teacher clicks an "Upload image" / "Change image" button on the overview card in editing mode. The filepicker in the modal handles upload, change, and removal.
+  - Cleanup: `course_section_deleted` and `course_deleted` observers remove orphaned images.
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
@@ -53,7 +60,8 @@
 - **Event observers** (`classes/observer.php` + `db/events.php`)
   - `course_module_created`: Auto-assign pending tag from session (guided creation flow) + apply minimoodlewall completion default overrides (see below).
   - `course_module_deleted`: Delete cmtag record for the deleted module + clear cache.
-  - `course_deleted`: Delete all orphaned cmtag records (cmid NOT IN course_modules) + clear cache.
+  - `course_section_deleted`: Delete section overview card image for the deleted section.
+  - `course_deleted`: Delete all orphaned cmtag records + delete all section images for the course.
 - **Completion defaults override** (`classes/completion_defaults_manager.php` + `completion_defaults.php`)
   - Table: `*_compdefs` (module unique; completion, completionview, completionusegrade, completionpassgrade, completionexpected, customrules JSON).
   - When a module is created in a minimoodlewall course and its completion matches Moodle's core defaults (meaning the teacher did not customize), the observer silently replaces completion with the minimoodlewall override.
@@ -77,14 +85,14 @@
 
 ## Backup & Restore Architecture
 - **Backup** (`backup/moodle2/backup_format_minimoodlewall_plugin.class.php`)
-  - Course-level: Backs up styles (only those referenced by course tags), tags (all fields incl. bgcolor, imgplacement, activitytype3), profiles, profile_tags, and tag_images. File annotations for all image file areas.
+  - Course-level: Backs up styles (only those referenced by course tags), tags (all fields incl. bgcolor, imgplacement, activitytype3), profiles, profile_tags, and tag_images. File annotations for all image file areas. Also backs up section images (keyed by section ID in course context).
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
-  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image`.
+  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image` + `pluginwrapper → mmw_section_images → mmw_section_image`.
 - **Restore** (`backup/moodle2/restore_format_minimoodlewall_plugin.class.php`)
   - **Same-instance**: Reuses existing tags/styles/tag_images/profiles by name/unique-combo (no duplicates).
   - **Cross-instance**: Creates new records when matching names don't exist.
   - ID mapping: Sets `format_minimoodlewall_tag`, `format_minimoodlewall_style`, `format_minimoodlewall_tag_image` mappings.
-  - `after_execute_course()`: Restores file areas.
+  - `after_execute_course()`: Restores file areas including section images (uses core `course_section` mapping for ID remapping).
   - `after_restore_course()`: Clears all caches.
 
 ## Workflows & Entry Points
@@ -115,7 +123,7 @@
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 5. **Learner view**
    - **Single-section mode**: Wall shows all activities from section 0 in a responsive grid.
-   - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, activity count, and completion progress bar. Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
+   - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. Teachers can upload/change/remove a section image via buttons on the card in editing mode. Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
    - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_minimoodlewall_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
    - **Sticky wall behavior**: User preference `format_minimoodlewall_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
@@ -237,7 +245,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
-- `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course delete.
+- `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course/section delete (including section images).
 - `classes/completion_defaults_manager.php` – CRUD for minimoodlewall completion defaults (compdefs table), comparison with core defaults, application to course modules.
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
@@ -250,6 +258,9 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
 - `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for minimoodlewall completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
+- `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
+- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg). Extends `dynamic_form`.
+- `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode.
 - `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
 - `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.1+ tag chooser button** (extends core class).

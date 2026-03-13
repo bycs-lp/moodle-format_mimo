@@ -33,4 +33,12 @@ $observers = [
         'eventname' => '\core\event\course_module_deleted',
         'callback' => '\format_minimoodlewall\observer::course_module_deleted',
     ],
+    [
+        'eventname' => '\core\event\course_section_deleted',
+        'callback' => '\format_minimoodlewall\observer::course_section_deleted',
+    ],
+    [
+        'eventname' => '\core\event\course_deleted',
+        'callback' => '\format_minimoodlewall\observer::course_deleted',
+    ],
 ];

@@ -197,6 +197,12 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
             'format_minimoodlewall_profile_tag'
         );
+        // Section overview card images — keyed by section ID, use core mapping.
+        $this->add_related_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\section_image_manager::FILEAREA,
+            'course_section'
+        );
     }
 
     /**

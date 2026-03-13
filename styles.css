@@ -1657,6 +1657,30 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   display: none;
 }
 
+/* Section overview card image — replaces miniwall when present. */
+.mmw-overview-card__sectionimage-wrap {
+  margin-top: auto;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.mmw-overview-card__sectionimage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 0.6rem;
+}
+
+/* Image action buttons in editing mode. */
+.mmw-overview-card__image-actions {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
 /* Mini-wall background per background design. */
 .mmw-bgdesign-primary-school .mmw-overview-card__miniwall {
   background: #1f6f4e;

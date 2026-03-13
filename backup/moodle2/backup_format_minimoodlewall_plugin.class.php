@@ -154,6 +154,22 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
         // Export profile-specific overrides for each tag.
         $profiletag->set_source_table('format_minimoodlewall_profile_tags', ['tagid' => backup::VAR_PARENTID]);
 
+        // Section images: back up file annotations keyed by section ID.
+        $sectionimages = new backup_nested_element('mmw_section_images');
+        $sectionimage = new backup_nested_element('mmw_section_image', ['id'], []);
+        $pluginwrapper->add_child($sectionimages);
+        $sectionimages->add_child($sectionimage);
+
+        $sectionimage->set_source_sql(
+            "SELECT id FROM {course_sections} WHERE course = :courseid ORDER BY section",
+            ['courseid' => backup::VAR_COURSEID]
+        );
+        $sectionimage->annotate_files(
+            'format_minimoodlewall',
+            \format_minimoodlewall\section_image_manager::FILEAREA,
+            'id'
+        );
+
         return $plugin;
     }
 

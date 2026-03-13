@@ -28,6 +28,10 @@
     * styleclass - string - Style variant CSS class
     * mmwaddsection - object - Add section data (editing mode)
     * bulkedittools - object - Bulk edit tools data (editing mode)
+
+    Each overviewsection may contain:
+    * hassectionimage - bool - Whether a custom image exists for this section
+    * sectionimageurl - string - URL of the uploaded section image
 }}
 <div class="mmw-overview {{styleclass}}">
     <h2 class="accesshide">{{{title}}}</h2>
@@ -43,6 +47,12 @@
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#hassectionimage}}
+                <div class="mmw-overview-card__sectionimage-wrap">
+                    <img src="{{sectionimageurl}}" class="mmw-overview-card__sectionimage" alt="{{name}}" />
+                </div>
+                {{/hassectionimage}}
+                {{^hassectionimage}}
                 {{#hasminitiles}}
                 <div class="mmw-overview-card__miniwall">
                     {{#minitiles}}
@@ -52,7 +62,20 @@
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
+                {{/hassectionimage}}
                 <div class="mmw-overview-card__footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                        data-action="section-image"
+                        data-courseid="{{courseid}}"
+                        data-sectionid="{{id}}"
+                        data-sectionname="{{name}}">
+                        {{#hassectionimage}}
+                        {{#str}}sectionimage_change, format_minimoodlewall{{/str}}
+                        {{/hassectionimage}}
+                        {{^hassectionimage}}
+                        {{#str}}sectionimage_upload, format_minimoodlewall{{/str}}
+                        {{/hassectionimage}}
+                    </button>
                     <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary">
                         {{#str}}viewactivity, format_minimoodlewall{{/str}}
                     </a>
@@ -67,6 +90,12 @@
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#hassectionimage}}
+                <div class="mmw-overview-card__sectionimage-wrap">
+                    <img src="{{sectionimageurl}}" class="mmw-overview-card__sectionimage" alt="{{name}}" />
+                </div>
+                {{/hassectionimage}}
+                {{^hassectionimage}}
                 {{#hasminitiles}}
                 <div class="mmw-overview-card__miniwall">
                     {{#minitiles}}
@@ -76,6 +105,7 @@
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
+                {{/hassectionimage}}
                 {{#hastracking}}
                 <div class="mmw-overview-card__footer">
                     <span class="mmw-overview-card__progress{{#allcomplete}} mmw-overview-card__progress--complete{{/allcomplete}}">
@@ -106,3 +136,9 @@
         {{> core_courseformat/local/content/bulkedittools}}
     {{/bulkedittools}}
 </div>
+
+{{#isediting}}
+{{#js}}
+require(['format_minimoodlewall/section_image_modal'], function(mod) { mod.init(); });
+{{/js}}
+{{/isediting}}
