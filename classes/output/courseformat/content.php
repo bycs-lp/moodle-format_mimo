@@ -79,12 +79,6 @@ class content extends content_base {
             $data->hastags = true;
         }
 
-        // In multi-section single-wall view, provide a home button to the overview.
-        if ($ismultisection) {
-            $data->overviewurl = (new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false);
-            $data->showoverviewlink = true;
-        }
-
         return $data;
     }
 

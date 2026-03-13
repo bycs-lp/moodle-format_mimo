@@ -408,6 +408,27 @@ class format_minimoodlewall extends core_courseformat\base {
             $page->add_body_class('format-mmw-multisection-view');
         }
 
+        // In multi-section mode, add a "back to overview" button to the page header
+        // when viewing a specific section wall (not the overview page).
+        if ($this->is_multisection_enabled()) {
+            $sectionparam = optional_param('section', null, PARAM_INT);
+            if ($sectionparam !== null) {
+                $course = $this->get_course();
+                $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id]);
+                $btnlabel = get_string('backtooverview', 'format_minimoodlewall');
+                $page->add_header_action(
+                    \html_writer::link(
+                        $overviewurl,
+                        '<svg class="mmw-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
+                        ' aria-hidden="true" width="22" height="22">' .
+                        '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>' .
+                        \html_writer::span($btnlabel, 'sr-only'),
+                        ['class' => 'mmw-overview-btn', 'title' => $btnlabel]
+                    )
+                );
+            }
+        }
+
         // Apply distraction-free mode if enabled for this course.
         $distractionfree = $this->get_course()->distractionfree ?? false;
         if ($distractionfree) {
