@@ -677,3 +677,31 @@ function format_minimoodlewall_coursemodule_edit_post_actions($data, $course) {
 
     return $data;
 }
+
+/**
+ * Implements callback for inplace editable (AJAX section name editing).
+ *
+ * Called by core when an inplace editable with component 'format_minimoodlewall' is saved.
+ *
+ * @param string $itemtype The type of item being edited (sectionname or sectionnamenl)
+ * @param int $itemid The section id
+ * @param string $newvalue The new value
+ * @return \core\output\inplace_editable
+ */
+function format_minimoodlewall_inplace_editable($itemtype, $itemid, $newvalue) {
+    global $DB, $CFG;
+    require_once($CFG->dirroot . '/course/lib.php');
+
+    if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
+        $section = $DB->get_record_sql(
+            'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
+            [$itemid, 'minimoodlewall'],
+            MUST_EXIST
+        );
+        return course_get_format($section->course)->inplace_editable_update_section_name(
+            $section,
+            $itemtype,
+            $newvalue
+        );
+    }
+}

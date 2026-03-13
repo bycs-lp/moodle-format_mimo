@@ -23,6 +23,7 @@
     * isoverview - bool - Always true for this template
     * overviewsections - array - Section card data
     * hassections - bool - Whether there are sections to display
+    * isediting - bool - Whether editing mode is active
     * bgdesignclass - string - Background design CSS class
     * styleclass - string - Style variant CSS class
     * mmwaddsection - object - Add section data (editing mode)
@@ -34,6 +35,25 @@
         {{#hassections}}
         <div class="mmw-overview-grid" data-region="mmw-overview-grid">
             {{#overviewsections}}
+            {{#isediting}}
+            <div class="mmw-overview-card mmw-overview-card--editing" data-section-num="{{num}}" data-section-id="{{id}}">
+                <div class="mmw-overview-card__body">
+                    <h3 class="mmw-overview-card__name">{{{inplaceeditable}}}</h3>
+                    {{#hassummary}}
+                    <div class="mmw-overview-card__summary">{{{summary}}}</div>
+                    {{/hassummary}}
+                </div>
+                <div class="mmw-overview-card__footer">
+                    <span class="mmw-overview-card__count">
+                        {{activitycount}} {{#str}}modcountlabel_plural, format_minimoodlewall{{/str}}
+                    </span>
+                    <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary">
+                        {{#str}}viewactivity, format_minimoodlewall{{/str}}
+                    </a>
+                </div>
+            </div>
+            {{/isediting}}
+            {{^isediting}}
             <a href="{{url}}" class="mmw-overview-card" data-section-num="{{num}}">
                 <div class="mmw-overview-card__body">
                     <h3 class="mmw-overview-card__name">{{name}}</h3>
@@ -55,6 +75,7 @@
                     {{/hastracking}}
                 </div>
             </a>
+            {{/isediting}}
             {{/overviewsections}}
         </div>
         {{/hassections}}

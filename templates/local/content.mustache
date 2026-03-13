@@ -43,19 +43,14 @@ require(['core_courseformat/local/content', 'core_courseformat/courseeditor'], f
     };
 });
 {{/js}}
-{{! Back to overview link for multi-section single-wall view. }}
+{{! Back to overview button for multi-section single-wall view. }}
 {{#showoverviewlink}}
-<div class="mmw-overview-nav">
-    <a href="{{overviewurl}}" class="mmw-overview-link">
-        <svg class="mmw-overview-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="20" height="20">
-            <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-        {{#str}}backtooverview, format_minimoodlewall{{/str}}
-    </a>
-    {{#currentsectionname}}
-    <h2 class="mmw-overview-nav__title">{{currentsectionname}}</h2>
-    {{/currentsectionname}}
-</div>
+<a href="{{overviewurl}}" class="mmw-overview-btn" title="{{#str}}backtooverview, format_minimoodlewall{{/str}}">
+    <svg class="mmw-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="22" height="22">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
+    <span class="sr-only">{{#str}}backtooverview, format_minimoodlewall{{/str}}</span>
+</a>
 {{/showoverviewlink}}
 {{< core_courseformat/local/content }}
     {{! Override the section block to use our custom section template. }}
@@ -65,13 +60,9 @@ require(['core_courseformat/local/content', 'core_courseformat/courseeditor'], f
 {{/ core_courseformat/local/content }}
 
 {{!
-    In multi-section mode the core template hides the "Add section" button
-    when viewing a single section (gated by singlesection). We render it
-    explicitly here so teachers can always add sections while editing.
+    The "Add section" button is only shown on the overview page.
+    It is not rendered here on individual wall pages.
 }}
-{{#mmwaddsection}}
-    {{> core_courseformat/local/content/addsection}}
-{{/mmwaddsection}}
 
 {{!
     The parent template's JS block will call component.init(), but we've

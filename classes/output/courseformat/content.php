@@ -79,27 +79,10 @@ class content extends content_base {
             $data->hastags = true;
         }
 
-        // In multi-section mode the core template hides the "Add section" button
-        // when viewing a single section ({{^singlesection}}). We expose the
-        // addsection data under a separate key so our template can render it
-        // unconditionally while editing.
-        if ($ismultisection && !empty($data->numsections) && $PAGE->user_is_editing()) {
-            $data->mmwaddsection = $data->numsections;
-        }
-
-        // In multi-section single-wall view, provide a back link to the overview.
+        // In multi-section single-wall view, provide a home button to the overview.
         if ($ismultisection) {
             $data->overviewurl = (new \moodle_url('/course/view.php', ['id' => $course->id]))->out(false);
             $data->showoverviewlink = true;
-
-            // Provide the current section name for the heading next to the back link.
-            $sectionnum = $this->format->get_sectionnum();
-            if ($sectionnum !== null) {
-                $sectioninfo = $this->format->get_section($sectionnum);
-                if ($sectioninfo) {
-                    $data->currentsectionname = $this->format->get_section_name($sectioninfo);
-                }
-            }
         }
 
         return $data;
@@ -133,6 +116,7 @@ class content extends content_base {
         $completioninfo = new \completion_info($course);
         $completionenabled = $completioninfo->is_enabled();
         $context = \context_course::instance($course->id);
+        $isediting = $PAGE->user_is_editing();
 
         $sections = [];
         foreach ($modinfo->get_section_info_all() as $sectioninfo) {
@@ -177,7 +161,7 @@ class content extends content_base {
                 );
             }
 
-            $sections[] = (object) [
+            $sectioncard = (object) [
                 'id' => $sectioninfo->id,
                 'num' => $sectionnum,
                 'name' => $sectionname,
@@ -189,13 +173,26 @@ class content extends content_base {
                 'allcomplete' => $totaltracked > 0 && $completedcount === $totaltracked,
                 'summary' => $summary,
                 'hassummary' => !empty($summary),
+                'isediting' => $isediting,
             ];
+
+            // Render inplace editable for section name in editing mode.
+            if ($isediting) {
+                $inplaceeditable = $format->inplace_editable_render_section_name(
+                    $sectioninfo,
+                    false
+                );
+                $sectioncard->inplaceeditable = $output->render($inplaceeditable);
+            }
+
+            $sections[] = $sectioncard;
         }
 
         $data = (object) [
             'isoverview' => true,
             'overviewsections' => $sections,
             'hassections' => !empty($sections),
+            'isediting' => $isediting,
             'bgdesignclass' => 'mmw-bgdesign-' . $bgdesign,
             'stylevariant' => $activityprofile,
             'styleclass' => 'minimoodlewall-style-' . $activityprofile,

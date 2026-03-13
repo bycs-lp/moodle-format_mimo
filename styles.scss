@@ -2151,39 +2151,56 @@ body.single-section-page.format-mmw-multisection-view {
     color: #888;
 }
 
-/* Back to overview navigation bar. */
-.mmw-overview-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0 0.75rem;
-}
-
-.mmw-overview-link {
+/* Back to overview home button — positioned next to the course title by the theme. */
+.mmw-overview-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.9rem;
-    color: var(--primary, #0073aa);
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--primary, #0073aa);
+    color: #fff;
     text-decoration: none;
-    white-space: nowrap;
+    transition: background 0.2s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
 
     &:hover,
     &:focus {
-        text-decoration: underline;
-        color: var(--primary, #0073aa);
+        background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary, #0073aa);
+        outline-offset: 2px;
     }
 }
 
-.mmw-overview-link__icon {
+.mmw-overview-btn__icon {
     flex-shrink: 0;
 }
 
-.mmw-overview-nav__title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin: 0;
-    line-height: 1.3;
+/* Overview card editing variant. */
+.mmw-overview-card--editing {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 2px dashed rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    color: inherit;
+}
+
+.mmw-overview-card--editing .mmw-overview-card__footer {
+    justify-content: space-between;
+}
+
+.mmw-overview-card__link {
+    white-space: nowrap;
 }
 
 /* Background design adaptations for overview cards. */
@@ -2215,6 +2232,12 @@ body.single-section-page.format-mmw-multisection-view {
 
     .mmw-overview-empty {
         color: #888;
+    }
+
+    .mmw-overview-card--editing {
+        background: #2d2d2d;
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #f0f0f0;
     }
 }
 
