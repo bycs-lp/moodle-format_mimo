@@ -49,26 +49,15 @@ if ($ismultisection) {
         if ($showoverview) {
             // Clear stored preference so future plain visits also show the overview.
             unset_user_preference('format_minimoodlewall_lastsection_' . $course->id);
-        } else {
-            // Try to redirect to the user's last-visited wall.
-            $rememberedsection = $format->get_remembered_section();
-            if ($rememberedsection !== null) {
-                redirect(new moodle_url('/course/view.php', [
-                    'id' => $course->id,
-                    'section' => $rememberedsection,
-                ]));
-            }
         }
+        // If the user had a remembered section, the redirect already happened
+        // in page_set_course() (before output started). If we're still here,
+        // no redirect was needed — render the overview page.
     }
     // When no redirect happened and $displaysection is null,
     // do NOT call set_sectionnum() so core renders the overview page.
 } else {
-    // Single-section mode: redirect non-zero section URLs and lock to section 0.
-    $sectionnum = optional_param('section', null, PARAM_INT);
-    if ($sectionnum !== null && $sectionnum != 0) {
-        redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
-    }
-
+    // Single-section mode: non-zero section redirects are handled in page_set_course().
     // Make sure section 0 exists.
     course_create_sections_if_missing($course, [0]);
 

@@ -429,6 +429,33 @@ class format_minimoodlewall extends core_courseformat\base {
             }
         }
 
+        // Redirect logic that must happen BEFORE output starts.
+        // (format.php is included after $OUTPUT->header(), so redirect() would fail there.)
+        $pageurl = $page->url->get_path();
+        if (strpos($pageurl, '/course/view.php') !== false) {
+            $course = $this->get_course();
+            if ($this->is_multisection_enabled()) {
+                $sectionparam = optional_param('section', null, PARAM_INT);
+                $overviewparam = optional_param('overview', 0, PARAM_INT);
+                if ($sectionparam === null && !$overviewparam) {
+                    // No section requested and not explicitly showing overview — redirect to last-visited wall.
+                    $rememberedsection = $this->get_remembered_section();
+                    if ($rememberedsection !== null) {
+                        redirect(new \moodle_url('/course/view.php', [
+                            'id' => $course->id,
+                            'section' => $rememberedsection,
+                        ]));
+                    }
+                }
+            } else {
+                // Single-section mode: redirect non-zero section URLs to plain course view.
+                $sectionparam = optional_param('section', null, PARAM_INT);
+                if ($sectionparam !== null && $sectionparam != 0) {
+                    redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
+                }
+            }
+        }
+
         // Apply distraction-free mode if enabled for this course.
         $distractionfree = $this->get_course()->distractionfree ?? false;
         if ($distractionfree) {
