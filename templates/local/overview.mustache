@@ -46,7 +46,9 @@
                 {{#hasminitiles}}
                 <div class="mmw-overview-card__miniwall">
                     {{#minitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}"></span>
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
@@ -68,7 +70,9 @@
                 {{#hasminitiles}}
                 <div class="mmw-overview-card__miniwall">
                     {{#minitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}"></span>
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}

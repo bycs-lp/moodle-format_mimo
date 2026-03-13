@@ -1766,6 +1766,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   border-radius: 1.2rem;
   padding: 1.25rem;
   color: inherit;
+  aspect-ratio: 1/1;
 }
 
 .mmw-overview-card--editing .mmw-overview-card__footer {

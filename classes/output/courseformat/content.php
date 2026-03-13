@@ -112,12 +112,17 @@ class content extends content_base {
         $context = \context_course::instance($course->id);
         $isediting = $PAGE->user_is_editing();
 
-        // Pre-fetch course tags for mini-wall tile colours.
+        // Pre-fetch course tags for mini-wall tile colours and images.
         $coursetags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
-        // Build tagid → accent colour map for quick lookup.
+        // Build tagid → accent colour and card image URL maps for quick lookup.
         $tagcolours = [];
+        $tagimages = [];
         foreach ($coursetags as $tag) {
             $tagcolours[$tag->id] = \format_minimoodlewall\tag_manager::get_tag_accent_color($tag);
+            $cardurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $activityprofile);
+            if ($cardurl) {
+                $tagimages[$tag->id] = $cardurl->out(false);
+            }
         }
         // Default colour for activities without a tag.
         $defaultcolour = '#d0d0d0';
@@ -146,13 +151,18 @@ class content extends content_base {
                     }
                     $activitycount++;
 
-                    // Determine tile colour from tag assignment.
+                    // Determine tile colour and image from tag assignment.
                     $cmtag = \format_minimoodlewall\tag_manager::get_cm_tag($cmid);
                     $colour = $defaultcolour;
+                    $tile = ['color' => $colour];
                     if ($cmtag && isset($tagcolours[$cmtag->id])) {
-                        $colour = $tagcolours[$cmtag->id];
+                        $tile['color'] = $tagcolours[$cmtag->id];
+                        if (isset($tagimages[$cmtag->id])) {
+                            $tile['image'] = $tagimages[$cmtag->id];
+                            $tile['hasimage'] = true;
+                        }
                     }
-                    $minitiles[] = ['color' => $colour];
+                    $minitiles[] = $tile;
 
                     if ($completionenabled && $completioninfo->is_enabled($cm)) {
                         $totaltracked++;
