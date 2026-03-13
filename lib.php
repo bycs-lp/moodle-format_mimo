@@ -414,7 +414,7 @@ class format_minimoodlewall extends core_courseformat\base {
             $sectionparam = optional_param('section', null, PARAM_INT);
             if ($sectionparam !== null) {
                 $course = $this->get_course();
-                $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id]);
+                $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
                 $btnlabel = get_string('backtooverview', 'format_minimoodlewall');
                 $page->add_header_action(
                     \html_writer::link(
@@ -447,6 +447,34 @@ class format_minimoodlewall extends core_courseformat\base {
             // Initialize JavaScript module for toggle functionality.
             $page->requires->js_call_amd('format_minimoodlewall/distraction_free', 'init');
         }
+    }
+
+    /**
+     * Get the remembered section number for the current user, if valid.
+     *
+     * Reads the user preference, validates the section exists and is visible,
+     * and returns the section number. Returns null if no preference is stored
+     * or the stored section is no longer valid.
+     *
+     * @return int|null The remembered section number, or null.
+     */
+    public function get_remembered_section(): ?int {
+        $course = $this->get_course();
+        $pref = get_user_preferences('format_minimoodlewall_lastsection_' . $course->id);
+        if ($pref === null) {
+            return null;
+        }
+        $sectionnum = (int) $pref;
+        $modinfo = get_fast_modinfo($course);
+        $sectioninfos = $modinfo->get_section_info_all();
+        foreach ($sectioninfos as $sectioninfo) {
+            if ($sectioninfo->section === $sectionnum && $this->is_section_visible($sectioninfo)) {
+                return $sectionnum;
+            }
+        }
+        // Stored section no longer exists or is not visible — clear stale preference.
+        unset_user_preference('format_minimoodlewall_lastsection_' . $course->id);
+        return null;
     }
 
     /**
@@ -520,6 +548,19 @@ class format_minimoodlewall extends core_courseformat\base {
         // Call parent to load sections normally.
         parent::extend_course_navigation($navigation, $node);
 
+        // In multi-section mode, remember the section when viewing an activity page.
+        // This ensures deep links and course index activity clicks set the correct wall.
+        if ($this->is_multisection_enabled()
+                && $PAGE->context->contextlevel == CONTEXT_MODULE
+                && $PAGE->cm
+                && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0')) {
+            $sectionnum = $PAGE->cm->sectionnum;
+            if ($sectionnum > 0) {
+                $course = $this->get_course();
+                set_user_preference('format_minimoodlewall_lastsection_' . $course->id, $sectionnum);
+            }
+        }
+
         // In single-section mode, hide section breadcrumbs on activity pages.
         if (!$this->is_multisection_enabled()) {
             if ($PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->cm) {
@@ -556,6 +597,13 @@ class format_minimoodlewall extends core_courseformat\base {
 
         \format_minimoodlewall\tag_manager::clear_mapping_cache();
         \format_minimoodlewall\tag_manager::clear_course_tags_cache($courseid);
+
+        // Clean up remembered-section preferences for all users.
+        $DB->delete_records_select(
+            'user_preferences',
+            'name = :prefname',
+            ['prefname' => 'format_minimoodlewall_lastsection_' . $courseid]
+        );
     }
 }
 
