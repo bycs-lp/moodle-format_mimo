@@ -205,6 +205,7 @@ $string['tag_discover'] = 'Discover';
 $string['tag_explore'] = '🔍 Explore';
 $string['tag_listen'] = 'Listen';
 $string['tag_practice'] = '🔁 Practice';
+$string['tag_practice_base'] = 'Practice';
 $string['tag_read'] = '📖 Read';
 $string['tag_reading'] = 'Reading';
 $string['tag_research'] = '🔎 Research';

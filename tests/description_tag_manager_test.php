@@ -56,7 +56,11 @@ final class description_tag_manager_test extends \advanced_testcase {
      * Test getting all tags.
      */
     public function test_get_all_tags(): void {
+        global $DB;
         $this->resetAfterTest(true);
+
+        // Clear default description tags seeded by install.
+        $DB->delete_records('format_minimoodlewall_desc_tags');
 
         // Create some tags.
         description_tag_manager::create_tag('Tag 1', '#FF5733');

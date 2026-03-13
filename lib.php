@@ -581,8 +581,8 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Clean up format-specific data when a course is deleted.
      *
-     * Called by Moodle core during course deletion (before course_modules are removed),
-     * so we can reliably query which CMs belong to this course.
+     * Called by Moodle core during course deletion after course_modules are removed,
+     * so we clean up orphaned cmtag records that no longer reference valid modules.
      */
     public function delete_format_data() {
         global $DB;
@@ -590,10 +590,10 @@ class format_minimoodlewall extends core_courseformat\base {
 
         $courseid = $this->get_courseid();
 
-        // Delete cmtag records for all modules in this course.
+        // Delete orphaned cmtag records (course_modules are already removed by this point).
         $sql = "DELETE FROM {format_minimoodlewall_cmtags}
-                 WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
-        $DB->execute($sql, ['courseid' => $courseid]);
+                 WHERE cmid NOT IN (SELECT id FROM {course_modules})";
+        $DB->execute($sql);
 
         \format_minimoodlewall\tag_manager::clear_mapping_cache();
         \format_minimoodlewall\tag_manager::clear_course_tags_cache($courseid);
