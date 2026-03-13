@@ -44,9 +44,6 @@
                     {{/hassummary}}
                 </div>
                 <div class="mmw-overview-card__footer">
-                    <span class="mmw-overview-card__count">
-                        {{activitycount}} {{#str}}modcountlabel_plural, format_minimoodlewall{{/str}}
-                    </span>
                     <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary">
                         {{#str}}viewactivity, format_minimoodlewall{{/str}}
                     </a>
@@ -61,19 +58,16 @@
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#hastracking}}
                 <div class="mmw-overview-card__footer">
-                    <span class="mmw-overview-card__count">
-                        {{activitycount}} {{#str}}modcountlabel_plural, format_minimoodlewall{{/str}}
-                    </span>
-                    {{#hastracking}}
                     <span class="mmw-overview-card__progress{{#allcomplete}} mmw-overview-card__progress--complete{{/allcomplete}}">
                         <span class="mmw-overview-card__progress-bar">
                             <span class="mmw-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
                         <span class="mmw-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
                     </span>
-                    {{/hastracking}}
                 </div>
+                {{/hastracking}}
             </a>
             {{/isediting}}
             {{/overviewsections}}

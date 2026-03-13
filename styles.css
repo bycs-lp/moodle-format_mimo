@@ -1585,22 +1585,23 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   }
 }
 
-/* Individual section card. */
+/* Individual section card — styled to mirror wall activity cards. */
 .mmw-overview-card {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 1.2rem;
   padding: 1.25rem;
   text-decoration: none;
   color: inherit;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   cursor: pointer;
 }
 .mmw-overview-card:hover, .mmw-overview-card:focus {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
+  transform: translateY(-4px);
   text-decoration: none;
   color: inherit;
 }
@@ -1645,10 +1646,6 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   font-size: 0.8rem;
   color: #666;
-}
-
-.mmw-overview-card__count {
-  white-space: nowrap;
 }
 
 .mmw-overview-card__progress {
@@ -1724,7 +1721,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   flex-direction: column;
   background: #fff;
   border: 2px dashed rgba(0, 0, 0, 0.2);
-  border-radius: 1rem;
+  border-radius: 1.2rem;
   padding: 1.25rem;
   color: inherit;
 }
@@ -1742,9 +1739,10 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   background: #2d2d2d;
   border-color: rgba(255, 255, 255, 0.12);
   color: #f0f0f0;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
 }
 .mmw-bgdesign-darkmode .mmw-overview-card:hover, .mmw-bgdesign-darkmode .mmw-overview-card:focus {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(255, 200, 100, 0.25);
   color: #f0f0f0;
 }
 .mmw-bgdesign-darkmode .mmw-overview-card__summary {
