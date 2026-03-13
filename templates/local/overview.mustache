@@ -43,6 +43,13 @@
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#hasminitiles}}
+                <div class="mmw-overview-card__miniwall">
+                    {{#minitiles}}
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}"></span>
+                    {{/minitiles}}
+                </div>
+                {{/hasminitiles}}
                 <div class="mmw-overview-card__footer">
                     <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary">
                         {{#str}}viewactivity, format_minimoodlewall{{/str}}
@@ -58,6 +65,13 @@
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#hasminitiles}}
+                <div class="mmw-overview-card__miniwall">
+                    {{#minitiles}}
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}"></span>
+                    {{/minitiles}}
+                </div>
+                {{/hasminitiles}}
                 {{#hastracking}}
                 <div class="mmw-overview-card__footer">
                     <span class="mmw-overview-card__progress{{#allcomplete}} mmw-overview-card__progress--complete{{/allcomplete}}">

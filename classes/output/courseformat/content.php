@@ -112,6 +112,16 @@ class content extends content_base {
         $context = \context_course::instance($course->id);
         $isediting = $PAGE->user_is_editing();
 
+        // Pre-fetch course tags for mini-wall tile colours.
+        $coursetags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+        // Build tagid → accent colour map for quick lookup.
+        $tagcolours = [];
+        foreach ($coursetags as $tag) {
+            $tagcolours[$tag->id] = \format_minimoodlewall\tag_manager::get_tag_accent_color($tag);
+        }
+        // Default colour for activities without a tag.
+        $defaultcolour = '#d0d0d0';
+
         $sections = [];
         foreach ($modinfo->get_section_info_all() as $sectioninfo) {
             // Skip orphaned or delegated sections.
@@ -123,10 +133,11 @@ class content extends content_base {
             $sectionname = $format->get_section_name($sectioninfo);
             $url = new \moodle_url('/course/view.php', ['id' => $course->id, 'section' => $sectionnum]);
 
-            // Count activities and completion in this section.
+            // Count activities and completion in this section, and collect mini-wall tiles.
             $activitycount = 0;
             $completedcount = 0;
             $totaltracked = 0;
+            $minitiles = [];
             if (!empty($modinfo->sections[$sectionnum])) {
                 foreach ($modinfo->sections[$sectionnum] as $cmid) {
                     $cm = $modinfo->cms[$cmid];
@@ -134,6 +145,15 @@ class content extends content_base {
                         continue;
                     }
                     $activitycount++;
+
+                    // Determine tile colour from tag assignment.
+                    $cmtag = \format_minimoodlewall\tag_manager::get_cm_tag($cmid);
+                    $colour = $defaultcolour;
+                    if ($cmtag && isset($tagcolours[$cmtag->id])) {
+                        $colour = $tagcolours[$cmtag->id];
+                    }
+                    $minitiles[] = ['color' => $colour];
+
                     if ($completionenabled && $completioninfo->is_enabled($cm)) {
                         $totaltracked++;
                         $completiondata = $completioninfo->get_data($cm, false);
@@ -168,6 +188,8 @@ class content extends content_base {
                 'summary' => $summary,
                 'hassummary' => !empty($summary),
                 'isediting' => $isediting,
+                'minitiles' => $minitiles,
+                'hasminitiles' => !empty($minitiles),
             ];
 
             // Render inplace editable for section name in editing mode.
