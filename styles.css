@@ -1662,7 +1662,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   margin-top: auto;
   border-radius: 0.6rem;
   overflow: hidden;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
 }
 
@@ -1672,6 +1672,11 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   object-fit: cover;
   display: block;
   border-radius: 0.6rem;
+}
+
+/* When a section image is present, shrink the body so the image dominates. */
+.mmw-overview-card:has(.mmw-overview-card__sectionimage-wrap) .mmw-overview-card__body {
+  flex: 0 0 auto;
 }
 
 /* Image action buttons in editing mode. */
