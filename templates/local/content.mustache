@@ -43,6 +43,20 @@ require(['core_courseformat/local/content', 'core_courseformat/courseeditor'], f
     };
 });
 {{/js}}
+{{! Back to overview link for multi-section single-wall view. }}
+{{#showoverviewlink}}
+<div class="mmw-overview-nav">
+    <a href="{{overviewurl}}" class="mmw-overview-link">
+        <svg class="mmw-overview-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="20" height="20">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        {{#str}}backtooverview, format_minimoodlewall{{/str}}
+    </a>
+    {{#currentsectionname}}
+    <h2 class="mmw-overview-nav__title">{{currentsectionname}}</h2>
+    {{/currentsectionname}}
+</div>
+{{/showoverviewlink}}
 {{< core_courseformat/local/content }}
     {{! Override the section block to use our custom section template. }}
     {{$ core_courseformat/local/content/section }}

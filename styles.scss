@@ -2024,6 +2024,200 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
+/* ===================================================================
+   Multi-section Overview
+   =================================================================== */
+
+/* Overview grid of section cards. */
+.mmw-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+
+    @media (min-width: 576px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 992px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Individual section card. */
+.mmw-overview-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary, #0073aa);
+        outline-offset: 2px;
+    }
+}
+
+.mmw-overview-card__body {
+    flex: 1;
+    min-height: 0;
+}
+
+.mmw-overview-card__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    line-height: 1.3;
+}
+
+.mmw-overview-card__summary {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.4;
+    max-height: 4.2em; /* ~3 lines */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+
+    /* Strip summary formatting for card view. */
+    p {
+        margin: 0;
+    }
+}
+
+.mmw-overview-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.mmw-overview-card__count {
+    white-space: nowrap;
+}
+
+.mmw-overview-card__progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mmw-overview-card__progress-bar {
+    width: 60px;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mmw-overview-card__progress-fill {
+    display: block;
+    height: 100%;
+    background: #4caf50;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.mmw-overview-card__progress--complete .mmw-overview-card__progress-fill {
+    background: #2e7d32;
+}
+
+.mmw-overview-card__progress-text {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.mmw-overview-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #888;
+}
+
+/* Back to overview navigation bar. */
+.mmw-overview-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0.75rem;
+}
+
+.mmw-overview-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+    color: var(--primary, #0073aa);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+        text-decoration: underline;
+        color: var(--primary, #0073aa);
+    }
+}
+
+.mmw-overview-link__icon {
+    flex-shrink: 0;
+}
+
+.mmw-overview-nav__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Background design adaptations for overview cards. */
+.mmw-bgdesign-darkmode {
+    .mmw-overview-card {
+        background: #2d2d2d;
+        border-color: rgba(255, 255, 255, 0.12);
+        color: #f0f0f0;
+
+        &:hover,
+        &:focus {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            color: #f0f0f0;
+        }
+    }
+
+    .mmw-overview-card__summary {
+        color: #aaa;
+    }
+
+    .mmw-overview-card__footer {
+        border-top-color: rgba(255, 255, 255, 0.1);
+        color: #999;
+    }
+
+    .mmw-overview-card__progress-bar {
+        background: #444;
+    }
+
+    .mmw-overview-empty {
+        color: #888;
+    }
+}
+
 /* Tag management admin page. */
 .tag-management tr[data-tag-id] {
     &:hover [data-action="edit-tag"] {

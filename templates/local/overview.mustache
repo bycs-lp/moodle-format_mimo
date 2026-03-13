@@ -1,0 +1,75 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template format_minimoodlewall/local/overview
+
+    Multi-section overview landing page showing all sections as clickable cards.
+
+    Context variables required for this template:
+    * isoverview - bool - Always true for this template
+    * overviewsections - array - Section card data
+    * hassections - bool - Whether there are sections to display
+    * bgdesignclass - string - Background design CSS class
+    * styleclass - string - Style variant CSS class
+    * mmwaddsection - object - Add section data (editing mode)
+    * bulkedittools - object - Bulk edit tools data (editing mode)
+}}
+<div class="mmw-overview {{styleclass}}">
+    <h2 class="accesshide">{{{title}}}</h2>
+    <div class="mmw-bgdesign-wrapper {{bgdesignclass}}">
+        {{#hassections}}
+        <div class="mmw-overview-grid" data-region="mmw-overview-grid">
+            {{#overviewsections}}
+            <a href="{{url}}" class="mmw-overview-card" data-section-num="{{num}}">
+                <div class="mmw-overview-card__body">
+                    <h3 class="mmw-overview-card__name">{{name}}</h3>
+                    {{#hassummary}}
+                    <div class="mmw-overview-card__summary">{{{summary}}}</div>
+                    {{/hassummary}}
+                </div>
+                <div class="mmw-overview-card__footer">
+                    <span class="mmw-overview-card__count">
+                        {{activitycount}} {{#str}}modcountlabel_plural, format_minimoodlewall{{/str}}
+                    </span>
+                    {{#hastracking}}
+                    <span class="mmw-overview-card__progress{{#allcomplete}} mmw-overview-card__progress--complete{{/allcomplete}}">
+                        <span class="mmw-overview-card__progress-bar">
+                            <span class="mmw-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
+                        </span>
+                        <span class="mmw-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
+                    </span>
+                    {{/hastracking}}
+                </div>
+            </a>
+            {{/overviewsections}}
+        </div>
+        {{/hassections}}
+        {{^hassections}}
+        <div class="mmw-overview-empty">
+            <p>{{#str}}overviewnosections, format_minimoodlewall{{/str}}</p>
+        </div>
+        {{/hassections}}
+    </div>
+
+    {{#mmwaddsection}}
+        {{> core_courseformat/local/content/addsection}}
+    {{/mmwaddsection}}
+
+    {{#bulkedittools}}
+        {{> core_courseformat/local/content/bulkedittools}}
+    {{/bulkedittools}}
+</div>

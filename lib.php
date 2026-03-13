@@ -392,12 +392,13 @@ class format_minimoodlewall extends core_courseformat\base {
         if ($this->is_multisection_enabled()) {
             $pageurl = $page->url->get_path();
             if (strpos($pageurl, '/course/section.php') !== false) {
-                $sectionnum = $this->get_sectionnum();
                 $course = $this->get_course();
-                redirect(new moodle_url('/course/view.php', [
-                    'id' => $course->id,
-                    'section' => $sectionnum ?? 0,
-                ]));
+                $sectionnum = $this->get_sectionnum();
+                $params = ['id' => $course->id];
+                if ($sectionnum !== null) {
+                    $params['section'] = $sectionnum;
+                }
+                redirect(new moodle_url('/course/view.php', $params));
             }
         }
 

@@ -33,14 +33,17 @@ $course = $format->get_course();
 $ismultisection = $format->is_multisection_enabled();
 
 if ($ismultisection) {
-    // Multi-section mode: one section at a time, default to section 0.
+    // Multi-section mode: show overview or a single wall.
     course_create_sections_if_missing($course, 0);
 
     $renderer = $PAGE->get_renderer('format_minimoodlewall');
 
-    // Use $displaysection from course/view.php to show the requested section,
-    // defaulting to section 0 when no section is specified (first visit).
-    $format->set_sectionnum($displaysection ?? 0);
+    if ($displaysection !== null) {
+        // A specific section was requested — show that wall.
+        $format->set_sectionnum($displaysection);
+    }
+    // When $displaysection is null (first visit / no ?section= param),
+    // do NOT call set_sectionnum() so core renders the overview page.
 } else {
     // Single-section mode: redirect non-zero section URLs and lock to section 0.
     $sectionnum = optional_param('section', null, PARAM_INT);
