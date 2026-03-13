@@ -73,6 +73,7 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
 echo $OUTPUT->header();
 echo \format_minimoodlewall\admin_page_tabs::render('profiles');
 echo $OUTPUT->heading(get_string('profilemanagement', 'format_minimoodlewall'));
+echo html_writer::tag('p', get_string('profilemanagement_desc', 'format_minimoodlewall'), ['class' => 'text-muted mb-3']);
 
 // Initialize delete confirmation modal.
 $PAGE->requires->js_call_amd('format_minimoodlewall/profile_delete_confirm', 'init');

@@ -40,11 +40,6 @@ class admin_page_tabs {
 
         $tabs = [
             new tabobject(
-                'settings',
-                new moodle_url('/admin/settings.php', ['section' => 'format_minimoodlewall']),
-                get_string('distractionfreemode', 'format_minimoodlewall')
-            ),
-            new tabobject(
                 'tags',
                 new moodle_url('/course/format/minimoodlewall/tag_management.php'),
                 get_string('tagmanagement', 'format_minimoodlewall')
@@ -68,6 +63,11 @@ class admin_page_tabs {
                 'completiondefaults',
                 new moodle_url('/course/format/minimoodlewall/completion_defaults.php'),
                 get_string('completiondefaults', 'format_minimoodlewall')
+            ),
+            new tabobject(
+                'settings',
+                new moodle_url('/admin/settings.php', ['section' => 'format_minimoodlewall']),
+                get_string('distractionfreemode', 'format_minimoodlewall')
             ),
         ];
 

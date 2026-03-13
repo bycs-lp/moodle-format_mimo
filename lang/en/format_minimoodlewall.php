@@ -143,6 +143,7 @@ $string['profiledisplayname'] = 'Display Name';
 $string['profileimages'] = 'Profile-specific Images';
 $string['profileinuse'] = 'Cannot delete activity profile: it is currently in use by one or more courses.';
 $string['profilemanagement'] = 'Activity Profile Management';
+$string['profilemanagement_desc'] = 'Here you can customise the activity tags for each activity profile – e.g. rename, enable/disable, and change colours.';
 $string['profilename'] = 'Internal Name';
 $string['profilename_exists'] = 'An activity profile with this name already exists.';
 $string['profilename_help'] = 'A unique identifier for this profile (e.g., "classic", "dark"). Use lowercase letters and underscores only.';

@@ -134,6 +134,7 @@ $string['profiledisplayname'] = 'Anzeigename';
 $string['profileimages'] = 'Profilspezifische Bilder';
 $string['profileinuse'] = 'Tätigkeitsprofil kann nicht gelöscht werden: Es wird derzeit von einem oder mehreren Kursen verwendet.';
 $string['profilemanagement'] = 'Tätigkeitsprofil-Verwaltung';
+$string['profilemanagement_desc'] = 'Hier können Sie für jedes Tätigkeitsprofil die zugehörigen Tätigkeitsfelder individuell anpassen – z.\&nbsp;B. umbenennen, ein- oder ausblenden und Farben ändern.';
 $string['profilename'] = 'Interner Name';
 $string['profilename_exists'] = 'Ein Tätigkeitsprofil mit diesem Namen existiert bereits.';
 $string['profilename_help'] = 'Eine eindeutige Kennung für dieses Profil (z. B. „classic", „dark"). Verwenden Sie nur Kleinbuchstaben und Unterstriche.';

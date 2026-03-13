@@ -24,12 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$categoryname = 'format_minimoodlewall_settings';
+// Single visible entry in admin nav – points to tag management page.
+// Users navigate to other admin pages via tabs on each page.
+$settings = new admin_externalpage(
+    'format_minimoodlewall_tags',
+    new lang_string('pluginname', 'format_minimoodlewall'),
+    new moodle_url('/course/format/minimoodlewall/tag_management.php'),
+    'moodle/site:config'
+);
 
-// We overwrite $settings here that is defined in format\plugininfo\format::load_settings().
-$settings = new admin_category($categoryname, new lang_string('pluginname', 'format_minimoodlewall'));
-
-$settingspage = new admin_settingpage('format_minimoodlewall', new lang_string('pluginname', 'format_minimoodlewall'));
+// Hidden settings page for distraction-free mode (still functional via tab navigation).
+$settingspage = new admin_settingpage(
+    'format_minimoodlewall',
+    new lang_string('distractionfreemode', 'format_minimoodlewall'),
+    'moodle/site:config',
+    true
+);
 
 if ($ADMIN->fulltree) {
     // Tab navigation across all admin pages.
@@ -76,39 +86,37 @@ if ($ADMIN->fulltree) {
     ));
 }
 
-$settings->add($categoryname, $settingspage);
+$ADMIN->add('formatsettings', $settingspage);
 
-$settings->add($categoryname, new admin_externalpage(
-    'format_minimoodlewall_tags',
-    get_string('setting_tagmanagement', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/tag_management.php'),
-    'moodle/site:config'
-));
-
-$settings->add($categoryname, new admin_externalpage(
+// Hidden external pages – accessible via tab navigation, not shown in admin tree.
+$ADMIN->add('formatsettings', new admin_externalpage(
     'format_minimoodlewall_descriptiontags',
     get_string('desctagmanagement', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/description_tags.php'),
-    'moodle/site:config'
+    'moodle/site:config',
+    true
 ));
 
-$settings->add($categoryname, new admin_externalpage(
+$ADMIN->add('formatsettings', new admin_externalpage(
     'format_minimoodlewall_activitydescriptions',
     get_string('activitydescriptions', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/activity_descriptions.php'),
-    'moodle/site:config'
+    'moodle/site:config',
+    true
 ));
 
-$settings->add($categoryname, new admin_externalpage(
+$ADMIN->add('formatsettings', new admin_externalpage(
     'format_minimoodlewall_profiles',
     get_string('profilemanagement', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/profile_management.php'),
-    'moodle/site:config'
+    'moodle/site:config',
+    true
 ));
 
-$settings->add($categoryname, new admin_externalpage(
+$ADMIN->add('formatsettings', new admin_externalpage(
     'format_minimoodlewall_completiondefaults',
     get_string('completiondefaults', 'format_minimoodlewall'),
     new moodle_url('/course/format/minimoodlewall/completion_defaults.php'),
-    'moodle/site:config'
+    'moodle/site:config',
+    true
 ));
