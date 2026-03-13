@@ -1595,15 +1595,16 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   padding: 1.25rem;
   text-decoration: none;
   color: inherit;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.3s ease;
   cursor: pointer;
   aspect-ratio: 4/3;
 }
 .mmw-overview-card:hover, .mmw-overview-card:focus {
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(255, 200, 100, 0.4);
   text-decoration: none;
   color: inherit;
+}
+.mmw-overview-card:hover .mmw-overview-card__miniwall, .mmw-overview-card:focus .mmw-overview-card__miniwall {
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
 }
 .mmw-overview-card:focus {
   outline: 2px solid var(--primary, #0073aa);
