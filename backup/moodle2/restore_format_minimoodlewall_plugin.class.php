@@ -42,14 +42,14 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     /** @var array Positional pool: existing tags not yet fingerprint-matched, in sortorder. */
     private $positionalpool = [];
 
-    /** @var array Override data per backup tag: oldid => ['match' => 'fingerprint'|'positional'|'new', 'targetid' => int, 'backupdata' => object]. */
+    /** @var array Override data per backup tag: oldid => ['match' => 'fingerprint'|'name'|'positional'|'new', 'targetid' => int, 'backupdata' => object]. */
     private $overridedata = [];
 
     /** @var int Count of backup tags processed. */
     private $backuptagcount = 0;
 
-    /** @var bool Whether all tags were fingerprint-matched (perfect match). */
-    private $allfingerprint = true;
+    /** @var bool Whether all tags were recognized (fingerprint or name match). */
+    private $allrecognized = true;
 
     /**
      * Declare structures to be processed by the restore task.
@@ -132,7 +132,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
     }
 
     /**
-     * Restore tag definitions using fingerprint → positional → create matching.
+     * Restore tag definitions using fingerprint → name → positional → create matching.
      *
      * @param array $data raw backup data
      */
@@ -166,7 +166,26 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             return;
         }
 
-        // Step 2: Positional match (next unmatched existing tag by sortorder).
+        // Step 2: Name match — same conceptual tag but properties changed by admin.
+        // Trusts the instance's current values (admin's edits take precedence).
+        $namematch = \format_minimoodlewall\tag_manager::find_tag_by_name($data->name, $this->matchedtagids);
+        if ($namematch) {
+            $this->matchedtagids[] = $namematch->id;
+            $this->set_mapping('format_minimoodlewall_tag', $oldid, $namematch->id);
+            $this->overridedata[$oldid] = [
+                'match' => 'name',
+                'targetid' => (int) $namematch->id,
+                'backupdata' => clone $data,
+            ];
+            // Remove from positional pool.
+            $this->positionalpool = array_filter(
+                $this->positionalpool,
+                fn($t) => (int) $t->id !== (int) $namematch->id
+            );
+            return;
+        }
+
+        // Step 3: Positional match (next unmatched existing tag by sortorder).
         $posmatch = null;
         foreach ($this->positionalpool as $idx => $candidate) {
             if (!in_array((int) $candidate->id, $this->matchedtagids, true)) {
@@ -184,11 +203,11 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
                 'targetid' => (int) $posmatch->id,
                 'backupdata' => clone $data,
             ];
-            $this->allfingerprint = false;
+            $this->allrecognized = false;
             return;
         }
 
-        // Step 3: Create new imported tag (backup has more tags than instance).
+        // Step 4: Create new imported tag (backup has more tags than instance).
         unset($data->id);
         $data->scope = 'imported';
         $newid = $DB->insert_record('format_minimoodlewall_tags', $data);
@@ -198,13 +217,13 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'targetid' => (int) $newid,
             'backupdata' => clone $data,
         ];
-        $this->allfingerprint = false;
+        $this->allrecognized = false;
     }
 
     /**
      * Restore per-profile tag overrides.
      *
-     * Only applied for fingerprint-matched tags (safe — same conceptual tag).
+     * Only applied for fingerprint/name-matched tags (safe — same conceptual tag).
      * Skipped for positional/new matches to avoid contaminating target profiles.
      *
      * @param array $data raw backup data
@@ -217,7 +236,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
         // Check the match type for the parent tag.
         $oldtagid = $data->tagid;
-        if (isset($this->overridedata[$oldtagid]) && $this->overridedata[$oldtagid]['match'] !== 'fingerprint') {
+        if (isset($this->overridedata[$oldtagid])
+                && !in_array($this->overridedata[$oldtagid]['match'], ['fingerprint', 'name'])) {
             // Skip profile_tag records for positional/new matches.
             return;
         }
@@ -303,11 +323,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'course_section'
         );
 
-        // If all backup tags fingerprint-matched, no imported profile needed.
-        // The existing profile handles these tags correctly since they're identical.
-        // (Count differences are fine — backup only contains tags assigned to activities,
-        // not all tags on the instance.)
-        if ($this->allfingerprint) {
+        // If all backup tags were recognized (fingerprint or name match), no imported
+        // profile needed. The instance already has the right tags — either identical
+        // (fingerprint) or intentionally updated by admin (name match).
+        if ($this->allrecognized) {
             return;
         }
 

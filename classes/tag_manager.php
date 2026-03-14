@@ -933,6 +933,35 @@ class tag_manager {
     }
 
     /**
+     * Find an existing tag by name only (case-sensitive).
+     *
+     * Used as a lenient fallback when fingerprint matching fails — e.g. an admin
+     * changed the color or activity types after the backup was made.
+     *
+     * @param string $name Tag name to search for
+     * @param array $excludeids Tag IDs to exclude from matching
+     * @return \stdClass|null Matching tag record or null
+     */
+    public static function find_tag_by_name(string $name, array $excludeids = []): ?\stdClass {
+        global $DB;
+
+        $params = ['name' => $name];
+        $conditions = ['name = :name'];
+
+        if (!empty($excludeids)) {
+            [$insql, $inparams] = $DB->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
+            $conditions[] = "id $insql";
+            $params = array_merge($params, $inparams);
+        }
+
+        $where = implode(' AND ', $conditions);
+        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC";
+        $records = $DB->get_records_sql($sql, $params, 0, 1);
+
+        return $records ? reset($records) : null;
+    }
+
+    /**
      * Initialize default tags for a new installation.
      *
      * @return bool Success
