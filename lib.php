@@ -448,6 +448,31 @@ class format_minimoodlewall extends core_courseformat\base {
             $page->add_body_class('format-mmw-multisection-view');
         }
 
+        // For non-editing users (students), replace the secondary navigation bar
+        // with a compact three-dot dropdown in the header actions area.
+        // Placed before the home button so it appears to its left.
+        $coursecontext = \context_course::instance($this->courseid);
+        if (!has_capability('moodle/course:update', $coursecontext)) {
+            $page->add_body_class('format-mmw-compact-secondarynav');
+            $menulabel = get_string('compactnav_menu', 'format_minimoodlewall');
+            $dropdownid = 'mmw-compact-nav-' . $this->courseid;
+            $page->add_header_action(
+                '<div class="dropdown mmw-compact-nav">' .
+                '<button class="mmw-compact-nav-btn" type="button"' .
+                ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
+                ' aria-expanded="false" title="' . s($menulabel) . '">' .
+                '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">' .
+                '<circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>' .
+                '</svg>' .
+                '<span class="sr-only">' . s($menulabel) . '</span>' .
+                '</button>' .
+                '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="' . $dropdownid . '"' .
+                ' data-region="mmw-secondarynav-dropdown"></ul>' .
+                '</div>'
+            );
+            $page->requires->js_call_amd('format_minimoodlewall/compact_nav', 'init');
+        }
+
         // In multi-section mode, add a "back to overview" button to the page header
         // when viewing a specific section wall (not the overview page).
         if ($this->is_multisection_enabled()) {

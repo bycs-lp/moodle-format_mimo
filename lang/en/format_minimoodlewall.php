@@ -254,6 +254,9 @@ $string['deletesection'] = 'Delete section';
 $string['confirmdeletesection'] = 'Are you sure you want to delete section "{$a}"?';
 $string['confirmdeletesection_notempty'] = 'Are you sure you want to delete section "{$a->name}"? It contains {$a->count} activities that will be permanently deleted.';
 
+// Compact secondary navigation.
+$string['compactnav_menu'] = 'Course menu';
+
 // Imported tag/profile scope strings.
 $string['tag_imported'] = 'Imported';
 $string['profile_imported'] = 'Imported';

@@ -2281,6 +2281,60 @@ body.single-section-page.format-mmw-multisection-view {
     flex-shrink: 0;
 }
 
+/* Compact secondary navigation — three-dot dropdown for students. */
+.format-mmw-compact-secondarynav .secondary-navigation {
+    display: none !important;
+}
+
+.mmw-compact-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary, #0073aa);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.15s ease;
+    padding: 0;
+    flex-shrink: 0;
+
+    &:hover,
+    &:focus {
+        background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        color: #fff;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary, #0073aa);
+        outline-offset: 2px;
+    }
+
+    &::after {
+        /* Override Bootstrap's default caret on dropdown toggles. */
+        display: none !important;
+    }
+}
+
+.mmw-compact-nav .dropdown-menu {
+    min-width: 12rem;
+    padding: 0.25rem 0;
+}
+
+.mmw-compact-nav .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+
+    &.active,
+    &:active {
+        background-color: var(--primary, #0073aa);
+        color: #fff;
+    }
+}
+
 /* Overview card editing variant. */
 .mmw-overview-card--editing {
     display: flex;

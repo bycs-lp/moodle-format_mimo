@@ -152,6 +152,11 @@
 6. **Course index drawer**
    - Disabled in single-section mode (`uses_course_index()` returns `false`).
    - Enabled in multi-section mode — shows all sections for navigation.
+7. **Compact secondary navigation** (students only)
+   - Users without `moodle/course:update` capability see a compact three-dot (kebab) dropdown in the header actions area instead of the full secondary navigation bar.
+   - Body class `format-mmw-compact-secondarynav` hides `.secondary-navigation` via CSS. The nav is still rendered in the DOM so items are available.
+   - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mmw-secondarynav-dropdown"]`). If no items are found, the dropdown button is removed entirely.
+   - Teachers/editors with `moodle/course:update` always see the standard secondary navigation bar.
 
 ## Common Extension Tasks
 - **Add teacher UI for tagging**
@@ -312,6 +317,7 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/section_overview_actions.js` – section overview card delete + drag-and-drop reorder (editing mode). Uses `BaseComponent` + `DragDrop` from `core/reactive`. Whole card is drag surface; interactive children protected via `draggable="false"`. Calls `core_courseformat_update_course` with `section_delete` / `section_move_after`.
 - `amd/src/style_image_switcher.js` – style image tab switching.
 - `amd/src/description_tag_management.js` – description tag admin helpers.
+- `amd/src/compact_nav.js` – compact secondary navigation: clones hidden secondary nav items into a three-dot header dropdown for students.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
 - `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags **incl. scope**, styles, tag_images, profiles **incl. scope**, cmtags, files).
 - `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
