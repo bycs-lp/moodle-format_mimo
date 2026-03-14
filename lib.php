@@ -394,6 +394,12 @@ class format_minimoodlewall extends core_courseformat\base {
     public function page_set_course(moodle_page $page) {
         parent::page_set_course($page);
 
+        // During course creation (e.g. from blocks_add_default_course_blocks),
+        // $PAGE->set_url() has not been called yet. Skip all URL-dependent logic.
+        if (!$page->has_set_url()) {
+            return;
+        }
+
         // Redirect course/section.php visits to course/view.php in multi-section mode
         // to preserve secondary navigation and keep users on the same page.
         if ($this->is_multisection_enabled()) {
