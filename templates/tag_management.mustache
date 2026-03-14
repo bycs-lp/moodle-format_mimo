@@ -42,13 +42,23 @@
         </button>
         <span class="mx-2 text-muted">|</span>
         {{#profilebuttons}}
-            <button type="button"
-                    class="btn btn-sm {{#active}}btn-primary{{/active}}{{^active}}btn-secondary{{/active}}"
-                    data-action="switch-profile"
-                    data-profile-name="{{name}}"
-                    data-testid="profile-button-{{name}}">
-                {{displayname}}
-            </button>
+            <span class="d-inline-flex align-items-center gap-1">
+                <button type="button"
+                        class="btn btn-sm {{#active}}btn-primary{{/active}}{{^active}}btn-secondary{{/active}}"
+                        data-action="switch-profile"
+                        data-profile-name="{{name}}"
+                        data-testid="profile-button-{{name}}">
+                    {{displayname}}
+                    {{#isimported}}
+                        <span class="badge bg-info ms-1">{{importedtext}}</span>
+                    {{/isimported}}
+                </button>
+                {{#promoteurl}}
+                    <a href="{{promoteurl}}" class="btn btn-sm btn-outline-success" title="{{promotetoglobaltext}}" data-testid="promote-profile-button">
+                        {{#pix}}i/publish, core, {{promotetoglobaltext}}{{/pix}}
+                    </a>
+                {{/promoteurl}}
+            </span>
         {{/profilebuttons}}
     </div>
 
@@ -95,6 +105,9 @@
                                         {{#disabled}}
                                             <span class="badge bg-secondary ms-1">{{disabledtext}}</span>
                                         {{/disabled}}
+                                        {{#isimported}}
+                                            <span class="badge bg-info ms-1">{{importedtext}}</span>
+                                        {{/isimported}}
                                     </td>
                                     <td class="align-middle" data-field="bgcolor">
                                         <span class="mmw-color-swatch" style="display:inline-block;width:32px;height:20px;border-radius:6px;background:{{bgcolor}};border:1px solid rgba(0,0,0,0.1);"></span>
@@ -108,6 +121,15 @@
                                             <a href="#" title="{{edittitle}}" class="btn btn-sm btn-icon" data-testid="edit-tag-button" data-action="edit-tag" data-tag-id="{{id}}">
                                                 {{#pix}}i/edit, core, {{edittitle}}{{/pix}}
                                             </a>
+                                            {{#isimported}}
+                                                <a href="{{promoteurl}}"
+                                                   title="{{promotetoglobaltext}}"
+                                                   class="btn btn-sm btn-icon text-success"
+                                                   data-testid="promote-tag-button"
+                                                   data-tag-id="{{id}}">
+                                                    {{#pix}}i/publish, core, {{promotetoglobaltext}}{{/pix}}
+                                                </a>
+                                            {{/isimported}}
                                             <a href="{{deleteurl}}"
                                                title="{{deletetitle}}"
                                                class="btn btn-sm btn-icon"

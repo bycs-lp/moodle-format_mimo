@@ -253,3 +253,11 @@ $string['sectionimagefit_contain'] = 'Contain (show full image)';
 $string['deletesection'] = 'Delete section';
 $string['confirmdeletesection'] = 'Are you sure you want to delete section "{$a}"?';
 $string['confirmdeletesection_notempty'] = 'Are you sure you want to delete section "{$a->name}"? It contains {$a->count} activities that will be permanently deleted.';
+
+// Imported tag/profile scope strings.
+$string['tag_imported'] = 'Imported';
+$string['profile_imported'] = 'Imported';
+$string['imported_profile_name'] = '📦 {$a} (imported)';
+$string['promotetoglobal'] = 'Make global';
+$string['promotetoglobal_success'] = 'Successfully promoted to global scope.';
+$string['promotetoglobal_confirm'] = 'Are you sure you want to make this available globally? This cannot be undone.';

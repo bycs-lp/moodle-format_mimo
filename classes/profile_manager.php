@@ -111,9 +111,10 @@ class profile_manager {
      * @param string $name Internal identifier
      * @param string $displayname Human-readable name
      * @param int|null $sortorder Sort order (auto-calculated if null)
+     * @param string $scope Profile scope: 'global' or 'imported'
      * @return int The new profile ID
      */
-    public static function create_profile(string $name, string $displayname, ?int $sortorder = null): int {
+    public static function create_profile(string $name, string $displayname, ?int $sortorder = null, string $scope = 'global'): int {
         global $DB;
 
         if ($sortorder === null) {
@@ -127,6 +128,7 @@ class profile_manager {
         $record = new stdClass();
         $record->name = $name;
         $record->displayname = $displayname;
+        $record->scope = $scope;
         $record->sortorder = $sortorder;
         $record->timecreated = $now;
         $record->timemodified = $now;
@@ -646,6 +648,116 @@ class profile_manager {
 
         $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_PROFILE_CARDIMAGE, $profiletagid);
         $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_PROFILE_FILTERIMAGE, $profiletagid);
+    }
+
+    // ---------------------------------------------------------------
+    // Imported profile management.
+    // ---------------------------------------------------------------
+
+    /**
+     * Create a new imported profile for a restored course.
+     *
+     * Generates a unique name slug and a display name containing the course name.
+     *
+     * @param string $coursename Course full name
+     * @return stdClass The created profile record (with id, name, displayname, scope)
+     */
+    public static function create_imported_profile(string $coursename): stdClass {
+        global $DB;
+
+        // Sanitize name to create a slug: lowercase, alphanum + underscore, max 40 chars.
+        $slug = preg_replace('/[^a-z0-9_]/', '_', strtolower(trim($coursename)));
+        $slug = preg_replace('/_+/', '_', $slug);
+        $slug = substr($slug, 0, 30);
+        $basename = 'imported_' . $slug;
+
+        // Ensure uniqueness by appending a counter if needed.
+        $name = $basename;
+        $counter = 1;
+        while ($DB->record_exists(self::TABLE_PROFILES, ['name' => $name])) {
+            $name = $basename . '_' . $counter;
+            $counter++;
+        }
+
+        $displayname = get_string('imported_profile_name', 'format_minimoodlewall', $coursename);
+
+        $maxorder = $DB->get_field_sql(
+            "SELECT MAX(sortorder) FROM {" . self::TABLE_PROFILES . "}"
+        );
+        $sortorder = ($maxorder ?? 0) + 1;
+
+        $now = time();
+        $record = new stdClass();
+        $record->name = $name;
+        $record->displayname = $displayname;
+        $record->scope = 'imported';
+        $record->sortorder = $sortorder;
+        $record->timecreated = $now;
+        $record->timemodified = $now;
+        $record->id = $DB->insert_record(self::TABLE_PROFILES, $record);
+
+        return $record;
+    }
+
+    /**
+     * Promote an imported profile to global scope.
+     *
+     * Also promotes any imported tags referenced by this profile's profile_tags records.
+     *
+     * @param int $profileid Profile ID
+     */
+    public static function promote_profile_to_global(int $profileid): void {
+        global $DB;
+
+        $DB->set_field(self::TABLE_PROFILES, 'scope', 'global', ['id' => $profileid]);
+        $DB->set_field(self::TABLE_PROFILES, 'timemodified', time(), ['id' => $profileid]);
+
+        // Promote any imported tags that have profile_tags records for this profile.
+        $sql = "SELECT DISTINCT pt.tagid
+                  FROM {" . self::TABLE_PROFILE_TAGS . "} pt
+                  JOIN {format_minimoodlewall_tags} t ON t.id = pt.tagid
+                 WHERE pt.profileid = :profileid AND t.scope = :scope";
+        $importedtagids = $DB->get_fieldset_sql($sql, ['profileid' => $profileid, 'scope' => 'imported']);
+
+        foreach ($importedtagids as $tagid) {
+            tag_manager::promote_tag_to_global((int) $tagid);
+        }
+
+        tag_manager::clear_tag_cache();
+    }
+
+    /**
+     * Clean up orphaned imported profiles not referenced by any course.
+     *
+     * An imported profile is orphaned when no course has it as their activityprofile.
+     */
+    public static function cleanup_orphaned_imported_profiles(): void {
+        global $DB;
+
+        $sql = "SELECT p.id
+                  FROM {" . self::TABLE_PROFILES . "} p
+                 WHERE p.scope = :scope
+                   AND NOT EXISTS (
+                       SELECT 1 FROM {course_format_options} cfo
+                        WHERE cfo.format = 'minimoodlewall'
+                          AND cfo.name = 'activityprofile'
+                          AND cfo.value = p.name
+                   )";
+        $orphanids = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
+
+        foreach ($orphanids as $profileid) {
+            self::delete_profile((int) $profileid);
+        }
+    }
+
+    /**
+     * Get all global profiles (scope='global') ordered by sortorder.
+     *
+     * @return array Array of profile objects keyed by id
+     */
+    public static function get_global_profiles(): array {
+        global $DB;
+        return $DB->get_records(self::TABLE_PROFILES, ['scope' => 'global'], 'sortorder ASC, id ASC');
     }
 
     // ---------------------------------------------------------------

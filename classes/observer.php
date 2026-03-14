@@ -156,11 +156,34 @@ class observer {
     }
 
     /**
-     * Handle course_deleted event to clean up all section images for the course.
+     * Handle course_deleted event to clean up all section images, course_tags
+     * bindings, orphaned cmtags, imported tags, and imported profiles.
      *
      * @param \core\event\course_deleted $event The event object
      */
     public static function course_deleted(\core\event\course_deleted $event) {
-        section_image_manager::delete_all_for_course($event->objectid);
+        global $DB;
+
+        $courseid = $event->objectid;
+
+        // Delete section images.
+        section_image_manager::delete_all_for_course($courseid);
+
+        // Delete orphaned cmtags for this course's modules.
+        $sql = "DELETE FROM {format_minimoodlewall_cmtags}
+                 WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
+        $DB->execute($sql, ['courseid' => $courseid]);
+
+        // Delete course_tags bindings for this course.
+        tag_manager::unbind_all_tags_from_course($courseid);
+
+        // Clean up orphaned imported tags (no bindings and no cmtags left).
+        tag_manager::cleanup_orphaned_imported_tags();
+
+        // Clean up orphaned imported profiles (not referenced by any course).
+        profile_manager::cleanup_orphaned_imported_profiles();
+
+        tag_manager::clear_tag_cache();
+        tag_manager::clear_mapping_cache();
     }
 }

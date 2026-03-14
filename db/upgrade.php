@@ -979,5 +979,38 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026031400, 'format', 'minimoodlewall');
     }
 
+    // Add scope columns to profiles and tags, and create course_tags binding table.
+    if ($oldversion < 2026031401) {
+        // Add scope column to profiles table.
+        $table = new xmldb_table('format_minimoodlewall_profiles');
+        $field = new xmldb_field('scope', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'global', 'displayname');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Add scope column to tags table.
+        $table = new xmldb_table('format_minimoodlewall_tags');
+        $field = new xmldb_field('scope', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'global', 'name');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Create course_tags binding table.
+        $table = new xmldb_table('format_minimoodlewall_course_tags');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('tagid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('courseid', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+        $table->add_key('tagid', XMLDB_KEY_FOREIGN, ['tagid'], 'format_minimoodlewall_tags', ['id']);
+        $table->add_index('courseid_tagid_unique', XMLDB_INDEX_UNIQUE, ['courseid', 'tagid']);
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026031401, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

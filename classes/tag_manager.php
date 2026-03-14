@@ -438,8 +438,17 @@ class tag_manager {
             return $cachedtags;
         }
 
-        // Get all base tags.
+        // Get all global base tags.
         $alltags = self::get_all_tags();
+
+        // Merge in imported tags bound to this course.
+        $importedtags = self::get_imported_tags_for_course($courseid);
+        foreach ($importedtags as $id => $tag) {
+            if (!isset($alltags[$id])) {
+                $alltags[$id] = $tag;
+            }
+        }
+
         if (empty($alltags)) {
             self::$tagcache->set($cachekey, []);
             return [];
@@ -498,6 +507,7 @@ class tag_manager {
      * @param string|null $bgcolor Background color in hex format
      * @param string|null $imgplacement Image placement (center or lower)
      * @param string|null $imgsize Image size (bigger, normal, or smaller)
+     * @param string $scope Tag scope: 'global' or 'imported'
      * @return int ID of the created tag
      */
     public static function create_tag(
@@ -509,7 +519,8 @@ class tag_manager {
         ?string $activitytype3 = null,
         ?string $bgcolor = null,
         ?string $imgplacement = 'center',
-        ?string $imgsize = 'normal'
+        ?string $imgsize = 'normal',
+        string $scope = 'global'
     ): int {
         global $DB;
 
@@ -523,6 +534,7 @@ class tag_manager {
 
         $record = new \stdClass();
         $record->name = $name;
+        $record->scope = $scope;
         $record->cardimage = $cardimage;
         $record->filterimage = $filterimage;
         $record->activitytype1 = $activitytype1;
@@ -614,6 +626,9 @@ class tag_manager {
 
         // Delete all mappings for this tag.
         $DB->delete_records('format_minimoodlewall_cmtags', ['tagid' => $id]);
+
+        // Delete course_tags bindings for this tag.
+        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $id]);
 
         // Delete profile_tags records for this tag (includes profile-specific images).
         profile_manager::delete_profile_tags_for_tag($id);
@@ -773,6 +788,148 @@ class tag_manager {
     public static function reset_caches(): void {
         self::$tagcache = null;
         self::$mappingcache = null;
+    }
+
+    /**
+     * Bind an imported tag to a course (make it available in that course).
+     *
+     * @param int $tagid Tag ID
+     * @param int $courseid Course ID
+     */
+    public static function bind_tag_to_course(int $tagid, int $courseid): void {
+        global $DB;
+
+        if ($DB->record_exists('format_minimoodlewall_course_tags', ['tagid' => $tagid, 'courseid' => $courseid])) {
+            return;
+        }
+
+        $record = new \stdClass();
+        $record->courseid = $courseid;
+        $record->tagid = $tagid;
+        $record->timecreated = time();
+        $DB->insert_record('format_minimoodlewall_course_tags', $record);
+
+        self::clear_course_tags_cache($courseid);
+    }
+
+    /**
+     * Unbind an imported tag from a course.
+     *
+     * @param int $tagid Tag ID
+     * @param int $courseid Course ID
+     */
+    public static function unbind_tag_from_course(int $tagid, int $courseid): void {
+        global $DB;
+
+        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $tagid, 'courseid' => $courseid]);
+        self::clear_course_tags_cache($courseid);
+    }
+
+    /**
+     * Promote an imported tag to global scope.
+     *
+     * Removes all course_tags bindings and changes scope to 'global'.
+     *
+     * @param int $tagid Tag ID
+     */
+    public static function promote_tag_to_global(int $tagid): void {
+        global $DB;
+
+        $DB->set_field('format_minimoodlewall_tags', 'scope', 'global', ['id' => $tagid]);
+        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $tagid]);
+        self::clear_tag_cache();
+    }
+
+    /**
+     * Get imported tags bound to a specific course.
+     *
+     * @param int $courseid Course ID
+     * @return array Array of tag records keyed by tag ID
+     */
+    public static function get_imported_tags_for_course(int $courseid): array {
+        global $DB;
+
+        $sql = "SELECT t.*
+                  FROM {format_minimoodlewall_tags} t
+                  JOIN {format_minimoodlewall_course_tags} ct ON ct.tagid = t.id
+                 WHERE ct.courseid = :courseid AND t.scope = :scope
+              ORDER BY t.sortorder ASC, t.id ASC";
+        return $DB->get_records_sql($sql, ['courseid' => $courseid, 'scope' => 'imported']);
+    }
+
+    /**
+     * Delete all course_tags bindings for a given course.
+     *
+     * @param int $courseid Course ID
+     */
+    public static function unbind_all_tags_from_course(int $courseid): void {
+        global $DB;
+
+        $DB->delete_records('format_minimoodlewall_course_tags', ['courseid' => $courseid]);
+        self::clear_course_tags_cache($courseid);
+    }
+
+    /**
+     * Clean up orphaned imported tags that have no course bindings and no cmtag references.
+     */
+    public static function cleanup_orphaned_imported_tags(): void {
+        global $DB;
+
+        $sql = "SELECT t.id
+                  FROM {format_minimoodlewall_tags} t
+                 WHERE t.scope = :scope
+                   AND NOT EXISTS (
+                       SELECT 1 FROM {format_minimoodlewall_course_tags} ct WHERE ct.tagid = t.id
+                   )
+                   AND NOT EXISTS (
+                       SELECT 1 FROM {format_minimoodlewall_cmtags} cmt WHERE cmt.tagid = t.id
+                   )";
+        $orphans = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
+
+        foreach ($orphans as $tagid) {
+            self::delete_tag($tagid);
+        }
+    }
+
+    /**
+     * Find an existing tag that matches a composite fingerprint.
+     *
+     * Matches on name + bgcolor + activitytype1 + activitytype2 + activitytype3 (NULL-safe).
+     * Optionally excludes already-matched tag IDs.
+     *
+     * @param object $data Tag data to match against (name, bgcolor, activitytype1-3)
+     * @param array $excludeids Tag IDs to exclude from matching
+     * @return \stdClass|null Matching tag record or null
+     */
+    public static function find_tag_by_fingerprint(object $data, array $excludeids = []): ?\stdClass {
+        global $DB;
+
+        $params = [];
+        $conditions = ['name = :name'];
+        $params['name'] = $data->name;
+
+        // NULL-safe comparisons for each fingerprint field.
+        foreach (['bgcolor', 'activitytype1', 'activitytype2', 'activitytype3'] as $field) {
+            $value = $data->$field ?? null;
+            if ($value === null || $value === '') {
+                $conditions[] = "($field IS NULL OR $field = '')";
+            } else {
+                $conditions[] = "$field = :$field";
+                $params[$field] = $value;
+            }
+        }
+
+        if (!empty($excludeids)) {
+            [$insql, $inparams] = $DB->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
+            $conditions[] = "id $insql";
+            $params = array_merge($params, $inparams);
+        }
+
+        $where = implode(' AND ', $conditions);
+        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC LIMIT 1";
+        $records = $DB->get_records_sql($sql, $params, 0, 1);
+
+        return $records ? reset($records) : null;
     }
 
     /**

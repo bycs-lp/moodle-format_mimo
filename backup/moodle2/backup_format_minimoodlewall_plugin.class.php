@@ -48,6 +48,7 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             [
                 'name',
                 'displayname',
+                'scope',
                 'sortorder',
                 'timecreated',
                 'timemodified',
@@ -61,6 +62,7 @@ class backup_format_minimoodlewall_plugin extends backup_format_plugin {
             ['id'],
             [
                 'name',
+                'scope',
                 'cardimage',
                 'imgplacement',
                 'imgsize',

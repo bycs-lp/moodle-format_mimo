@@ -218,10 +218,22 @@ class format_minimoodlewall extends core_courseformat\base {
                 'element_type' => 'advcheckbox',
             ];
             // Load activity profiles dynamically from database.
+            // Show all global profiles + the current course's imported profile (if assigned).
             $profileoptions = [];
-            $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();
+            $profiles = \format_minimoodlewall\profile_manager::get_global_profiles();
             foreach ($profiles as $profile) {
                 $profileoptions[$profile->name] = $profile->displayname;
+            }
+            // Include the current course's imported profile if it's already assigned.
+            $course = $this->get_course();
+            if ($course) {
+                $currentprofilename = $course->activityprofile ?? '';
+                if ($currentprofilename !== '' && !isset($profileoptions[$currentprofilename])) {
+                    $currentprofile = \format_minimoodlewall\profile_manager::get_profile_by_name($currentprofilename);
+                    if ($currentprofile) {
+                        $profileoptions[$currentprofile->name] = $currentprofile->displayname;
+                    }
+                }
             }
             // Fallback to default if no profiles exist.
             if (empty($profileoptions)) {

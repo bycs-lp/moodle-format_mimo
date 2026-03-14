@@ -58,6 +58,33 @@ if ($action === 'deletetag' && confirm_sesskey()) {
     }
 }
 
+// Handle promote tag to global.
+if ($action === 'promotetag' && confirm_sesskey()) {
+    if ($tagid) {
+        tag_manager::promote_tag_to_global($tagid);
+        redirect(
+            $PAGE->url,
+            get_string('promotetoglobal_success', 'format_minimoodlewall'),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
+    }
+}
+
+// Handle promote profile to global.
+$promoteid = optional_param('promoteid', 0, PARAM_INT);
+if ($action === 'promoteprofile' && confirm_sesskey()) {
+    if ($promoteid) {
+        profile_manager::promote_profile_to_global($promoteid);
+        redirect(
+            $PAGE->url,
+            get_string('promotetoglobal_success', 'format_minimoodlewall'),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
+    }
+}
+
 echo $OUTPUT->header();
 echo \format_minimoodlewall\admin_page_tabs::render('tags');
 echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
@@ -86,10 +113,17 @@ $profilebuttons[] = [
     'active' => ($profilename === ''),
 ];
 foreach ($allprofiles as $profile) {
+    $isimported = ($profile->scope ?? 'global') === 'imported';
     $profilebuttons[] = [
         'name' => $profile->name,
         'displayname' => $profile->displayname,
         'active' => ($profilename === $profile->name),
+        'isimported' => $isimported,
+        'promoteurl' => $isimported ? (new moodle_url($PAGE->url, [
+            'action' => 'promoteprofile',
+            'promoteid' => $profile->id,
+            'sesskey' => sesskey(),
+        ]))->out(false) : null,
     ];
 }
 
@@ -148,8 +182,14 @@ foreach ($tags as $tag) {
         'activitytype3' => $data['activitytype3'],
         'enabled' => $data['enabled'],
         'disabled' => !$data['enabled'],
+        'isimported' => ($tag->scope ?? 'global') === 'imported',
         'deleteurl' => (new moodle_url($PAGE->url, [
             'action' => 'deletetag',
+            'tagid' => $tag->id,
+            'sesskey' => sesskey(),
+        ]))->out(false),
+        'promoteurl' => (new moodle_url($PAGE->url, [
+            'action' => 'promotetag',
             'tagid' => $tag->id,
             'sesskey' => sesskey(),
         ]))->out(false),
@@ -175,6 +215,8 @@ $templatecontext = [
     'profilebuttons' => $profilebuttons,
     'tags' => $templatetags,
     'disabledtext' => get_string('profiletag_disabled', 'format_minimoodlewall'),
+    'importedtext' => get_string('tag_imported', 'format_minimoodlewall'),
+    'promotetoglobaltext' => get_string('promotetoglobal', 'format_minimoodlewall'),
     'tagprofiledatajson' => json_encode($tagprofiledata),
     'profileidmapjson' => json_encode($profileidmap),
     'currentprofile' => $profilename,
