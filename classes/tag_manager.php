@@ -926,7 +926,7 @@ class tag_manager {
         }
 
         $where = implode(' AND ', $conditions);
-        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC LIMIT 1";
+        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC";
         $records = $DB->get_records_sql($sql, $params, 0, 1);
 
         return $records ? reset($records) : null;

@@ -303,9 +303,11 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'course_section'
         );
 
-        // If all tags fingerprint-matched AND counts are equal, no imported profile needed.
-        $existingcount = $this->existingtags !== null ? count($this->existingtags) : 0;
-        if ($this->allfingerprint && $this->backuptagcount === $existingcount) {
+        // If all backup tags fingerprint-matched, no imported profile needed.
+        // The existing profile handles these tags correctly since they're identical.
+        // (Count differences are fine — backup only contains tags assigned to activities,
+        // not all tags on the instance.)
+        if ($this->allfingerprint) {
             return;
         }
 
