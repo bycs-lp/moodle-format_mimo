@@ -519,6 +519,24 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Whether the format allows deleting sections.
+     *
+     * In multi-section mode, any section > 0 can be deleted.
+     * In single-section mode, deletion is not allowed (section 1 is the wall).
+     *
+     * @param int|\stdClass|\section_info $section the section to check
+     * @return bool
+     */
+    #[\Override]
+    public function can_delete_section($section): bool {
+        if (!$this->is_multisection_enabled()) {
+            return false;
+        }
+        $sectionnum = is_object($section) ? ($section->section ?? $section->sectionnum ?? 0) : (int) $section;
+        return $sectionnum > 0;
+    }
+
+    /**
      * Check whether multi-section mode is enabled for this course.
      *
      * @return bool

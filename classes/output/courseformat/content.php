@@ -214,9 +214,11 @@ class content extends content_base {
                 $sectioncard->hassectionimage = false;
             }
 
-            // Add image management URLs in editing mode.
+            // Add editing-mode properties.
             if ($isediting) {
                 $sectioncard->courseid = $course->id;
+                $sectioncard->candeletesection = course_can_delete_section($course, $sectioninfo);
+                $sectioncard->activitycount = $activitycount;
             }
 
             // Render inplace editable for section name in editing mode.
@@ -231,11 +233,19 @@ class content extends content_base {
             $sections[] = $sectioncard;
         }
 
+        // Get section 0 DB id for drag-and-drop (needed for "move to first position").
+        $section0id = 0;
+        $section0info = $modinfo->get_section_info(0);
+        if ($section0info) {
+            $section0id = $section0info->id;
+        }
+
         $data = (object) [
             'isoverview' => true,
             'overviewsections' => $sections,
             'hassections' => !empty($sections),
             'isediting' => $isediting,
+            'section0id' => $section0id,
             'bgdesignclass' => 'mmw-bgdesign-' . $bgdesign,
             'stylevariant' => $activityprofile,
             'styleclass' => 'minimoodlewall-style-' . $activityprofile,

@@ -2073,6 +2073,24 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
+/* Editing-mode card: whole card is the drag surface. */
+.mmw-overview-card--editing {
+    cursor: move;
+
+    &.dragging {
+        cursor: move;
+    }
+
+    &.dragging {
+        opacity: 0.4;
+    }
+
+    &.drag-over {
+        border: 2px dashed #007bff;
+        background: rgba(0, 123, 255, 0.05);
+    }
+}
+
 .mmw-overview-card__body {
     flex: 1;
     min-height: 0;
@@ -2188,6 +2206,7 @@ body.single-section-page.format-mmw-multisection-view {
     font-size: 0.8rem;
     color: #666;
     gap: .5rem;
+    flex-wrap: wrap;
 }
 
 

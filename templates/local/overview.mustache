@@ -37,12 +37,12 @@
     <h2 class="accesshide">{{{title}}}</h2>
     <div class="mmw-bgdesign-wrapper {{bgdesignclass}}">
         {{#hassections}}
-        <div class="mmw-overview-grid" data-region="mmw-overview-grid">
+        <div class="mmw-overview-grid" data-region="mmw-overview-grid" data-section0id="{{section0id}}">
             {{#overviewsections}}
             {{#isediting}}
-            <div class="mmw-overview-card mmw-overview-card--editing" data-section-num="{{num}}" data-section-id="{{id}}">
+            <div class="mmw-overview-card mmw-overview-card--editing" data-for="mmw-overview-card" data-id="{{id}}" data-section-num="{{num}}" data-section-id="{{id}}">
                 <div class="mmw-overview-card__body">
-                    <h3 class="mmw-overview-card__name">{{{inplaceeditable}}}</h3>
+                    <h3 class="mmw-overview-card__name" draggable="false">{{{inplaceeditable}}}</h3>
                     {{#hassummary}}
                     <div class="mmw-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
@@ -63,8 +63,8 @@
                 </div>
                 {{/hasminitiles}}
                 {{/hassectionimage}}
-                <div class="mmw-overview-card__footer">
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                <div class="mmw-overview-card__footer" draggable="false">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" draggable="false"
                         data-action="section-image"
                         data-courseid="{{courseid}}"
                         data-sectionid="{{id}}"
@@ -76,9 +76,20 @@
                         {{#str}}sectionimage_upload, format_minimoodlewall{{/str}}
                         {{/hassectionimage}}
                     </button>
-                    <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary">
+                    <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary" draggable="false">
                         {{#str}}viewactivity, format_minimoodlewall{{/str}}
                     </a>
+                    {{#candeletesection}}
+                    <button type="button" class="btn btn-sm btn-outline-danger" draggable="false"
+                        data-action="delete-section"
+                        data-section-id="{{id}}"
+                        data-section-name="{{name}}"
+                        data-activity-count="{{activitycount}}"
+                        title="{{#str}}deletesection, format_minimoodlewall{{/str}}">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                        <span class="sr-only">{{#str}}deletesection, format_minimoodlewall{{/str}}</span>
+                    </button>
+                    {{/candeletesection}}
                 </div>
             </div>
             {{/isediting}}
@@ -140,5 +151,6 @@
 {{#isediting}}
 {{#js}}
 require(['format_minimoodlewall/section_image_modal'], function(mod) { mod.init(); });
+require(['format_minimoodlewall/section_overview_actions'], function(mod) { mod.init(); });
 {{/js}}
 {{/isediting}}

@@ -1611,6 +1611,21 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   outline-offset: 2px;
 }
 
+/* Editing-mode card: whole card is the drag surface. */
+.mmw-overview-card--editing {
+  cursor: move;
+}
+.mmw-overview-card--editing.dragging {
+  cursor: move;
+}
+.mmw-overview-card--editing.dragging {
+  opacity: 0.4;
+}
+.mmw-overview-card--editing.drag-over {
+  border: 2px dashed #007bff;
+  background: rgba(0, 123, 255, 0.05);
+}
+
 .mmw-overview-card__body {
   flex: 1;
   min-height: 0;
@@ -1719,6 +1734,7 @@ body.single-section-page.format-mmw-multisection-view #page-header {
   font-size: 0.8rem;
   color: #666;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .mmw-overview-card__progress {

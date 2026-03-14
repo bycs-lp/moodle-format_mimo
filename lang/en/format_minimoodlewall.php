@@ -247,3 +247,6 @@ $string['sectionimage'] = 'Section image';
 $string['sectionimage_upload'] = 'Upload image';
 $string['sectionimage_change'] = 'Change image';
 $string['sectionimage_upload_title'] = 'Section image: {$a}';
+$string['deletesection'] = 'Delete section';
+$string['confirmdeletesection'] = 'Are you sure you want to delete section "{$a}"?';
+$string['confirmdeletesection_notempty'] = 'Are you sure you want to delete section "{$a->name}"? It contains {$a->count} activities that will be permanently deleted.';

@@ -16,6 +16,7 @@
     - `is_multisection_enabled()` — helper that reads the course option.
     - `get_sectionnum()` returns `1` in single-section mode; returns `$this->singlesection` (nullable, set by `format.php`) in multi-section mode. Returns `null` on the overview landing page (no section selected).
     - `is_section_visible()` — section 0 is always hidden. Single-section: only section 1 + delegated; multi-section: all non-orphan sections except 0 are visible.
+  - `can_delete_section()` — returns `true` for sections > 0 in multi-section mode; `false` in single-section mode.
     - `uses_course_index()` — returns `true` in multi-section mode, `false` otherwise.
     - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/view.php` for navigation.
     - `extend_course_navigation()` — single-section: hides section breadcrumbs; multi-section: shows section breadcrumbs + expands selected section in navigation + stores section preference when viewing an activity page (deep link support).
@@ -124,7 +125,7 @@
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 5. **Learner view**
    - **Single-section mode**: Wall shows all activities from section 1 in a responsive grid.
-   - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. Teachers can upload/change/remove a section image via buttons on the card in editing mode. Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
+   - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. In editing mode: teachers can upload/change section images, delete sections (confirmation modal with activity count warning), and reorder sections via drag-and-drop (whole card is drag surface, interactive elements take priority via `draggable="false"`). Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
    - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_minimoodlewall_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
    - **Sticky wall behavior**: User preference `format_minimoodlewall_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
@@ -286,6 +287,7 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/activity_dragdrop.js` – drag and drop reordering.
 - `amd/src/profile_image_switcher.js` – swaps tag images/names/visibility in course form when activity profile changes.
 - `amd/src/style_delete_confirm.js` – style deletion confirmation modal.
+- `amd/src/section_overview_actions.js` – section overview card delete + drag-and-drop reorder (editing mode). Uses `BaseComponent` + `DragDrop` from `core/reactive`. Whole card is drag surface; interactive children protected via `draggable="false"`. Calls `core_courseformat_update_course` with `section_delete` / `section_move_after`.
 - `amd/src/style_image_switcher.js` – style image tab switching.
 - `amd/src/description_tag_management.js` – description tag admin helpers.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
