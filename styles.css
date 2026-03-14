@@ -1802,6 +1802,8 @@ body.single-section-page.format-mmw-multisection-view #page-header {
 
 .mmw-overview-btn__icon {
   flex-shrink: 0;
+  stroke: #fff;
+  stroke-width: 1px;
 }
 
 /* Compact secondary navigation — three-dot dropdown for students. */
