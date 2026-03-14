@@ -19,11 +19,11 @@ Feature: Tag filtering in minimoodlewall format
       | Test Course 1 | TC1       | minimoodlewall | 1               |
     And the following "format_minimoodlewall > activities" exist:
       | activity | name         | intro            | course | section | tag      |
-      | assign   | Assignment 1 | First assignment | TC1    | 0       | Practice |
-      | quiz     | Quiz 1       | First quiz       | TC1    | 0       | Practice |
-      | page     | Page 1       | First page       | TC1    | 0       | Reading  |
-      | forum    | Forum 1      | First forum      | TC1    | 0       | Discuss  |
-      | book     | Book 1       | First book       | TC1    | 0       | Reading  |
+      | assign   | Assignment 1 | First assignment | TC1    | 1       | Practice |
+      | quiz     | Quiz 1       | First quiz       | TC1    | 1       | Practice |
+      | page     | Page 1       | First page       | TC1    | 1       | Reading  |
+      | forum    | Forum 1      | First forum      | TC1    | 1       | Discuss  |
+      | book     | Book 1       | First book       | TC1    | 1       | Reading  |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | teacher1 | TC1    | editingteacher |

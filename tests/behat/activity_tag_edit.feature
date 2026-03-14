@@ -21,8 +21,8 @@ Feature: Change activity tag via module edit form
       | teacher1 | TC1    | editingteacher |
     And the following "format_minimoodlewall > activities" exist:
       | activity | name       | intro          | course | section | tag      |
-      | page     | Test Page  | A test page    | TC1    | 0       | Reading  |
-      | assign   | Test Assign| A test assign  | TC1    | 0       | Practice |
+      | page     | Test Page  | A test page    | TC1    | 1       | Reading  |
+      | assign   | Test Assign| A test assign  | TC1    | 1       | Practice |
 
   Scenario: Teacher sees current tag pre-selected when editing an activity
     Given I log in as "teacher1"

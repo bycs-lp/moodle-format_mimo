@@ -119,7 +119,7 @@ Feature: Activity profile management in minimoodlewall format
       | Test Course | TC1       | minimoodlewall | mystyle         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC1    | 0       |
+      | page     | Page 1 | First page | TC1    | 1       |
     And I log in as "admin"
     When I am on "Test Course" course homepage
     Then ".minimoodlewall-activities.minimoodlewall-style-mystyle" "css_element" should exist

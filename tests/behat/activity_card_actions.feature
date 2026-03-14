@@ -18,8 +18,8 @@ Feature: Activity card action controls in minimoodlewall format
       | Test Course 1 | TC1       | minimoodlewall |
     And the following "format_minimoodlewall > activities" exist:
       | activity | name         | intro            | course | section | tag      |
-      | page     | Page 1       | First page       | TC1    | 0       | Reading  |
-      | assign   | Assignment 1 | First assignment | TC1    | 0       | Practice |
+      | page     | Page 1       | First page       | TC1    | 1       | Reading  |
+      | assign   | Assignment 1 | First assignment | TC1    | 1       | Practice |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |

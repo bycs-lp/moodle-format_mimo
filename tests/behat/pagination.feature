@@ -20,16 +20,16 @@ Feature: Activity pagination in minimoodlewall format
       | student1 | TC1    | student |
     And the following "activities" exist:
       | activity | name    | intro        | course | section |
-      | page     | Page 1  | First page   | TC1    | 0       |
-      | page     | Page 2  | Second page  | TC1    | 0       |
-      | page     | Page 3  | Third page   | TC1    | 0       |
-      | page     | Page 4  | Fourth page  | TC1    | 0       |
-      | page     | Page 5  | Fifth page   | TC1    | 0       |
-      | page     | Page 6  | Sixth page   | TC1    | 0       |
-      | page     | Page 7  | Seventh page | TC1    | 0       |
-      | page     | Page 8  | Eighth page  | TC1    | 0       |
-      | page     | Page 9  | Ninth page   | TC1    | 0       |
-      | page     | Page 10 | Tenth page   | TC1    | 0       |
+      | page     | Page 1  | First page   | TC1    | 1       |
+      | page     | Page 2  | Second page  | TC1    | 1       |
+      | page     | Page 3  | Third page   | TC1    | 1       |
+      | page     | Page 4  | Fourth page  | TC1    | 1       |
+      | page     | Page 5  | Fifth page   | TC1    | 1       |
+      | page     | Page 6  | Sixth page   | TC1    | 1       |
+      | page     | Page 7  | Seventh page | TC1    | 1       |
+      | page     | Page 8  | Eighth page  | TC1    | 1       |
+      | page     | Page 9  | Ninth page   | TC1    | 1       |
+      | page     | Page 10 | Tenth page   | TC1    | 1       |
 
   @javascript
   Scenario: Pagination controls appear when there are more than 8 activities

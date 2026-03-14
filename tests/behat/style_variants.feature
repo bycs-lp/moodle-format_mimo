@@ -31,7 +31,7 @@ Feature: Activity profile variants in minimoodlewall format
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC1    | 0       |
+      | page     | Page 1 | First page | TC1    | 1       |
     And the following "course enrolments" exist:
       | user     | course | role    |
       | student1 | TC1    | student |
@@ -46,7 +46,7 @@ Feature: Activity profile variants in minimoodlewall format
       | Test Course 2 | TC2       | minimoodlewall | light           |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC2    | 0       |
+      | page     | Page 1 | First page | TC2    | 1       |
     And I log in as "admin"
     When I am on "Test Course 2" course homepage
     Then ".minimoodlewall-activities.minimoodlewall-style-light" "css_element" should exist
@@ -58,7 +58,7 @@ Feature: Activity profile variants in minimoodlewall format
       | Test Course 3 | TC3       | minimoodlewall | classic         | darkmode         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC3    | 0       |
+      | page     | Page 1 | First page | TC3    | 1       |
     And I log in as "admin"
     When I am on "Test Course 3" course homepage
     Then ".mmw-bgdesign-wrapper.mmw-bgdesign-darkmode" "css_element" should exist
@@ -71,7 +71,7 @@ Feature: Activity profile variants in minimoodlewall format
       | Test Course 4 | TC4       | minimoodlewall | classic         |
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC4    | 0       |
+      | page     | Page 1 | First page | TC4    | 1       |
     And I log in as "admin"
     When I am on "Test Course 4" course homepage
     Then ".mmw-bgdesign-wrapper.mmw-bgdesign-primary-school" "css_element" should exist
@@ -92,7 +92,7 @@ Feature: Activity profile variants in minimoodlewall format
     And I press "Save and display"
     And the following "activities" exist:
       | activity | name   | intro      | course | section |
-      | page     | Page 1 | First page | TC5    | 0       |
+      | page     | Page 1 | First page | TC5    | 1       |
     When I am on "Test Course 5" course homepage
     Then ".mmw-bgdesign-wrapper.mmw-bgdesign-darkmode" "css_element" should exist
     And ".minimoodlewall-activities.mmw-bgdesign-darkmode" "css_element" should exist

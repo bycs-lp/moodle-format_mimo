@@ -100,9 +100,9 @@ Feature: Tag-based activity chooser in minimoodlewall format
   Scenario: Multiple activities can have different tags
     Given the following "format_minimoodlewall > activities" exist:
       | activity | name         | intro            | course | section | tag      |
-      | assign   | Assignment 1 | First assignment | TC1    | 0       | Practice |
-      | quiz     | Quiz 1       | First quiz       | TC1    | 0       | Practice |
-      | page     | Page 1       | First page       | TC1    | 0       | Reading  |
+      | assign   | Assignment 1 | First assignment | TC1    | 1       | Practice |
+      | quiz     | Quiz 1       | First quiz       | TC1    | 1       | Practice |
+      | page     | Page 1       | First page       | TC1    | 1       | Reading  |
     When I log in as "teacher1"
     And I am on "Test Course 1" course homepage with editing mode off
     And I wait until ".minimoodlewall-filterbar" "css_element" exists
