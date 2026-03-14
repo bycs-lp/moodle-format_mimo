@@ -55,6 +55,14 @@ class section_image_form extends dynamic_form {
             null,
             section_image_manager::get_filemanager_options()
         );
+
+        $fitoptions = [
+            'cover' => get_string('sectionimagefit_cover', 'format_minimoodlewall'),
+            'contain' => get_string('sectionimagefit_contain', 'format_minimoodlewall'),
+        ];
+        $mform->addElement('select', 'sectionimagefit',
+            get_string('sectionimagefit', 'format_minimoodlewall'), $fitoptions);
+        $mform->setDefault('sectionimagefit', 'cover');
     }
 
     /**
@@ -84,10 +92,27 @@ class section_image_form extends dynamic_form {
 
         $draftitemid = section_image_manager::prepare_draft($courseid, $sectionid);
 
+        // Read current fit option from section format options.
+        $format = course_get_format($courseid);
+        $modinfo = get_fast_modinfo($courseid);
+        $sectioninfo = null;
+        foreach ($modinfo->get_section_info_all() as $si) {
+            if ((int) $si->id === $sectionid) {
+                $sectioninfo = $si;
+                break;
+            }
+        }
+        $fitoption = 'cover';
+        if ($sectioninfo) {
+            $opts = $format->get_format_options($sectioninfo);
+            $fitoption = $opts['sectionimagefit'] ?? 'cover';
+        }
+
         $this->set_data([
             'courseid' => $courseid,
             'sectionid' => $sectionid,
             'sectionimagefile' => $draftitemid,
+            'sectionimagefit' => $fitoption,
         ]);
     }
 
@@ -99,6 +124,14 @@ class section_image_form extends dynamic_form {
     public function process_dynamic_submission() {
         $data = $this->get_data();
         section_image_manager::save_image((int) $data->courseid, (int) $data->sectionid, (int) $data->sectionimagefile);
+
+        // Save fit option as a section format option.
+        $format = course_get_format((int) $data->courseid);
+        $format->update_section_format_options([
+            'id' => (int) $data->sectionid,
+            'sectionimagefit' => $data->sectionimagefit,
+        ]);
+
         return ['result' => true];
     }
 

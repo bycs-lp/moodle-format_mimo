@@ -254,6 +254,21 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
+     * Definitions of the additional options that this course format uses for sections.
+     *
+     * @param bool $foreditform Whether the form is for editing.
+     * @return array of options
+     */
+    public function section_format_options($foreditform = false) {
+        return [
+            'sectionimagefit' => [
+                'default' => 'cover',
+                'type' => PARAM_ALPHA,
+            ],
+        ];
+    }
+
+    /**
      * Adds format options elements to the course/section edit form.
      *
      * Overrides parent to add a read-only tag preview below the activity profile

@@ -2151,9 +2151,16 @@ body.single-section-page.format-mmw-multisection-view {
 .mmw-overview-card__sectionimage {
     width: 100%;
     height: 100%;
-    object-fit: contain;
     display: block;
     border-radius: 0.6rem;
+
+    &--cover {
+        object-fit: cover;
+    }
+
+    &--contain {
+        object-fit: contain;
+    }
 }
 
 /* When a section image is present, shrink the body so the image dominates. */
