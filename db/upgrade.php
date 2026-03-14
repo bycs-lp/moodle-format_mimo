@@ -914,5 +914,70 @@ function xmldb_format_minimoodlewall_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026030502, 'format', 'minimoodlewall');
     }
 
+    // Move all activities from section 0 to section 1 for minimoodlewall courses.
+    // Section 0 is now hidden; section 1 is the default wall in both single-section
+    // and multi-section modes. This reverses the earlier 2026021102 migration.
+    if ($oldversion < 2026031400) {
+        // Find all courses using minimoodlewall format.
+        $courses = $DB->get_records('course', ['format' => 'minimoodlewall'], '', 'id');
+
+        foreach ($courses as $course) {
+            // Ensure section 1 exists using direct DB insert (course_create_sections_if_missing
+            // calls get_fast_modinfo which is not available during upgrade).
+            if (!$DB->record_exists('course_sections', ['course' => $course->id, 'section' => 1])) {
+                $sectionrecord = new \stdClass();
+                $sectionrecord->course = $course->id;
+                $sectionrecord->section = 1;
+                $sectionrecord->summary = '';
+                $sectionrecord->summaryformat = FORMAT_HTML;
+                $sectionrecord->sequence = '';
+                $sectionrecord->timemodified = time();
+                $DB->insert_record('course_sections', $sectionrecord);
+            }
+
+            // Get section 0 and section 1 records for this course.
+            $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
+            $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+
+            if (!$section0 || !$section1) {
+                continue;
+            }
+
+            // Move all course modules from section 0 to section 1.
+            $modulesinsection0 = $DB->get_records('course_modules', ['course' => $course->id, 'section' => $section0->id]);
+            if (!empty($modulesinsection0)) {
+                // Update all modules to point to section 1.
+                $DB->execute(
+                    "UPDATE {course_modules} SET section = :section1id WHERE course = :courseid AND section = :section0id",
+                    ['section1id' => $section1->id, 'courseid' => $course->id, 'section0id' => $section0->id]
+                );
+
+                // Merge the sequences: prepend section 0's modules to section 1's (preserve order).
+                $seq0 = trim($section0->sequence ?? '', ',');
+                $seq1 = trim($section1->sequence ?? '', ',');
+                if ($seq0 !== '' && $seq1 !== '') {
+                    $newsequence = $seq0 . ',' . $seq1;
+                } else if ($seq0 !== '') {
+                    $newsequence = $seq0;
+                } else {
+                    $newsequence = $seq1;
+                }
+                $DB->set_field('course_sections', 'sequence', $newsequence, ['id' => $section1->id]);
+
+                // Clear section 0's sequence.
+                $DB->set_field('course_sections', 'sequence', '', ['id' => $section0->id]);
+            }
+        }
+
+        // Clear stale user preferences that remember section 0.
+        $DB->delete_records_select(
+            'user_preferences',
+            $DB->sql_like('name', ':namepattern') . ' AND value = :sectionzero',
+            ['namepattern' => 'format_minimoodlewall_lastsection_%', 'sectionzero' => '0']
+        );
+
+        upgrade_plugin_savepoint(true, 2026031400, 'format', 'minimoodlewall');
+    }
+
     return true;
 }

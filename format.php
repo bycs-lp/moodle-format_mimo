@@ -34,7 +34,8 @@ $ismultisection = $format->is_multisection_enabled();
 
 if ($ismultisection) {
     // Multi-section mode: show overview or a single wall.
-    course_create_sections_if_missing($course, 0);
+    // Ensure section 0 (required by Moodle core) and section 1 (first wall) exist.
+    course_create_sections_if_missing($course, [0, 1]);
 
     $renderer = $PAGE->get_renderer('format_minimoodlewall');
 
@@ -58,13 +59,13 @@ if ($ismultisection) {
     // do NOT call set_sectionnum() so core renders the overview page.
 } else {
     // Single-section mode: non-zero section redirects are handled in page_set_course().
-    // Make sure section 0 exists.
-    course_create_sections_if_missing($course, [0]);
+    // Ensure section 0 (required by Moodle core) and section 1 (the wall) exist.
+    course_create_sections_if_missing($course, [0, 1]);
 
     $renderer = $PAGE->get_renderer('format_minimoodlewall');
 
-    // Always display section 0 (the only section in this format).
-    $format->set_sectionnum(0);
+    // Always display section 1 (the sole wall in this format; section 0 is hidden).
+    $format->set_sectionnum(1);
 }
 
 $outputclass = $format->get_output_classname('content');

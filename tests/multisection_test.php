@@ -213,7 +213,8 @@ final class multisection_test extends \advanced_testcase {
     // -----------------------------------------------------------------------
 
     /**
-     * Test that all sections are visible when multi-section is enabled.
+     * Test that all sections except section 0 are visible when multi-section is enabled.
+     * Section 0 is always hidden in minimoodlewall.
      */
     public function test_all_sections_visible_in_multisection(): void {
         $modinfo = get_fast_modinfo($this->course);
@@ -221,17 +222,25 @@ final class multisection_test extends \advanced_testcase {
             if ($section->is_delegated()) {
                 continue;
             }
-            $this->assertTrue(
-                $this->format->is_section_visible($section),
-                "Section {$section->sectionnum} should be visible in multi-section mode."
-            );
+            if ($section->sectionnum == 0) {
+                $this->assertFalse(
+                    $this->format->is_section_visible($section),
+                    'Section 0 should NOT be visible in multi-section mode.'
+                );
+            } else {
+                $this->assertTrue(
+                    $this->format->is_section_visible($section),
+                    "Section {$section->sectionnum} should be visible in multi-section mode."
+                );
+            }
         }
     }
 
     /**
-     * Test that only section 0 is visible when multi-section is disabled.
+     * Test that only section 1 is visible when multi-section is disabled.
+     * Section 0 is always hidden in minimoodlewall.
      */
-    public function test_only_section0_visible_in_singlesection(): void {
+    public function test_only_section1_visible_in_singlesection(): void {
         $this->disable_multisection($this->course);
         $format = course_get_format($this->course);
         $modinfo = get_fast_modinfo($this->course);
@@ -240,10 +249,10 @@ final class multisection_test extends \advanced_testcase {
             if ($section->is_delegated()) {
                 continue;
             }
-            if ($section->sectionnum == 0) {
+            if ($section->sectionnum == 1) {
                 $this->assertTrue(
                     $format->is_section_visible($section),
-                    'Section 0 should be visible in single-section mode.'
+                    'Section 1 should be visible in single-section mode.'
                 );
             } else {
                 $this->assertFalse(
@@ -259,12 +268,13 @@ final class multisection_test extends \advanced_testcase {
     // -----------------------------------------------------------------------
 
     /**
-     * Test get_sectionnum returns 0 for single-section mode.
+     * Test get_sectionnum returns 1 for single-section mode.
+     * Section 0 is hidden; section 1 is the default wall.
      */
-    public function test_getsectionnum_singlesection_returns_zero(): void {
+    public function test_getsectionnum_singlesection_returns_one(): void {
         $this->disable_multisection($this->course);
         $format = course_get_format($this->course);
-        $this->assertSame(0, $format->get_sectionnum());
+        $this->assertSame(1, $format->get_sectionnum());
     }
 
     /**
@@ -396,6 +406,18 @@ final class multisection_test extends \advanced_testcase {
     // -----------------------------------------------------------------------
 
     /**
+     * Test that section 0 is always hidden in multi-section mode.
+     */
+    public function test_section0_hidden_in_multisection(): void {
+        $modinfo = get_fast_modinfo($this->course);
+        $section0 = $modinfo->get_section_info(0);
+        $this->assertFalse(
+            $this->format->is_section_visible($section0),
+            'Section 0 should NOT be visible in multi-section mode.'
+        );
+    }
+
+    /**
      * Test that completion counts are scoped per section in multi-section mode.
      *
      * Verifies that completion_info correctly reports different completion counts
@@ -415,24 +437,24 @@ final class multisection_test extends \advanced_testcase {
         $this->enable_multisection($course);
 
         // Create activities in different sections.
-        $page0a = $generator->create_module('page', [
-            'course' => $course->id,
-            'section' => 0,
-            'name' => 'Page in s0',
-        ]);
-        $page0b = $generator->create_module('page', [
-            'course' => $course->id,
-            'section' => 0,
-            'name' => 'Page2 in s0',
-        ]);
-        $page1 = $generator->create_module('page', [
+        $page1a = $generator->create_module('page', [
             'course' => $course->id,
             'section' => 1,
             'name' => 'Page in s1',
         ]);
+        $page1b = $generator->create_module('page', [
+            'course' => $course->id,
+            'section' => 1,
+            'name' => 'Page2 in s1',
+        ]);
+        $page2 = $generator->create_module('page', [
+            'course' => $course->id,
+            'section' => 2,
+            'name' => 'Page in s2',
+        ]);
 
         // Explicitly enable manual completion tracking on these modules.
-        foreach ([$page0a->cmid, $page0b->cmid, $page1->cmid] as $cmid) {
+        foreach ([$page1a->cmid, $page1b->cmid, $page2->cmid] as $cmid) {
             $DB->set_field('course_modules', 'completion', COMPLETION_TRACKING_MANUAL, ['id' => $cmid]);
         }
         rebuild_course_cache($course->id, true);
@@ -448,35 +470,35 @@ final class multisection_test extends \advanced_testcase {
         $this->assertNotEquals(COMPLETION_DISABLED, $completioninfo->is_enabled());
 
         // Count trackable activities per section.
-        $sec0count = 0;
         $sec1count = 0;
+        $sec2count = 0;
         foreach ($modinfo->cms as $cm) {
             if (!$cm->uservisible || !$completioninfo->is_enabled($cm)) {
                 continue;
             }
-            if ((int)$cm->sectionnum === 0) {
-                $sec0count++;
-            } else if ((int)$cm->sectionnum === 1) {
+            if ((int)$cm->sectionnum === 1) {
                 $sec1count++;
+            } else if ((int)$cm->sectionnum === 2) {
+                $sec2count++;
             }
         }
 
-        $this->assertEquals(2, $sec0count, 'Section 0 should have 2 trackable activities');
-        $this->assertEquals(1, $sec1count, 'Section 1 should have 1 trackable activity');
+        $this->assertEquals(2, $sec1count, 'Section 1 should have 2 trackable activities');
+        $this->assertEquals(1, $sec2count, 'Section 2 should have 1 trackable activity');
 
         // Verify the activities are indeed in the correct sections.
-        $sec0names = array_map(
-            fn($cm) => $cm->name,
-            $modinfo->get_section_info(0)->get_sequence_cm_infos()
-        );
         $sec1names = array_map(
             fn($cm) => $cm->name,
             $modinfo->get_section_info(1)->get_sequence_cm_infos()
         );
-        $this->assertContains('Page in s0', $sec0names);
-        $this->assertContains('Page2 in s0', $sec0names);
+        $sec2names = array_map(
+            fn($cm) => $cm->name,
+            $modinfo->get_section_info(2)->get_sequence_cm_infos()
+        );
         $this->assertContains('Page in s1', $sec1names);
-        $this->assertNotContains('Page in s1', $sec0names);
+        $this->assertContains('Page2 in s1', $sec1names);
+        $this->assertContains('Page in s2', $sec2names);
+        $this->assertNotContains('Page in s2', $sec1names);
     }
 
     // -----------------------------------------------------------------------

@@ -301,7 +301,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
         $data['activityprofile'] = $data['activityprofile'] ?? 'explore';
-        $data['numsections'] = 0;
+        $data['numsections'] = 1;
 
         return $data;
     }

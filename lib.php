@@ -105,16 +105,23 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Returns the default section name for the minimoodlewall course format.
      *
+     * Section 0 is hidden in this format. In single-section mode, section 1 is
+     * the sole wall and gets the primary wall name. In multi-section mode,
+     * sections 1+ are numbered.
+     *
      * @param stdClass $section Section object from database
      * @return string Display name
      */
     public function get_default_section_name($section) {
         if ($section->section == 0) {
-            // Return the general section.
+            // Section 0 is hidden — return a generic label (never shown to users).
             return get_string('section0name', 'format_minimoodlewall');
-        } else {
-            return get_string('sectionname', 'format_minimoodlewall') . ' ' . $section->section;
         }
+        if (!$this->is_multisection_enabled() && $section->section == 1) {
+            // Single-section mode: section 1 is the sole wall.
+            return get_string('section0name', 'format_minimoodlewall');
+        }
+        return get_string('sectionname', 'format_minimoodlewall') . ' ' . $section->section;
     }
 
     /**
@@ -448,9 +455,10 @@ class format_minimoodlewall extends core_courseformat\base {
                     }
                 }
             } else {
-                // Single-section mode: redirect non-zero section URLs to plain course view.
+                // Single-section mode: redirect any section URL that is not section 1 to plain course view.
+                // Section 0 is hidden; only section 1 is the wall.
                 $sectionparam = optional_param('section', null, PARAM_INT);
-                if ($sectionparam !== null && $sectionparam != 0) {
+                if ($sectionparam !== null && $sectionparam != 1) {
                     redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
                 }
             }
@@ -517,7 +525,7 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Get the current section to display.
      *
-     * In single-section mode, always returns 0 (section 0 only).
+     * In single-section mode, always returns 1 (section 0 is hidden).
      * In multi-section mode, returns the currently selected section or null for all.
      *
      * @return int|null
@@ -525,7 +533,7 @@ class format_minimoodlewall extends core_courseformat\base {
     #[\Override]
     public function get_sectionnum(): ?int {
         if (!$this->is_multisection_enabled()) {
-            return 0;
+            return 1;
         }
         return $this->singlesection;
     }
@@ -533,19 +541,24 @@ class format_minimoodlewall extends core_courseformat\base {
     /**
      * Returns if a specific section is visible to the current user.
      *
-     * In single-section mode, only section 0 and delegated sections are visible.
-     * In multi-section mode, all non-orphan sections are visible (delegated to parent).
+     * Section 0 is always hidden in this format (exists in DB but never rendered).
+     * In single-section mode, only section 1 and delegated sections are visible.
+     * In multi-section mode, all non-orphan sections except section 0 are visible.
      *
      * @param \section_info $section the section modinfo
      * @return bool
      */
     #[\Override]
     public function is_section_visible(\section_info $section): bool {
+        // Section 0 is always hidden in minimoodlewall.
+        if ($section->sectionnum == 0) {
+            return false;
+        }
         $visible = parent::is_section_visible($section);
         if ($this->is_multisection_enabled()) {
             return $visible;
         }
-        return $visible && ($section->sectionnum == 0 || $section->is_delegated());
+        return $visible && ($section->sectionnum == 1 || $section->is_delegated());
     }
 
     /**

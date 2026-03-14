@@ -5,20 +5,21 @@
 ## TL;DR
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards. Optionally supports multi-section mode where each section has its own wall.
 - **Core concept**: Courses use an *activity profile* that determines which *tags* are active and how they appear; tags inject SVG art, colors, and category data for each module. Optional filtering lets learners show only activities for a tag.
-- **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts. **Overview landing page**: shows a card grid of all sections with activity counts and completion progress; clicking a card navigates to that wall; each wall has a home button ("← Back to overview") in the page header. **Sticky wall**: the last-visited section is remembered per user per course via `set_user_preference`. Returning to the course URL without `?section=` auto-redirects to the remembered wall. The home button passes `?overview=1` which clears the preference and shows the overview. Deep-linking to an activity also stores its section. When OFF (default): classic single-wall behavior with all activities in section 0.
+- **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts. **Overview landing page**: shows a card grid of all sections (section 0 is always hidden) with activity counts and completion progress; clicking a card navigates to that wall; each wall has a home button ("← Back to overview") in the page header. **Sticky wall**: the last-visited section is remembered per user per course via `set_user_preference`. Returning to the course URL without `?section=` auto-redirects to the remembered wall. The home button passes `?overview=1` which clears the preference and shows the overview. Deep-linking to an activity also stores its section. When OFF (default): classic single-wall behavior with all activities in section 1.
+- **Section 0 is always hidden**: Section 0 exists in the DB (required by Moodle core) but is never rendered or accessible to any user. All walls start at section 1. Activities should never be placed in section 0.
 - **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache), `classes/profile_manager.php` (profile CRUD + per-tag overrides), `classes/style_manager.php` (style variants + per-tag images), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
-  - Default: single-section behavior (section 0 only), course index disabled, section crumbs hidden on activity pages.
+  - Default: single-section behavior (section 1 is the wall; section 0 is always hidden), course index disabled, section crumbs hidden on activity pages.
   - **Multi-section mode** (`enablemultisection` course option): when ON, all methods become section-aware:
     - `is_multisection_enabled()` — helper that reads the course option.
-    - `get_sectionnum()` returns `0` in single-section mode; returns `$this->singlesection` (nullable, set by `format.php`) in multi-section mode. Returns `null` on the overview landing page (no section selected).
-    - `is_section_visible()` — single-section: only section 0 + delegated; multi-section: delegates to parent (all non-orphan sections visible).
+    - `get_sectionnum()` returns `1` in single-section mode; returns `$this->singlesection` (nullable, set by `format.php`) in multi-section mode. Returns `null` on the overview landing page (no section selected).
+    - `is_section_visible()` — section 0 is always hidden. Single-section: only section 1 + delegated; multi-section: all non-orphan sections except 0 are visible.
     - `uses_course_index()` — returns `true` in multi-section mode, `false` otherwise.
-    - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/section.php` for navigation.
+    - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/view.php` for navigation.
     - `extend_course_navigation()` — single-section: hides section breadcrumbs; multi-section: shows section breadcrumbs + expands selected section in navigation + stores section preference when viewing an activity page (deep link support).
-    - `get_remembered_section()` — reads `format_minimoodlewall_lastsection_{courseid}` user preference, validates section exists and is visible, clears stale preferences. Returns section number or null.
+    - `get_remembered_section()` — reads `format_minimoodlewall_lastsection_{courseid}` user preference, validates section exists and is visible (section 0 always fails), clears stale preferences. Returns section number or null.
   - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'explore'`), `enablefiltering`, `backgrounddesign` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `primary-school`, `darkmode`, `whiteboard`, `pinnwand`, `paper` — apply full-theme overrides to the board, cards, filter bar, navigation, and completion via a `.mmw-bgdesign-wrapper.mmw-bgdesign-{value}` wrapper and `.mmw-bgdesign-{value}` on the `<ul>` board), `enablecompletionstars`, `distractionfree`.
   - Course settings form shows a read-only tag preview below the activity profile dropdown, rendered via `form_tag_preview.mustache`. Tags update dynamically when the profile is changed (via `profile_image_switcher.js`).
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
@@ -100,7 +101,7 @@
    - User selects Minimal Moodle Wall format.
    - Selects an activity profile (determines which tags are active and how they appear).
    - A read-only tag preview shows the active tags for the selected profile.
-   - Only section 0 is created by default (single-section mode). If `enablemultisection` is ON, teachers can add more sections.
+   - Only section 0 (hidden, required by core) and section 1 (the wall) are created by default (single-section mode). If `enablemultisection` is ON, teachers can add more sections.
 2. **Tag & profile management**
    - Admin page (`tag_management.php`) manages tags with accordion UI.
    - Tags have forms for name, color, images, activity types.
@@ -122,7 +123,7 @@
     - **Moodle 5.0 and earlier**: Falls back to template overrides in `cm.php` export method with backward compatibility checks.
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 5. **Learner view**
-   - **Single-section mode**: Wall shows all activities from section 0 in a responsive grid.
+   - **Single-section mode**: Wall shows all activities from section 1 in a responsive grid.
    - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. Teachers can upload/change/remove a section image via buttons on the card in editing mode. Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
    - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_minimoodlewall_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
    - **Sticky wall behavior**: User preference `format_minimoodlewall_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
@@ -197,12 +198,13 @@ This plugin demonstrates the hybrid approach:
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
 
 ## Guardrails for Future Agents
-- **Single-section mode** (default): all activities live in section 0. `get_sectionnum()` returns 0; `is_section_visible()` hides all non-0, non-delegated sections. Don't add activities to other sections unless multi-section is enabled.
-- **Multi-section mode** (`enablemultisection`): each section is its own wall. `get_sectionnum()` returns the currently viewed section (or `null` on the overview landing page). Course index is active. Filter bars, completion counts, and tag usage counts are scoped per-section. Drag-drop is within-section only.
+- **Section 0 is always hidden**: Section 0 exists in DB (required by Moodle core — cannot be deleted or moved) but `is_section_visible()` always returns `false` for it. Never place activities in section 0. Never reference section 0 in URLs or navigation.
+- **Single-section mode** (default): all activities live in section 1. `get_sectionnum()` returns 1; `is_section_visible()` shows only section 1 and delegated sections. Don't add activities to other sections unless multi-section is enabled.
+- **Multi-section mode** (`enablemultisection`): each section (1+) is its own wall. Section 0 is excluded from overview, course index, and all rendering. `get_sectionnum()` returns the currently viewed section (or `null` on the overview landing page). Course index is active. Filter bars, completion counts, and tag usage counts are scoped per-section. Drag-drop is within-section only.
 - **Sticky wall** (`format_minimoodlewall_lastsection_{courseid}` user preference): Visiting a wall stores the section number. Returning to the course without `?section=` auto-redirects to the last wall. `?overview=1` clears the preference and shows overview. `extend_course_navigation()` also stores the preference when viewing an activity page (deep link and course index activity clicks). `get_remembered_section()` validates the stored section exists and is visible. `delete_format_data()` cleans up preferences for all users on course deletion.
 - **Multi-section overview** (landing page): Shown when no `?section=` param AND no stored preference (or `?overview=1`). `format.php` does NOT call `set_sectionnum()`. `content.php` detects `get_sectionid() === null` and builds lightweight section card data via `export_overview()`, using `overview.mustache`. This avoids rendering full walls for every section.
 - **Back to overview button**: Home button in page header (SVG icon), rendered by `page_set_course()` via `$page->add_header_action()`. Links to `?overview=1` to clear the stored preference and show the overview.
-- When toggling multi-section OFF, activities in sections >0 become hidden. There is no auto-migration — only a help text warning.
+- When toggling multi-section OFF, activities in sections >1 become hidden. There is no auto-migration — only a help text warning.
 - The course index is disabled in single-section mode. Do not re-enable it without also enabling multi-section.
 - Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
 - Every course should have a valid `activityprofile` option — defaults to `'explore'`.
@@ -239,7 +241,7 @@ This plugin demonstrates the hybrid approach:
 
 ## Quick File Map
 - `lib.php` – course options (enablemultisection, activityprofile, enablefiltering, backgrounddesign, enablecompletionstars, distractionfree), `is_multisection_enabled()` helper, conditional `get_sectionnum()` / `is_section_visible()` / `uses_course_index()` / `get_view_url()` / `extend_course_navigation()` (also stores section preference on activity pages), `get_remembered_section()` (validates stored preference), read-only tag preview in form, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence), preference cleanup in `delete_format_data()`.
-- `format.php` – entry point; branches on `is_multisection_enabled()`: multi-section stores preference on wall visit, restores preference on plain visit (redirects to `?section=N`), handles `?overview=1` (clears preference, shows overview); single-section redirects non-0 and locks to section 0.
+- `format.php` – entry point; branches on `is_multisection_enabled()`: multi-section stores preference on wall visit, restores preference on plain visit (redirects to `?section=N`), handles `?overview=1` (clears preference, shows overview); single-section ensures section 1 exists and locks to section 1.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered), `get_tag_usage_counts($courseid, $tagids, $sectionid)` (optional section scoping).
 - `classes/profile_manager.php` – profile CRUD, per-tag profile overrides (name, bgcolor, activity types, enabled), tag resolution. Key methods: `resolve_tags_for_profile()`, `resolve_tag_for_profile()`, `get_or_create_profile_tag()`.
 - `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
