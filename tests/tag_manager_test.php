@@ -63,6 +63,17 @@ final class tag_manager_test extends \advanced_testcase {
      * Test creating a tag.
      */
     public function test_create_tag(): void {
+        global $DB;
+
+        // Capture the current max sortorder so the assertion is independent
+        // of how many default tags the test-site fixture contains.
+        $maxbefore = $DB->get_field_sql(
+            "SELECT MAX(sortorder) FROM {format_minimoodlewall_tags}"
+        );
+        $expectedsort = ($maxbefore !== null && $maxbefore !== false)
+            ? (int) $maxbefore + 1
+            : 0;
+
         $id = tag_manager::create_tag(
             'Reading',
             'reading.svg',
@@ -83,7 +94,7 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertEquals('page', $tag->activitytype1);
         $this->assertEquals('book', $tag->activitytype2);
         $this->assertEquals('center', $tag->imgplacement);
-        $this->assertEquals(0, $tag->sortorder);
+        $this->assertEquals($expectedsort, $tag->sortorder);
     }
 
     /**
