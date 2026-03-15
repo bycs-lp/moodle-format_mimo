@@ -17,7 +17,7 @@
  * Description tag management JavaScript.
  *
  * @module     format_minimoodlewall/description_tag_management
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -51,7 +51,7 @@ const registerEventListeners = () => {
         const editButton = event.target.closest('[data-action="edit-tag"]');
         if (editButton) {
             event.preventDefault();
-            const tagId = parseInt(editButton.dataset.id);
+            const tagId = parseInt(editButton.dataset.id, 10);
             showTagForm(tagId);
             return;
         }
@@ -60,9 +60,9 @@ const registerEventListeners = () => {
         const deleteButton = event.target.closest('[data-action="delete-tag"]');
         if (deleteButton) {
             event.preventDefault();
-            const tagId = parseInt(deleteButton.dataset.id);
+            const tagId = parseInt(deleteButton.dataset.id, 10);
             const tagName = deleteButton.dataset.name;
-            const usageCount = parseInt(deleteButton.dataset.usagecount);
+            const usageCount = parseInt(deleteButton.dataset.usagecount, 10);
             showDeleteConfirmation(tagId, tagName, usageCount);
             return;
         }
@@ -109,7 +109,8 @@ const showTagForm = (tagId) => {
  */
 const showDeleteConfirmation = async(tagId, tagName, usageCount) => {
     const titleStr = await getString('deletetag', 'format_minimoodlewall');
-    const confirmStr = await getString('confirmdeletedestag', 'format_minimoodlewall', tagName);
+    const escapedTagName = tagName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const confirmStr = await getString('confirmdeletedestag', 'format_minimoodlewall', escapedTagName);
     const warningStr = usageCount > 0 ?
         await getString('desctagusagewarning', 'format_minimoodlewall', usageCount) : '';
 

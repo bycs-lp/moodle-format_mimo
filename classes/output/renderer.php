@@ -18,7 +18,7 @@
  * Renderer for outputting the minimoodlewall course format.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ use core_courseformat\output\section_renderer;
  * Basic renderer for minimoodlewall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends section_renderer {

@@ -21,7 +21,7 @@
  * and edit links.
  *
  * @module     format_minimoodlewall/tag_profile_switcher
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -147,9 +147,11 @@ const updateRow = (row, data, tagId, profileName) => {
     const imgCell = row.querySelector('[data-field="cardimage"]');
     if (imgCell) {
         if (data.cardimageurl) {
-            imgCell.innerHTML = `<img src="${encodeURI(data.cardimageurl)}"
-                alt="${escapeHtml(data.name)}"
-                style="width: 80px; height: 50px; object-fit: cover;">`;
+            const img = document.createElement('img');
+            img.src = data.cardimageurl;
+            img.alt = data.name;
+            img.style.cssText = 'width: 80px; height: 50px; object-fit: cover;';
+            imgCell.replaceChildren(img);
         } else {
             imgCell.innerHTML = '<span class="text-muted">-</span>';
         }

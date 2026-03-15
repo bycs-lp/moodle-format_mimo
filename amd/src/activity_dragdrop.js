@@ -166,7 +166,7 @@ class CardDnd extends BaseComponent {
 
         // Update wall state with new activity order.
         const items = container.querySelectorAll('li[data-id]');
-        const orderedIds = Array.from(items, (item) => item.dataset.id);
+        const orderedIds = Array.from(items, (item) => Number(item.dataset.id));
         this.reactive.dispatch('reorderActivities', orderedIds);
 
         // Persist to server.

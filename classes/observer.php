@@ -18,7 +18,7 @@
  * Event observer for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ namespace format_minimoodlewall;
  * Event observer class.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class observer {

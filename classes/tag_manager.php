@@ -18,7 +18,7 @@
  * Tag manager for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * Tag manager class for handling tag sets and tags.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class tag_manager {
@@ -525,12 +525,10 @@ class tag_manager {
         global $DB;
 
         // Get next sort order globally.
-        $maxsort = $DB->get_field(
-            'format_minimoodlewall_tags',
-            'MAX(sortorder)',
-            []
+        $maxsort = $DB->get_field_sql(
+            "SELECT MAX(sortorder) FROM {format_minimoodlewall_tags}"
         );
-        $sortorder = $maxsort ? (int)$maxsort + 1 : 0;
+        $sortorder = ($maxsort !== null && $maxsort !== false) ? (int)$maxsort + 1 : 0;
 
         $record = new \stdClass();
         $record->name = $name;
@@ -681,16 +679,12 @@ class tag_manager {
     /**
      * Unassign a tag from a course module.
      *
+     * @deprecated Use remove_cm_tag() instead.
      * @param int $cmid Course module ID
      * @return bool Success
      */
     public static function unassign_tag_from_cm(int $cmid): bool {
-        global $DB;
-
-        $result = $DB->delete_records('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
-        self::clear_mapping_cache();
-
-        return $result;
+        return self::remove_cm_tag($cmid);
     }
 
     /**
@@ -712,8 +706,15 @@ class tag_manager {
                 $tagid = $mapping->tagid;
                 self::$mappingcache->set($cachekey, $tagid);
             } else {
+                // Cache a sentinel value so we don't hit the DB again for untagged CMs.
+                self::$mappingcache->set($cachekey, 0);
                 return false;
             }
+        }
+
+        // Sentinel value 0 means "no tag assigned".
+        if ($tagid === 0) {
+            return false;
         }
 
         return self::get_tag($tagid);

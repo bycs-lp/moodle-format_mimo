@@ -18,7 +18,7 @@
  * Contains the activity name with inplace editable support for minimal wall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ use renderer_base;
  * Class to render a course module name with inplace editing in minimal wall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cmname extends cmname_base {

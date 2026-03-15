@@ -21,7 +21,7 @@
  * for course sections in multi-section mode.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -38,7 +38,7 @@ use moodle_url;
  * is the source of truth.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section_image_manager {
@@ -53,7 +53,7 @@ class section_image_manager {
         'subdirs' => 0,
         'maxfiles' => 1,
         'maxbytes' => 0,
-        'accepted_types' => ['.jpg', '.png', '.webp', '.svg', 'image/svg+xml'],
+        'accepted_types' => ['.jpg', '.png', '.webp'],
     ];
 
     /**

@@ -18,7 +18,7 @@
  * Activity description manager for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Manages activity type descriptions for the tag chooser modal.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class activity_description_manager {

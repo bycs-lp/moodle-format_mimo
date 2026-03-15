@@ -20,7 +20,7 @@
  * Image URLs are read from data-profileimages attributes on each tag preview item.
  *
  * @module     format_minimoodlewall/profile_image_switcher
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

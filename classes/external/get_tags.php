@@ -18,7 +18,7 @@
  * External service to get tags for a course.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ use format_minimoodlewall\tag_manager;
  * External service to get tags for a course.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_tags extends external_api {
@@ -61,13 +61,16 @@ class get_tags extends external_api {
             'courseid' => $courseid,
         ]);
 
+        $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
+
         $tags = tag_manager::get_tags_for_course($params['courseid']);
 
         $result = [];
         foreach ($tags as $tag) {
             $result[] = [
                 'id' => $tag->id,
-                'name' => format_string($tag->name, true, ['context' => \context_system::instance()]),
+                'name' => format_string($tag->name, true, ['context' => $context]),
                 'cardimage' => $tag->cardimage,
                 'filterimage' => $tag->filterimage,
                 'activitytype1' => $tag->activitytype1,

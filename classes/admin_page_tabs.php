@@ -25,7 +25,7 @@ use tabobject;
  * Renders a shared tab navigation bar across all minimoodlewall admin pages.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_page_tabs {

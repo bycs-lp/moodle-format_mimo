@@ -20,7 +20,7 @@ namespace format_minimoodlewall;
  * Hook callbacks for minimoodlewall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks {

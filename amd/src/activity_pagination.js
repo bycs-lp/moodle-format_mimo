@@ -17,12 +17,13 @@
  * Activity pagination for minimoodlewall format.
  *
  * @module     format_minimoodlewall/activity_pagination
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {BaseComponent} from 'core/reactive';
 import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {get_string as getString} from 'core/str';
 
 // Animation and timing constants.
 /** Duration in milliseconds for slide and height transition animations. */
@@ -67,7 +68,7 @@ const ITEMS_PER_PAGE_XS = 3;
  * @param {number} totalItems - Total number of activities
  * @returns {void}
  */
-const announcePaginationStatus = (page, totalPages, startIndex, endIndex, totalItems) => {
+const announcePaginationStatus = async(page, totalPages, startIndex, endIndex, totalItems) => {
     const liveRegion = document.querySelector('[data-region="pagination-status"]');
     if (!liveRegion) {
         return;
@@ -78,9 +79,13 @@ const announcePaginationStatus = (page, totalPages, startIndex, endIndex, totalI
     const firstItem = startIndex + 1;
     const lastItem = Math.min(endIndex, totalItems);
 
-    // Use Moodle string API when available, fallback to English
-    liveRegion.textContent =
-        `Page ${pageNumber} of ${totalPages}. Showing activities ${firstItem} to ${lastItem} of ${totalItems}.`;
+    liveRegion.textContent = await getString('aria_pagination_status', 'format_minimoodlewall', {
+        page: pageNumber,
+        totalpages: totalPages,
+        first: firstItem,
+        last: lastItem,
+        total: totalItems,
+    });
 };
 
 /**

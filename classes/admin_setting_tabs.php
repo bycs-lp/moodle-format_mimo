@@ -23,7 +23,7 @@ defined('MOODLE_INTERNAL') || die();
  * It renders as a full-width tab bar above the other settings.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class format_minimoodlewall_admin_setting_tabs extends admin_setting {

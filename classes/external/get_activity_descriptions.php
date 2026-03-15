@@ -18,7 +18,7 @@
  * External functions for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -39,7 +39,7 @@ use format_minimoodlewall\activity_description_manager;
  * External functions for retrieving activity descriptions.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class get_activity_descriptions extends external_api {
@@ -71,8 +71,12 @@ class get_activity_descriptions extends external_api {
             'activitytypes' => $activitytypes,
         ]);
 
+        // Validate context — activity descriptions are site-wide, so use system context.
+        $context = \context_system::instance();
+        self::validate_context($context);
+
         // Set up a minimal context for rendering (required for external webservices).
-        $PAGE->set_context(\context_system::instance());
+        $PAGE->set_context($context);
         $renderer = $PAGE->get_renderer('core');
 
         $descriptions = [];

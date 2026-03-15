@@ -17,7 +17,7 @@
  * Tag management modal forms (create/edit) using ModalForm.
  *
  * @module     format_minimoodlewall/tag_management_modal
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -46,7 +46,7 @@ const handleClick = (event) => {
     const editButton = event.target.closest('[data-action="edit-tag"]');
     if (editButton) {
         event.preventDefault();
-        const tagId = parseInt(editButton.dataset.tagId);
+        const tagId = parseInt(editButton.dataset.tagId, 10);
         showTagForm(tagId, editButton);
         return;
     }
@@ -56,7 +56,7 @@ const handleClick = (event) => {
         const tagRow = event.target.closest('tr[data-tag-id]');
         if (tagRow) {
             event.preventDefault();
-            const tagId = parseInt(tagRow.dataset.tagId);
+            const tagId = parseInt(tagRow.dataset.tagId, 10);
             showTagForm(tagId, tagRow.querySelector('[data-action="edit-tag"]') || tagRow);
         }
     }
@@ -70,7 +70,7 @@ const handleClick = (event) => {
  */
 const showTagForm = (tagId, returnFocusElement) => {
     const container = document.querySelector('[data-region="tag-management"]');
-    const activeProfileId = parseInt(container?.dataset.activeProfileId || '0');
+    const activeProfileId = parseInt(container?.dataset.activeProfileId || '0', 10);
 
     const modalForm = new ModalForm({
         formClass: 'format_minimoodlewall\\form\\tag_form',

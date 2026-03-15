@@ -17,7 +17,7 @@
  * Profile management modal forms (create/edit) using ModalForm.
  *
  * @module     format_minimoodlewall/profile_management_modal
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -46,7 +46,7 @@ const handleClick = (event) => {
     const editButton = event.target.closest('[data-action="edit-profile"]');
     if (editButton) {
         event.preventDefault();
-        const profileId = parseInt(editButton.dataset.profileId);
+        const profileId = parseInt(editButton.dataset.profileId, 10);
         showProfileForm(profileId, editButton);
     }
 };

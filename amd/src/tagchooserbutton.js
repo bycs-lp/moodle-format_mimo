@@ -21,7 +21,7 @@
  * - Moodle 5.0 and earlier with data-sectionnum attributes
  *
  * @module     format_minimoodlewall/tagchooserbutton
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -258,7 +258,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
         // Store tag ID in session via AJAX call
         await Ajax.call([{
             methodname: 'format_minimoodlewall_store_pending_tag',
-            args: {tagid: parseInt(tagId)},
+            args: {tagid: parseInt(tagId, 10)},
         }])[0];
 
         // Build URL for modedit.php
@@ -298,7 +298,7 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
         // Store tag ID in session via AJAX call
         await Ajax.call([{
             methodname: 'format_minimoodlewall_store_pending_tag',
-            args: {tagid: parseInt(tagId)},
+            args: {tagid: parseInt(tagId, 10)},
         }])[0];
 
         // Dynamically import activity chooser modules (available in Moodle 5.1+)

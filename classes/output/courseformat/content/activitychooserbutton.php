@@ -18,7 +18,7 @@
  * Activity chooser button output for minimal moodle wall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ use stdClass;
  * For Moodle 5.0 and earlier, the cm.php class handles tag data injection.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class activitychooserbutton extends activitychooserbutton_base {

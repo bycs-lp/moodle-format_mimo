@@ -17,7 +17,7 @@
  * Tag deletion confirmation modal.
  *
  * @module     format_minimoodlewall/tag_delete_confirm
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

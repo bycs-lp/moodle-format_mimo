@@ -24,7 +24,7 @@ namespace format_minimoodlewall;
  * completion settings with overrides stored in the format_minimoodlewall_compdefs table.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class completion_defaults_manager {
@@ -207,7 +207,11 @@ class completion_defaults_manager {
 
         // Apply custom rules to the module instance table if present.
         if (!empty($mmwdefaults->customrules)) {
-            $customrules = @json_decode($mmwdefaults->customrules, true);
+            $customrules = json_decode($mmwdefaults->customrules, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                debugging('Invalid JSON in minimoodlewall completion custom rules: ' . json_last_error_msg(), DEBUG_DEVELOPER);
+                $customrules = null;
+            }
             if (is_array($customrules) && !empty($customrules) && !empty($cmrecord->instance)) {
                 // Remove non-module fields that may have been stored in customrules.
                 unset($customrules['modids']);

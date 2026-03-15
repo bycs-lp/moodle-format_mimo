@@ -17,7 +17,7 @@
  * Section image modal — opens a dynamic form for uploading/changing section overview card images.
  *
  * @module     format_minimoodlewall/section_image_modal
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -41,8 +41,8 @@ export const init = () => {
         event.preventDefault();
         event.stopPropagation();
 
-        const courseid = parseInt(button.dataset.courseid);
-        const sectionid = parseInt(button.dataset.sectionid);
+        const courseid = parseInt(button.dataset.courseid, 10);
+        const sectionid = parseInt(button.dataset.sectionid, 10);
         const sectionname = button.dataset.sectionname || '';
 
         const title = await getString('sectionimage_upload_title', 'format_minimoodlewall', sectionname);

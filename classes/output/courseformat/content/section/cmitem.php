@@ -18,7 +18,7 @@
  * Contains the course module item output class.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ use format_minimoodlewall\tag_manager;
  * Base class to render a course module item.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cmitem extends cmitem_base {
@@ -89,7 +89,7 @@ class cmitem extends cmitem_base {
                 $tag = \format_minimoodlewall\profile_manager::resolve_tag_for_profile($tag, $profile->id);
             }
 
-            $data->cmformat->tagname = format_string($tag->name, true, ['context' => \context_system::instance()]);
+            $data->cmformat->tagname = format_string($tag->name, true, ['context' => \context_course::instance($cm->course)]);
             $data->cmformat->tagid = $tag->id;
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';

@@ -18,7 +18,7 @@
  * Contains the content output class.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ use core_courseformat\output\local\content as content_base;
  * Base class to render the course content.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class content extends content_base {
@@ -181,7 +181,7 @@ class content extends content_base {
                 $summary = format_text(
                     $sectioninfo->summary,
                     $sectioninfo->summaryformat,
-                    ['context' => $context, 'noclean' => true]
+                    ['context' => $context]
                 );
             }
 

@@ -18,7 +18,7 @@
  * into a dropdown in the header actions area.
  *
  * @module     format_minimoodlewall/compact_nav
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

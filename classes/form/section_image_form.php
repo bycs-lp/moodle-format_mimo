@@ -18,7 +18,7 @@
  * Dynamic form for uploading/changing a section overview card image.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,7 +32,7 @@ use context;
  * Section image upload dynamic form (opens in a modal).
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section_image_form extends dynamic_form {
@@ -87,8 +87,14 @@ class section_image_form extends dynamic_form {
      * Load existing data as form defaults.
      */
     public function set_data_for_dynamic_submission(): void {
+        global $DB;
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
         $sectionid = $this->optional_param('sectionid', 0, PARAM_INT);
+
+        // Validate that the section belongs to this course.
+        if (!$DB->record_exists('course_sections', ['id' => $sectionid, 'course' => $courseid])) {
+            throw new \moodle_exception('sectionnotexist', 'error');
+        }
 
         $draftitemid = section_image_manager::prepare_draft($courseid, $sectionid);
 
@@ -122,7 +128,14 @@ class section_image_form extends dynamic_form {
      * @return array
      */
     public function process_dynamic_submission() {
+        global $DB;
         $data = $this->get_data();
+
+        // Validate that the section belongs to this course.
+        if (!$DB->record_exists('course_sections', ['id' => (int) $data->sectionid, 'course' => (int) $data->courseid])) {
+            throw new \moodle_exception('sectionnotexist', 'error');
+        }
+
         section_image_manager::save_image((int) $data->courseid, (int) $data->sectionid, (int) $data->sectionimagefile);
 
         // Save fit option as a section format option.

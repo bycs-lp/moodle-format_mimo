@@ -17,12 +17,13 @@
  * Tag-based filtering for minimoodlewall activity cards.
  *
  * @module     format_minimoodlewall/tag_filter
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import Notification from 'core/notification';
 import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {get_string as getString} from 'core/str';
 
 /** Duration in milliseconds for height transition animation. */
 const HEIGHT_TRANSITION_MS = 300;
@@ -237,17 +238,20 @@ const syncFilterState = (wallState, activeTag, activeCompletion) => {
  * @param {number} totalCount - Total number of activities
  * @returns {void}
  */
-const announceFilterStatus = (tagName, visibleCount, totalCount) => {
+const announceFilterStatus = async(tagName, visibleCount, totalCount) => {
     const liveRegion = document.querySelector('[data-region="filter-status"]');
     if (!liveRegion) {
         return;
     }
 
     if (tagName) {
-        // Use Moodle string API when available, fallback to English
-        liveRegion.textContent = `Showing ${visibleCount} of ${totalCount} activities tagged '${tagName}'.`;
+        liveRegion.textContent = await getString('aria_filter_active', 'format_minimoodlewall', {
+            visible: visibleCount,
+            total: totalCount,
+            tagname: tagName,
+        });
     } else {
-        liveRegion.textContent = `Filter cleared. Showing all ${totalCount} activities.`;
+        liveRegion.textContent = await getString('aria_filter_cleared', 'format_minimoodlewall', totalCount);
     }
 };
 
@@ -462,10 +466,15 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
         starsContainer.appendChild(fragment);
 
         // Update aria label.
-        starsContainer.setAttribute(
-            'aria-label',
-            completedCount + ' of ' + totalWithCompletion + ' activities completed'
-        );
+        getString('aria_completion_status', 'format_minimoodlewall', {
+            completed: completedCount,
+            total: totalWithCompletion,
+        }).then((str) => {
+            starsContainer.setAttribute('aria-label', str);
+            return;
+        }).catch(() => {
+            // Fallback silently if string loading fails.
+        });
     }
 
     // Update data attributes and all-complete state.

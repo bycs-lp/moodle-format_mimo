@@ -17,11 +17,12 @@
  * Distraction-free mode toggle for minimoodlewall format.
  *
  * @module     format_minimoodlewall/distraction_free
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import Notification from 'core/notification';
+import {get_string as getString} from 'core/str';
 
 /** Cookie name for distraction-free state. */
 const COOKIE_NAME = 'format_minimoodlewall_df';
@@ -69,12 +70,14 @@ export const init = () => {
  * @param {boolean} isActive - Current state of distraction-free mode
  * @returns {void}
  */
-const createToggleButtons = (isActive) => {
+const createToggleButtons = async(isActive) => {
+    const ariaLabel = await getString('aria_toggle_distractionfree', 'format_minimoodlewall');
+
     // Top chevron (show when distraction-free is active).
     const topToggle = document.createElement('button');
     topToggle.className = 'format-minimoodlewall-df-toggle format-minimoodlewall-df-toggle-top';
     topToggle.setAttribute('data-action', 'toggle-distraction-free');
-    topToggle.setAttribute('aria-label', 'Toggle distraction-free mode');
+    topToggle.setAttribute('aria-label', ariaLabel);
     topToggle.innerHTML = '<i class="fa fa-chevron-down" aria-hidden="true"></i>';
     if (!isActive) {
         topToggle.style.display = 'none';
@@ -85,7 +88,7 @@ const createToggleButtons = (isActive) => {
     const bottomToggle = document.createElement('button');
     bottomToggle.className = 'format-minimoodlewall-df-toggle format-minimoodlewall-df-toggle-bottom';
     bottomToggle.setAttribute('data-action', 'toggle-distraction-free');
-    bottomToggle.setAttribute('aria-label', 'Toggle distraction-free mode');
+    bottomToggle.setAttribute('aria-label', ariaLabel);
     bottomToggle.innerHTML = '<i class="fa fa-chevron-up" aria-hidden="true"></i>';
     if (isActive) {
         bottomToggle.style.display = 'none';

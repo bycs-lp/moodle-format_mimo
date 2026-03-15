@@ -18,7 +18,7 @@
  * Strings for component 'format_minimoodlewall', language 'en'.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -264,3 +264,10 @@ $string['imported_profile_name'] = '📦 {$a} (imported)';
 $string['promotetoglobal'] = 'Make global';
 $string['promotetoglobal_success'] = 'Successfully promoted to global scope.';
 $string['promotetoglobal_confirm'] = 'Are you sure you want to make this available globally? This cannot be undone.';
+
+// Accessibility / ARIA strings.
+$string['aria_pagination_status'] = 'Page {$a->page} of {$a->totalpages}. Showing activities {$a->first} to {$a->last} of {$a->total}.';
+$string['aria_filter_active'] = 'Showing {$a->visible} of {$a->total} activities tagged \'{$a->tagname}\'.';
+$string['aria_filter_cleared'] = 'Filter cleared. Showing all {$a} activities.';
+$string['aria_completion_status'] = '{$a->completed} of {$a->total} activities completed';
+$string['aria_toggle_distractionfree'] = 'Toggle distraction-free mode';

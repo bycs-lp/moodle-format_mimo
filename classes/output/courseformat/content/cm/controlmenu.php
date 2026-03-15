@@ -18,7 +18,7 @@
  * Contains the control menu for activities in minimal wall format.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ use stdClass;
  * without the three-dots menu wrapper.
  *
  * @package    format_minimoodlewall
- * @copyright  2026 Your Name
+ * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class controlmenu extends controlmenu_base {

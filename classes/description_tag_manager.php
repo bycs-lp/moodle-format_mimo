@@ -18,7 +18,7 @@
  * Description tag manager for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Manages description tags for activity type descriptions.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class description_tag_manager {
@@ -65,10 +65,15 @@ class description_tag_manager {
     public static function create_tag(string $name, string $color): int {
         global $DB;
 
+        $color = trim($color);
+        if (!self::is_valid_color($color)) {
+            throw new \invalid_parameter_exception('Invalid hex color: ' . $color);
+        }
+
         $time = time();
         $record = new \stdClass();
         $record->name = trim($name);
-        $record->color = trim($color);
+        $record->color = $color;
         $record->timecreated = $time;
         $record->timemodified = $time;
 
@@ -91,8 +96,13 @@ class description_tag_manager {
             return false;
         }
 
+        $color = trim($color);
+        if (!self::is_valid_color($color)) {
+            throw new \invalid_parameter_exception('Invalid hex color: ' . $color);
+        }
+
         $record->name = trim($name);
-        $record->color = trim($color);
+        $record->color = $color;
         $record->timemodified = time();
 
         return $DB->update_record('format_minimoodlewall_desc_tags', $record);

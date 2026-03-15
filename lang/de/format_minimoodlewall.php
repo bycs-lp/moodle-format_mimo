@@ -18,7 +18,7 @@
  * German language strings for format_minimoodlewall.
  *
  * @package    format_minimoodlewall
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -236,3 +236,10 @@ $string['sectionimage_upload_title'] = 'Abschnittsbild: {$a}';
 $string['deletesection'] = 'Abschnitt löschen';
 $string['confirmdeletesection'] = 'Möchten Sie den Abschnitt "{$a}" wirklich löschen?';
 $string['confirmdeletesection_notempty'] = 'Möchten Sie den Abschnitt "{$a->name}" wirklich löschen? Er enthält {$a->count} Aktivitäten, die unwiderruflich gelöscht werden.';
+
+// Barrierefreiheit / ARIA-Strings.
+$string['aria_pagination_status'] = 'Seite {$a->page} von {$a->totalpages}. Zeige Aktivitäten {$a->first} bis {$a->last} von {$a->total}.';
+$string['aria_filter_active'] = '{$a->visible} von {$a->total} Aktivitäten mit Tag \'{$a->tagname}\' werden angezeigt.';
+$string['aria_filter_cleared'] = 'Filter zurückgesetzt. Alle {$a} Aktivitäten werden angezeigt.';
+$string['aria_completion_status'] = '{$a->completed} von {$a->total} Aktivitäten abgeschlossen';
+$string['aria_toggle_distractionfree'] = 'Ablenkungsfreien Modus umschalten';
