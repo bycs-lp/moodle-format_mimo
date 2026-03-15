@@ -725,6 +725,44 @@ class profile_manager {
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_PROFILE_FILTERIMAGE, $profiletagid);
     }
 
+    /**
+     * Copy a bundled pix/tags asset into a profile-specific file area.
+     *
+     * Used during installation to seed profile tag overrides with default images.
+     * Mirrors {@see tag_manager::copy_default_image()} but targets profile file areas.
+     *
+     * @param int $profiletagid Profile tags record ID (used as itemid)
+     * @param string|null $filename Bundled filename inside pix/tags/
+     * @param string $filearea Destination file area constant
+     */
+    private static function copy_default_profile_image(int $profiletagid, ?string $filename, string $filearea): void {
+        if (empty($filename)) {
+            return;
+        }
+
+        $context = context_system::instance();
+        $fs = get_file_storage();
+        if ($fs->file_exists($context->id, 'format_mimo', $filearea, $profiletagid, '/', $filename)) {
+            return;
+        }
+
+        $componentdir = \core_component::get_component_directory('format_mimo');
+        $source = $componentdir . '/pix/tags/' . $filename;
+        if (!file_exists($source)) {
+            return;
+        }
+
+        $filerecord = [
+            'contextid' => $context->id,
+            'component' => 'format_mimo',
+            'filearea' => $filearea,
+            'itemid' => $profiletagid,
+            'filepath' => '/',
+            'filename' => $filename,
+        ];
+        $fs->create_file_from_pathname($filerecord, $source);
+    }
+
     // ---------------------------------------------------------------
     // Imported profile management.
     // ---------------------------------------------------------------
@@ -861,27 +899,89 @@ class profile_manager {
             }
         }
 
-        // Set up Develop profile overrides: first two tags get name overrides.
-        if (!empty($profileids['develop'])) {
-            $developid = $profileids['develop'];
-            $alltags = tag_manager::get_all_tags();
-            $taglist = array_values($alltags);
+        // Per-profile tag overrides, keyed by profile name → tag index → override fields.
+        // Supports: name, bgcolor, activitytype1-3, imgplacement, imgsize, cardimage, filterimage.
+        // Image fields trigger file copy from pix/tags/ into the profile file area.
+        $profileoverrides = [
+            'explore' => [
+                0 => ['cardimage' => 'read_explore.png', 'filterimage' => 'read_explore.png'],
+                1 => ['cardimage' => 'explore_explore.png', 'filterimage' => 'explore_explore.png'],
+                2 => ['cardimage' => 'write_explore.png', 'filterimage' => 'write_explore.png'],
+                3 => ['cardimage' => 'share_explore.png', 'filterimage' => 'share_explore.png'],
+                4 => ['cardimage' => 'train_explore.png', 'filterimage' => 'train_explore.png'],
+                5 => ['cardimage' => 'teamwork_explore.png', 'filterimage' => 'teamwork_explore.png'],
+                6 => ['cardimage' => 'design_explore.png', 'filterimage' => 'design_explore.png'],
+            ],
+            'develop' => [
+                0 => ['name' => get_string('tag_analyze', 'format_mimo')],
+                1 => ['name' => get_string('tag_research', 'format_mimo')],
+            ],
+        ];
 
-            // Tag 0 (Read) → "📚 Analyze" in Develop.
-            if (isset($taglist[0])) {
-                $pt = self::get_or_create_profile_tag($taglist[0]->id, $developid);
-                self::update_profile_tag($pt->id, [
-                    'name' => get_string('tag_analyze', 'format_mimo'),
-                ]);
+        // Apply overrides for newly created profiles.
+        $alltags = null;
+        $taglist = null;
+        foreach ($profileoverrides as $profilename => $tagoverrides) {
+            if (empty($profileids[$profilename])) {
+                continue;
+            }
+            $pid = $profileids[$profilename];
+
+            // Lazy-load tag list (only needed when overrides exist).
+            if ($taglist === null) {
+                $alltags = tag_manager::get_all_tags();
+                $taglist = array_values($alltags);
             }
 
-            // Tag 1 (Explore) → "🔎 Research" in Develop.
-            if (isset($taglist[1])) {
-                $pt = self::get_or_create_profile_tag($taglist[1]->id, $developid);
-                self::update_profile_tag($pt->id, [
-                    'name' => get_string('tag_research', 'format_mimo'),
-                ]);
+            foreach ($tagoverrides as $tagindex => $overrides) {
+                if (!isset($taglist[$tagindex])) {
+                    continue;
+                }
+                $pt = self::get_or_create_profile_tag($taglist[$tagindex]->id, $pid);
+
+                // Separate image fields from non-image fields.
+                $imagefields = [];
+                $datafields = [];
+                foreach ($overrides as $field => $value) {
+                    if ($field === 'cardimage' || $field === 'filterimage') {
+                        $imagefields[$field] = $value;
+                    } else {
+                        $datafields[$field] = $value;
+                    }
+                }
+
+                // Apply non-image overrides (name, bgcolor, activity types, etc.).
+                if (!empty($datafields)) {
+                    self::update_profile_tag($pt->id, $datafields);
+                }
+
+                // Copy image files from pix/tags/ and update DB fields.
+                self::apply_default_profile_images($pt->id, $imagefields);
             }
         }
+    }
+
+    /**
+     * Copy default image files for a profile_tag record and update the DB fields.
+     *
+     * @param int $profiletagid Profile tags record ID
+     * @param array $imagefields Associative array of 'cardimage' and/or 'filterimage' => filename
+     */
+    private static function apply_default_profile_images(int $profiletagid, array $imagefields): void {
+        global $DB;
+
+        $fileareamap = [
+            'cardimage' => self::FILEAREA_PROFILE_CARDIMAGE,
+            'filterimage' => self::FILEAREA_PROFILE_FILTERIMAGE,
+        ];
+
+        foreach ($imagefields as $field => $filename) {
+            if (!isset($fileareamap[$field]) || empty($filename)) {
+                continue;
+            }
+            self::copy_default_profile_image($profiletagid, $filename, $fileareamap[$field]);
+            $DB->set_field(self::TABLE_PROFILE_TAGS, $field, $filename, ['id' => $profiletagid]);
+        }
+        $DB->set_field(self::TABLE_PROFILE_TAGS, 'timemodified', time(), ['id' => $profiletagid]);
     }
 }

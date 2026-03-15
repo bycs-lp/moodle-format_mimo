@@ -313,13 +313,13 @@ final class tag_manager_test extends \advanced_testcase {
 
         tag_manager::initialize_default_tags();
 
-        // Verify 9 default tags were created.
+        // Verify 7 default tags were created.
         $tags = tag_manager::get_all_tags();
-        $this->assertCount(9, $tags);
+        $this->assertCount(7, $tags);
 
         // Verify tag names.
         $tagnames = array_column($tags, 'name');
-        $expectednames = ['Reading', 'Writing', 'Watch', 'Listen', 'Discover', 'Calculations', 'Teamwork', 'Show', 'Practice'];
+        $expectednames = ['Reading', 'Discover', 'Writing', 'Show', 'Practice', 'Teamwork'];
         foreach ($expectednames as $expected) {
             $this->assertContains($expected, $tagnames);
         }
@@ -339,8 +339,8 @@ final class tag_manager_test extends \advanced_testcase {
         tag_manager::initialize_default_tags();
         tag_manager::initialize_default_tags();
 
-        // Should still only have 9 tags.
+        // Should still only have 7 tags.
         $tags = tag_manager::get_all_tags();
-        $this->assertCount(9, $tags);
+        $this->assertCount(7, $tags);
     }
 }
