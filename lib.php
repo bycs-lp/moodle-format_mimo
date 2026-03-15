@@ -421,6 +421,54 @@ class format_mimo extends core_courseformat\base {
     public function page_set_course(moodle_page $page) {
         parent::page_set_course($page);
 
+        // Apply distraction-free mode if enabled for this course.
+        // This must run before the has_set_url() guard because activity pages
+        // (mod/*/view.php) often call require_course_login() before set_url(),
+        // triggering page_set_course() before the URL is available.
+        $distractionfree = $this->get_course()->distractionfree ?? false;
+        if ($distractionfree) {
+            // Check if user has overridden the default via cookie.
+            $dfactive = true;
+            if (isset($_COOKIE['format_mimo_df'])) {
+                $dfactive = $_COOKIE['format_mimo_df'] === 'true';
+            }
+
+            if ($dfactive) {
+                // Add body class for distraction-free mode.
+                // CSS is injected via hook callback in classes/hook_callbacks.php.
+                $page->add_body_class('format-mimo-distraction-free');
+            }
+
+            // Initialize JavaScript module for toggle functionality.
+            $page->requires->js_call_amd('format_mimo/distraction_free', 'init');
+        }
+
+        // For non-editing users (students), replace the secondary navigation bar
+        // with a compact three-dot dropdown in the header actions area.
+        // Placed before the home button so it appears to its left.
+        // Also runs before the has_set_url() guard for the same reason as above.
+        $coursecontext = \context_course::instance($this->courseid);
+        if (!has_capability('moodle/course:update', $coursecontext)) {
+            $page->add_body_class('format-mimo-compact-secondarynav');
+            $menulabel = get_string('compactnav_menu', 'format_mimo');
+            $dropdownid = 'mimo-compact-nav-' . $this->courseid;
+            $page->add_header_action(
+                '<div class="dropdown mimo-compact-nav">' .
+                '<button class="mimo-compact-nav-btn" type="button"' .
+                ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
+                ' aria-expanded="false" title="' . s($menulabel) . '">' .
+                '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">' .
+                '<circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>' .
+                '</svg>' .
+                '<span class="sr-only">' . s($menulabel) . '</span>' .
+                '</button>' .
+                '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="' . $dropdownid . '"' .
+                ' data-region="mimo-secondarynav-dropdown"></ul>' .
+                '</div>'
+            );
+            $page->requires->js_call_amd('format_mimo/compact_nav', 'init');
+        }
+
         // During course creation (e.g. from blocks_add_default_course_blocks),
         // $PAGE->set_url() has not been called yet. Skip all URL-dependent logic.
         if (!$page->has_set_url()) {
@@ -446,31 +494,6 @@ class format_mimo extends core_courseformat\base {
         // the page-level section heading on course/section.php pages.
         if ($this->is_multisection_enabled() && !$page->user_is_editing()) {
             $page->add_body_class('format-mimo-multisection-view');
-        }
-
-        // For non-editing users (students), replace the secondary navigation bar
-        // with a compact three-dot dropdown in the header actions area.
-        // Placed before the home button so it appears to its left.
-        $coursecontext = \context_course::instance($this->courseid);
-        if (!has_capability('moodle/course:update', $coursecontext)) {
-            $page->add_body_class('format-mimo-compact-secondarynav');
-            $menulabel = get_string('compactnav_menu', 'format_mimo');
-            $dropdownid = 'mimo-compact-nav-' . $this->courseid;
-            $page->add_header_action(
-                '<div class="dropdown mimo-compact-nav">' .
-                '<button class="mimo-compact-nav-btn" type="button"' .
-                ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
-                ' aria-expanded="false" title="' . s($menulabel) . '">' .
-                '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">' .
-                '<circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>' .
-                '</svg>' .
-                '<span class="sr-only">' . s($menulabel) . '</span>' .
-                '</button>' .
-                '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="' . $dropdownid . '"' .
-                ' data-region="mimo-secondarynav-dropdown"></ul>' .
-                '</div>'
-            );
-            $page->requires->js_call_amd('format_mimo/compact_nav', 'init');
         }
 
         // In multi-section mode, add a "back to overview" button to the page header
@@ -520,25 +543,6 @@ class format_mimo extends core_courseformat\base {
                     redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
                 }
             }
-        }
-
-        // Apply distraction-free mode if enabled for this course.
-        $distractionfree = $this->get_course()->distractionfree ?? false;
-        if ($distractionfree) {
-            // Check if user has overridden the default via cookie.
-            $dfactive = true;
-            if (isset($_COOKIE['format_mimo_df'])) {
-                $dfactive = $_COOKIE['format_mimo_df'] === 'true';
-            }
-
-            if ($dfactive) {
-                // Add body class for distraction-free mode.
-                // CSS is injected via hook callback in classes/hook_callbacks.php.
-                $page->add_body_class('format-mimo-distraction-free');
-            }
-
-            // Initialize JavaScript module for toggle functionality.
-            $page->requires->js_call_amd('format_mimo/distraction_free', 'init');
         }
     }
 
