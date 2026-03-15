@@ -2133,10 +2133,23 @@ body.single-section-page.format-mmw-multisection-view {
 .mmw-overview-card__minitile {
     aspect-ratio: 1;
     border-radius: 4px;
+    overflow: hidden;
 
     &:nth-child(n+9) {
         display: none;
     }
+}
+
+.mmw-overview-card__minitile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Placeholder miniwall for empty sections — subtle visual hint. */
+.mmw-overview-card__miniwall--placeholder {
+    opacity: 0.45;
 }
 
 /* Section overview card image — replaces miniwall when present. */
@@ -2353,7 +2366,7 @@ body.single-section-page.format-mmw-multisection-view {
     border-radius: 1.2rem;
     padding: 1.25rem;
     color: inherit;
-    aspect-ratio: 1/1;
+    aspect-ratio: 1/1.06;
 }
 
 .mmw-overview-card--editing .mmw-overview-card__footer {

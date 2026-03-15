@@ -62,6 +62,17 @@
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
+                {{^hasminitiles}}
+                {{#hasdefaultminitiles}}
+                <div class="mmw-overview-card__miniwall mmw-overview-card__miniwall--placeholder">
+                    {{#defaultminitiles}}
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
+                    {{/defaultminitiles}}
+                </div>
+                {{/hasdefaultminitiles}}
+                {{/hasminitiles}}
                 {{/hassectionimage}}
                 <div class="mmw-overview-card__footer" draggable="false">
                     <button type="button" class="btn btn-sm btn-outline-secondary" draggable="false"
@@ -115,6 +126,17 @@
                     </span>
                     {{/minitiles}}
                 </div>
+                {{/hasminitiles}}
+                {{^hasminitiles}}
+                {{#hasdefaultminitiles}}
+                <div class="mmw-overview-card__miniwall mmw-overview-card__miniwall--placeholder">
+                    {{#defaultminitiles}}
+                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
+                    {{/defaultminitiles}}
+                </div>
+                {{/hasdefaultminitiles}}
                 {{/hasminitiles}}
                 {{/hassectionimage}}
                 {{#hastracking}}

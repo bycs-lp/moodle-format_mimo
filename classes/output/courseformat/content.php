@@ -202,6 +202,24 @@ class content extends content_base {
                 'hasminitiles' => !empty($minitiles),
             ];
 
+            // Provide default placeholder tiles for empty sections using course tag colours.
+            if (empty($minitiles) && !empty($tagcolours)) {
+                $taglist = array_keys($tagcolours);
+                $tagcount = count($taglist);
+                $placeholdertiles = [];
+                for ($i = 0; $i < 8; $i++) {
+                    $tid = $taglist[$i % $tagcount];
+                    $tile = ['color' => $tagcolours[$tid]];
+                    if (isset($tagimages[$tid])) {
+                        $tile['image'] = $tagimages[$tid];
+                        $tile['hasimage'] = true;
+                    }
+                    $placeholdertiles[] = $tile;
+                }
+                $sectioncard->defaultminitiles = $placeholdertiles;
+                $sectioncard->hasdefaultminitiles = true;
+            }
+
             // Check for a section overview card image.
             $sectionimageurl = \format_minimoodlewall\section_image_manager::get_image_url(
                 $course->id,
