@@ -45,9 +45,13 @@ final class completion_defaults_test extends \advanced_testcase {
      * Set up before each test.
      */
     protected function setUp(): void {
+        global $DB;
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+
+        // Clear seeded completion defaults so CRUD tests start from a clean state.
+        $DB->delete_records('format_mimo_compdefs');
 
         // Create a course with mimo format and completion enabled.
         $this->course = $this->getDataGenerator()->create_course([

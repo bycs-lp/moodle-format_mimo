@@ -1012,5 +1012,12 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026031401, 'format', 'mimo');
     }
 
+    // Seed default completion overrides for all known activity types.
+    if ($oldversion < 2026031500) {
+        \format_mimo\completion_defaults_manager::initialize_default_completion_defaults();
+
+        upgrade_plugin_savepoint(true, 2026031500, 'format', 'mimo');
+    }
+
     return true;
 }

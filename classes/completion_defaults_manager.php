@@ -297,4 +297,164 @@ class completion_defaults_manager {
 
         return $record;
     }
+
+    /**
+     * Initialize default completion defaults for all known activity types.
+     *
+     * Called during plugin installation and upgrade. Only seeds if the
+     * compdefs table is empty (will not overwrite admin customizations).
+     *
+     * Activities with custom completion rules get automatic completion with
+     * those rules enabled. Gradeable activities also get completionusegrade=1.
+     * Activities without custom rules get manual self-completion.
+     *
+     * @return bool True if defaults were created, false if table already had records.
+     */
+    public static function initialize_default_completion_defaults(): bool {
+        global $DB;
+
+        // Guard: don't overwrite existing customizations.
+        if ($DB->record_exists(self::TABLE, [])) {
+            return false;
+        }
+
+        // Tier A: Automatic + custom rule + require grade.
+        // Tier B: Automatic + require grade only (no custom rules available).
+        // Tier C: Automatic + custom rule, no grade.
+        // Tier D: Manual self-completion.
+        $defaults = [
+            // Tier A: Custom rule + grade.
+            'assign' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+                'customrules' => ['completionsubmit' => 1],
+            ],
+            'quiz' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+                'customrules' => ['completionminattempts' => 1],
+            ],
+            'lesson' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+                'customrules' => ['completionendreached' => 1],
+            ],
+            'scorm' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+                'customrules' => ['completionstatusrequired' => 6],
+            ],
+
+            // Tier B: Grade only.
+            'h5pactivity' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+            ],
+            'lti' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+            ],
+            'workshop' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionusegrade' => 1,
+            ],
+
+            // Tier C: Custom rule, no grade.
+            'choice' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionsubmit' => 1],
+            ],
+            'feedback' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionsubmit' => 1],
+            ],
+            'forum' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionposts' => 1],
+            ],
+            'glossary' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionentries' => 1],
+            ],
+            'data' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionentries' => 1],
+            ],
+            'board' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionnotes' => 1],
+            ],
+            'kanban' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completioncreate' => 1],
+            ],
+            'checklist' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionpercent' => 100],
+            ],
+            'ratingallocate' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionvote' => 1],
+            ],
+            'mootyper' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionexercise' => 1],
+            ],
+            'subcourse' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completioncourse' => 1],
+            ],
+            'bigbluebuttonbn' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionattendance' => 1],
+            ],
+            'learningmap' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completiontype' => 2],
+            ],
+
+            // Tier D: Manual self-completion.
+            'page' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'book' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'resource' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'url' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'imscp' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'folder' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'label' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'unilabel' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'wiki' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'hvp' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'journal' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'moodleoverflow' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'lightboxgallery' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'individualfeedback' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'aichat' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'mootimeter' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'game' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'geogebra' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'qbank' => ['completion' => COMPLETION_TRACKING_MANUAL],
+        ];
+
+        foreach ($defaults as $modname => $config) {
+            // Look up the module type id; skip if not installed.
+            $module = $DB->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
+            if (!$module) {
+                continue;
+            }
+
+            $record = new \stdClass();
+            $record->completion = (int)($config['completion'] ?? COMPLETION_TRACKING_NONE);
+            $record->completionview = (int)($config['completionview'] ?? 0);
+            $record->completionusegrade = (int)($config['completionusegrade'] ?? 0);
+            $record->completionpassgrade = (int)($config['completionpassgrade'] ?? 0);
+            $record->completionexpected = 0;
+            $record->customrules = !empty($config['customrules'])
+                ? json_encode($config['customrules'])
+                : null;
+
+            self::save_default($module->id, $record);
+        }
+
+        return true;
+    }
 }

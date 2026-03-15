@@ -73,7 +73,13 @@
   - Comparison logic: checks core fields (completion, completionview, completionpassgrade, completiongradeitemnumber↔completionusegrade) and custom rules on the module instance table.
   - Override applies to both `course_modules` (core fields) and the module instance table (custom rules from JSON blob).
   - Admin page (`completion_defaults.php`): lists all module types, allows editing per-type completion defaults using core's `defaultedit_form`.
-  - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mimodefaults, $modname)`, `pack_form_data($formdata, $suffix)`.
+  - **Default seeding** (`initialize_default_completion_defaults()`): Seeds ~37 activity types on install/upgrade. Four tiers:
+    - **Tier A (custom rule + grade)**: assign (`completionsubmit`), quiz (`completionminattempts`), lesson (`completionendreached`), scorm (`completionstatusrequired=6` passed|completed). Automatic tracking + `completionusegrade=1`.
+    - **Tier B (grade only)**: h5pactivity, lti, workshop. Automatic tracking + `completionusegrade=1`, no custom rules.
+    - **Tier C (custom rule, no grade)**: choice/feedback (`completionsubmit`), forum (`completionposts`), glossary/data (`completionentries`), board (`completionnotes`), kanban (`completioncreate`), checklist (`completionpercent=100`), ratingallocate (`completionvote`), mootyper (`completionexercise`), subcourse (`completioncourse`), bigbluebuttonbn (`completionattendance`), learningmap (`completiontype=2`).
+    - **Tier D (manual)**: page, book, resource, url, imscp, folder, label, unilabel, wiki, hvp, journal, moodleoverflow, lightboxgallery, individualfeedback, aichat, mootimeter, game, geogebra, qbank. `completion=1` (student self-marks).
+    - Guard: only seeds when compdefs table is empty; skips modules not installed in the instance.
+  - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mimodefaults, $modname)`, `pack_form_data($formdata, $suffix)`, `initialize_default_completion_defaults()`.
 - **Admin UX** (`settings.php`, `tag_management.php`, `classes/form/*`)
   - Tag management: Accordion-based UI with tagsets as expandable sections, tags as forms within. `data-tagset-name` attribute for Behat targeting.
   - **Imported badges**: Tags with `scope='imported'` show a blue "Imported" badge (`bg-info`) in the tag name column. Imported profiles show a blue "Imported" badge next to the profile button. Both have a "Make global" promote button (uses `i/publish` pix icon) that calls `promote_tag_to_global()` / `promote_profile_to_global()`.
@@ -264,7 +270,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
 - `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course/section delete (including section images, **imported tag/profile bindings and orphan cleanup**).
-- `classes/completion_defaults_manager.php` – CRUD for mimo completion defaults (compdefs table), comparison with core defaults, application to course modules.
+- `classes/completion_defaults_manager.php` – CRUD for mimo completion defaults (compdefs table), comparison with core defaults, application to course modules, **default seeding** (`initialize_default_completion_defaults()` — 4-tier defaults for ~37 activity types).
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags, **promote actions for imported tags/profiles**.
