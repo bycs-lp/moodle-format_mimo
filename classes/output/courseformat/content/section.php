@@ -183,11 +183,14 @@ class section extends section_base {
         $incompletecount = 0;
 
         if ($completioninfo->is_enabled()) {
-            foreach ($modinfo->cms as $cm) {
-                // When scoped to a section, skip activities from other sections.
-                if ($sectionnum !== null && (int)$cm->sectionnum !== $sectionnum) {
-                    continue;
-                }
+            // When scoped to a section, iterate only that section's CMs instead of every CM in the course.
+            if ($sectionnum !== null && isset($modinfo->sections[$sectionnum])) {
+                $cmids = $modinfo->sections[$sectionnum];
+            } else {
+                $cmids = array_keys($modinfo->cms);
+            }
+            foreach ($cmids as $cmid) {
+                $cm = $modinfo->cms[$cmid];
                 // Skip hidden activities and activities without user visibility.
                 if (!$cm->uservisible) {
                     continue;

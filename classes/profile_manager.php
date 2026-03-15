@@ -59,6 +59,26 @@ class profile_manager {
     /** File area for profile-specific filter images. */
     public const FILEAREA_PROFILE_FILTERIMAGE = 'profiletagfilter';
 
+    /** @var array Request-level cache for profiles keyed by name. */
+    private static array $profilebynamecache = [];
+
+    /** @var array Request-level cache for profile_tags keyed by "profileid". Maps tagid => record. */
+    private static array $profiletagscache = [];
+
+    /** @var array Request-level cache for resolved image URLs keyed by "tagid_profilename_filearea". */
+    private static array $imageurlcache = [];
+
+    /**
+     * Clear all request-level static caches.
+     *
+     * Called by write methods to prevent stale data within the same request.
+     */
+    public static function clear_request_caches(): void {
+        self::$profilebynamecache = [];
+        self::$profiletagscache = [];
+        self::$imageurlcache = [];
+    }
+
     /** Filemanager options for image uploads. */
     private const FILEMANAGER_OPTIONS = [
         'maxbytes' => 1048576, // 1 MB.
@@ -100,9 +120,15 @@ class profile_manager {
      * @return stdClass|null
      */
     public static function get_profile_by_name(string $name): ?stdClass {
+        if (isset(self::$profilebynamecache[$name])) {
+            return self::$profilebynamecache[$name];
+        }
+
         global $DB;
         $record = $DB->get_record(self::TABLE_PROFILES, ['name' => $name]);
-        return $record ?: null;
+        $result = $record ?: null;
+        self::$profilebynamecache[$name] = $result;
+        return $result;
     }
 
     /**
@@ -133,7 +159,9 @@ class profile_manager {
         $record->timecreated = $now;
         $record->timemodified = $now;
 
-        return $DB->insert_record(self::TABLE_PROFILES, $record);
+        $id = $DB->insert_record(self::TABLE_PROFILES, $record);
+        self::$profilebynamecache = [];
+        return $id;
     }
 
     /**
@@ -172,7 +200,9 @@ class profile_manager {
             }
         }
 
-        return $DB->update_record(self::TABLE_PROFILES, $record);
+        $result = $DB->update_record(self::TABLE_PROFILES, $record);
+        self::$profilebynamecache = [];
+        return $result;
     }
 
     /**
@@ -198,6 +228,7 @@ class profile_manager {
 
         // Courses referencing this profile have stale course_tags_* cache entries.
         tag_manager::clear_tag_cache();
+        self::clear_request_caches();
 
         return $result;
     }
@@ -251,6 +282,8 @@ class profile_manager {
             $record->timecreated = $now;
             $record->timemodified = $now;
             $record->id = $DB->insert_record(self::TABLE_PROFILE_TAGS, $record);
+            // Invalidate cached profile_tags for this profile.
+            unset(self::$profiletagscache[$profileid]);
         }
 
         return $record;
@@ -287,12 +320,30 @@ class profile_manager {
      * @return stdClass|null
      */
     public static function get_profile_tag_for_profile(int $tagid, int $profileid): ?stdClass {
+        // Ensure the profile's tags are prefetched into the request-level cache.
+        self::prefetch_profile_tags($profileid);
+
+        return self::$profiletagscache[$profileid][$tagid] ?? null;
+    }
+
+    /**
+     * Prefetch all profile_tags for a profile into the request-level cache.
+     *
+     * Replaces per-tag DB queries with a single batch query per profile per request.
+     *
+     * @param int $profileid Profile ID
+     */
+    private static function prefetch_profile_tags(int $profileid): void {
+        if (isset(self::$profiletagscache[$profileid])) {
+            return;
+        }
+
         global $DB;
-        $record = $DB->get_record(self::TABLE_PROFILE_TAGS, [
-            'tagid' => $tagid,
-            'profileid' => $profileid,
-        ]);
-        return $record ?: null;
+        $records = $DB->get_records(self::TABLE_PROFILE_TAGS, ['profileid' => $profileid]);
+        self::$profiletagscache[$profileid] = [];
+        foreach ($records as $record) {
+            self::$profiletagscache[$profileid][$record->tagid] = $record;
+        }
     }
 
     /**
@@ -328,6 +379,8 @@ class profile_manager {
         // resolved course_tags_* cache entries.  Purge the tag cache so every course
         // picks up the new override values on next request.
         tag_manager::clear_tag_cache();
+        self::$profiletagscache = [];
+        self::$imageurlcache = [];
 
         return $result;
     }
@@ -348,6 +401,8 @@ class profile_manager {
         }
 
         $DB->delete_records(self::TABLE_PROFILE_TAGS, ['tagid' => $tagid]);
+        self::$profiletagscache = [];
+        self::$imageurlcache = [];
     }
 
     // ---------------------------------------------------------------
@@ -564,11 +619,19 @@ class profile_manager {
      * @return moodle_url|null
      */
     public static function get_cardimage_url_by_name(int $tagid, string $profilename): ?moodle_url {
+        $cachekey = $tagid . '_' . $profilename . '_card';
+        if (array_key_exists($cachekey, self::$imageurlcache)) {
+            return self::$imageurlcache[$cachekey];
+        }
+
         $profile = self::get_profile_by_name($profilename);
         if (!$profile) {
+            self::$imageurlcache[$cachekey] = null;
             return null;
         }
-        return self::get_cardimage_url($tagid, $profile->id);
+        $url = self::get_cardimage_url($tagid, $profile->id);
+        self::$imageurlcache[$cachekey] = $url;
+        return $url;
     }
 
     /**
@@ -579,11 +642,19 @@ class profile_manager {
      * @return moodle_url|null
      */
     public static function get_filterimage_url_by_name(int $tagid, string $profilename): ?moodle_url {
+        $cachekey = $tagid . '_' . $profilename . '_filter';
+        if (array_key_exists($cachekey, self::$imageurlcache)) {
+            return self::$imageurlcache[$cachekey];
+        }
+
         $profile = self::get_profile_by_name($profilename);
         if (!$profile) {
+            self::$imageurlcache[$cachekey] = null;
             return null;
         }
-        return self::get_filterimage_url($tagid, $profile->id);
+        $url = self::get_filterimage_url($tagid, $profile->id);
+        self::$imageurlcache[$cachekey] = $url;
+        return $url;
     }
 
     // ---------------------------------------------------------------
