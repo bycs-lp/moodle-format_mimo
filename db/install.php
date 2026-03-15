@@ -32,4 +32,6 @@ function xmldb_format_mimo_install() {
     \format_mimo\profile_manager::initialize_default_profiles();
     // Initialize default description tags.
     \format_mimo\description_tag_manager::initialize_default_description_tags();
+    // Initialize default activity descriptions for all activity types.
+    \format_mimo\activity_description_manager::initialize_default_activity_descriptions();
 }

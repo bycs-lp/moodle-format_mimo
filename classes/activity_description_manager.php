@@ -206,4 +206,100 @@ class activity_description_manager {
 
         return $modules;
     }
+
+    /**
+     * Initialize default activity descriptions for all available activity types.
+     *
+     * Maps each activity type to a description (from lang strings) and a
+     * description tag (Input, Practice, Share, Think). Only runs if no
+     * descriptions exist yet (idempotent on first install).
+     *
+     * @return bool Success
+     */
+    public static function initialize_default_activity_descriptions(): bool {
+        global $DB;
+
+        // Check if any descriptions already exist.
+        if ($DB->record_exists('format_mimo_actdesc', [])) {
+            return true;
+        }
+
+        // Get all description tags keyed by their display name.
+        $desctags = description_tag_manager::get_all_tags();
+        $tagbyname = [];
+        foreach ($desctags as $tag) {
+            $tagbyname[$tag->name] = $tag->id;
+        }
+
+        // Resolve tag IDs by lang string. Falls back to null if tag not found.
+        $inputid = $tagbyname[get_string('desctag_input', 'format_mimo')] ?? null;
+        $practiceid = $tagbyname[get_string('desctag_practice', 'format_mimo')] ?? null;
+        $shareid = $tagbyname[get_string('desctag_share', 'format_mimo')] ?? null;
+        $thinkid = $tagbyname[get_string('desctag_think', 'format_mimo')] ?? null;
+
+        // Activity type to description tag mapping.
+        $tagmap = [
+            // Input: consuming/receiving content.
+            'page' => $inputid,
+            'book' => $inputid,
+            'resource' => $inputid,
+            'url' => $inputid,
+            'imscp' => $inputid,
+            'scorm' => $inputid,
+            'lesson' => $inputid,
+            'hvp' => $inputid,
+            'h5pactivity' => $inputid,
+            'lti' => $inputid,
+            'learningmap' => $inputid,
+            'unilabel' => $inputid,
+            'subcourse' => $inputid,
+            // Practice: active exercises and drills.
+            'quiz' => $practiceid,
+            'game' => $practiceid,
+            'mootyper' => $practiceid,
+            'geogebra' => $practiceid,
+            'qbank' => $practiceid,
+            // Share: producing and sharing work.
+            'forum' => $shareid,
+            'assign' => $shareid,
+            'glossary' => $shareid,
+            'wiki' => $shareid,
+            'board' => $shareid,
+            'journal' => $shareid,
+            'moodleoverflow' => $shareid,
+            'lightboxgallery' => $shareid,
+            'data' => $shareid,
+            // Think: reflection, collaboration, decisions.
+            'choice' => $thinkid,
+            'feedback' => $thinkid,
+            'workshop' => $thinkid,
+            'ratingallocate' => $thinkid,
+            'bigbluebuttonbn' => $thinkid,
+            'individualfeedback' => $thinkid,
+            'kanban' => $thinkid,
+            'aichat' => $thinkid,
+            'mootimeter' => $thinkid,
+            'checklist' => $thinkid,
+        ];
+
+        // Only create descriptions for modules that are actually installed.
+        $availabletypes = self::get_available_activity_types();
+
+        foreach ($availabletypes as $type) {
+            $modname = $type['name'];
+            $stringid = 'actdesc_' . $modname;
+
+            // Skip if no lang string defined for this module.
+            if (!get_string_manager()->string_exists($stringid, 'format_mimo')) {
+                continue;
+            }
+
+            $description = get_string($stringid, 'format_mimo');
+            $desctagid = $tagmap[$modname] ?? null;
+
+            self::save_description($modname, $description, $desctagid);
+        }
+
+        return true;
+    }
 }

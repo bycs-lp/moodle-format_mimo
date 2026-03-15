@@ -59,6 +59,7 @@
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
   - Default description tags (created on install): 🟡 📥 Input (#FFF176), 🟢 🔁 Practice (#81C784), 🟣 📤 Share (#CE93D8), 🔵 🧠 Think (#64B5F6).
+  - **Default activity descriptions** (created on install via `activity_description_manager::initialize_default_activity_descriptions()`): 37 activity types get short student-facing descriptions (`actdesc_{modname}` lang strings, EN + DE) and are assigned to one of the 4 description tags: Input (page, book, resource, url, imscp, scorm, lesson, hvp, h5pactivity, lti, learningmap, unilabel, subcourse), Practice (quiz, game, mootyper, geogebra, qbank), Share (forum, assign, glossary, wiki, board, journal, moodleoverflow, lightboxgallery, data), Think (choice, feedback, workshop, ratingallocate, bigbluebuttonbn, individualfeedback, kanban, aichat, mootimeter, checklist). Only creates for installed modules; skips missing lang strings.
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Event observers** (`classes/observer.php` + `db/events.php`)
@@ -305,7 +306,7 @@ This plugin demonstrates the hybrid approach:
 - `backup/moodle2/backup_format_mimo_plugin.class.php` – backup handler (tags **incl. scope**, profiles **incl. scope**, profile_tags, cmtags, files).
 - `backup/moodle2/restore_format_mimo_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
 - `db/install.xml` – **8** tables: tags, cmtags, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**.
-- `db/install.php` – creates default tags and default profiles on install, including per-profile tag overrides (explore images, develop name overrides).
+- `db/install.php` – creates default tags and default profiles on install, including per-profile tag overrides (explore images, develop name overrides), default description tags, and default activity descriptions for all activity types.
 - `db/upgrade.php` – migration steps including profile introduction, selectedtags removal, and completion defaults table.
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
 - `db/hooks.php` – hook registrations.
