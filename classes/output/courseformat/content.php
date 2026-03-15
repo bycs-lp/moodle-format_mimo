@@ -210,6 +210,10 @@ class content extends content_base {
             if ($sectionimageurl) {
                 $sectioncard->sectionimageurl = $sectionimageurl->out(false);
                 $sectioncard->hassectionimage = true;
+                // Read object-fit preference for this section.
+                $opts = $format->get_format_options($sectioninfo);
+                $fit = $opts['sectionimagefit'] ?? 'cover';
+                $sectioncard->sectionimagefitclass = 'mmw-overview-card__sectionimage--' . $fit;
             } else {
                 $sectioncard->hassectionimage = false;
             }
