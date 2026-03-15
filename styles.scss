@@ -1325,6 +1325,14 @@ body.format-mimo {
     }    
 }
 
+/* Header actions: arrange side by side instead of stacked. */
+.header-actions-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+}
+
 /* Distraction-free mode toggle button in header actions. */
 .mimo-df-btn {
     display: inline-flex;

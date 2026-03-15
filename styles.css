@@ -1034,6 +1034,14 @@ body.format-mimo .course-content .divider .btn.add-content {
   transform: scale(1.5);
 }
 
+/* Header actions: arrange side by side instead of stacked. */
+.header-actions-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.25rem;
+}
+
 /* Distraction-free mode toggle button in header actions. */
 .mimo-df-btn {
   display: inline-flex;
