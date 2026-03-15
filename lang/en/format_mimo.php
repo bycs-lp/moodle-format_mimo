@@ -128,6 +128,7 @@ $string['openallactivities'] = 'Open all activities';
 $string['other'] = 'Other...';
 $string['page'] = 'Page';
 $string['paginationnavigation'] = 'Activity pages navigation';
+$string['plugin_description'] = 'Displays activities as a visual wall of cards, organised by tags and activity profiles.';
 $string['pluginname'] = 'mimo wall';
 $string['previouspage'] = 'Previous page';
 $string['privacy:metadata'] = 'The mimo wall format plugin does not store any personal data.';

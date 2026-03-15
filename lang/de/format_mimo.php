@@ -119,6 +119,7 @@ $string['openallactivities'] = 'Alle Aktivitäten öffnen';
 $string['other'] = 'Sonstige...';
 $string['page'] = 'Seite';
 $string['paginationnavigation'] = 'Seitennavigation für Aktivitäten';
+$string['plugin_description'] = 'Zeigt Aktivitäten als visuelle Pinnwand mit Karten an, organisiert nach Tags und Tätigkeitsprofilen.';
 $string['pluginname'] = 'mimo wall';
 $string['previouspage'] = 'Vorherige Seite';
 $string['privacy:metadata'] = 'Das Kursformat „mimo wall" speichert keine personenbezogenen Daten.';
