@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Section image manager for format_minimoodlewall.
+ * Section image manager for format_mimo.
  *
  * Handles upload, retrieval, and deletion of overview card images
  * for course sections in multi-section mode.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 use context_course;
 use moodle_url;
@@ -37,7 +37,7 @@ use moodle_url;
  * the section ID as itemid. No database table is needed — file existence
  * is the source of truth.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -46,7 +46,7 @@ class section_image_manager {
     public const FILEAREA = 'sectionimage';
 
     /** Component name. */
-    public const COMPONENT = 'format_minimoodlewall';
+    public const COMPONENT = 'format_mimo';
 
     /** Filemanager options for section image uploads. */
     private const FILEMANAGER_OPTIONS = [

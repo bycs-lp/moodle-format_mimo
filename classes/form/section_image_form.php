@@ -17,21 +17,21 @@
 /**
  * Dynamic form for uploading/changing a section overview card image.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\form;
+namespace format_mimo\form;
 
-use format_minimoodlewall\section_image_manager;
+use format_mimo\section_image_manager;
 use core_form\dynamic_form;
 use context;
 
 /**
  * Section image upload dynamic form (opens in a modal).
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -51,17 +51,17 @@ class section_image_form extends dynamic_form {
         $mform->addElement(
             'filepicker',
             'sectionimagefile',
-            get_string('sectionimage', 'format_minimoodlewall'),
+            get_string('sectionimage', 'format_mimo'),
             null,
             section_image_manager::get_filemanager_options()
         );
 
         $fitoptions = [
-            'cover' => get_string('sectionimagefit_cover', 'format_minimoodlewall'),
-            'contain' => get_string('sectionimagefit_contain', 'format_minimoodlewall'),
+            'cover' => get_string('sectionimagefit_cover', 'format_mimo'),
+            'contain' => get_string('sectionimagefit_contain', 'format_mimo'),
         ];
         $mform->addElement('select', 'sectionimagefit',
-            get_string('sectionimagefit', 'format_minimoodlewall'), $fitoptions);
+            get_string('sectionimagefit', 'format_mimo'), $fitoptions);
         $mform->setDefault('sectionimagefit', 'cover');
     }
 

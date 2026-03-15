@@ -14,13 +14,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course editor reactive bridge for minimoodlewall format.
+ * Course editor reactive bridge for mimo format.
  *
  * A BaseComponent that watches the core course editor reactive state and
  * bridges changes into the wall state reactive. Also dispatches legacy
  * DOM events for completion changes (tag_filter still uses these).
  *
- * @module     format_minimoodlewall/courseeditor_watcher
+ * @module     format_mimo/courseeditor_watcher
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,7 +29,7 @@ import {BaseComponent} from 'core/reactive';
 /** Custom event names dispatched by this component. */
 export const EVENTS = {
     /** Activity completion state changed. Detail: {cmId: number, completed: boolean} */
-    COMPLETION_CHANGE: 'minimoodlewall:completionchange',
+    COMPLETION_CHANGE: 'mimo:completionchange',
 };
 
 /**

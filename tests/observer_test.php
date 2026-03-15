@@ -17,12 +17,12 @@
 /**
  * Unit tests for observer event handling.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
@@ -30,13 +30,13 @@ require_once($CFG->dirroot . '/course/lib.php');
 /**
  * Observer test case.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\observer
+ * @covers     \format_mimo\observer
  */
 final class observer_test extends \advanced_testcase {
-    /** @var \stdClass Test course with minimoodlewall format */
+    /** @var \stdClass Test course with mimo format */
     private $course;
 
     /** @var int Test tag ID */
@@ -59,9 +59,9 @@ final class observer_test extends \advanced_testcase {
             'page'
         );
 
-        // Create a course with minimoodlewall format.
+        // Create a course with mimo format.
         $this->course = $this->getDataGenerator()->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
         ]);
     }
 
@@ -76,7 +76,7 @@ final class observer_test extends \advanced_testcase {
         tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
-        unset($SESSION->format_minimoodlewall_pending_tag);
+        unset($SESSION->format_mimo_pending_tag);
 
         parent::tearDown();
     }
@@ -88,7 +88,7 @@ final class observer_test extends \advanced_testcase {
         global $SESSION;
 
         // Set pending tag in session (simulating what the JavaScript does).
-        $SESSION->format_minimoodlewall_pending_tag = $this->tagid;
+        $SESSION->format_mimo_pending_tag = $this->tagid;
 
         // Create a course module (this triggers the course_module_created event).
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
@@ -101,7 +101,7 @@ final class observer_test extends \advanced_testcase {
 
         // Verify the session was cleared.
         $this->assertObjectNotHasProperty(
-            'format_minimoodlewall_pending_tag',
+            'format_mimo_pending_tag',
             $SESSION,
             'Pending tag should be removed from session'
         );
@@ -115,7 +115,7 @@ final class observer_test extends \advanced_testcase {
     public static function no_tag_assignment_provider(): array {
         return [
             'no_pending_tag_in_session' => [
-                'format' => 'minimoodlewall',
+                'format' => 'mimo',
                 'haspending' => false,
                 'sessioncleared' => true,
                 'message' => 'No tag should be assigned when there is no pending tag',
@@ -124,7 +124,7 @@ final class observer_test extends \advanced_testcase {
                 'format' => 'topics',
                 'haspending' => true,
                 'sessioncleared' => false,
-                'message' => 'No tag should be assigned to non-minimoodlewall courses',
+                'message' => 'No tag should be assigned to non-mimo courses',
             ],
         ];
     }
@@ -155,9 +155,9 @@ final class observer_test extends \advanced_testcase {
 
         // Set pending tag in session if requested.
         if ($haspending) {
-            $SESSION->format_minimoodlewall_pending_tag = $tagid;
+            $SESSION->format_mimo_pending_tag = $tagid;
         } else {
-            unset($SESSION->format_minimoodlewall_pending_tag);
+            unset($SESSION->format_mimo_pending_tag);
         }
 
         // Create a course module.
@@ -169,9 +169,9 @@ final class observer_test extends \advanced_testcase {
 
         // Check session state.
         if ($sessioncleared) {
-            $this->assertObjectNotHasProperty('format_minimoodlewall_pending_tag', $SESSION);
+            $this->assertObjectNotHasProperty('format_mimo_pending_tag', $SESSION);
         } else {
-            $this->assertObjectHasProperty('format_minimoodlewall_pending_tag', $SESSION);
+            $this->assertObjectHasProperty('format_mimo_pending_tag', $SESSION);
         }
     }
 
@@ -182,7 +182,7 @@ final class observer_test extends \advanced_testcase {
         global $SESSION;
 
         // Set pending tag in session.
-        $SESSION->format_minimoodlewall_pending_tag = $this->tagid;
+        $SESSION->format_mimo_pending_tag = $this->tagid;
 
         // Create first module.
         $module1 = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
@@ -193,7 +193,7 @@ final class observer_test extends \advanced_testcase {
 
         // Verify session was cleared.
         $this->assertObjectNotHasProperty(
-            'format_minimoodlewall_pending_tag',
+            'format_mimo_pending_tag',
             $SESSION,
             'Pending tag should be cleared after first assignment'
         );
@@ -219,7 +219,7 @@ final class observer_test extends \advanced_testcase {
                     tag_manager::create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
 
                     // Set pending tag to non-existent tag ID.
-                    $SESSION->format_minimoodlewall_pending_tag = 99999;
+                    $SESSION->format_mimo_pending_tag = 99999;
                 },
                 'message' => 'Invalid tag should not be assigned',
             ],
@@ -239,7 +239,7 @@ final class observer_test extends \advanced_testcase {
                     $format->update_course_format_options(['activityprofile' => 'testprofile']);
 
                     // Set pending tag to tag 2 (disabled in profile).
-                    $SESSION->format_minimoodlewall_pending_tag = $tagid2;
+                    $SESSION->format_mimo_pending_tag = $tagid2;
                 },
                 'message' => 'Tag disabled in profile should not be assigned',
             ],
@@ -256,8 +256,8 @@ final class observer_test extends \advanced_testcase {
     public function test_invalid_tags_not_assigned(callable $setup, string $message): void {
         global $SESSION;
 
-        // Create a course with minimoodlewall format.
-        $course = $this->getDataGenerator()->create_course(['format' => 'minimoodlewall']);
+        // Create a course with mimo format.
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
 
         // Run the scenario-specific setup.
         $setup($course, $SESSION);
@@ -270,7 +270,7 @@ final class observer_test extends \advanced_testcase {
         $this->assertFalse($assignedtag, $message);
 
         // Session should be cleared.
-        $this->assertObjectNotHasProperty('format_minimoodlewall_pending_tag', $SESSION);
+        $this->assertObjectNotHasProperty('format_mimo_pending_tag', $SESSION);
     }
 
     /**
@@ -291,7 +291,7 @@ final class observer_test extends \advanced_testcase {
         course_delete_module($module->cmid);
 
         // Verify the cmtag record was cleaned up.
-        $exists = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module->cmid]);
+        $exists = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module->cmid]);
         $this->assertFalse($exists, 'cmtag should be deleted when module is deleted');
     }
 
@@ -302,7 +302,7 @@ final class observer_test extends \advanced_testcase {
         global $DB;
 
         // Create a second course to prove we don't wipe all cmtags.
-        $course2 = $this->getDataGenerator()->create_course(['format' => 'minimoodlewall']);
+        $course2 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $module2 = $this->getDataGenerator()->create_module('page', ['course' => $course2->id]);
         tag_manager::assign_tag_to_cm($module2->cmid, $this->tagid);
 
@@ -321,13 +321,13 @@ final class observer_test extends \advanced_testcase {
         delete_course($this->course, false);
 
         // Verify cmtags for deleted course are gone.
-        $exists1a = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module1a->cmid]);
-        $exists1b = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module1b->cmid]);
+        $exists1a = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module1a->cmid]);
+        $exists1b = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module1b->cmid]);
         $this->assertFalse($exists1a, 'cmtag for deleted course module should be removed');
         $this->assertFalse($exists1b, 'cmtag for deleted course module should be removed');
 
         // Verify cmtag for the other course is untouched.
-        $exists2 = $DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $module2->cmid]);
+        $exists2 = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module2->cmid]);
         $this->assertTrue($exists2, 'cmtag for unrelated course should survive');
     }
 }

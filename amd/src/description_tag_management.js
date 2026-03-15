@@ -16,7 +16,7 @@
 /**
  * Description tag management JavaScript.
  *
- * @module     format_minimoodlewall/description_tag_management
+ * @module     format_mimo/description_tag_management
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -76,11 +76,11 @@ const registerEventListeners = () => {
  */
 const showTagForm = (tagId) => {
     const modalForm = new ModalForm({
-        formClass: 'format_minimoodlewall\\form\\description_tag_form',
+        formClass: 'format_mimo\\form\\description_tag_form',
         args: {id: tagId},
         modalConfig: {
-            title: tagId ? M.util.get_string('editdesctag', 'format_minimoodlewall') :
-                           M.util.get_string('createdesctag', 'format_minimoodlewall'),
+            title: tagId ? M.util.get_string('editdesctag', 'format_mimo') :
+                           M.util.get_string('createdesctag', 'format_mimo'),
         },
         returnFocus: tagId ? document.querySelector(`[data-action="edit-tag"][data-id="${tagId}"]`) :
                              document.querySelector('[data-action="create-tag"]'),
@@ -108,11 +108,11 @@ const showTagForm = (tagId) => {
  * @param {number} usageCount How many descriptions use this tag
  */
 const showDeleteConfirmation = async(tagId, tagName, usageCount) => {
-    const titleStr = await getString('deletetag', 'format_minimoodlewall');
+    const titleStr = await getString('deletetag', 'format_mimo');
     const escapedTagName = tagName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const confirmStr = await getString('confirmdeletedestag', 'format_minimoodlewall', escapedTagName);
+    const confirmStr = await getString('confirmdeletedestag', 'format_mimo', escapedTagName);
     const warningStr = usageCount > 0 ?
-        await getString('desctagusagewarning', 'format_minimoodlewall', usageCount) : '';
+        await getString('desctagusagewarning', 'format_mimo', usageCount) : '';
 
     let bodyText = confirmStr;
     if (warningStr) {
@@ -128,7 +128,7 @@ const showDeleteConfirmation = async(tagId, tagName, usageCount) => {
     modal.setSaveButtonText(await getString('delete'));
 
     modal.getRoot().on(ModalEvents.save, async() => {
-        const deleteUrl = M.cfg.wwwroot + '/course/format/minimoodlewall/description_tags.php';
+        const deleteUrl = M.cfg.wwwroot + '/course/format/mimo/description_tags.php';
         const params = new URLSearchParams({
             'delete': tagId,
             'confirm': 1,

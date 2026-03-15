@@ -17,12 +17,12 @@
 /**
  * Contains the control menu for activities in minimal wall format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content\cm;
+namespace format_mimo\output\courseformat\content\cm;
 
 use core_courseformat\output\local\content\cm\controlmenu as controlmenu_base;
 use moodle_url;
@@ -34,7 +34,7 @@ use stdClass;
  * This overrides the core controlmenu to display visibility dropdown directly
  * without the three-dots menu wrapper.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

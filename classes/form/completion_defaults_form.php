@@ -15,12 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Completion defaults form for format_minimoodlewall.
+ * Completion defaults form for format_mimo.
  *
  * This form reuses the core default completion edit form to allow admins
- * to configure minimoodlewall-specific completion defaults per module type.
+ * to configure mimo-specific completion defaults per module type.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,55 +31,55 @@ require_once($CFG->dirroot . '/completion/classes/edit_base_form.php');
 require_once($CFG->dirroot . '/completion/classes/defaultedit_form.php');
 
 /**
- * Form for editing minimoodlewall completion defaults for a single module type.
+ * Form for editing mimo completion defaults for a single module type.
  *
  * Extends the core default completion form and pre-fills with existing
- * minimoodlewall defaults (or core defaults as fallback).
+ * mimo defaults (or core defaults as fallback).
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_minimoodlewall_completion_defaults_form extends core_completion_defaultedit_form {
+class format_mimo_completion_defaults_form extends core_completion_defaultedit_form {
     /**
      * Form definition.
      *
-     * Overrides the parent to inject minimoodlewall-specific data.
+     * Overrides the parent to inject mimo-specific data.
      */
     public function definition() {
         parent::definition();
 
         $mform = $this->_form;
 
-        // Add a hidden field to identify this as a minimoodlewall form.
-        $mform->addElement('hidden', 'mmw_form', 1);
-        $mform->setType('mmw_form', PARAM_INT);
+        // Add a hidden field to identify this as a mimo form.
+        $mform->addElement('hidden', 'mimo_form', 1);
+        $mform->setType('mimo_form', PARAM_INT);
     }
 
     /**
-     * Pre-fill the form with existing minimoodlewall defaults if available.
+     * Pre-fill the form with existing mimo defaults if available.
      *
      * This is called after definition() and populates the form with saved
-     * minimoodlewall overrides rather than core defaults.
+     * mimo overrides rather than core defaults.
      */
     public function definition_after_data() {
         parent::definition_after_data();
 
-        // If we have minimoodlewall defaults for this module, override the form values.
-        if (!empty($this->_customdata['mmw_defaults'])) {
-            $mmwdefaults = $this->_customdata['mmw_defaults'];
+        // If we have mimo defaults for this module, override the form values.
+        if (!empty($this->_customdata['mimo_defaults'])) {
+            $mimodefaults = $this->_customdata['mimo_defaults'];
             $suffix = $this->get_suffix();
 
             $data = [];
-            $data['completion' . $suffix] = (int)$mmwdefaults->completion;
-            $data['completionview' . $suffix] = (int)$mmwdefaults->completionview;
-            $data['completionusegrade' . $suffix] = (int)$mmwdefaults->completionusegrade;
-            $data['completionpassgrade' . $suffix] = (int)$mmwdefaults->completionpassgrade;
-            $data['completionexpected' . $suffix] = (int)$mmwdefaults->completionexpected;
+            $data['completion' . $suffix] = (int)$mimodefaults->completion;
+            $data['completionview' . $suffix] = (int)$mimodefaults->completionview;
+            $data['completionusegrade' . $suffix] = (int)$mimodefaults->completionusegrade;
+            $data['completionpassgrade' . $suffix] = (int)$mimodefaults->completionpassgrade;
+            $data['completionexpected' . $suffix] = (int)$mimodefaults->completionexpected;
 
             // Unpack custom rules.
-            if (!empty($mmwdefaults->customrules)) {
-                $customrules = @json_decode($mmwdefaults->customrules, true);
+            if (!empty($mimodefaults->customrules)) {
+                $customrules = @json_decode($mimodefaults->customrules, true);
                 if (is_array($customrules)) {
                     unset($customrules['modids']);
                     unset($customrules['id']);
@@ -98,11 +98,11 @@ class format_minimoodlewall_completion_defaults_form extends core_completion_def
     }
 
     /**
-     * Override the form identifier to be unique for minimoodlewall.
+     * Override the form identifier to be unique for mimo.
      *
      * @return string
      */
     protected function get_form_identifier() {
-        return 'format_minimoodlewall_completion_defaults' . $this->get_suffix();
+        return 'format_mimo_completion_defaults' . $this->get_suffix();
     }
 }

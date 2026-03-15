@@ -17,14 +17,14 @@
 /**
  * Delete a section overview card image.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(__DIR__ . '/../../../../config.php');
 
-use format_minimoodlewall\section_image_manager;
+use format_mimo\section_image_manager;
 
 $courseid = required_param('courseid', PARAM_INT);
 $sectionid = required_param('sectionid', PARAM_INT);

@@ -1,4 +1,4 @@
-# Minimal Moodle Wall Course Format
+# mimo wall Course Format
 
 A modern Moodle course format that displays activities in a card-based wall layout with tagging, filtering, and pagination.
 
@@ -16,9 +16,9 @@ A modern Moodle course format that displays activities in a card-based wall layo
 
 ## Installation
 
-1. Copy plugin to `course/format/minimoodlewall`
+1. Copy plugin to `course/format/mimo`
 2. Visit Site administration > Notifications
-3. Select "Minimal Moodle Wall" as course format when creating/editing a course
+3. Select "mimo wall" as course format when creating/editing a course
 
 ## Configuration
 
@@ -47,10 +47,10 @@ A modern Moodle course format that displays activities in a card-based wall layo
 
 ```bash
 # PHPUnit (75 tests)
-vendor/bin/phpunit --filter format_minimoodlewall
+vendor/bin/phpunit --filter format_mimo
 
 # Behat (10 feature files)
-php admin/tool/behat/cli/run.php --tags=@format_minimoodlewall
+php admin/tool/behat/cli/run.php --tags=@format_mimo
 ```
 
 ## Requirements

@@ -15,26 +15,26 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/form_tag_option
+    @template format_mimo/form_tag_option
 
     Renders a tag option for the course form with inline image.
 
     Example context (json):
     {
         "name": "Lesen",
-        "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
+        "imageurl": "https://example.com/pluginfile.php/1/format_mimo/tagcard/1/reading.svg",
         "tagid": 1,
         "profileimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}",
         "profilenames": "{\"classic\":\"Lesen\",\"dark\":\"Reading\"}",
         "profileenabled": "{\"classic\":1,\"dark\":0}"
     }
 }}
-<span class="mmw-tag-option d-flex align-items-center mb-3" data-tagid="{{tagid}}" data-profileimages="{{profileimages}}" data-profilenames="{{profilenames}}" data-profileenabled="{{profileenabled}}">
+<span class="mimo-tag-option d-flex align-items-center mb-3" data-tagid="{{tagid}}" data-profileimages="{{profileimages}}" data-profilenames="{{profilenames}}" data-profileenabled="{{profileenabled}}">
     {{#imageurl}}
-    <img src="{{imageurl}}" class="mmw-tag-preview me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
+    <img src="{{imageurl}}" class="mimo-tag-preview me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
     {{/imageurl}}
     {{^imageurl}}
-    <span class="mmw-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
+    <span class="mimo-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
     {{/imageurl}}
-    <span class="mmw-tag-name">{{name}}</span>
+    <span class="mimo-tag-name">{{name}}</span>
 </span>

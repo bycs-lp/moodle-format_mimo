@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tag manager for format_minimoodlewall.
+ * Tag manager for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 use context_system;
 use core_component;
@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Tag manager class for handling tag sets and tags.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -119,7 +119,7 @@ class tag_manager {
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             self::FILEAREA_CARDIMAGE,
             $tagid ?? 0,
             self::get_image_filemanager_options()
@@ -139,7 +139,7 @@ class tag_manager {
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             self::FILEAREA_FILTERIMAGE,
             $tagid ?? 0,
             self::get_image_filemanager_options()
@@ -190,7 +190,7 @@ class tag_manager {
         file_save_draft_area_files(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             $filearea,
             $tagid,
             self::get_image_filemanager_options()
@@ -282,7 +282,7 @@ class tag_manager {
     private static function get_image_file(int $tagid, string $filearea): ?\stored_file {
         $files = get_file_storage()->get_area_files(
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             $filearea,
             $tagid,
             '',
@@ -322,7 +322,7 @@ class tag_manager {
         }
 
         $sql = "SELECT cmt.tagid, COUNT(1) AS usecount
-                  FROM {format_minimoodlewall_cmtags} cmt
+                  FROM {format_mimo_cmtags} cmt
                   JOIN {course_modules} cm ON cm.id = cmt.cmid
                  WHERE cm.course = :courseid AND cmt.tagid $insql{$sectionwhere}
               GROUP BY cmt.tagid";
@@ -344,11 +344,11 @@ class tag_manager {
 
         $context = context_system::instance();
         $fs = get_file_storage();
-        if ($fs->file_exists($context->id, 'format_minimoodlewall', $filearea, $tagid, '/', $filename)) {
+        if ($fs->file_exists($context->id, 'format_mimo', $filearea, $tagid, '/', $filename)) {
             return;
         }
 
-        $componentdir = core_component::get_component_directory('format_minimoodlewall');
+        $componentdir = core_component::get_component_directory('format_mimo');
         $source = $componentdir . '/pix/tags/' . $filename;
         if (!file_exists($source)) {
             return;
@@ -356,7 +356,7 @@ class tag_manager {
 
         $filerecord = [
             'contextid' => $context->id,
-            'component' => 'format_minimoodlewall',
+            'component' => 'format_mimo',
             'filearea' => $filearea,
             'itemid' => $tagid,
             'filepath' => '/',
@@ -391,10 +391,10 @@ class tag_manager {
      */
     private static function init_caches(): void {
         if (self::$tagcache === null) {
-            self::$tagcache = \cache::make('format_minimoodlewall', 'tagconfigurations');
+            self::$tagcache = \cache::make('format_mimo', 'tagconfigurations');
         }
         if (self::$mappingcache === null) {
-            self::$mappingcache = \cache::make('format_minimoodlewall', 'activitytagmappings');
+            self::$mappingcache = \cache::make('format_mimo', 'activitytagmappings');
         }
     }
 
@@ -411,7 +411,7 @@ class tag_manager {
         $tags = self::$tagcache->get($cachekey);
 
         if ($tags === false) {
-            $tags = $DB->get_records('format_minimoodlewall_tags', null, 'sortorder ASC, id ASC');
+            $tags = $DB->get_records('format_mimo_tags', null, 'sortorder ASC, id ASC');
             self::$tagcache->set($cachekey, $tags);
         }
 
@@ -457,7 +457,7 @@ class tag_manager {
         // Get the course's activity profile.
         $profilename = $DB->get_field('course_format_options', 'value', [
             'courseid' => $courseid,
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'name' => 'activityprofile',
         ]);
         if (empty($profilename)) {
@@ -535,7 +535,7 @@ class tag_manager {
 
         // Get next sort order globally.
         $maxsort = $DB->get_field_sql(
-            "SELECT MAX(sortorder) FROM {format_minimoodlewall_tags}"
+            "SELECT MAX(sortorder) FROM {format_mimo_tags}"
         );
         $sortorder = ($maxsort !== null && $maxsort !== false) ? (int)$maxsort + 1 : 0;
 
@@ -554,14 +554,14 @@ class tag_manager {
         $record->timecreated = time();
         $record->timemodified = time();
 
-        $id = $DB->insert_record('format_minimoodlewall_tags', $record);
+        $id = $DB->insert_record('format_mimo_tags', $record);
 
         // Invalidate all tags cache and cache the new tag.
         self::init_caches();
         self::$tagcache->delete('all_tags');
 
         // Fetch and cache the created tag to ensure consistency.
-        $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
+        $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
         if ($tag) {
             self::$tagcache->set('tag_' . $id, $tag);
         }
@@ -583,7 +583,7 @@ class tag_manager {
         $tag = self::$tagcache->get($cachekey);
 
         if ($tag === false) {
-            $tag = $DB->get_record('format_minimoodlewall_tags', ['id' => $id]);
+            $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
             if ($tag) {
                 self::$tagcache->set($cachekey, $tag);
             }
@@ -613,7 +613,7 @@ class tag_manager {
             $record->$key = $value;
         }
 
-        $result = $DB->update_record('format_minimoodlewall_tags', $record);
+        $result = $DB->update_record('format_mimo_tags', $record);
 
         // Purge entire tag cache — course_tags_* entries contain resolved tag data
         // (including bgcolor) that becomes stale when any base tag field changes.
@@ -632,10 +632,10 @@ class tag_manager {
         global $DB;
 
         // Delete all mappings for this tag.
-        $DB->delete_records('format_minimoodlewall_cmtags', ['tagid' => $id]);
+        $DB->delete_records('format_mimo_cmtags', ['tagid' => $id]);
 
         // Delete course_tags bindings for this tag.
-        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $id]);
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $id]);
 
         // Delete profile_tags records for this tag (includes profile-specific images).
         profile_manager::delete_profile_tags_for_tag($id);
@@ -643,10 +643,10 @@ class tag_manager {
         // Delete base tag image files.
         $fs = get_file_storage();
         $contextid = context_system::instance()->id;
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_CARDIMAGE, $id);
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_FILTERIMAGE, $id);
+        $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_CARDIMAGE, $id);
+        $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_FILTERIMAGE, $id);
 
-        $result = $DB->delete_records('format_minimoodlewall_tags', ['id' => $id]);
+        $result = $DB->delete_records('format_mimo_tags', ['id' => $id]);
 
         // Purge entire tag cache — course_tags_* entries reference this tag.
         self::clear_tag_cache();
@@ -666,18 +666,18 @@ class tag_manager {
         global $DB;
 
         // Check if mapping already exists.
-        if ($DB->record_exists('format_minimoodlewall_cmtags', ['cmid' => $cmid])) {
+        if ($DB->record_exists('format_mimo_cmtags', ['cmid' => $cmid])) {
             // Update existing mapping.
-            $record = $DB->get_record('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+            $record = $DB->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
             $record->tagid = $tagid;
-            $result = $DB->update_record('format_minimoodlewall_cmtags', $record);
+            $result = $DB->update_record('format_mimo_cmtags', $record);
         } else {
             // Create new mapping.
             $record = new \stdClass();
             $record->cmid = $cmid;
             $record->tagid = $tagid;
             $record->timecreated = time();
-            $result = $DB->insert_record('format_minimoodlewall_cmtags', $record);
+            $result = $DB->insert_record('format_mimo_cmtags', $record);
             $result = !empty($result);
         }
 
@@ -710,7 +710,7 @@ class tag_manager {
         $tagid = self::$mappingcache->get($cachekey);
 
         if ($tagid === false) {
-            $mapping = $DB->get_record('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+            $mapping = $DB->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
             if ($mapping) {
                 $tagid = $mapping->tagid;
                 self::$mappingcache->set($cachekey, $tagid);
@@ -760,7 +760,7 @@ class tag_manager {
     public static function remove_cm_tag(int $cmid): bool {
         global $DB;
 
-        $result = $DB->delete_records('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+        $result = $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
         self::clear_mapping_cache();
 
         return $result;
@@ -809,7 +809,7 @@ class tag_manager {
     public static function bind_tag_to_course(int $tagid, int $courseid): void {
         global $DB;
 
-        if ($DB->record_exists('format_minimoodlewall_course_tags', ['tagid' => $tagid, 'courseid' => $courseid])) {
+        if ($DB->record_exists('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid])) {
             return;
         }
 
@@ -817,7 +817,7 @@ class tag_manager {
         $record->courseid = $courseid;
         $record->tagid = $tagid;
         $record->timecreated = time();
-        $DB->insert_record('format_minimoodlewall_course_tags', $record);
+        $DB->insert_record('format_mimo_course_tags', $record);
 
         self::clear_course_tags_cache($courseid);
     }
@@ -831,7 +831,7 @@ class tag_manager {
     public static function unbind_tag_from_course(int $tagid, int $courseid): void {
         global $DB;
 
-        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $tagid, 'courseid' => $courseid]);
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid]);
         self::clear_course_tags_cache($courseid);
     }
 
@@ -845,8 +845,8 @@ class tag_manager {
     public static function promote_tag_to_global(int $tagid): void {
         global $DB;
 
-        $DB->set_field('format_minimoodlewall_tags', 'scope', 'global', ['id' => $tagid]);
-        $DB->delete_records('format_minimoodlewall_course_tags', ['tagid' => $tagid]);
+        $DB->set_field('format_mimo_tags', 'scope', 'global', ['id' => $tagid]);
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $tagid]);
         self::clear_tag_cache();
     }
 
@@ -860,8 +860,8 @@ class tag_manager {
         global $DB;
 
         $sql = "SELECT t.*
-                  FROM {format_minimoodlewall_tags} t
-                  JOIN {format_minimoodlewall_course_tags} ct ON ct.tagid = t.id
+                  FROM {format_mimo_tags} t
+                  JOIN {format_mimo_course_tags} ct ON ct.tagid = t.id
                  WHERE ct.courseid = :courseid AND t.scope = :scope
               ORDER BY t.sortorder ASC, t.id ASC";
         return $DB->get_records_sql($sql, ['courseid' => $courseid, 'scope' => 'imported']);
@@ -875,7 +875,7 @@ class tag_manager {
     public static function unbind_all_tags_from_course(int $courseid): void {
         global $DB;
 
-        $DB->delete_records('format_minimoodlewall_course_tags', ['courseid' => $courseid]);
+        $DB->delete_records('format_mimo_course_tags', ['courseid' => $courseid]);
         self::clear_course_tags_cache($courseid);
     }
 
@@ -886,13 +886,13 @@ class tag_manager {
         global $DB;
 
         $sql = "SELECT t.id
-                  FROM {format_minimoodlewall_tags} t
+                  FROM {format_mimo_tags} t
                  WHERE t.scope = :scope
                    AND NOT EXISTS (
-                       SELECT 1 FROM {format_minimoodlewall_course_tags} ct WHERE ct.tagid = t.id
+                       SELECT 1 FROM {format_mimo_course_tags} ct WHERE ct.tagid = t.id
                    )
                    AND NOT EXISTS (
-                       SELECT 1 FROM {format_minimoodlewall_cmtags} cmt WHERE cmt.tagid = t.id
+                       SELECT 1 FROM {format_mimo_cmtags} cmt WHERE cmt.tagid = t.id
                    )";
         $orphans = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
 
@@ -936,7 +936,7 @@ class tag_manager {
         }
 
         $where = implode(' AND ', $conditions);
-        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC";
+        $sql = "SELECT * FROM {format_mimo_tags} WHERE $where ORDER BY sortorder ASC";
         $records = $DB->get_records_sql($sql, $params, 0, 1);
 
         return $records ? reset($records) : null;
@@ -965,7 +965,7 @@ class tag_manager {
         }
 
         $where = implode(' AND ', $conditions);
-        $sql = "SELECT * FROM {format_minimoodlewall_tags} WHERE $where ORDER BY sortorder ASC";
+        $sql = "SELECT * FROM {format_mimo_tags} WHERE $where ORDER BY sortorder ASC";
         $records = $DB->get_records_sql($sql, $params, 0, 1);
 
         return $records ? reset($records) : null;
@@ -980,45 +980,45 @@ class tag_manager {
         global $DB;
 
         // Check if any tags already exist.
-        if ($DB->record_exists('format_minimoodlewall_tags', [])) {
+        if ($DB->record_exists('format_mimo_tags', [])) {
             return true; // Already initialized.
         }
 
         // Create default tags.
         $defaulttags = [
-            ['name' => get_string('tag_reading', 'format_minimoodlewall'),
+            ['name' => get_string('tag_reading', 'format_mimo'),
                 'cardimage' => 'read_base.svg', 'filterimage' => 'read_base.svg',
                 'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => null,
                 'bgcolor' => '#7fc3d8'],
-            ['name' => get_string('tag_writing', 'format_minimoodlewall'),
+            ['name' => get_string('tag_writing', 'format_mimo'),
                 'cardimage' => 'write_base.svg', 'filterimage' => 'write_base.svg',
                 'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
                 'bgcolor' => '#de5a72'],
-            ['name' => get_string('tag_watch', 'format_minimoodlewall'),
+            ['name' => get_string('tag_watch', 'format_mimo'),
                 'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
                 'activitytype1' => 'page', 'activitytype2' => 'url', 'activitytype3' => null,
                 'bgcolor' => '#facc15'],
-            ['name' => get_string('tag_listen', 'format_minimoodlewall'),
+            ['name' => get_string('tag_listen', 'format_mimo'),
                 'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
                 'activitytype1' => 'page', 'activitytype2' => 'url', 'activitytype3' => null,
                 'bgcolor' => '#f0a500'],
-            ['name' => get_string('tag_discover', 'format_minimoodlewall'),
+            ['name' => get_string('tag_discover', 'format_mimo'),
                 'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
                 'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => 'glossary',
                 'bgcolor' => '#facc15'],
-            ['name' => get_string('tag_calculations', 'format_minimoodlewall'),
+            ['name' => get_string('tag_calculations', 'format_mimo'),
                 'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
                 'activitytype1' => 'quiz', 'activitytype2' => 'assign', 'activitytype3' => null,
                 'bgcolor' => '#8ccb90'],
-            ['name' => get_string('tag_teamwork', 'format_minimoodlewall'),
+            ['name' => get_string('tag_teamwork', 'format_mimo'),
                 'cardimage' => 'collaborate_base.svg', 'filterimage' => 'collaborate_base.svg',
                 'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
                 'bgcolor' => '#b497d6'],
-            ['name' => get_string('tag_show', 'format_minimoodlewall'),
+            ['name' => get_string('tag_show', 'format_mimo'),
                 'cardimage' => 'share_base.svg', 'filterimage' => 'share_base.svg',
                 'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
                 'bgcolor' => '#de5a72'],
-            ['name' => get_string('tag_practice_base', 'format_minimoodlewall'),
+            ['name' => get_string('tag_practice_base', 'format_mimo'),
                 'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
                 'activitytype1' => 'assign', 'activitytype2' => 'quiz', 'activitytype3' => null,
                 'bgcolor' => '#8ccb90'],

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hook callbacks for format_minimoodlewall.
+ * Hook callbacks for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,6 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 $callbacks = [
     [
         'hook' => \core\hook\output\before_standard_head_html_generation::class,
-        'callback' => \format_minimoodlewall\hook_callbacks::class . '::before_standard_head_html_generation',
+        'callback' => \format_mimo\hook_callbacks::class . '::before_standard_head_html_generation',
     ],
 ];

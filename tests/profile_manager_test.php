@@ -17,20 +17,20 @@
 /**
  * Unit tests for profile_manager.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
  * Profile manager test case.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\profile_manager
+ * @covers     \format_mimo\profile_manager
  */
 final class profile_manager_test extends \advanced_testcase {
     /**
@@ -66,7 +66,7 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear any existing profiles.
-        $DB->delete_records('format_minimoodlewall_profiles');
+        $DB->delete_records('format_mimo_profiles');
 
         // Create multiple profiles.
         profile_manager::create_profile('style1', 'Style One', 1);
@@ -152,13 +152,13 @@ final class profile_manager_test extends \advanced_testcase {
         $this->assertNotEmpty($profiletag->id);
 
         // Verify the profile tag exists.
-        $this->assertTrue($DB->record_exists('format_minimoodlewall_profile_tags', ['id' => $profiletag->id]));
+        $this->assertTrue($DB->record_exists('format_mimo_profile_tags', ['id' => $profiletag->id]));
 
         // Delete the profile.
         profile_manager::delete_profile($profileid);
 
         // Verify the profile tag was also deleted.
-        $this->assertFalse($DB->record_exists('format_minimoodlewall_profile_tags', ['id' => $profiletag->id]));
+        $this->assertFalse($DB->record_exists('format_mimo_profile_tags', ['id' => $profiletag->id]));
     }
 
     /**
@@ -220,7 +220,7 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear existing profiles.
-        $DB->delete_records('format_minimoodlewall_profiles');
+        $DB->delete_records('format_mimo_profiles');
 
         // Create in non-sequential order.
         profile_manager::create_profile('third', 'Third', 30);
@@ -245,7 +245,7 @@ final class profile_manager_test extends \advanced_testcase {
 
         // Create profile tag record with a filename.
         $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
-        $DB->set_field('format_minimoodlewall_profile_tags', 'cardimage', 'test.svg', ['id' => $profiletag->id]);
+        $DB->set_field('format_mimo_profile_tags', 'cardimage', 'test.svg', ['id' => $profiletag->id]);
 
         // Get the tag.
         $tag = tag_manager::get_tag($tagid);

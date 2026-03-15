@@ -14,15 +14,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tag-based filtering for minimoodlewall activity cards.
+ * Tag-based filtering for mimo activity cards.
  *
- * @module     format_minimoodlewall/tag_filter
+ * @module     format_mimo/tag_filter
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import Notification from 'core/notification';
-import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 import {get_string as getString} from 'core/str';
 
 /** Duration in milliseconds for height transition animation. */
@@ -37,17 +37,17 @@ const filterState = {
 
 /**
  * Selectors for sibling elements that should be included in the animated wrapper.
- * These elements follow .minimoodlewall-activities and should animate together.
+ * These elements follow .mimo-activities and should animate together.
  */
 const WRAPPER_SIBLING_SELECTORS = [
-    '.minimoodlewall-navigation-wrapper',
+    '.mimo-navigation-wrapper',
     '[data-region="completion-status"]',
 ];
 
 /**
  * Collect sibling elements that should be wrapped together with the container.
  *
- * @param {HTMLElement} container - The .minimoodlewall-activities container
+ * @param {HTMLElement} container - The .mimo-activities container
  * @returns {HTMLElement[]} Array of sibling elements to include in wrapper
  */
 const collectWrappableSiblings = (container) => {
@@ -74,7 +74,7 @@ const collectWrappableSiblings = (container) => {
  * The wrapper captures the height, while the inner content reflows freely.
  * Also wraps sibling elements (navigation, completion status) to prevent layout jumps.
  *
- * @param {HTMLElement} container - The .minimoodlewall-activities container
+ * @param {HTMLElement} container - The .mimo-activities container
  * @param {Function} applyChanges - Callback that applies the filter changes
  * @returns {void}
  */
@@ -90,14 +90,14 @@ const animateContainerHeight = (container, applyChanges) => {
     let wrappedSiblings = [];
 
     // If parent isn't already a dedicated wrapper, create one.
-    if (!wrapper.classList.contains('minimoodlewall-height-animator')) {
+    if (!wrapper.classList.contains('mimo-height-animator')) {
         const originalParent = container.parentElement;
 
         // Collect siblings to wrap before modifying DOM.
         wrappedSiblings = collectWrappableSiblings(container);
 
         wrapper = document.createElement('div');
-        wrapper.className = 'minimoodlewall-height-animator';
+        wrapper.className = 'mimo-height-animator';
         wrapper.style.overflow = 'hidden';
 
         // Insert wrapper before container and move container into it.
@@ -245,13 +245,13 @@ const announceFilterStatus = async(tagName, visibleCount, totalCount) => {
     }
 
     if (tagName) {
-        liveRegion.textContent = await getString('aria_filter_active', 'format_minimoodlewall', {
+        liveRegion.textContent = await getString('aria_filter_active', 'format_mimo', {
             visible: visibleCount,
             total: totalCount,
             tagname: tagName,
         });
     } else {
-        liveRegion.textContent = await getString('aria_filter_cleared', 'format_minimoodlewall', totalCount);
+        liveRegion.textContent = await getString('aria_filter_cleared', 'format_mimo', totalCount);
     }
 };
 
@@ -466,7 +466,7 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
         starsContainer.appendChild(fragment);
 
         // Update aria label.
-        getString('aria_completion_status', 'format_minimoodlewall', {
+        getString('aria_completion_status', 'format_mimo', {
             completed: completedCount,
             total: totalWithCompletion,
         }).then((str) => {
@@ -546,17 +546,17 @@ const toggleNoActivitiesMessage = (statusRegion, show) => {
  * - Click inactive filter: Activates and shows only matching
  * - Prevents default to avoid navigation
  *
- * @param {HTMLElement} bar - Filter bar element with [data-region="minimoodlewall-filterbar"]
+ * @param {HTMLElement} bar - Filter bar element with [data-region="mimo-filterbar"]
  * @returns {void}
  */
 const initFilterBar = (bar) => {
     try {
         const sibling = bar.nextElementSibling;
         let activityContainer = null;
-        if (sibling && sibling.classList.contains('minimoodlewall-activities')) {
+        if (sibling && sibling.classList.contains('mimo-activities')) {
             activityContainer = sibling;
         } else {
-            activityContainer = bar.parentElement.querySelector('.minimoodlewall-activities');
+            activityContainer = bar.parentElement.querySelector('.mimo-activities');
         }
 
         if (!activityContainer) {
@@ -737,7 +737,7 @@ const initFilterBar = (bar) => {
         }
 
         // Listen for reactive completion state changes from the course editor watcher.
-        document.addEventListener('minimoodlewall:completionchange', () => {
+        document.addEventListener('mimo:completionchange', () => {
             if (statusRegion) {
                 updateCompletionCounts(statusRegion, activityItems);
             }
@@ -757,7 +757,7 @@ const initFilterBar = (bar) => {
  */
 const initCompletionStatusOnly = (statusRegion) => {
     try {
-        const activityContainer = statusRegion.parentElement.querySelector('.minimoodlewall-activities');
+        const activityContainer = statusRegion.parentElement.querySelector('.mimo-activities');
         if (!activityContainer) {
             return;
         }
@@ -832,7 +832,7 @@ const initCompletionStatusOnly = (statusRegion) => {
         updateCompletionCounts(statusRegion, activityItems);
 
         // Listen for reactive completion state changes from the course editor watcher.
-        document.addEventListener('minimoodlewall:completionchange', () => {
+        document.addEventListener('mimo:completionchange', () => {
             updateCompletionCounts(statusRegion, activityItems);
         });
     } catch (error) {
@@ -843,7 +843,7 @@ const initCompletionStatusOnly = (statusRegion) => {
 /**
  * Initialize all filter bars and completion status regions in the page.
  *
- * Scans for all elements with [data-region="minimoodlewall-filterbar"]
+ * Scans for all elements with [data-region="mimo-filterbar"]
  * and initializes filtering functionality for each.
  *
  * Also initializes standalone completion status regions (without filter bar).
@@ -855,7 +855,7 @@ const initCompletionStatusOnly = (statusRegion) => {
 export const init = () => {
     // Initialize filter bars (which also handle their associated completion status regions).
     document
-        .querySelectorAll('[data-region="minimoodlewall-filterbar"]')
+        .querySelectorAll('[data-region="mimo-filterbar"]')
         .forEach((bar) => initFilterBar(bar));
 
     // Initialize standalone completion status regions (when filtering is disabled).
@@ -864,7 +864,7 @@ export const init = () => {
         .forEach((statusRegion) => {
             // Skip if already initialized by a filter bar.
             const parent = statusRegion.parentElement;
-            if (!parent || !parent.querySelector('[data-region="minimoodlewall-filterbar"]')) {
+            if (!parent || !parent.querySelector('[data-region="mimo-filterbar"]')) {
                 initCompletionStatusOnly(statusRegion);
             }
         });

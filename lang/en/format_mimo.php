@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'format_minimoodlewall', language 'en'.
+ * Strings for component 'format_mimo', language 'en'.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,7 +47,7 @@ $string['closedrawers_desc'] = 'When enabled, side drawers will be automatically
 $string['allcomplete'] = 'All activities complete!';
 $string['completed'] = 'Completed';
 $string['completiondefaults'] = 'Completion defaults';
-$string['completiondefaults_desc'] = 'Configure default completion settings for activities in Minimal Moodle Wall courses. When a new activity is created with core default completion, these settings will be applied instead.';
+$string['completiondefaults_desc'] = 'Configure default completion settings for activities in mimo wall courses. When a new activity is created with core default completion, these settings will be applied instead.';
 $string['completiondefaultdeleted'] = 'Completion default override removed.';
 $string['completiondefaultsaved'] = 'Completion default override saved.';
 $string['completiondefaultstatus'] = 'Override status';
@@ -128,9 +128,9 @@ $string['openallactivities'] = 'Open all activities';
 $string['other'] = 'Other...';
 $string['page'] = 'Page';
 $string['paginationnavigation'] = 'Activity pages navigation';
-$string['pluginname'] = 'Minimal Moodle Wall';
+$string['pluginname'] = 'mimo wall';
 $string['previouspage'] = 'Previous page';
-$string['privacy:metadata'] = 'The Minimal Moodle Wall format plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The mimo wall format plugin does not store any personal data.';
 $string['profile_classic'] = 'Classic';
 $string['profile_dark'] = 'Dark';
 $string['profile_develop'] = '🌿 Develop Level';

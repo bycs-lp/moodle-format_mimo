@@ -17,24 +17,24 @@
 /**
  * External service to get tags for a course.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\external;
+namespace format_mimo\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
-use format_minimoodlewall\tag_manager;
+use format_mimo\tag_manager;
 
 /**
  * External service to get tags for a course.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

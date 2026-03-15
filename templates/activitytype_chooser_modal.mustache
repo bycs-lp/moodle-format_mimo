@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/activitytype_chooser_modal
+    @template format_mimo/activitytype_chooser_modal
 
     Activity type chooser modal body template.
 
@@ -50,19 +50,19 @@
         "activityorresource": "Activity or resource"
     }
 }}
-<div class="format-minimoodlewall-activity-options">
+<div class="format-mimo-activity-options">
     <p class="mb-0 fs-5">{{selectactivitytype}}</p>
     <p class="mb-4 text-muted">{{selectactivitytypedesc}}</p>
     <div class="row g-3 mb-3">
         {{#activitycards}}
         <div class="{{colclass}}">
-            {{> format_minimoodlewall/activitytype_card }}
+            {{> format_mimo/activitytype_card }}
         </div>
         {{/activitycards}}
     </div>
     <div class="row">
         <div class="col-12">
-            <a href="#" class="mmw-activity-chooser-link" data-activity-type="chooser">
+            <a href="#" class="mimo-activity-chooser-link" data-activity-type="chooser">
                 {{activityorresource}}
             </a>
         </div>

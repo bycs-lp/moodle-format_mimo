@@ -17,7 +17,7 @@
 /**
  * Version details.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,4 +26,4 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2026031401;        // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2024100700;        // Requires this Moodle version (4.5).
-$plugin->component = 'format_minimoodlewall';    // Full name of the plugin (used for diagnostics).
+$plugin->component = 'format_mimo';    // Full name of the plugin (used for diagnostics).

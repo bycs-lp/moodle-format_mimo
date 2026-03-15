@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Behat data generator for format_minimoodlewall.
+ * Behat data generator for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_format_minimoodlewall_generator extends behat_generator_base {
+class behat_format_mimo_generator extends behat_generator_base {
     /**
      * Get list of entities that can be created.
      *
@@ -83,7 +83,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     protected function get_tag_id(string $tagname): int {
         global $DB;
 
-        $id = $DB->get_field('format_minimoodlewall_tags', 'id', ['name' => $tagname]);
+        $id = $DB->get_field('format_mimo_tags', 'id', ['name' => $tagname]);
         if (!$id) {
             throw new Exception('The specified tag with name "' . $tagname . '" does not exist');
         }
@@ -99,7 +99,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     protected function get_description_tag_id(string $tagname): int {
         global $DB;
 
-        $id = $DB->get_field('format_minimoodlewall_desc_tags', 'id', ['name' => $tagname]);
+        $id = $DB->get_field('format_mimo_desc_tags', 'id', ['name' => $tagname]);
         if (!$id) {
             throw new Exception('The specified description tag with name "' . $tagname . '" does not exist');
         }
@@ -242,7 +242,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Process courses table data for minimoodlewall format.
+     * Process courses table data for mimo format.
      * This hooks into Behat's course creation to handle selectedtags.
      *
      * @param array $data
@@ -271,7 +271,7 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     }
 
     /**
-     * Ensure course data mirrors the UI defaults for the minimoodlewall format.
+     * Ensure course data mirrors the UI defaults for the mimo format.
      *
      * @param array $data
      * @return array
@@ -279,9 +279,9 @@ class behat_format_minimoodlewall_generator extends behat_generator_base {
     protected function normalise_course_data(array $data): array {
         global $DB;
 
-        $data['format'] = $data['format'] ?? 'minimoodlewall';
-        if ($data['format'] !== 'minimoodlewall') {
-            throw new coding_exception('format_minimoodlewall course generator only supports the minimoodlewall format.');
+        $data['format'] = $data['format'] ?? 'mimo';
+        if ($data['format'] !== 'mimo') {
+            throw new coding_exception('format_mimo course generator only supports the mimo format.');
         }
 
         // Handle selectedtags - can be a comma-separated list of tag names or IDs.

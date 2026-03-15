@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
- * Hook callbacks for minimoodlewall format.
+ * Hook callbacks for mimo format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -34,13 +34,13 @@ class hook_callbacks {
     ): void {
         global $COURSE, $CFG;
 
-        // Only apply to courses using minimoodlewall format.
+        // Only apply to courses using mimo format.
         if (empty($COURSE->id) || $COURSE->id == SITEID) {
             return;
         }
 
         $format = course_get_format($COURSE);
-        if ($format->get_format() !== 'minimoodlewall') {
+        if ($format->get_format() !== 'mimo') {
             return;
         }
 
@@ -48,7 +48,7 @@ class hook_callbacks {
         $css = self::get_distraction_free_css_content();
         
         // Add CSS to head.
-        $hook->add_html('<style type="text/css" id="format-minimoodlewall-df-css">' . $css . '</style>');
+        $hook->add_html('<style type="text/css" id="format-mimo-df-css">' . $css . '</style>');
     }
 
     /**
@@ -58,9 +58,9 @@ class hook_callbacks {
      */
     protected static function get_distraction_free_css_content() {
         // Get settings.
-        $hideselectors = get_config('format_minimoodlewall', 'distractionfreeselectors');
-        $nopaddingselectors = get_config('format_minimoodlewall', 'nopaddingselectors');
-        $closedrawers = get_config('format_minimoodlewall', 'closedrawers');
+        $hideselectors = get_config('format_mimo', 'distractionfreeselectors');
+        $nopaddingselectors = get_config('format_mimo', 'nopaddingselectors');
+        $closedrawers = get_config('format_mimo', 'closedrawers');
 
         // Default values if not set.
         if (empty($hideselectors)) {
@@ -78,7 +78,7 @@ class hook_callbacks {
         $selectors = array_filter(array_map('trim', explode("\n", $hideselectors)));
         if (!empty($selectors)) {
             $prefixed = array_map(function ($sel) {
-                return 'body.format-minimoodlewall-distraction-free ' . $sel;
+                return 'body.format-mimo-distraction-free ' . $sel;
             }, $selectors);
             $css .= implode(",\n", $prefixed) . " {\n";
             $css .= "    display: none !important;\n";
@@ -89,20 +89,20 @@ class hook_callbacks {
         $nopaddinglist = array_filter(array_map('trim', explode("\n", $nopaddingselectors)));
         if (!empty($nopaddinglist)) {
             foreach ($nopaddinglist as $selector) {
-                $css .= "body.format-minimoodlewall-distraction-free {$selector} {\n";
+                $css .= "body.format-mimo-distraction-free {$selector} {\n";
                 $css .= "    padding-top: 0 !important;\n";
                 $css .= "}\n\n";
             }
         }
 
         // Additional fixed styles for activity header.
-        $css .= "body.format-minimoodlewall-distraction-free .activity-header {\n";
+        $css .= "body.format-mimo-distraction-free .activity-header {\n";
         $css .= "    margin-bottom: 0 !important;\n";
         $css .= "}\n\n";
 
         // Close drawers CSS (if enabled).
         if ($closedrawers) {
-            $css .= "body.format-minimoodlewall-distraction-free [data-region=\"drawer\"] {\n";
+            $css .= "body.format-mimo-distraction-free [data-region=\"drawer\"] {\n";
             $css .= "    display: none !important;\n";
             $css .= "}\n";
         }

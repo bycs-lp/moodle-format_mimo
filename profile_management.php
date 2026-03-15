@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity profile management interface for minimoodlewall course format.
+ * Activity profile management interface for mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,9 +25,9 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use format_minimoodlewall\profile_manager;
+use format_mimo\profile_manager;
 
-admin_externalpage_setup('format_minimoodlewall_profiles');
+admin_externalpage_setup('format_mimo_profiles');
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $profileid = optional_param('profileid', 0, PARAM_INT);
@@ -35,9 +35,9 @@ $profileid = optional_param('profileid', 0, PARAM_INT);
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
-$PAGE->set_url('/course/format/minimoodlewall/profile_management.php');
-$PAGE->set_title(get_string('profilemanagement', 'format_minimoodlewall'));
-$PAGE->set_heading(get_string('profilemanagement', 'format_minimoodlewall'));
+$PAGE->set_url('/course/format/mimo/profile_management.php');
+$PAGE->set_title(get_string('profilemanagement', 'format_mimo'));
+$PAGE->set_heading(get_string('profilemanagement', 'format_mimo'));
 
 // Handle delete action.
 if ($action === 'deleteprofile' && confirm_sesskey()) {
@@ -47,13 +47,13 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
             // Prevent deletion if profile is in use by any course.
             $inuse = $DB->record_exists_select(
                 'course_format_options',
-                "format = 'minimoodlewall' AND name = 'activityprofile' AND value = :name",
+                "format = 'mimo' AND name = 'activityprofile' AND value = :name",
                 ['name' => $profile->name]
             );
             if ($inuse) {
                 redirect(
                     $PAGE->url,
-                    get_string('profileinuse', 'format_minimoodlewall'),
+                    get_string('profileinuse', 'format_mimo'),
                     null,
                     \core\output\notification::NOTIFY_ERROR
                 );
@@ -62,7 +62,7 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
             profile_manager::delete_profile($profileid);
             redirect(
                 $PAGE->url,
-                get_string('profiledeleted', 'format_minimoodlewall'),
+                get_string('profiledeleted', 'format_mimo'),
                 null,
                 \core\output\notification::NOTIFY_SUCCESS
             );
@@ -71,27 +71,27 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
 }
 
 echo $OUTPUT->header();
-echo \format_minimoodlewall\admin_page_tabs::render('profiles');
-echo $OUTPUT->heading(get_string('profilemanagement', 'format_minimoodlewall'));
-echo html_writer::tag('p', get_string('profilemanagement_desc', 'format_minimoodlewall'), ['class' => 'text-muted mb-3']);
+echo \format_mimo\admin_page_tabs::render('profiles');
+echo $OUTPUT->heading(get_string('profilemanagement', 'format_mimo'));
+echo html_writer::tag('p', get_string('profilemanagement_desc', 'format_mimo'), ['class' => 'text-muted mb-3']);
 
 // Initialize delete confirmation modal.
-$PAGE->requires->js_call_amd('format_minimoodlewall/profile_delete_confirm', 'init');
+$PAGE->requires->js_call_amd('format_mimo/profile_delete_confirm', 'init');
 
 // Initialize modal form JS for create/edit profile.
-$PAGE->requires->js_call_amd('format_minimoodlewall/profile_management_modal', 'init');
+$PAGE->requires->js_call_amd('format_mimo/profile_management_modal', 'init');
 
 // Get all profiles.
 $profiles = profile_manager::get_all_profiles();
 
 $templatecontext = [
-    'createprofiletext' => get_string('createprofile', 'format_minimoodlewall'),
-    'noprofilestext' => get_string('noprofiles', 'format_minimoodlewall'),
+    'createprofiletext' => get_string('createprofile', 'format_mimo'),
+    'noprofilestext' => get_string('noprofiles', 'format_mimo'),
     'hasprofiles' => !empty($profiles),
     'tableheaders' => [
-        'name' => get_string('profilename', 'format_minimoodlewall'),
-        'displayname' => get_string('profiledisplayname', 'format_minimoodlewall'),
-        'sortorder' => get_string('sortorder', 'format_minimoodlewall'),
+        'name' => get_string('profilename', 'format_mimo'),
+        'displayname' => get_string('profiledisplayname', 'format_mimo'),
+        'sortorder' => get_string('sortorder', 'format_mimo'),
         'actions' => get_string('actions'),
     ],
     'profiles' => [],
@@ -108,11 +108,11 @@ foreach ($profiles as $profile) {
             'profileid' => $profile->id,
             'sesskey' => sesskey(),
         ]))->out(false),
-        'edittitle' => get_string('editprofile', 'format_minimoodlewall'),
-        'deletetitle' => get_string('deleteprofile', 'format_minimoodlewall'),
+        'edittitle' => get_string('editprofile', 'format_mimo'),
+        'deletetitle' => get_string('deleteprofile', 'format_mimo'),
     ];
 }
 
-echo $OUTPUT->render_from_template('format_minimoodlewall/profile_management', $templatecontext);
+echo $OUTPUT->render_from_template('format_mimo/profile_management', $templatecontext);
 
 echo $OUTPUT->footer();

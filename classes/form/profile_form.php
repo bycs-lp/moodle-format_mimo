@@ -17,24 +17,24 @@
 /**
  * Dynamic form for editing an activity profile.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\form;
+namespace format_mimo\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-use format_minimoodlewall\profile_manager;
-use format_minimoodlewall\tag_manager;
+use format_mimo\profile_manager;
+use format_mimo\tag_manager;
 use core_form\dynamic_form;
 use context;
 
 /**
  * Activity profile edit form (dynamic form for modal usage).
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -50,18 +50,18 @@ class profile_form extends dynamic_form {
         $mform->setType('profileid', PARAM_INT);
 
         // Profile internal name.
-        $mform->addElement('text', 'name', get_string('profilename', 'format_minimoodlewall'), ['size' => 30]);
+        $mform->addElement('text', 'name', get_string('profilename', 'format_mimo'), ['size' => 30]);
         $mform->setType('name', PARAM_ALPHANUMEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
-        $mform->addHelpButton('name', 'profilename', 'format_minimoodlewall');
+        $mform->addHelpButton('name', 'profilename', 'format_mimo');
 
         // Profile display name.
-        $mform->addElement('text', 'displayname', get_string('profiledisplayname', 'format_minimoodlewall'), ['size' => 60]);
+        $mform->addElement('text', 'displayname', get_string('profiledisplayname', 'format_mimo'), ['size' => 60]);
         $mform->setType('displayname', PARAM_TEXT);
         $mform->addRule('displayname', get_string('required'), 'required', null, 'client');
 
         // Sort order.
-        $mform->addElement('text', 'sortorder', get_string('sortorder', 'format_minimoodlewall'), ['size' => 5]);
+        $mform->addElement('text', 'sortorder', get_string('sortorder', 'format_mimo'), ['size' => 5]);
         $mform->setType('sortorder', PARAM_INT);
         $mform->setDefault('sortorder', 0);
     }
@@ -78,9 +78,9 @@ class profile_form extends dynamic_form {
         $errors = parent::validation($data, $files);
 
         // Check for duplicate name.
-        $existing = $DB->get_record('format_minimoodlewall_profiles', ['name' => $data['name']]);
+        $existing = $DB->get_record('format_mimo_profiles', ['name' => $data['name']]);
         if ($existing && $existing->id != ($data['profileid'] ?? 0)) {
-            $errors['name'] = get_string('profilename_exists', 'format_minimoodlewall');
+            $errors['name'] = get_string('profilename_exists', 'format_mimo');
         }
 
         return $errors;
@@ -163,6 +163,6 @@ class profile_form extends dynamic_form {
      * @return \moodle_url
      */
     protected function get_page_url_for_dynamic_submission(): \moodle_url {
-        return new \moodle_url('/course/format/minimoodlewall/profile_management.php');
+        return new \moodle_url('/course/format/mimo/profile_management.php');
     }
 }

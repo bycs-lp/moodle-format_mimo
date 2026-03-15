@@ -20,7 +20,7 @@
  * without a full page reload. Updates URL, button styles, table content,
  * and edit links.
  *
- * @module     format_minimoodlewall/tag_profile_switcher
+ * @module     format_mimo/tag_profile_switcher
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -64,7 +64,7 @@ export const init = async() => {
     profileIdMap = JSON.parse(container.dataset.profileIdMap || '{}');
     activeProfile = container.dataset.currentProfile || '';
     baseUrl = container.dataset.managementUrl || '';
-    disabledText = await getString('profiletag_disabled', 'format_minimoodlewall');
+    disabledText = await getString('profiletag_disabled', 'format_mimo');
     registerEventListeners();
 };
 
@@ -170,8 +170,8 @@ const updateRow = (row, data, tagId, profileName) => {
     // Background color swatch + hex.
     const bgCell = row.querySelector('[data-field="bgcolor"]');
     if (bgCell) {
-        const swatch = bgCell.querySelector('.mmw-color-swatch');
-        const hex = bgCell.querySelector('.mmw-color-hex');
+        const swatch = bgCell.querySelector('.mimo-color-swatch');
+        const hex = bgCell.querySelector('.mimo-color-hex');
         if (swatch) {
             swatch.style.background = data.bgcolor;
         }

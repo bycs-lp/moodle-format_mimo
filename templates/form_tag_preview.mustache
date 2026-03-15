@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/form_tag_preview
+    @template format_mimo/form_tag_preview
 
     Renders a read-only preview of tags enabled for the selected activity profile.
     Displayed in the course settings form below the activity profile dropdown.
@@ -25,7 +25,7 @@
         "tags": [
             {
                 "name": "Lesen",
-                "imageurl": "https://example.com/pluginfile.php/1/format_minimoodlewall/tagcard/1/reading.svg",
+                "imageurl": "https://example.com/pluginfile.php/1/format_mimo/tagcard/1/reading.svg",
                 "tagid": 1,
                 "profileimages": "{\"classic\":\"https://...\",\"dark\":\"https://...\"}",
                 "profilenames": "{\"classic\":\"Lesen\",\"dark\":\"Reading\"}",
@@ -35,17 +35,17 @@
         "label": "Active tags"
     }
 }}
-<div class="mmw-tag-preview-container">
+<div class="mimo-tag-preview-container">
     {{#tags}}
-    <div class="mmw-tag-preview-item d-flex align-items-center" data-tagid="{{tagid}}"
+    <div class="mimo-tag-preview-item d-flex align-items-center" data-tagid="{{tagid}}"
          data-profileimages="{{profileimages}}" data-profilenames="{{profilenames}}" data-profileenabled="{{profileenabled}}">
         {{#imageurl}}
-        <img src="{{imageurl}}" class="mmw-tag-preview-img me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
+        <img src="{{imageurl}}" class="mimo-tag-preview-img me-2" data-tagimage="{{tagid}}" alt="" aria-hidden="true">
         {{/imageurl}}
         {{^imageurl}}
-        <span class="mmw-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
+        <span class="mimo-tag-preview-placeholder me-2" data-tagimage="{{tagid}}"></span>
         {{/imageurl}}
-        <span class="mmw-tag-name">{{name}}</span>
+        <span class="mimo-tag-name">{{name}}</span>
     </div>
     {{/tags}}
 </div>

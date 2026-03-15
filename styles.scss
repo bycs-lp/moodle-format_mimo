@@ -1,9 +1,9 @@
-// Base styles for minimoodlewall card layout.
+// Base styles for mimo card layout.
 
 // Completion status colors - shared across badges and pills.
 :root {
-    --mmw-completion-complete: #5fc76d;
-    --mmw-completion-incomplete: #cbbd93;
+    --mimo-completion-complete: #5fc76d;
+    --mimo-completion-incomplete: #cbbd93;
 }
 
 // Icon-only visibility control - global override
@@ -64,13 +64,13 @@
 }
 
 // Card controls container (visibility + settings + delete icons)
-.mmw-card-controls {
+.mimo-card-controls {
     z-index: 10; // Must be higher than stretched-link (z-index: 1)
 }
 
 // Shared icon button style for settings and delete
 // Scoped under parent for specificity over theme's `a:not(.btn-outline-primary)` rule.
-.mmw-card-controls .mmw-icon-btn {
+.mimo-card-controls .mimo-icon-btn {
     background: transparent;
     border: none;
     padding: 0.25rem;
@@ -117,7 +117,7 @@ $activity-icon-colors: (
 );
 
 // Activity container.
-.minimoodlewall-activities {
+.mimo-activities {
     margin-bottom: 1rem; // Add space after the activities list
     transition: height 0.3s ease;
     border-radius: 1rem;
@@ -134,7 +134,7 @@ $activity-icon-colors: (
     
 }
 // Hide not when in bulkedit, duplicated activities would be hidden otherwise.
-body:not(.bulkenabled) .minimoodlewall-activities {
+body:not(.bulkenabled) .mimo-activities {
     // Hide activities beyond the first page by default (prevents flash on page load).
     // JavaScript will manage visibility based on screen size.
     
@@ -172,35 +172,35 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Tag chooser dropdown styling
-.course-content .section-item .format-minimoodlewall-tagchooser {
+.course-content .section-item .format-mimo-tagchooser {
     ul.dropdown-menu {
         list-style: none;
     }
 }
 
 // Activity wrapper with navigation.
-.minimoodlewall-activities-wrapper {
+.mimo-activities-wrapper {
     position: relative; // Positioning context for navigation buttons.
 }
 
 // Override default activity styling.
-.minimoodlewall-activities {
+.mimo-activities {
 
     // Gray out hidden/stealth activities
     .activity.dimmed {
-        .minimoodlewall-card-content {
+        .mimo-card-content {
             // Apply dimming to card image and body, but not to visibility controls.
             // We target specific children because opacity cascades and cannot be
             // overridden by child elements.
-            .minimoodlewall-card-image,
-            .minimoodlewall-card-body,
-            .minimoodlewall-completion-badge {
+            .mimo-card-image,
+            .mimo-card-body,
+            .mimo-completion-badge {
                 opacity: 0.5;
             }
         }
         
         // Ensure dropdown menu escapes card stacking context when open
-        .minimoodlewall-card:has(.visibility-icon-control .show) {
+        .mimo-card:has(.visibility-icon-control .show) {
             z-index: 100;
         }
     }
@@ -216,12 +216,12 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Drag and drop styles (editing mode): DragDrop sets draggable on the <li>, not the card.
-[data-for='cmitem'][draggable='true'] .minimoodlewall-card {
+[data-for='cmitem'][draggable='true'] .mimo-card {
     cursor: move;
 }
 
 // Card container styling.
-.card.minimoodlewall-card {
+.card.mimo-card {
     border-radius: 1.2rem; // Follwing radiuses must match.
     box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -244,7 +244,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 
     // Drag and drop cursor is set via parent selector below.
 
-    .minimoodlewall-card-content {
+    .mimo-card-content {
         position: relative;
         border-radius: 1.2rem;
         background: #fff;
@@ -266,11 +266,11 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         }
 
         // Card image container with tag image.
-        .minimoodlewall-card-image {
+        .mimo-card-image {
             position: relative;
             width: 100%;
             flex: 4;
-            background: var(--mmw-card-accent, #e0f0ff);
+            background: var(--mimo-card-accent, #e0f0ff);
             border-radius: 1.2rem 1.2rem 0 0;
             display: flex;
             align-items: center;
@@ -290,7 +290,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
             }
 
             // Tag name pill overlay.
-            .minimoodlewall-tag-pill {
+            .mimo-tag-pill {
                 position: absolute;
                 right: 0.5rem;
                 bottom: 0.6rem;
@@ -321,7 +321,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         }
 
         // Card body with title and description.
-        .minimoodlewall-card-body {
+        .mimo-card-body {
             padding: 0.5rem 1rem 0.5rem;
             background: #fff;
             flex: 1.3;
@@ -333,7 +333,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
             justify-content: flex-start;
             container-type: inline-size;
 
-            .minimoodlewall-card-description {
+            .mimo-card-description {
                 font-size: clamp(1rem, 10cqw, 1.8rem);
                 font-weight: 500;
                 color: #666;
@@ -552,14 +552,14 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 .col-12.drag-over {
-    .minimoodlewall-card {
+    .mimo-card {
         border: 2px dashed #007bff;
         background: rgba(0, 123, 255, 0.05);
     }
 }
 
 // Completion badge overlay.
-.minimoodlewall-completion-badge {
+.mimo-completion-badge {
     position: absolute;
     top: 12px;
     right: 12px;
@@ -586,16 +586,16 @@ body:not(.bulkenabled) .minimoodlewall-activities {
     }
 
     .badge-complete {
-        color: var(--mmw-completion-complete);
+        color: var(--mimo-completion-complete);
     }
 
     .badge-incomplete {
-        color: var(--mmw-completion-incomplete);
+        color: var(--mimo-completion-incomplete);
     }
 }
 
 // Grid layout.
-.format-minimoodlewall {
+.format-mimo {
     .course-content {
         transition: height 0.3s ease;
 
@@ -632,7 +632,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Filter bar styling.
-.minimoodlewall-filter-bar {
+.mimo-filter-bar {
     margin-bottom: 1.5rem;
     padding: 1rem;
     background: #f8f9fa;
@@ -683,7 +683,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Pagination controls.
-.minimoodlewall-pagination {
+.mimo-pagination {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -718,12 +718,12 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Navigation wrapper - needs relative positioning as parent for absolute nav buttons.
-.minimoodlewall-navigation-wrapper {
+.mimo-navigation-wrapper {
     position: relative;
 }
 
 // Navigation buttons.
-.minimoodlewall-navigation {
+.mimo-navigation {
     display: none; // Hidden by default until JavaScript loads.
     
     // When visible or booting, show container.
@@ -736,7 +736,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         pointer-events: none;
     }
 
-    &.is-booting .minimoodlewall-nav-btn--prev {
+    &.is-booting .mimo-nav-btn--prev {
         opacity: 0.35;
     }
 
@@ -744,11 +744,11 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         display: none;
     }
 
-    &.is-booting[data-has-next='1'] .minimoodlewall-nav-btn--next {
+    &.is-booting[data-has-next='1'] .mimo-nav-btn--next {
         opacity: 0.35;
     }
 
-    .minimoodlewall-nav-btn {
+    .mimo-nav-btn {
         position: absolute;
         bottom: -70px; // Position from bottom of activities container.
         z-index: 100; // Ensure buttons are above cards.
@@ -766,15 +766,15 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         padding: 0;
 
-        &.minimoodlewall-nav-btn--prev {
+        &.mimo-nav-btn--prev {
             right: 75px; // Position prev button next to next button.
         }
 
-        &.minimoodlewall-nav-btn--next {
+        &.mimo-nav-btn--next {
             right: 23px; // Position next button at right edge.
         }
 
-        .minimoodlewall-nav-arrow {
+        .mimo-nav-arrow {
             font-size: 1.1rem;
             line-height: 1;
             color: #555;
@@ -800,16 +800,16 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 }
 
 // Compact filter bar rendered above the wall.
-.minimoodlewall-filterbar {
+.mimo-filterbar {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
     margin-bottom: 1rem;
 
-    .minimoodlewall-filterbar-button {
+    .mimo-filterbar-button {
         background: #fff;
-        border: 2px solid var(--mmw-filter-accent, #fff);
+        border: 2px solid var(--mimo-filter-accent, #fff);
         border-radius: 999px;
         padding: 0.5rem;
         min-width: 3rem;
@@ -820,7 +820,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
         transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
-        .minimoodlewall-filterbar-symbol {
+        .mimo-filterbar-symbol {
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
@@ -829,7 +829,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
             height: 100%;
         }
 
-        .minimoodlewall-filterbar-symbol img {
+        .mimo-filterbar-symbol img {
             width: 2rem;
             height: auto;
             max-width: 100%;
@@ -840,7 +840,7 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         &.is-active {
             box-shadow: 0 4px 12px rgba(15, 108, 191, 0.35);
             transform: scale(1.2);
-            background: var(--mmw-filter-accent) !important;
+            background: var(--mimo-filter-accent) !important;
         }
 
         &.is-empty {
@@ -862,14 +862,14 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         }
     }
 
-    .minimoodlewall-filterbar-label {
+    .mimo-filterbar-label {
         font-weight: 600;
         font-size: 0.85rem;
         text-align: center;
         color: #1f2a1c;
     }
 
-    .minimoodlewall-filterbar-reset {
+    .mimo-filterbar-reset {
         background: none;
         border: none;
         color: var(--bs-link-color, #0f6cbf);
@@ -881,10 +881,10 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 
 // Auto-contrast for filter labels on accent backgrounds.
 // Uses oklch relative color syntax to pick black or white text
-// based on the lightness of --mmw-filter-accent.
-@mixin _mmw-accent-contrast {
+// based on the lightness of --mimo-filter-accent.
+@mixin _mimo-accent-contrast {
     color: #fff; // Fallback for browsers without relative color syntax.
-    color: #{"oklch(from var(--mmw-filter-accent) clamp(0, (0.6 - l) * 1000, 1) 0 0)"};
+    color: #{"oklch(from var(--mimo-filter-accent) clamp(0, (0.6 - l) * 1000, 1) 0 0)"};
 }
 
 // ============================================================
@@ -892,17 +892,17 @@ body:not(.bulkenabled) .minimoodlewall-activities {
 // ============================================================
 
 // --- IMAGE ONLY (default): hide the text label, show icon circles ---
-.minimoodlewall-filterbar.mmw-filterstyle-image {
-    .minimoodlewall-filterbar-label {
+.mimo-filterbar.mimo-filterstyle-image {
+    .mimo-filterbar-label {
         display: none;
     }
 }
 
 // --- TEXT ONLY: coloured text pills, no images ---
-.minimoodlewall-filterbar.mmw-filterstyle-text {
+.mimo-filterbar.mimo-filterstyle-text {
     gap: 0.35rem;
 
-    .minimoodlewall-filterbar-button {
+    .mimo-filterbar-button {
         border-radius: 999px;
         min-width: auto;
         min-height: auto;
@@ -910,32 +910,32 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         border-width: 3px;
         background: #fff;
 
-        .minimoodlewall-filterbar-symbol img {
+        .mimo-filterbar-symbol img {
             display: none;
         }
 
-        .minimoodlewall-filterbar-label {
+        .mimo-filterbar-label {
             font-size: 0.75rem;
             white-space: nowrap;
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent) !important;
-            @include _mmw-accent-contrast;
+            background: var(--mimo-filter-accent) !important;
+            @include _mimo-accent-contrast;
             transform: scale(1.05);
 
-            .minimoodlewall-filterbar-label {
-                @include _mmw-accent-contrast;
+            .mimo-filterbar-label {
+                @include _mimo-accent-contrast;
             }
         }
     }
 }
 
 // --- IMAGE + TEXT: icon + label side-by-side in rounded pill buttons ---
-.minimoodlewall-filterbar.mmw-filterstyle-imagetext {
+.mimo-filterbar.mimo-filterstyle-imagetext {
     gap: 0.5rem;
 
-    .minimoodlewall-filterbar-button {
+    .mimo-filterbar-button {
         border-radius: 999px;
         min-width: auto;
         min-height: auto;
@@ -943,20 +943,20 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         border-width: 2px;
         background: #fff;
 
-        .minimoodlewall-filterbar-symbol {
+        .mimo-filterbar-symbol {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             flex-direction: row;
         }
 
-        .minimoodlewall-filterbar-symbol img {
+        .mimo-filterbar-symbol img {
             width: 1.8rem;
             height: 1.8rem;
             flex-shrink: 0;
         }
 
-        .minimoodlewall-filterbar-label {
+        .mimo-filterbar-label {
             display: inline;
             font-weight: 600;
             font-size: 0.9rem;
@@ -964,21 +964,21 @@ body:not(.bulkenabled) .minimoodlewall-activities {
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent) !important;
+            background: var(--mimo-filter-accent) !important;
             transform: scale(1.05);
 
-            .minimoodlewall-filterbar-label {
-                @include _mmw-accent-contrast;
+            .mimo-filterbar-label {
+                @include _mimo-accent-contrast;
             }
         }
     }
 
     // Responsive: medium screens → fall back to text-only pills.
     @media (max-width: 768px) {
-        .minimoodlewall-filterbar-button {
+        .mimo-filterbar-button {
             padding: 0.35rem 1rem;
 
-            .minimoodlewall-filterbar-symbol img {
+            .mimo-filterbar-symbol img {
                 display: none;
             }
         }
@@ -988,42 +988,42 @@ body:not(.bulkenabled) .minimoodlewall-activities {
     @media (max-width: 480px) {
         gap: 0.4rem;
 
-        .minimoodlewall-filterbar-button {
+        .mimo-filterbar-button {
             padding: 0.4rem;
             min-width: 2.5rem;
             min-height: 2.5rem;
 
-            .minimoodlewall-filterbar-symbol img {
+            .mimo-filterbar-symbol img {
                 display: inline;
                 width: 1.5rem;
                 height: 1.5rem;
             }
 
-            .minimoodlewall-filterbar-label {
+            .mimo-filterbar-label {
                 display: none;
             }
         }
     }
 }
 
-.minimoodlewall-activities {
+.mimo-activities {
     .is-filtered-out {
         display: none !important;
     }
 }
 
 // Dark mode theme.
-body.format-minimoodlewall-theme-dark {
-    .minimoodlewall-card {
+body.format-mimo-theme-dark {
+    .mimo-card {
         background: #2d3748;
         color: #e2e8f0;
 
-        .minimoodlewall-card-description {
+        .mimo-card-description {
             color: #cbd5e0;
         }
     }
 
-    .minimoodlewall-filter-bar {
+    .mimo-filter-bar {
         background: #2d3748;
         border-color: #4a5568;
 
@@ -1054,8 +1054,8 @@ body.format-minimoodlewall-theme-dark {
 }
 
 // Colorful theme with vibrant colors.
-body.format-minimoodlewall-theme-colorful {
-    .minimoodlewall-card {
+body.format-mimo-theme-colorful {
+    .mimo-card {
         border: 2px solid transparent;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: #fff;
@@ -1072,7 +1072,7 @@ body.format-minimoodlewall-theme-colorful {
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         }
 
-        .minimoodlewall-card-description {
+        .mimo-card-description {
             color: rgba(255, 255, 255, 0.9);
         }
 
@@ -1082,7 +1082,7 @@ body.format-minimoodlewall-theme-colorful {
         }
     }
 
-    .minimoodlewall-filter-bar {
+    .mimo-filter-bar {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
 
@@ -1109,7 +1109,7 @@ body.format-minimoodlewall-theme-colorful {
     }
 }
 
-// Bulk selection styles for minimoodlewall cards.
+// Bulk selection styles for mimo cards.
 [data-for="cmitem"] {
     // When bulk mode is enabled, make the entire wrapper clickable.
     &[data-action="toggleSelectionCm"] {
@@ -1119,7 +1119,7 @@ body.format-minimoodlewall-theme-colorful {
 
     // Selected state styling.
     &.selected {
-        .minimoodlewall-card {
+        .mimo-card {
             outline: 3px solid #0d6efd;
             outline-offset: 2px;
             box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
@@ -1127,7 +1127,7 @@ body.format-minimoodlewall-theme-colorful {
     }
 }
 
-.minimoodlewall-card {
+.mimo-card {
     position: relative;
 
     // Bulk select checkbox container.
@@ -1166,8 +1166,8 @@ body.format-minimoodlewall-theme-colorful {
 }
 
 // Activity type chooser modal styling
-.format-minimoodlewall-activity-options {
-    .mmw-activity-card {
+.format-mimo-activity-options {
+    .mimo-activity-card {
         display: block;
         text-decoration: none;
         color: inherit;
@@ -1177,12 +1177,12 @@ body.format-minimoodlewall-theme-colorful {
 
         &:hover {
             transform: translateY(-4px);
-            .mmw-activity-card-content {
+            .mimo-activity-card-content {
                 box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.2);
             }
         }
 
-        .mmw-activity-card-content {
+        .mimo-activity-card-content {
             position: relative;
             background: #f5f5f5;
             border-radius: 1rem;
@@ -1194,7 +1194,7 @@ body.format-minimoodlewall-theme-colorful {
             transition: box-shadow 0.2s ease;
         }
 
-        .mmw-activity-card-tag {
+        .mimo-activity-card-tag {
             position: absolute;
             top: -8px;
             right: 1rem;
@@ -1208,14 +1208,14 @@ body.format-minimoodlewall-theme-colorful {
             z-index: 10;
         }
 
-        .mmw-activity-card-title {
+        .mimo-activity-card-title {
             font-size: 1.25rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
             color: #333;
         }
 
-        .mmw-activity-card-description {
+        .mimo-activity-card-description {
             font-size: 0.95rem;
             line-height: 1.5;
             color: #555;
@@ -1234,7 +1234,7 @@ body.format-minimoodlewall-theme-colorful {
         }
 
         $size-icon: 82px;
-        .mmw-activity-card-icon {
+        .mimo-activity-card-icon {
             position: absolute;
             bottom: 1rem;
             right: 1rem;
@@ -1268,12 +1268,12 @@ body.format-minimoodlewall-theme-colorful {
 
     // Apply purpose-based border colors using Moodle's activity icon color variables
     @each $type, $value in $activity-icon-colors {
-        .mmw-activity-card-icon.#{$type} {
+        .mimo-activity-card-icon.#{$type} {
             border-color: $value;
         }
     }
 
-    .mmw-activity-chooser-link {
+    .mimo-activity-chooser-link {
         display: block;
         text-align: center;
         padding: 1rem;
@@ -1294,7 +1294,7 @@ body.format-minimoodlewall-theme-colorful {
 }
 
 // Custom modal styling for activity type chooser.
-.modal.format_minimoodlewall-activitytype_modal {
+.modal.format_mimo-activitytype_modal {
     .modal-dialog {
         max-width: 900px;
     }
@@ -1304,7 +1304,7 @@ body.format-minimoodlewall-theme-colorful {
     }
 }
 
-body.format-minimoodlewall {
+body.format-mimo {
     // Adapt bulk editing fix.
     .bulkenabled .activity:first-child {
         margin-top: .5rem !important;
@@ -1326,7 +1326,7 @@ body.format-minimoodlewall {
 }
 
 /* Distraction-free mode toggle buttons */
-.format-minimoodlewall-df-toggle {
+.format-mimo-df-toggle {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
@@ -1345,25 +1345,25 @@ body.format-minimoodlewall {
     }
 }
 
-.format-minimoodlewall-df-toggle-top {
+.format-mimo-df-toggle-top {
     top: 0;
     border-top: none;
 }
 
-.format-minimoodlewall-df-toggle-bottom {
+.format-mimo-df-toggle-bottom {
     bottom: auto;
     border-radius: 0 0 8px 8px;
     border-bottom: none;
 }
 
 /* Position bottom toggle after fixed-top nav */
-nav.fixed-top + .format-minimoodlewall-df-toggle-bottom {
+nav.fixed-top + .format-mimo-df-toggle-bottom {
     top: var(--navbar-height, 60px);
 }
 
 // Change course overview on distraction-free mode.
 // Especially for ipads.
-body.format-minimoodlewall-distraction-free {
+body.format-mimo-distraction-free {
     #page {
         margin-top: 1rem;
     }
@@ -1372,12 +1372,12 @@ body.format-minimoodlewall-distraction-free {
     }
 }
 
-.minimoodlewall.section-list > li {
+.mimo.section-list > li {
     margin-top: 0;
 }
 
 // theme mebis rules.
-.minimoodlewall-activities li.activity {
+.mimo-activities li.activity {
     background: transparent !important;
     padding: .4rem !important;
 }
@@ -1387,7 +1387,7 @@ body.format-minimoodlewall-distraction-free {
 // ============================================
 
 // Tag preview container in the course settings form — 3-column grid.
-.mmw-tag-preview-container {
+.mimo-tag-preview-container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 0.5rem;
@@ -1396,7 +1396,7 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // Individual tag preview item.
-.mmw-tag-preview-item {
+.mimo-tag-preview-item {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -1407,7 +1407,7 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // Small inline tag preview image.
-.mmw-tag-preview-img {
+.mimo-tag-preview-img {
     width: 24px;
     height: 24px;
     object-fit: contain;
@@ -1416,7 +1416,7 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // Placeholder when no image exists.
-.mmw-tag-preview-placeholder {
+.mimo-tag-preview-placeholder {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
@@ -1425,7 +1425,7 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // Tag name text.
-.mmw-tag-name {
+.mimo-tag-name {
     white-space: nowrap;
 }
 
@@ -1435,7 +1435,7 @@ body.format-minimoodlewall-distraction-free {
 // Displays completion filter pills (green/red) centered below the activity grid.
 // Shows active tag image when a tag filter is combined with completion filter.
 
-.minimoodlewall-completion-status {
+.mimo-completion-status {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1509,29 +1509,29 @@ body.format-minimoodlewall-distraction-free {
 
     // Completed pill (green).
     &--complete {
-        background: color-mix(in srgb, var(--mmw-completion-complete) 65%, white);
+        background: color-mix(in srgb, var(--mimo-completion-complete) 65%, white);
         color: #fff;
 
         .completion-pill-icon {
-            background: var(--mmw-completion-complete);
+            background: var(--mimo-completion-complete);
         }
 
         &.is-active {
-            background: color-mix(in srgb, var(--mmw-completion-complete) 80%, white);
+            background: color-mix(in srgb, var(--mimo-completion-complete) 80%, white);
         }
     }
 
     // Incomplete pill (red/pink).
     &--incomplete {
-        background: color-mix(in srgb, var(--mmw-completion-incomplete) 55%, white);
+        background: color-mix(in srgb, var(--mimo-completion-incomplete) 55%, white);
         color: #fff;
 
         .completion-pill-icon {
-            background: var(--mmw-completion-incomplete);
+            background: var(--mimo-completion-incomplete);
         }
 
         &.is-active {
-            background: color-mix(in srgb, var(--mmw-completion-incomplete) 70%, white);
+            background: color-mix(in srgb, var(--mimo-completion-incomplete) 70%, white);
         }
     }
 }
@@ -1576,7 +1576,7 @@ body.format-minimoodlewall-distraction-free {
 // ============================================================================
 
 // Entrance animation for newly appearing stars.
-@keyframes mmw-star-enter {
+@keyframes mimo-star-enter {
     0% {
         opacity: 0;
         transform: scale(0) rotate(-45deg);
@@ -1591,7 +1591,7 @@ body.format-minimoodlewall-distraction-free {
 }
 
 // Subtle pulse for the all-complete state.
-@keyframes mmw-stars-pulse {
+@keyframes mimo-stars-pulse {
     0%, 100% {
         filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
     }
@@ -1629,22 +1629,22 @@ body.format-minimoodlewall-distraction-free {
 
     // Entrance animation for new stars.
     .star-new {
-        animation: mmw-star-enter 0.4s ease-out forwards;
+        animation: mimo-star-enter 0.4s ease-out forwards;
     }
 
     // All complete state — subtle glow on the whole row.
     &.all-complete {
-        animation: mmw-stars-pulse 2.5s ease-in-out infinite;
+        animation: mimo-stars-pulse 2.5s ease-in-out infinite;
     }
 }
 
-body.format-minimoodlewall .mb-0-override {
+body.format-mimo .mb-0-override {
     margin-bottom: 0 !important;
 }
 
 // Multi-section mode (learner view): hide the page-level section heading
 // and breadcrumb on course/section.php so the wall looks like single-section mode.
-body.single-section-page.format-mmw-multisection-view {
+body.single-section-page.format-mimo-multisection-view {
     #page-header {
         display: none;
     }
@@ -1652,14 +1652,14 @@ body.single-section-page.format-mmw-multisection-view {
 
 // =========================================================================
 // BACKGROUND DESIGN THEMES
-// Full-theme overrides applied via .mmw-bgdesign-wrapper which wraps the
+// Full-theme overrides applied via .mimo-bgdesign-wrapper which wraps the
 // filter bar, card grid (board), navigation, and completion status.
 // =========================================================================
 
 // --- PRIMARY SCHOOL (dark-green chalkboard with grid texture) ---
-.mmw-bgdesign-wrapper.mmw-bgdesign-primary-school {
+.mimo-bgdesign-wrapper.mimo-bgdesign-primary-school {
     // Style wall background
-    .minimoodlewall-activities {
+    .mimo-activities {
         background: #1f6f4e;
         border-radius: 2rem;
         position: relative;
@@ -1680,36 +1680,36 @@ body.single-section-page.format-mmw-multisection-view {
     }
 
     // Saturated card images
-    .minimoodlewall-card .minimoodlewall-card-image {
+    .mimo-card .mimo-card-image {
         filter: saturate(1.25) brightness(1.08);
         // Dont show tag name pill
-        .minimoodlewall-tag-pill {
+        .mimo-tag-pill {
             display: none;
         }
     }
 
     // Larger icon-only filter buttons (image mode)
-    .mmw-filterstyle-image .minimoodlewall-filterbar-button {
+    .mimo-filterstyle-image .mimo-filterbar-button {
         width: 4.5rem;
         height: 4.5rem;
-        .minimoodlewall-filterbar-symbol img {
+        .mimo-filterbar-symbol img {
             width: 3rem;
             height: 3rem;
         }
     }
 
     // Text mode on primary school: white pills with dark text
-    .mmw-filterstyle-text .minimoodlewall-filterbar-button {
+    .mimo-filterstyle-text .mimo-filterbar-button {
         background: #fff;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     }
 
     // Imagetext mode on primary school: larger images
-    .mmw-filterstyle-imagetext .minimoodlewall-filterbar-button {
+    .mimo-filterstyle-imagetext .mimo-filterbar-button {
         background: #fff;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
 
-        .minimoodlewall-filterbar-symbol img {
+        .mimo-filterbar-symbol img {
             width: 2.4rem;
             height: 2.4rem;
         }
@@ -1717,26 +1717,26 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 // --- DARKMODE (dark Netflix-style) ---
-.mmw-bgdesign-wrapper.mmw-bgdesign-darkmode {
-    .minimoodlewall-activities {
+.mimo-bgdesign-wrapper.mimo-bgdesign-darkmode {
+    .mimo-activities {
         background: #0f172a;
         border: 1px solid rgba(255, 255, 255, 0.10);
         box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
         border-radius: 2rem;
     }
 
-    .minimoodlewall-card {
-        .minimoodlewall-card-content {
+    .mimo-card {
+        .mimo-card-content {
             background: rgba(17, 24, 39, 0.92);
             border: 1px solid rgba(255, 255, 255, 0.10);
             box-shadow: 0 18px 34px rgba(0, 0, 0, 0.55);
         }
 
-        .minimoodlewall-card-body {
+        .mimo-card-body {
             background: rgba(17, 24, 39, 0.92);
             border-top: 1px solid rgba(255, 255, 255, 0.06);
 
-            .minimoodlewall-card-description {
+            .mimo-card-description {
                 color: #f3f4f6;
 
                 a {
@@ -1753,67 +1753,67 @@ body.single-section-page.format-mmw-multisection-view {
             border-color: rgba(255, 255, 255, 0.18);
             box-shadow: 4px 0 rgb(0 0 0 / .15),0 12px 24px rgb(255 200 100 / .2);
 
-            .minimoodlewall-card-content {
+            .mimo-card-content {
                 background: rgba(30, 41, 59, 0.95);
 
-                .minimoodlewall-card-body {
+                .mimo-card-body {
                     background: rgba(30, 41, 59, 0.95);
                 }
             }
         }
     }
 
-    .minimoodlewall-filterbar-button {
+    .mimo-filterbar-button {
         background: #fff !important;
         color: #111827;
         box-shadow: 0 12px 18px rgba(0, 0, 0, 0.25);
 
-        .minimoodlewall-filterbar-label {
+        .mimo-filterbar-label {
             color: #111827;
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent) !important;
-            @include _mmw-accent-contrast;
+            background: var(--mimo-filter-accent) !important;
+            @include _mimo-accent-contrast;
 
-            .minimoodlewall-filterbar-label {
-                @include _mmw-accent-contrast;
+            .mimo-filterbar-label {
+                @include _mimo-accent-contrast;
             }
         }
     }
 
     // Text pills in dark mode: dark background with accent border, light text
-    .mmw-filterstyle-text .minimoodlewall-filterbar-button {
+    .mimo-filterstyle-text .mimo-filterbar-button {
         background: #1e293b !important;
-        border-color: var(--mmw-filter-accent, #475569);
+        border-color: var(--mimo-filter-accent, #475569);
 
-        .minimoodlewall-filterbar-label {
+        .mimo-filterbar-label {
             color: #f1f5f9;
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent) !important;
+            background: var(--mimo-filter-accent) !important;
 
-            .minimoodlewall-filterbar-label {
-                @include _mmw-accent-contrast;
+            .mimo-filterbar-label {
+                @include _mimo-accent-contrast;
             }
         }
     }
 
     // Imagetext in dark mode: dark background with accent border
-    .mmw-filterstyle-imagetext .minimoodlewall-filterbar-button {
+    .mimo-filterstyle-imagetext .mimo-filterbar-button {
         background: #1e293b !important;
-        border-color: var(--mmw-filter-accent, #475569);
+        border-color: var(--mimo-filter-accent, #475569);
 
-        .minimoodlewall-filterbar-label {
+        .mimo-filterbar-label {
             color: #f1f5f9;
         }
 
         &.is-active {
-            background: var(--mmw-filter-accent) !important;
+            background: var(--mimo-filter-accent) !important;
 
-            .minimoodlewall-filterbar-label {
-                @include _mmw-accent-contrast;
+            .mimo-filterbar-label {
+                @include _mimo-accent-contrast;
             }
         }
     }
@@ -1829,15 +1829,15 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 // --- WHITEBOARD (clean white, no textures) ---
-.mmw-bgdesign-wrapper.mmw-bgdesign-whiteboard {
-    .minimoodlewall-activities {
+.mimo-bgdesign-wrapper.mimo-bgdesign-whiteboard {
+    .mimo-activities {
         background: #ffffff;
         box-shadow: 0 22px 46px rgba(2, 6, 23, 0.08);
         border-radius: 2rem;
     }
 
-    .minimoodlewall-card {
-        .minimoodlewall-card-content {
+    .mimo-card {
+        .mimo-card-content {
             background: #fff;
             box-shadow: 0 10px 18px rgba(2, 6, 23, 0.06);
         }
@@ -1846,17 +1846,17 @@ body.single-section-page.format-mmw-multisection-view {
             box-shadow: 4px 0 rgb(0 0 0 / .15),0 12px 24px rgb(255 200 100 / .2);
         }
 
-        .minimoodlewall-card-image {
+        .mimo-card-image {
             background: #fff !important;
         }
 
-        .minimoodlewall-card-body {
+        .mimo-card-body {
             border-top: 1px solid rgba(128, 128, 128, 0.34);
             background: #fff;
         }
     }
 
-    .minimoodlewall-filterbar-button {
+    .mimo-filterbar-button {
         background: #fff !important;
         border-color: transparent !important;
         box-shadow: 0 6px 14px rgba(45, 59, 40, 0.15) !important;
@@ -1871,16 +1871,16 @@ body.single-section-page.format-mmw-multisection-view {
 // --- SHARED: Pinnwand + Paper note / post-it card styles ---
 @font-face {
     font-family: "Patrick Hand";
-    src: url([[font:format_minimoodlewall|PatrickHand-Regular.ttf]]) format("truetype");
+    src: url([[font:format_mimo|PatrickHand-Regular.ttf]]) format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
-.mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand,
-.mmw-bgdesign-wrapper.mmw-bgdesign-paper {
-    .minimoodlewall-card {
-        .minimoodlewall-card-content {
+.mimo-bgdesign-wrapper.mimo-bgdesign-pinnwand,
+.mimo-bgdesign-wrapper.mimo-bgdesign-paper {
+    .mimo-card {
+        .mimo-card-content {
             border-radius: 1.2rem;
             border: 1px solid rgba(0, 0, 0, 0.10);
             box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22), 0 3px 7px rgba(0, 0, 0, 0.12);
@@ -1900,10 +1900,10 @@ body.single-section-page.format-mmw-multisection-view {
             }
         }
 
-        .minimoodlewall-card-body {
+        .mimo-card-body {
             background: #ffffff;
 
-            .minimoodlewall-card-description {
+            .mimo-card-description {
                 font-family: "Patrick Hand", system-ui, sans-serif;
                 font-size: clamp(.95rem, 10cqw, 1.8rem);
                 letter-spacing: 0.2px;
@@ -1911,15 +1911,15 @@ body.single-section-page.format-mmw-multisection-view {
             }
         }
 
-        .minimoodlewall-card-image {
+        .mimo-card-image {
             filter: none;
         }
     }
 }
 
 // --- PINNWAND (Cork board with pins and tilted cards) ---
-.mmw-bgdesign-wrapper.mmw-bgdesign-pinnwand {
-    .minimoodlewall-activities {
+.mimo-bgdesign-wrapper.mimo-bgdesign-pinnwand {
+    .mimo-activities {
         background:
             radial-gradient(1200px 700px at 18% 10%, rgba(255, 255, 255, 0.28), transparent 55%),
             radial-gradient(1200px 900px at 60% 80%, rgba(0, 0, 0, 0.22), transparent 60%),
@@ -1936,7 +1936,7 @@ body.single-section-page.format-mmw-multisection-view {
     }
 
     // Tilted cards with push-pin effect.
-    .minimoodlewall-activities li.activity {
+    .mimo-activities li.activity {
         transform-origin: top center;
 
         &:nth-child(odd) {
@@ -1953,7 +1953,7 @@ body.single-section-page.format-mmw-multisection-view {
     }
 
     // Push-pin on each card.
-    .minimoodlewall-card .minimoodlewall-card-content::before {
+    .mimo-card .mimo-card-content::before {
         content: "";
         position: absolute;
         top: 10px;
@@ -1967,30 +1967,30 @@ body.single-section-page.format-mmw-multisection-view {
     }
 
     // Alternating pin colors.
-    .minimoodlewall-activities li.activity:nth-child(4n+1) .minimoodlewall-card-content::before {
+    .mimo-activities li.activity:nth-child(4n+1) .mimo-card-content::before {
         background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 45%),
                     radial-gradient(circle at 35% 35%, #ff4d4d, #b20000 70%);
     }
 
-    .minimoodlewall-activities li.activity:nth-child(4n+2) .minimoodlewall-card-content::before {
+    .mimo-activities li.activity:nth-child(4n+2) .mimo-card-content::before {
         background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 45%),
                     radial-gradient(circle at 35% 35%, #3b82f6, #1d4ed8 70%);
     }
 
-    .minimoodlewall-activities li.activity:nth-child(4n+3) .minimoodlewall-card-content::before {
+    .mimo-activities li.activity:nth-child(4n+3) .mimo-card-content::before {
         background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 45%),
                     radial-gradient(circle at 35% 35%, #22c55e, #15803d 70%);
     }
 
-    .minimoodlewall-activities li.activity:nth-child(4n) .minimoodlewall-card-content::before {
+    .mimo-activities li.activity:nth-child(4n) .mimo-card-content::before {
         background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 45%),
                     radial-gradient(circle at 35% 35%, #f59e0b, #b45309 70%);
     }
 }
 
 // --- PAPER (Notebook ruled lines with margin) ---
-.mmw-bgdesign-wrapper.mmw-bgdesign-paper {
-    .minimoodlewall-activities {
+.mimo-bgdesign-wrapper.mimo-bgdesign-paper {
+    .mimo-activities {
         background: #ffffff;
         border: 1px solid rgba(0, 0, 0, 0.08);
         box-shadow: 0 16px 34px rgba(0, 0, 0, 0.08);
@@ -2013,7 +2013,7 @@ body.single-section-page.format-mmw-multisection-view {
     }
 
     // Slightly tilted cards for a loose-notes effect.
-    .minimoodlewall-activities li.activity {
+    .mimo-activities li.activity {
         &:nth-child(odd) {
             transform: rotate(-0.6deg);
         }
@@ -2029,7 +2029,7 @@ body.single-section-page.format-mmw-multisection-view {
    =================================================================== */
 
 /* Overview grid of section cards. */
-.mmw-overview-grid {
+.mimo-overview-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -2045,7 +2045,7 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* Individual section card — styled to mirror wall activity cards. */
-.mmw-overview-card {
+.mimo-overview-card {
     display: flex;
     flex-direction: column;
     background: #fff;
@@ -2062,7 +2062,7 @@ body.single-section-page.format-mmw-multisection-view {
     &:focus {
         text-decoration: none;
         color: inherit;
-        .mmw-overview-card__miniwall {
+        .mimo-overview-card__miniwall {
             box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
         }
     }
@@ -2074,7 +2074,7 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* Editing-mode card: whole card is the drag surface. */
-.mmw-overview-card--editing {
+.mimo-overview-card--editing {
     cursor: move;
 
     &.dragging {
@@ -2091,19 +2091,19 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
-.mmw-overview-card__body {
+.mimo-overview-card__body {
     flex: 1;
     min-height: 0;
 }
 
-.mmw-overview-card__name {
+.mimo-overview-card__name {
     font-size: 1.1rem;
     font-weight: 600;
     margin: 0 0 0.5rem;
     line-height: 1.3;
 }
 
-.mmw-overview-card__summary {
+.mimo-overview-card__summary {
     font-size: 0.85rem;
     color: #555;
     line-height: 1.4;
@@ -2120,7 +2120,7 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* Mini-wall: stylised activity tiles inside overview cards. */
-.mmw-overview-card__miniwall {
+.mimo-overview-card__miniwall {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 4px;
@@ -2130,7 +2130,7 @@ body.single-section-page.format-mmw-multisection-view {
     background: #e8e8e8;
 }
 
-.mmw-overview-card__minitile {
+.mimo-overview-card__minitile {
     aspect-ratio: 1;
     border-radius: 4px;
     overflow: hidden;
@@ -2140,7 +2140,7 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
-.mmw-overview-card__minitile-img {
+.mimo-overview-card__minitile-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -2148,12 +2148,12 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* Placeholder miniwall for empty sections — subtle visual hint. */
-.mmw-overview-card__miniwall--placeholder {
+.mimo-overview-card__miniwall--placeholder {
     opacity: 0.45;
 }
 
 /* Section overview card image — replaces miniwall when present. */
-.mmw-overview-card__sectionimage-wrap {
+.mimo-overview-card__sectionimage-wrap {
     margin-top: auto;
     border-radius: 0.6rem;
     overflow: hidden;
@@ -2161,7 +2161,7 @@ body.single-section-page.format-mmw-multisection-view {
     min-height: 0;
 }
 
-.mmw-overview-card__sectionimage {
+.mimo-overview-card__sectionimage {
     width: 100%;
     height: 100%;
     display: block;
@@ -2177,46 +2177,46 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* When a section image is present, shrink the body so the image dominates. */
-.mmw-overview-card:has(.mmw-overview-card__sectionimage-wrap) .mmw-overview-card__body {
+.mimo-overview-card:has(.mimo-overview-card__sectionimage-wrap) .mimo-overview-card__body {
     flex: 0 0 auto;
 }
 
 /* Image action buttons in editing mode. */
-.mmw-overview-card__image-actions {
+.mimo-overview-card__image-actions {
     display: flex;
     gap: 0.25rem;
     flex-wrap: wrap;
 }
 
 /* Mini-wall background per background design. */
-.mmw-bgdesign-primary-school .mmw-overview-card__miniwall {
+.mimo-bgdesign-primary-school .mimo-overview-card__miniwall {
     background: #1f6f4e;
 }
 
-.mmw-bgdesign-darkmode .mmw-overview-card__miniwall {
+.mimo-bgdesign-darkmode .mimo-overview-card__miniwall {
     background: #0f172a;
 }
 
-.mmw-bgdesign-whiteboard .mmw-overview-card__miniwall {
+.mimo-bgdesign-whiteboard .mimo-overview-card__miniwall {
     background: #f5f5f5;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.mmw-bgdesign-pinnwand .mmw-overview-card__miniwall {
+.mimo-bgdesign-pinnwand .mimo-overview-card__miniwall {
     background:
         radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.15), transparent 50%),
         radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.1), transparent 50%),
         #c79b5f;
 }
 
-.mmw-bgdesign-paper .mmw-overview-card__miniwall {
+.mimo-bgdesign-paper .mimo-overview-card__miniwall {
     background:
         repeating-linear-gradient(0deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.12) 1px, transparent 1px, transparent 8px),
         #fff;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.mmw-overview-card__footer {
+.mimo-overview-card__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2231,13 +2231,13 @@ body.single-section-page.format-mmw-multisection-view {
 
 
 
-.mmw-overview-card__progress {
+.mimo-overview-card__progress {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.mmw-overview-card__progress-bar {
+.mimo-overview-card__progress-bar {
     width: 60px;
     height: 6px;
     background: #e0e0e0;
@@ -2245,7 +2245,7 @@ body.single-section-page.format-mmw-multisection-view {
     overflow: hidden;
 }
 
-.mmw-overview-card__progress-fill {
+.mimo-overview-card__progress-fill {
     display: block;
     height: 100%;
     background: #4caf50;
@@ -2253,23 +2253,23 @@ body.single-section-page.format-mmw-multisection-view {
     transition: width 0.3s ease;
 }
 
-.mmw-overview-card__progress--complete .mmw-overview-card__progress-fill {
+.mimo-overview-card__progress--complete .mimo-overview-card__progress-fill {
     background: #2e7d32;
 }
 
-.mmw-overview-card__progress-text {
+.mimo-overview-card__progress-text {
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
 
-.mmw-overview-empty {
+.mimo-overview-empty {
     text-align: center;
     padding: 3rem 1rem;
     color: #888;
 }
 
 /* Back to overview home button — positioned next to the course title by the theme. */
-.mmw-overview-btn {
+.mimo-overview-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2297,18 +2297,18 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
-.mmw-overview-btn__icon {
+.mimo-overview-btn__icon {
     flex-shrink: 0;
     stroke: #fff;
     stroke-width: 1px;
 }
 
 /* Compact secondary navigation — three-dot dropdown for students. */
-.format-mmw-compact-secondarynav .secondary-navigation {
+.format-mimo-compact-secondarynav .secondary-navigation {
     display: none !important;
 }
 
-.mmw-compact-nav-btn {
+.mimo-compact-nav-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2341,12 +2341,12 @@ body.single-section-page.format-mmw-multisection-view {
     }
 }
 
-.mmw-compact-nav .dropdown-menu {
+.mimo-compact-nav .dropdown-menu {
     min-width: 12rem;
     padding: 0.25rem 0;
 }
 
-.mmw-compact-nav .dropdown-item {
+.mimo-compact-nav .dropdown-item {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
 
@@ -2358,7 +2358,7 @@ body.single-section-page.format-mmw-multisection-view {
 }
 
 /* Overview card editing variant. */
-.mmw-overview-card--editing {
+.mimo-overview-card--editing {
     display: flex;
     flex-direction: column;
     background: #fff;
@@ -2369,17 +2369,17 @@ body.single-section-page.format-mmw-multisection-view {
     aspect-ratio: 1/1.06;
 }
 
-.mmw-overview-card--editing .mmw-overview-card__footer {
+.mimo-overview-card--editing .mimo-overview-card__footer {
     justify-content: space-between;
 }
 
-.mmw-overview-card__link {
+.mimo-overview-card__link {
     white-space: nowrap;
 }
 
 /* Background design adaptations for overview cards. */
-.mmw-bgdesign-darkmode {
-    .mmw-overview-card {
+.mimo-bgdesign-darkmode {
+    .mimo-overview-card {
         background: #2d2d2d;
         border-color: rgba(255, 255, 255, 0.12);
         color: #f0f0f0;
@@ -2392,24 +2392,24 @@ body.single-section-page.format-mmw-multisection-view {
         }
     }
 
-    .mmw-overview-card__summary {
+    .mimo-overview-card__summary {
         color: #aaa;
     }
 
-    .mmw-overview-card__footer {
+    .mimo-overview-card__footer {
         border-top-color: rgba(255, 255, 255, 0.1);
         color: #999;
     }
 
-    .mmw-overview-card__progress-bar {
+    .mimo-overview-card__progress-bar {
         background: #444;
     }
 
-    .mmw-overview-empty {
+    .mimo-overview-empty {
         color: #888;
     }
 
-    .mmw-overview-card--editing {
+    .mimo-overview-card--editing {
         background: #2d2d2d;
         border-color: rgba(255, 255, 255, 0.2);
         color: #f0f0f0;

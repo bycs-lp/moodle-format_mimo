@@ -1,6 +1,6 @@
-# Behat Tests for format_minimoodlewall
+# Behat Tests for format_mimo
 
-This directory contains comprehensive Behat acceptance tests for the Minimal Moodle Wall course format.
+This directory contains comprehensive Behat acceptance tests for the mimo wall course format.
 
 ## Test Coverage
 
@@ -16,7 +16,7 @@ Tests for admin tag and tagset management interface:
 
 ### 2. course_creation.feature
 Tests for course creation workflow:
-- Creating a course with minimoodlewall format
+- Creating a course with mimo format
 - Tag set selection (required)
 - Tag set locked after creation
 - Activities displayed in wall format
@@ -72,16 +72,16 @@ Tests for card-level action controls (settings/delete icons):
 
 ## Running the Tests
 
-### Run all format_minimoodlewall tests:
+### Run all format_mimo tests:
 ```bash
 bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/run.php \
-  --tags=@format_minimoodlewall
+  --tags=@format_mimo
 ```
 
 ### Run specific feature:
 ```bash
 bin/moodle-docker-compose exec webserver php admin/tool/behat/cli/run.php \
-  --tags=@format_minimoodlewall \
+  --tags=@format_mimo \
   tests/behat/tag_chooser.feature
 ```
 
@@ -96,21 +96,21 @@ The format includes custom Behat generators for creating test data:
 
 ### Tagsets:
 ```gherkin
-Given the following "format_minimoodlewall > tagsets" exist:
+Given the following "format_mimo > tagsets" exist:
   | name         |
   | Default Tags |
 ```
 
 ### Tags:
 ```gherkin
-Given the following "format_minimoodlewall > tags" exist:
+Given the following "format_mimo > tags" exist:
   | tagset       | name    | activitytype1 | activitytype2 |
   | Default Tags | Reading | page          | book          |
 ```
 
 ### Course Module Tags:
 ```gherkin
-Given the following "format_minimoodlewall > cmtags" exist:
+Given the following "format_mimo > cmtags" exist:
   | cm           | tag     |
   | Assignment 1 | Reading |
 ```
@@ -118,7 +118,7 @@ Given the following "format_minimoodlewall > cmtags" exist:
 ## Notes
 
 - All tests are marked with `@javascript` as they test interactive features
-- Tests use `@format` and `@format_minimoodlewall` tags for filtering
+- Tests use `@format` and `@format_mimo` tags for filtering
 - Generators automatically resolve names to IDs (tagset names → tagsetid, etc.)
 - Some drag-and-drop tests may require custom step definitions
 
@@ -127,5 +127,5 @@ Given the following "format_minimoodlewall > cmtags" exist:
 When adding new features, consider:
 1. Add new .feature file in this directory
 2. Update generators in `tests/generator/lib.php` if needed
-3. Add Behat step definitions in `behat_format_minimoodlewall_generator.php` if custom steps required
+3. Add Behat step definitions in `behat_format_mimo_generator.php` if custom steps required
 4. Update this README with the new test coverage

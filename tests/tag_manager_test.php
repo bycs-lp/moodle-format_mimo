@@ -17,20 +17,20 @@
 /**
  * Unit tests for tag_manager.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
  * Tag manager test case.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\tag_manager
+ * @covers     \format_mimo\tag_manager
  */
 final class tag_manager_test extends \advanced_testcase {
     /**
@@ -54,7 +54,7 @@ final class tag_manager_test extends \advanced_testcase {
         tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
-        unset($SESSION->format_minimoodlewall_pending_tag);
+        unset($SESSION->format_mimo_pending_tag);
 
         parent::tearDown();
     }
@@ -68,7 +68,7 @@ final class tag_manager_test extends \advanced_testcase {
         // Capture the current max sortorder so the assertion is independent
         // of how many default tags the test-site fixture contains.
         $maxbefore = $DB->get_field_sql(
-            "SELECT MAX(sortorder) FROM {format_minimoodlewall_tags}"
+            "SELECT MAX(sortorder) FROM {format_mimo_tags}"
         );
         $expectedsort = ($maxbefore !== null && $maxbefore !== false)
             ? (int) $maxbefore + 1
@@ -114,7 +114,7 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear any existing tags from install.
-        $DB->delete_records('format_minimoodlewall_tags');
+        $DB->delete_records('format_mimo_tags');
         tag_manager::clear_tag_cache();
 
         // Create multiple tags.
@@ -134,7 +134,7 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear any existing tags.
-        $DB->delete_records('format_minimoodlewall_tags');
+        $DB->delete_records('format_mimo_tags');
         tag_manager::clear_tag_cache();
 
         // Create tags.
@@ -156,7 +156,7 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Create a course with the explore activity profile.
         $course = $this->getDataGenerator()->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'activityprofile' => 'explore',
         ]);
 
@@ -308,7 +308,7 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear any existing tags from install.
-        $DB->delete_records('format_minimoodlewall_tags');
+        $DB->delete_records('format_mimo_tags');
         tag_manager::clear_tag_cache();
 
         tag_manager::initialize_default_tags();
@@ -332,7 +332,7 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         // Clear any existing tags from install.
-        $DB->delete_records('format_minimoodlewall_tags');
+        $DB->delete_records('format_mimo_tags');
         tag_manager::clear_tag_cache();
 
         // Call twice.

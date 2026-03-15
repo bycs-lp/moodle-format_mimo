@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description tag manager for format_minimoodlewall.
+ * Description tag manager for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Manages description tags for activity type descriptions.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -41,7 +41,7 @@ class description_tag_manager {
      */
     public static function get_all_tags(): array {
         global $DB;
-        return $DB->get_records('format_minimoodlewall_desc_tags', null, 'name ASC');
+        return $DB->get_records('format_mimo_desc_tags', null, 'name ASC');
     }
 
     /**
@@ -52,7 +52,7 @@ class description_tag_manager {
      */
     public static function get_tag(int $id) {
         global $DB;
-        return $DB->get_record('format_minimoodlewall_desc_tags', ['id' => $id]);
+        return $DB->get_record('format_mimo_desc_tags', ['id' => $id]);
     }
 
     /**
@@ -77,7 +77,7 @@ class description_tag_manager {
         $record->timecreated = $time;
         $record->timemodified = $time;
 
-        return $DB->insert_record('format_minimoodlewall_desc_tags', $record);
+        return $DB->insert_record('format_mimo_desc_tags', $record);
     }
 
     /**
@@ -91,7 +91,7 @@ class description_tag_manager {
     public static function update_tag(int $id, string $name, string $color): bool {
         global $DB;
 
-        $record = $DB->get_record('format_minimoodlewall_desc_tags', ['id' => $id]);
+        $record = $DB->get_record('format_mimo_desc_tags', ['id' => $id]);
         if (!$record) {
             return false;
         }
@@ -105,7 +105,7 @@ class description_tag_manager {
         $record->color = $color;
         $record->timemodified = time();
 
-        return $DB->update_record('format_minimoodlewall_desc_tags', $record);
+        return $DB->update_record('format_mimo_desc_tags', $record);
     }
 
     /**
@@ -119,13 +119,13 @@ class description_tag_manager {
         global $DB;
 
         // First, remove tag references from activity descriptions.
-        $DB->set_field('format_minimoodlewall_actdesc', 'desctagid', null, ['desctagid' => $id]);
+        $DB->set_field('format_mimo_actdesc', 'desctagid', null, ['desctagid' => $id]);
 
         // Clear the activity descriptions cache.
         activity_description_manager::clear_cache();
 
         // Delete the tag.
-        return $DB->delete_records('format_minimoodlewall_desc_tags', ['id' => $id]);
+        return $DB->delete_records('format_mimo_desc_tags', ['id' => $id]);
     }
 
     /**
@@ -136,7 +136,7 @@ class description_tag_manager {
      */
     public static function count_descriptions_with_tag(int $desctagid): int {
         global $DB;
-        return $DB->count_records('format_minimoodlewall_actdesc', ['desctagid' => $desctagid]);
+        return $DB->count_records('format_mimo_actdesc', ['desctagid' => $desctagid]);
     }
 
     /**
@@ -146,7 +146,7 @@ class description_tag_manager {
      */
     public static function get_tags_for_select(): array {
         $tags = self::get_all_tags();
-        $options = [0 => get_string('notag', 'format_minimoodlewall')];
+        $options = [0 => get_string('notag', 'format_mimo')];
 
         foreach ($tags as $tag) {
             $options[$tag->id] = $tag->name;
@@ -174,15 +174,15 @@ class description_tag_manager {
         global $DB;
 
         // Check if any description tags already exist.
-        if ($DB->record_exists('format_minimoodlewall_desc_tags', [])) {
+        if ($DB->record_exists('format_mimo_desc_tags', [])) {
             return true;
         }
 
         $defaults = [
-            ['name' => get_string('desctag_input', 'format_minimoodlewall'), 'color' => '#FFF176'],
-            ['name' => get_string('desctag_practice', 'format_minimoodlewall'), 'color' => '#81C784'],
-            ['name' => get_string('desctag_share', 'format_minimoodlewall'), 'color' => '#CE93D8'],
-            ['name' => get_string('desctag_think', 'format_minimoodlewall'), 'color' => '#64B5F6'],
+            ['name' => get_string('desctag_input', 'format_mimo'), 'color' => '#FFF176'],
+            ['name' => get_string('desctag_practice', 'format_mimo'), 'color' => '#81C784'],
+            ['name' => get_string('desctag_share', 'format_mimo'), 'color' => '#CE93D8'],
+            ['name' => get_string('desctag_think', 'format_mimo'), 'color' => '#64B5F6'],
         ];
 
         foreach ($defaults as $tag) {

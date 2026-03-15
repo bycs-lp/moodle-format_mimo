@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/description_tags_list
+    @template format_mimo/description_tags_list
 
     Description tag list for management page.
 
@@ -45,13 +45,13 @@
 <div class="description-tags-management" data-region="tag-management">
     <div class="mb-3">
         <button type="button" class="btn btn-primary" data-action="create-tag" data-testid="create-tag-button">
-            {{#str}}createdesctag, format_minimoodlewall{{/str}}
+            {{#str}}createdesctag, format_mimo{{/str}}
         </button>
     </div>
 
     {{#notags}}
         <div class="alert alert-info">
-            {{#str}}nodesctags, format_minimoodlewall{{/str}}
+            {{#str}}nodesctags, format_mimo{{/str}}
         </div>
     {{/notags}}
 
@@ -59,9 +59,9 @@
         <table class="table table-striped generaltable" data-region="tag-list-table" data-testid="tag-list-table">
             <thead>
                 <tr>
-                    <th>{{#str}}desctagname, format_minimoodlewall{{/str}}</th>
-                    <th>{{#str}}desctagcolor, format_minimoodlewall{{/str}}</th>
-                    <th>{{#str}}usage, format_minimoodlewall{{/str}}</th>
+                    <th>{{#str}}desctagname, format_mimo{{/str}}</th>
+                    <th>{{#str}}desctagcolor, format_mimo{{/str}}</th>
+                    <th>{{#str}}usage, format_mimo{{/str}}</th>
                     <th>{{#str}}actions{{/str}}</th>
                 </tr>
             </thead>

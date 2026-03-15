@@ -16,7 +16,7 @@
 /**
  * Tag deletion confirmation modal.
  *
- * @module     format_minimoodlewall/tag_delete_confirm
+ * @module     format_mimo/tag_delete_confirm
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -62,8 +62,8 @@ const handleDeleteTag = async(button) => {
         const deleteUrl = button.href;
 
         const modal = await ModalDeleteCancel.create({
-            title: getString('deletetag', 'format_minimoodlewall'),
-            body: getString('confirmdeletetag', 'format_minimoodlewall', tagName),
+            title: getString('deletetag', 'format_mimo'),
+            body: getString('confirmdeletetag', 'format_mimo', tagName),
         });
 
         modal.getRoot().on(ModalEvents.delete, () => {

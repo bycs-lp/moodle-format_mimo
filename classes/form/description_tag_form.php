@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description tag form for format_minimoodlewall.
+ * Description tag form for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\form;
+namespace format_mimo\form;
 
 use core_form\dynamic_form;
 use context;
-use format_minimoodlewall\description_tag_manager;
+use format_mimo\description_tag_manager;
 
 /**
  * Form for creating and editing description tags.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -47,18 +47,18 @@ class description_tag_form extends dynamic_form {
         $mform->setType('id', PARAM_INT);
 
         // Tag name.
-        $mform->addElement('text', 'name', get_string('desctagname', 'format_minimoodlewall'), ['size' => 50]);
+        $mform->addElement('text', 'name', get_string('desctagname', 'format_mimo'), ['size' => 50]);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
         // Tag color (color picker).
-        $mform->addElement('text', 'color', get_string('desctagcolor', 'format_minimoodlewall'), [
+        $mform->addElement('text', 'color', get_string('desctagcolor', 'format_mimo'), [
             'size' => 10,
             'placeholder' => '#FF5733',
         ]);
         $mform->setType('color', PARAM_TEXT);
         $mform->addRule('color', get_string('required'), 'required', null, 'client');
-        $mform->addHelpButton('color', 'desctagcolor', 'format_minimoodlewall');
+        $mform->addHelpButton('color', 'desctagcolor', 'format_mimo');
     }
 
     /**
@@ -74,7 +74,7 @@ class description_tag_form extends dynamic_form {
         // Validate color format.
         if (!empty($data['color'])) {
             if (!description_tag_manager::is_valid_color($data['color'])) {
-                $errors['color'] = get_string('invalidcolor', 'format_minimoodlewall');
+                $errors['color'] = get_string('invalidcolor', 'format_mimo');
             }
         }
 
@@ -122,11 +122,11 @@ class description_tag_form extends dynamic_form {
         if (!empty($data->id)) {
             // Update existing tag.
             description_tag_manager::update_tag($data->id, $data->name, $data->color);
-            $message = get_string('desctagsaved', 'format_minimoodlewall');
+            $message = get_string('desctagsaved', 'format_mimo');
         } else {
             // Create new tag.
             description_tag_manager::create_tag($data->name, $data->color);
-            $message = get_string('desctagcreated', 'format_minimoodlewall');
+            $message = get_string('desctagcreated', 'format_mimo');
         }
 
         return [
@@ -141,6 +141,6 @@ class description_tag_form extends dynamic_form {
      * @return \moodle_url
      */
     protected function get_page_url_for_dynamic_submission(): \moodle_url {
-        return new \moodle_url('/course/format/minimoodlewall/description_tags.php');
+        return new \moodle_url('/course/format/mimo/description_tags.php');
     }
 }

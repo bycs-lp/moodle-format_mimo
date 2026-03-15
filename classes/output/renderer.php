@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renderer for outputting the minimoodlewall course format.
+ * Renderer for outputting the mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output;
+namespace format_mimo\output;
 
 use core_courseformat\output\section_renderer;
 
 /**
- * Basic renderer for minimoodlewall format.
+ * Basic renderer for mimo format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -53,7 +53,7 @@ class renderer extends section_renderer {
         }
 
         // Get tags selected for this course.
-        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+        $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
 
         // If we have tags selected, use our tag chooser button.
         if (!empty($tags)) {
@@ -65,12 +65,12 @@ class renderer extends section_renderer {
             ];
 
             // Load the JS for our tag chooser.
-            $this->page->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
+            $this->page->requires->js_call_amd('format_mimo/tagchooserbutton', 'init');
 
             return $this->render_from_template(
                 'core_courseformat/local/content/divider',
                 [
-                    'content' => $this->render_from_template('format_minimoodlewall/tagchooserbutton', $data),
+                    'content' => $this->render_from_template('format_mimo/tagchooserbutton', $data),
                     'extraclasses' => 'always-visible my-3',
                 ]
             );

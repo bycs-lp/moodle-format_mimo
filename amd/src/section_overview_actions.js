@@ -21,7 +21,7 @@
  * whole card as drag surface, interactive children protected via draggable="false".
  * On drop, calls core_courseformat_update_course section_move_after.
  *
- * @module     format_minimoodlewall/section_overview_actions
+ * @module     format_mimo/section_overview_actions
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -96,14 +96,14 @@ const setupDeleteActions = (container) => {
         if (activityCount > 0) {
             bodyText = await getString(
                 'confirmdeletesection_notempty',
-                'format_minimoodlewall',
+                'format_mimo',
                 {name: sectionName, count: activityCount}
             );
         } else {
-            bodyText = await getString('confirmdeletesection', 'format_minimoodlewall', sectionName);
+            bodyText = await getString('confirmdeletesection', 'format_mimo', sectionName);
         }
 
-        const titleText = await getString('deletesection', 'format_minimoodlewall');
+        const titleText = await getString('deletesection', 'format_mimo');
 
         const modal = await ModalSaveCancel.create({
             title: titleText,
@@ -115,7 +115,7 @@ const setupDeleteActions = (container) => {
 
         modal.getRoot().on(ModalEvents.save, async() => {
             const card = container.querySelector(
-                `.mmw-overview-card[data-section-id="${sectionId}"]`
+                `.mimo-overview-card[data-section-id="${sectionId}"]`
             );
 
             try {
@@ -152,7 +152,7 @@ const setupDeleteActions = (container) => {
  */
 const dispatchOverviewStateChanged = (detail, target) => {
     target = target ?? document;
-    target.dispatchEvent(new CustomEvent('format_minimoodlewall_overview:stateChanged', {
+    target.dispatchEvent(new CustomEvent('format_mimo_overview:stateChanged', {
         bubbles: true,
         detail,
     }));
@@ -161,8 +161,8 @@ const dispatchOverviewStateChanged = (detail, target) => {
 const createOverviewState = () => {
     const initial = {sections: []};
     return new Reactive({
-        name: 'format_minimoodlewall_overview',
-        eventName: 'format_minimoodlewall_overview:stateChanged',
+        name: 'format_mimo_overview',
+        eventName: 'format_mimo_overview:stateChanged',
         eventDispatch: dispatchOverviewStateChanged,
         state: initial,
         mutations: {},
@@ -209,7 +209,7 @@ class SectionCardDnd extends BaseComponent {
      */
     getDraggableData() {
         return {
-            type: 'mmw_section_card',
+            type: 'mimo_section_card',
             sectionid: this.sectionid,
             element: this.element,
         };
@@ -222,7 +222,7 @@ class SectionCardDnd extends BaseComponent {
      * @returns {boolean}
      */
     validateDropData(dropdata) {
-        return dropdata?.type === 'mmw_section_card' && dropdata.sectionid !== this.sectionid;
+        return dropdata?.type === 'mimo_section_card' && dropdata.sectionid !== this.sectionid;
     }
 
     /**
@@ -236,7 +236,7 @@ class SectionCardDnd extends BaseComponent {
      */
     drop(dropdata) {
         const container = this.element.parentNode;
-        const allCards = Array.from(container.querySelectorAll('[data-for="mmw-overview-card"]'));
+        const allCards = Array.from(container.querySelectorAll('[data-for="mimo-overview-card"]'));
         const draggedCard = dropdata.element;
         const draggedIndex = allCards.indexOf(draggedCard);
         const targetIndex = allCards.indexOf(this.element);
@@ -284,7 +284,7 @@ export const init = () => {
         return;
     }
 
-    const grid = document.querySelector('[data-region="mmw-overview-grid"]');
+    const grid = document.querySelector('[data-region="mimo-overview-grid"]');
     if (!grid) {
         return;
     }
@@ -294,7 +294,7 @@ export const init = () => {
 
     // Set up drag-and-drop on each section card.
     const overviewState = createOverviewState();
-    grid.querySelectorAll('[data-for="mmw-overview-card"]').forEach((card) => {
+    grid.querySelectorAll('[data-for="mimo-overview-card"]').forEach((card) => {
         new SectionCardDnd({element: card, reactive: overviewState});
     });
 };

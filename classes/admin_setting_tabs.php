@@ -17,23 +17,23 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Admin setting that renders the shared tab navigation for minimoodlewall admin pages.
+ * Admin setting that renders the shared tab navigation for mimo admin pages.
  *
  * This is used in settings.php where we don't control $OUTPUT->header() directly.
  * It renders as a full-width tab bar above the other settings.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_minimoodlewall_admin_setting_tabs extends admin_setting {
+class format_mimo_admin_setting_tabs extends admin_setting {
     /**
      * Constructor.
      */
     public function __construct() {
         $this->nosave = true;
         parent::__construct(
-            'format_minimoodlewall/admintabs',
+            'format_mimo/admintabs',
             '',
             '',
             ''
@@ -67,6 +67,6 @@ class format_minimoodlewall_admin_setting_tabs extends admin_setting {
      * @return string The HTML output.
      */
     public function output_html($data, $query = '') {
-        return \format_minimoodlewall\admin_page_tabs::render('settings');
+        return \format_mimo\admin_page_tabs::render('settings');
     }
 }

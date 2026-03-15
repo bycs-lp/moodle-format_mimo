@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Compares all by format_minimoodlewall overridden templates.
+ * Compares all by format_mimo overridden templates.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 ISB Bayern
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
- * Compares all by format_minimoodlewall overridden core course format templates.
+ * Compares all by format_mimo overridden core course format templates.
  *
  * The tests compare a copy of the original template with the new version of the template
  * for all overridden templates.
@@ -33,13 +33,13 @@ namespace format_minimoodlewall;
  *
  * If a test fails, this means the original template has changed since the last update.
  * Steps to do:
- * - Check and if necessary adjust overridden template in format_minimoodlewall!
+ * - Check and if necessary adjust overridden template in format_mimo!
  * - Make a new copy of the updated original template in tests/fixtures.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 ISB Bayern
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @group      format_minimoodlewall
+ * @group      format_mimo
  * @group      mebis
  * @coversNothing
  */
@@ -52,31 +52,31 @@ final class compare_templates_test extends \advanced_testcase {
     public static function overridden_templates_provider(): array {
         return [
             'content' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/content-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/content-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content.mustache',
             ],
             'section' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/section-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/section-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/section.mustache',
             ],
             'cm' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/cm-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/cm-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/cm.mustache',
             ],
             'cmname' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/cmname-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/cmname-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/cm/cmname.mustache',
             ],
             'controlmenu' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/controlmenu-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/controlmenu-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/cm/controlmenu.mustache',
             ],
             'cmitem' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/cmitem-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/cmitem-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/section/cmitem.mustache',
             ],
             'activitychooserbutton' => [
-                'copy' => 'public/course/format/minimoodlewall/tests/fixtures/activitychooserbutton-copy.mustache',
+                'copy' => 'public/course/format/mimo/tests/fixtures/activitychooserbutton-copy.mustache',
                 'orig' => 'public/course/format/templates/local/content/activitychooserbutton.mustache',
             ],
         ];

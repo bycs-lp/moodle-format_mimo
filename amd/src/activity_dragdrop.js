@@ -22,13 +22,13 @@
  * for visual feedback, the wall state is updated, and the new order is
  * persisted to the server via cm_move.
  *
- * @module     format_minimoodlewall/activity_dragdrop
+ * @module     format_mimo/activity_dragdrop
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {BaseComponent, DragDrop} from 'core/reactive';
-import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
 
@@ -81,7 +81,7 @@ class CardDnd extends BaseComponent {
         // Override DragDrop CSS class to match existing styles.
         this.classes = {DRAGOVER: 'drag-over'};
         this.relativeDrag = true;
-        const card = this.element.querySelector('.minimoodlewall-card');
+        const card = this.element.querySelector('.mimo-card');
         /** @type {number} */
         this.cmid = card ? parseInt(card.dataset.cmid, 10) : 0;
         /** @type {number} */
@@ -108,7 +108,7 @@ class CardDnd extends BaseComponent {
             return null;
         }
         return {
-            type: 'minimoodlewall_card',
+            type: 'mimo_card',
             cmid: this.cmid,
             sectionid: this.sectionid,
             col: this.element,
@@ -125,7 +125,7 @@ class CardDnd extends BaseComponent {
         if (this.element.style.display === 'none' || this.element.hidden) {
             return false;
         }
-        return dropdata?.type === 'minimoodlewall_card' && dropdata.cmid !== this.cmid;
+        return dropdata?.type === 'mimo_card' && dropdata.cmid !== this.cmid;
     }
 
     /**
@@ -150,7 +150,7 @@ class CardDnd extends BaseComponent {
             // Moving forward: insert before the element AFTER the drop target.
             const nextCol = allCols[targetIndex + 1];
             if (nextCol) {
-                const nextCard = nextCol.querySelector('.minimoodlewall-card');
+                const nextCard = nextCol.querySelector('.mimo-card');
                 moveTargetCmid = nextCard ? parseInt(nextCard.dataset.cmid, 10) : null;
             } else {
                 moveTargetCmid = null;
@@ -181,8 +181,8 @@ class CardDnd extends BaseComponent {
  * operation, the button is clicked to navigate to the next/previous page.
  */
 const setupPaginationDragHover = () => {
-    const prevButton = document.querySelector('#minimoodlewall-prev');
-    const nextButton = document.querySelector('#minimoodlewall-next');
+    const prevButton = document.querySelector('#mimo-prev');
+    const nextButton = document.querySelector('#mimo-next');
     let hoverTimeout = null;
 
     /**
@@ -246,7 +246,7 @@ export const init = () => {
         return;
     }
 
-    const container = document.querySelector('.minimoodlewall-activities');
+    const container = document.querySelector('.mimo-activities');
     if (!container) {
         return;
     }
@@ -258,7 +258,7 @@ export const init = () => {
 
     // Create a CardDnd component for each card column.
     container.querySelectorAll('.col-12').forEach((col) => {
-        if (col.querySelector('.minimoodlewall-card')) {
+        if (col.querySelector('.mimo-card')) {
             new CardDnd({element: col, reactive: wallState});
         }
     });

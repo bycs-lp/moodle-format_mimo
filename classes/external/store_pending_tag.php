@@ -17,12 +17,12 @@
 /**
  * External service to store a pending tag in session.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\external;
+namespace format_mimo\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -32,7 +32,7 @@ use core_external\external_single_structure;
 /**
  * External service to store a pending tag in session.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -65,7 +65,7 @@ class store_pending_tag extends external_api {
         require_login();
 
         // Store the tag ID in session.
-        $SESSION->format_minimoodlewall_pending_tag = $params['tagid'];
+        $SESSION->format_mimo_pending_tag = $params['tagid'];
 
         return ['success' => true];
     }

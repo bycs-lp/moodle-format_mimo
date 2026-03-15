@@ -19,15 +19,15 @@
  * Creates a CourseEditorWatcher BaseComponent registered with the
  * current course editor reactive instance. The component watches
  * state changes and bridges them into the wall state reactive for
- * other minimoodlewall components (pagination, tag filter) to consume.
+ * other mimo components (pagination, tag filter) to consume.
  *
- * @module     format_minimoodlewall/init_courseeditor_watcher
+ * @module     format_mimo/init_courseeditor_watcher
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-import CourseEditorWatcher from 'format_minimoodlewall/courseeditor_watcher';
+import CourseEditorWatcher from 'format_mimo/courseeditor_watcher';
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
-import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 
 /**
  * Initialize the course editor watcher component.
@@ -41,8 +41,8 @@ export const init = () => {
     }
 
     // Anchor to the wall activity container or filter bar.
-    const element = document.querySelector('.minimoodlewall-activities')
-        || document.querySelector('[data-region="minimoodlewall-filterbar"]');
+    const element = document.querySelector('.mimo-activities')
+        || document.querySelector('[data-region="mimo-filterbar"]');
     if (!element) {
         return null;
     }

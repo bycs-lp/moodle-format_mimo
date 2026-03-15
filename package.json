@@ -1,5 +1,5 @@
 {
-    "name": "moodle-format_minimoodlewall",
+    "name": "moodle-format_mimo",
     "scripts": {
       "compile-sass": "sass --no-source-map styles.scss styles.css"
     },

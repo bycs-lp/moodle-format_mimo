@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/local/content/section
+    @template format_mimo/local/content/section
 
     Displays a course section as a minimal wall showing all activities.
 
@@ -29,13 +29,13 @@
         {{! Live region for pagination status announcements }}
         <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-region="pagination-status"></div>
         {{! Background design wrapper — applies theme class to filter bar, board and navigation. }}
-        <div class="mmw-bgdesign-wrapper{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}">
+        <div class="mimo-bgdesign-wrapper{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}">
         {{#filterbar.hasitems}}
-        <div class="minimoodlewall-filterbar {{styleclass}} {{filterbar.styleclass}}" data-region="minimoodlewall-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
+        <div class="mimo-filterbar {{styleclass}} {{filterbar.styleclass}}" data-region="mimo-filterbar" data-testid="filter-bar" role="toolbar" aria-label="{{filterbar.label}}" data-style="{{stylevariant}}">
             {{#filterbar.tags}}
             <button
                 type="button"
-                class="minimoodlewall-filterbar-button is-empty"
+                class="mimo-filterbar-button is-empty"
                 data-action="tag-filter"
                 data-testid="filter-button"
                 data-tagid="{{id}}"
@@ -43,59 +43,59 @@
                 data-hasactivities="{{#hasactivities}}1{{/hasactivities}}{{^hasactivities}}0{{/hasactivities}}"
                 aria-pressed="false"
                 title="{{name}}{{^hasactivities}}{{#filterbar.isediting}} · {{filterbar.emptylabel}}{{/filterbar.isediting}}{{/hasactivities}}"
-                style="{{#bgcolor}}--mmw-filter-accent: {{bgcolor}};{{/bgcolor}}"
+                style="{{#bgcolor}}--mimo-filter-accent: {{bgcolor}};{{/bgcolor}}"
                 disabled
             >
-                <span class="sr-only">{{#str}}filterby, format_minimoodlewall{{/str}} {{name}}</span>
-                <span class="minimoodlewall-filterbar-symbol">
+                <span class="sr-only">{{#str}}filterby, format_mimo{{/str}} {{name}}</span>
+                <span class="mimo-filterbar-symbol">
                     {{#imageurl}}
                     <img src="{{imageurl}}" alt="{{name}}">
                     {{/imageurl}}
-                    <span class="minimoodlewall-filterbar-label">{{name}}</span>
+                    <span class="mimo-filterbar-label">{{name}}</span>
                 </span>
             </button>
             {{/filterbar.tags}}
         </div>
         {{/filterbar.hasitems}}
         {{#cmlist}}
-        <ul class="section m-0 minimoodlewall-activities row g-3 {{styleclass}}{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}" data-for="cmlist" data-style="{{stylevariant}}" style="list-style: none;">
+        <ul class="section m-0 mimo-activities row g-3 {{styleclass}}{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}" data-for="cmlist" data-style="{{stylevariant}}" style="list-style: none;">
             {{#cms}}
             {{#cmitem}}
                 {{$ core_courseformat/local/content/section/cmitem}}
-                    {{> format_minimoodlewall/local/content/section/cmitem}}
+                    {{> format_mimo/local/content/section/cmitem}}
                 {{/ core_courseformat/local/content/section/cmitem}}
             {{/cmitem}}
             {{/cms}}
         </ul>
-        <div class="minimoodlewall-navigation-wrapper {{styleclass}}" data-style="{{stylevariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_minimoodlewall{{/str}}">
+        <div class="mimo-navigation-wrapper {{styleclass}}" data-style="{{stylevariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_mimo{{/str}}">
             {{! Pagination navigation }}
             <div
-                class="minimoodlewall-navigation justify-content-end align-items-center gap-3 is-booting"
+                class="mimo-navigation justify-content-end align-items-center gap-3 is-booting"
                 data-activity-count="{{activitycount}}"
                 data-placeholder-threshold="{{initialpaginationthreshold}}"
                 data-has-next="{{#hasinitialnext}}1{{/hasinitialnext}}{{^hasinitialnext}}0{{/hasinitialnext}}"
             >
                 <button
                     type="button"
-                    id="minimoodlewall-prev"
-                    class="minimoodlewall-nav-btn minimoodlewall-nav-btn--prev"
-                    aria-label="{{#str}}previouspage, format_minimoodlewall{{/str}}"
+                    id="mimo-prev"
+                    class="mimo-nav-btn mimo-nav-btn--prev"
+                    aria-label="{{#str}}previouspage, format_mimo{{/str}}"
                     aria-disabled="true"
                     disabled
                 >
-                    <svg class="minimoodlewall-nav-arrow" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="mimo-nav-arrow" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M14 4L5.5 12L14 20V16H26.5V8H14V4Z" stroke="currentColor" stroke-width="0.3" stroke-linejoin="round"/>
                     </svg>
                 </button>
                 <button
                     type="button"
-                    id="minimoodlewall-next"
-                    class="minimoodlewall-nav-btn minimoodlewall-nav-btn--next"
-                    aria-label="{{#str}}nextpage, format_minimoodlewall{{/str}}"
+                    id="mimo-next"
+                    class="mimo-nav-btn mimo-nav-btn--next"
+                    aria-label="{{#str}}nextpage, format_mimo{{/str}}"
                     aria-disabled="true"
                     disabled
                 >
-                    <svg class="minimoodlewall-nav-arrow" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="mimo-nav-arrow" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M18 4L26.5 12L18 20V16H5.5V8H18V4Z" stroke="currentColor" stroke-width="0.3" stroke-linejoin="round"/>
                     </svg>
                 </button>
@@ -103,20 +103,20 @@
         </div>
         {{#completionstatus}}
         {{! Completion status indicator region }}
-        <div class="minimoodlewall-completion-status {{styleclass}}" data-region="completion-status" data-style="{{stylevariant}}">
+        <div class="mimo-completion-status {{styleclass}}" data-region="completion-status" data-style="{{stylevariant}}">
             {{! Active tag image overlay - shown when tag filter is active }}
             <div class="completion-status-tag-image" data-region="active-tag-image" hidden>
                 <img src="" alt="" class="completion-status-tag-img">
             </div>
             {{! Completion filter pills }}
-            <div class="completion-status-pills" role="group" aria-label="{{#str}}completionfilter, format_minimoodlewall{{/str}}">
+            <div class="completion-status-pills" role="group" aria-label="{{#str}}completionfilter, format_mimo{{/str}}">
                 <button
                     type="button"
                     class="completion-pill completion-pill--complete"
                     data-action="completion-filter"
                     data-completed="true"
                     aria-pressed="false"
-                    aria-label="{{#str}}showcompletedactivities, format_minimoodlewall{{/str}}"
+                    aria-label="{{#str}}showcompletedactivities, format_mimo{{/str}}"
                 >
                     <span class="completion-pill-icon" aria-hidden="true">
                         <i class="fa fa-check"></i>
@@ -129,7 +129,7 @@
                     data-action="completion-filter"
                     data-completed="false"
                     aria-pressed="false"
-                    aria-label="{{#str}}showincompleteactivities, format_minimoodlewall{{/str}}"
+                    aria-label="{{#str}}showincompleteactivities, format_mimo{{/str}}"
                 >
                     <span class="completion-pill-icon" aria-hidden="true">
                         <i class="fa fa-hourglass"></i>
@@ -143,32 +143,32 @@
                      data-completed-count="{{completedcount}}"
                      data-total-count="{{total}}"
                      role="img"
-                     aria-label="{{#str}}completionstars, format_minimoodlewall, {{completedcount}}{{/str}}">
+                     aria-label="{{#str}}completionstars, format_mimo, {{completedcount}}{{/str}}">
                 </div>
                 {{/enablecompletionstars}}
             </div>
             {{! No activities message - shown when filters result in 0 items }}
             <div class="completion-status-empty" data-region="no-activities" hidden>
-                <span>{{#str}}noactivitiesfound, format_minimoodlewall{{/str}}</span>
+                <span>{{#str}}noactivitiesfound, format_mimo{{/str}}</span>
             </div>
         </div>
         {{/completionstatus}}
-        </div>{{! /.mmw-bgdesign-wrapper }}
+        </div>{{! /.mimo-bgdesign-wrapper }}
         {{/cmlist}}
     {{/ core_courseformat/local/content/section/cmlist }}
 {{/ core_courseformat/local/content/section }}
 
 {{#js}}
-require(['format_minimoodlewall/init_courseeditor_watcher'], function(watcher) {
+require(['format_mimo/init_courseeditor_watcher'], function(watcher) {
     watcher.init();
 });
-require(['format_minimoodlewall/activity_pagination'], function(pagination) {
+require(['format_mimo/activity_pagination'], function(pagination) {
     pagination.init();
 });
-require(['format_minimoodlewall/activity_dragdrop'], function(dragdrop) {
+require(['format_mimo/activity_dragdrop'], function(dragdrop) {
     dragdrop.init();
 });
-require(['format_minimoodlewall/tag_filter'], function(filter) {
+require(['format_mimo/tag_filter'], function(filter) {
     filter.init();
 });
 {{/js}}

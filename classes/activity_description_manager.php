@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity description manager for format_minimoodlewall.
+ * Activity description manager for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Manages activity type descriptions for the tag chooser modal.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +43,7 @@ class activity_description_manager {
      * @return array Array of stdClass objects with activitytype, description, and tag properties
      */
     public static function get_all_descriptions(): array {
-        $cache = \cache::make('format_minimoodlewall', 'activity_descriptions');
+        $cache = \cache::make('format_mimo', 'activity_descriptions');
         $descriptions = $cache->get(self::CACHE_KEY);
 
         if ($descriptions === false) {
@@ -53,8 +53,8 @@ class activity_description_manager {
             $sql = "SELECT ad.id, ad.activitytype, ad.description, ad.desctagid,
                            ad.timecreated, ad.timemodified,
                            dt.name AS tagname, dt.color AS tagcolor
-                      FROM {format_minimoodlewall_actdesc} ad
-                 LEFT JOIN {format_minimoodlewall_desc_tags} dt ON ad.desctagid = dt.id
+                      FROM {format_mimo_actdesc} ad
+                 LEFT JOIN {format_mimo_desc_tags} dt ON ad.desctagid = dt.id
                   ORDER BY ad.activitytype ASC";
 
             $descriptions = $DB->get_records_sql($sql);
@@ -117,13 +117,13 @@ class activity_description_manager {
         global $DB;
 
         $time = time();
-        $record = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => $activitytype]);
+        $record = $DB->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($record) {
             $record->description = $description;
             $record->desctagid = $desctagid;
             $record->timemodified = $time;
-            $result = $DB->update_record('format_minimoodlewall_actdesc', $record);
+            $result = $DB->update_record('format_mimo_actdesc', $record);
         } else {
             $record = new \stdClass();
             $record->activitytype = $activitytype;
@@ -131,7 +131,7 @@ class activity_description_manager {
             $record->desctagid = $desctagid;
             $record->timecreated = $time;
             $record->timemodified = $time;
-            $result = $DB->insert_record('format_minimoodlewall_actdesc', $record);
+            $result = $DB->insert_record('format_mimo_actdesc', $record);
         }
 
         if ($result) {
@@ -149,7 +149,7 @@ class activity_description_manager {
      */
     public static function delete_description(string $activitytype): bool {
         global $DB;
-        $result = $DB->delete_records('format_minimoodlewall_actdesc', ['activitytype' => $activitytype]);
+        $result = $DB->delete_records('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($result) {
             self::clear_cache();
@@ -164,7 +164,7 @@ class activity_description_manager {
      * @return void
      */
     public static function clear_cache(): void {
-        $cache = \cache::make('format_minimoodlewall', 'activity_descriptions');
+        $cache = \cache::make('format_mimo', 'activity_descriptions');
         $cache->delete(self::CACHE_KEY);
     }
 

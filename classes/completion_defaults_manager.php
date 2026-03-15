@@ -14,25 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
- * Manages minimoodlewall-specific default completion overrides per module type.
+ * Manages mimo-specific default completion overrides per module type.
  *
- * When a course module is created in a minimoodlewall course and its completion
+ * When a course module is created in a mimo course and its completion
  * matches the core Moodle defaults, the observer can silently replace the
- * completion settings with overrides stored in the format_minimoodlewall_compdefs table.
+ * completion settings with overrides stored in the format_mimo_compdefs table.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class completion_defaults_manager {
-    /** @var string The DB table for minimoodlewall completion defaults. */
-    const TABLE = 'format_minimoodlewall_compdefs';
+    /** @var string The DB table for mimo completion defaults. */
+    const TABLE = 'format_mimo_compdefs';
 
     /**
-     * Get the minimoodlewall completion default for a specific module type.
+     * Get the mimo completion default for a specific module type.
      *
      * @param int $moduleid The modules.id value (the activity module type).
      * @return \stdClass|null The default record, or null if no override is set.
@@ -44,7 +44,7 @@ class completion_defaults_manager {
     }
 
     /**
-     * Get all minimoodlewall completion defaults, keyed by module id.
+     * Get all mimo completion defaults, keyed by module id.
      *
      * @return array<int, \stdClass> Keyed by module id.
      */
@@ -54,7 +54,7 @@ class completion_defaults_manager {
     }
 
     /**
-     * Get all minimoodlewall completion defaults, indexed by module id.
+     * Get all mimo completion defaults, indexed by module id.
      *
      * @return array<int, \stdClass> Keyed by module id.
      */
@@ -69,7 +69,7 @@ class completion_defaults_manager {
     }
 
     /**
-     * Save (upsert) a minimoodlewall completion default for a module type.
+     * Save (upsert) a mimo completion default for a module type.
      *
      * @param int $moduleid The modules.id value.
      * @param \stdClass|array $data The completion data to save. Expected keys:
@@ -97,7 +97,7 @@ class completion_defaults_manager {
     }
 
     /**
-     * Delete the minimoodlewall completion default for a module type.
+     * Delete the mimo completion default for a module type.
      *
      * @param int $moduleid The modules.id value.
      */
@@ -110,7 +110,7 @@ class completion_defaults_manager {
      * Check whether a course module's current completion settings match the core defaults.
      *
      * This is used to decide if the observer should override the completion: if the
-     * module was created with unmodified core defaults, the minimoodlewall override
+     * module was created with unmodified core defaults, the mimo override
      * should be applied. If the teacher customized completion in the form, we leave it alone.
      *
      * @param \stdClass $cmrecord The course_modules record (must include completion fields).
@@ -178,16 +178,16 @@ class completion_defaults_manager {
     }
 
     /**
-     * Apply minimoodlewall completion defaults to a course module.
+     * Apply mimo completion defaults to a course module.
      *
      * Updates both the course_modules record (core fields) and the module instance
      * record (custom rules from the JSON blob).
      *
      * @param \stdClass $cmrecord The course_modules record (must include id, instance).
-     * @param \stdClass $mmwdefaults The minimoodlewall defaults record from the compdefs table.
+     * @param \stdClass $mimodefaults The mimo defaults record from the compdefs table.
      * @param string $modname The module name (e.g. 'assign').
      */
-    public static function apply_defaults(\stdClass $cmrecord, \stdClass $mmwdefaults, string $modname): void {
+    public static function apply_defaults(\stdClass $cmrecord, \stdClass $mimodefaults, string $modname): void {
         global $DB;
 
         $now = time();
@@ -195,21 +195,21 @@ class completion_defaults_manager {
         // Update course_modules with core completion fields.
         $cmdata = new \stdClass();
         $cmdata->id = $cmrecord->id;
-        $cmdata->completion = (int)$mmwdefaults->completion;
-        $cmdata->completionview = (int)$mmwdefaults->completionview;
-        $cmdata->completionpassgrade = (int)$mmwdefaults->completionpassgrade;
-        $cmdata->completionexpected = (int)$mmwdefaults->completionexpected;
+        $cmdata->completion = (int)$mimodefaults->completion;
+        $cmdata->completionview = (int)$mimodefaults->completionview;
+        $cmdata->completionpassgrade = (int)$mimodefaults->completionpassgrade;
+        $cmdata->completionexpected = (int)$mimodefaults->completionexpected;
         // Translate completionusegrade to completiongradeitemnumber.
-        $cmdata->completiongradeitemnumber = !empty($mmwdefaults->completionusegrade) ? 0 : null;
+        $cmdata->completiongradeitemnumber = !empty($mimodefaults->completionusegrade) ? 0 : null;
         $cmdata->timemodified = $now;
 
         $DB->update_record('course_modules', $cmdata);
 
         // Apply custom rules to the module instance table if present.
-        if (!empty($mmwdefaults->customrules)) {
-            $customrules = json_decode($mmwdefaults->customrules, true);
+        if (!empty($mimodefaults->customrules)) {
+            $customrules = json_decode($mimodefaults->customrules, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                debugging('Invalid JSON in minimoodlewall completion custom rules: ' . json_last_error_msg(), DEBUG_DEVELOPER);
+                debugging('Invalid JSON in mimo completion custom rules: ' . json_last_error_msg(), DEBUG_DEVELOPER);
                 $customrules = null;
             }
             if (is_array($customrules) && !empty($customrules) && !empty($cmrecord->instance)) {
@@ -285,7 +285,7 @@ class completion_defaults_manager {
         unset($customdata['modids']);
         unset($customdata['modules']);
         unset($customdata['submitbutton']);
-        unset($customdata['_qf__format_minimoodlewall_completion_defaults_form']);
+        unset($customdata['_qf__format_mimo_completion_defaults_form']);
 
         $record = new \stdClass();
         $record->completion = (int)($data['completion'] ?? COMPLETION_DISABLED);

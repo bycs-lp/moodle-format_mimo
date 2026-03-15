@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * State actions extension for format_minimoodlewall.
+ * State actions extension for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\courseformat;
+namespace format_mimo\courseformat;
 
 use core_courseformat\stateactions as core_stateactions;
 use core_courseformat\stateupdates;
-use format_minimoodlewall\tag_manager;
+use format_mimo\tag_manager;
 use moodle_exception;
 use stdClass;
 
 /**
- * Custom state actions for minimoodlewall so duplicated modules keep their tags.
+ * Custom state actions for mimo so duplicated modules keep their tags.
  */
 class stateactions extends core_stateactions {
     /**
-     * Duplicate course modules and copy minimoodlewall tags to the clones.
+     * Duplicate course modules and copy mimo tags to the clones.
      *
      * @param stateupdates $updates the affected course elements track
      * @param stdClass $course the course object
@@ -101,7 +101,7 @@ class stateactions extends core_stateactions {
             }
         }
 
-        // Reuse minimoodlewall tags on every freshly duplicated cm.
+        // Reuse mimo tags on every freshly duplicated cm.
         foreach ($duplicatedpairs as $sourceid => $duplicateid) {
             $this->copy_cm_tag($sourceid, $duplicateid);
         }

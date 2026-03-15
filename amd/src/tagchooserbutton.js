@@ -14,13 +14,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tag chooser button handler for format_minimoodlewall.
+ * Tag chooser button handler for format_mimo.
  *
  * Handles tag selection in the activity chooser dropdown. Supports both:
  * - Moodle 5.1+ with data-section-id attributes (MDL-86337)
  * - Moodle 5.0 and earlier with data-sectionnum attributes
  *
- * @module     format_minimoodlewall/tagchooserbutton
+ * @module     format_mimo/tagchooserbutton
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -39,7 +39,7 @@ import Modal from 'core/modal';
 export const init = () => {
     // Listen for clicks on tag links in the dropdown
     document.addEventListener('click', async(e) => {
-        const tagLink = e.target.closest('.format-minimoodlewall-tag-link');
+        const tagLink = e.target.closest('.format-mimo-tag-link');
         if (!tagLink) {
             return;
         }
@@ -119,10 +119,10 @@ const showActivityTypeModal = async(
 
         // Fetch descriptions and labels in parallel.
         const promises = [
-            getString('newactivity', 'format_minimoodlewall', tagName),
-            getString('newactivityfor', 'format_minimoodlewall', tagName),
-            getString('selectactivitytypedesc', 'format_minimoodlewall'),
-            getString('openallactivities', 'format_minimoodlewall'),
+            getString('newactivity', 'format_mimo', tagName),
+            getString('newactivityfor', 'format_mimo', tagName),
+            getString('selectactivitytypedesc', 'format_mimo'),
+            getString('openallactivities', 'format_mimo'),
         ];
 
         // Add label fetching for each activity type
@@ -133,7 +133,7 @@ const showActivityTypeModal = async(
         // Add description fetching
         if (typesToFetch.length > 0) {
             promises.push(Ajax.call([{
-                methodname: 'format_minimoodlewall_get_activity_descriptions',
+                methodname: 'format_mimo_get_activity_descriptions',
                 args: {activitytypes: typesToFetch},
             }])[0]);
         }
@@ -161,7 +161,7 @@ const showActivityTypeModal = async(
 
         // Get activity type string once
         const activityTypeStr = activityTypes.length > 0 ?
-            await getString('activitytype', 'format_minimoodlewall') : '';
+            await getString('activitytype', 'format_mimo') : '';
 
         // Build activity cards array
         const activitycards = activityTypes.map((type, index) => ({
@@ -193,7 +193,7 @@ const showActivityTypeModal = async(
         };
 
         // Render template
-        const bodyHtml = await Templates.render('format_minimoodlewall/activitytype_chooser_modal', context);
+        const bodyHtml = await Templates.render('format_mimo/activitytype_chooser_modal', context);
 
         const modal = await Modal.create({
             title: modalTitle,
@@ -203,9 +203,9 @@ const showActivityTypeModal = async(
         });
 
         // Handle option selection (updated selector for new template structure)
-        modal.getRoot().on('click', '.mmw-activity-card, .mmw-activity-chooser-link', async(e) => {
+        modal.getRoot().on('click', '.mimo-activity-card, .mimo-activity-chooser-link', async(e) => {
             // Allow clicks on links inside the description to navigate normally.
-            if (e.target.closest('.mmw-activity-card-description a')) {
+            if (e.target.closest('.mimo-activity-card-description a')) {
                 return;
             }
             e.preventDefault();
@@ -257,7 +257,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
     try {
         // Store tag ID in session via AJAX call
         await Ajax.call([{
-            methodname: 'format_minimoodlewall_store_pending_tag',
+            methodname: 'format_mimo_store_pending_tag',
             args: {tagid: parseInt(tagId, 10)},
         }])[0];
 
@@ -297,7 +297,7 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
     try {
         // Store tag ID in session via AJAX call
         await Ajax.call([{
-            methodname: 'format_minimoodlewall_store_pending_tag',
+            methodname: 'format_mimo_store_pending_tag',
             args: {tagid: parseInt(tagId, 10)},
         }])[0];
 

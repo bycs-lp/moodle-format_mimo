@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for format_minimoodlewall.
+ * Privacy Subsystem implementation for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\privacy;
+namespace format_mimo\privacy;
 
 /**
- * Privacy Subsystem for format_minimoodlewall implementing null_provider.
+ * Privacy Subsystem for format_mimo implementing null_provider.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

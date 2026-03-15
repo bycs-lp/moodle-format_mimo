@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity description management interface for minimoodlewall course format.
+ * Activity description management interface for mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,17 +25,17 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use format_minimoodlewall\activity_description_manager;
-use format_minimoodlewall\form\activity_descriptions_form;
+use format_mimo\activity_description_manager;
+use format_mimo\form\activity_descriptions_form;
 
-admin_externalpage_setup('format_minimoodlewall_activitydescriptions');
+admin_externalpage_setup('format_mimo_activitydescriptions');
 
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
-$PAGE->set_url('/course/format/minimoodlewall/activity_descriptions.php');
-$PAGE->set_title(get_string('activitydescriptions', 'format_minimoodlewall'));
-$PAGE->set_heading(get_string('activitydescriptions', 'format_minimoodlewall'));
+$PAGE->set_url('/course/format/mimo/activity_descriptions.php');
+$PAGE->set_title(get_string('activitydescriptions', 'format_mimo'));
+$PAGE->set_heading(get_string('activitydescriptions', 'format_mimo'));
 
 $mform = new activity_descriptions_form();
 
@@ -71,8 +71,8 @@ if ($mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-echo \format_minimoodlewall\admin_page_tabs::render('activitydescriptions');
-echo $OUTPUT->heading(get_string('activitydescriptions', 'format_minimoodlewall'));
+echo \format_mimo\admin_page_tabs::render('activitydescriptions');
+echo $OUTPUT->heading(get_string('activitydescriptions', 'format_mimo'));
 
 $mform->display();
 

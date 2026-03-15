@@ -1,5 +1,5 @@
-@format @format_minimoodlewall @javascript
-Feature: Bulk duplicate activity visibility in minimoodlewall format
+@format @format_mimo @javascript
+Feature: Bulk duplicate activity visibility in mimo format
   In order to duplicate activities in bulk
   As a teacher
   I need newly duplicated cards to be visible in bulk editing mode
@@ -8,13 +8,13 @@ Feature: Bulk duplicate activity visibility in minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > tags" exist:
+    And the following "format_mimo > tags" exist:
       | name     | activitytype1 | activitytype2 |
       | Reading  | page          | book          |
       | Practice | assign        | quiz          |
-    And the following "format_minimoodlewall > courses" exist:
+    And the following "format_mimo > courses" exist:
       | fullname    | shortname | format         |
-      | Test Course | TC1       | minimoodlewall |
+      | Test Course | TC1       | mimo |
     And the following "course enrolments" exist:
       | user     | course | role           |
       | teacher1 | TC1    | editingteacher |
@@ -44,7 +44,7 @@ Feature: Bulk duplicate activity visibility in minimoodlewall format
   Scenario: Bulk duplicate renders the new card visible in bulk editing mode
     Given I log in as "teacher1"
     And I am on "Test Course" course homepage with editing mode on
-    And I wait until ".minimoodlewall-activities .minimoodlewall-card" "css_element" exists
+    And I wait until ".mimo-activities .mimo-card" "css_element" exists
     And I click on "Bulk actions" "button"
     And I should see "0 selected" in the "sticky-footer" "region"
     And I wait "1" seconds

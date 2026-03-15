@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * German language strings for format_minimoodlewall.
+ * German language strings for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -119,9 +119,9 @@ $string['openallactivities'] = 'Alle Aktivitäten öffnen';
 $string['other'] = 'Sonstige...';
 $string['page'] = 'Seite';
 $string['paginationnavigation'] = 'Seitennavigation für Aktivitäten';
-$string['pluginname'] = 'Minimal Moodle Wall';
+$string['pluginname'] = 'mimo wall';
 $string['previouspage'] = 'Vorherige Seite';
-$string['privacy:metadata'] = 'Das Kursformat „Minimal Moodle Wall" speichert keine personenbezogenen Daten.';
+$string['privacy:metadata'] = 'Das Kursformat „mimo wall" speichert keine personenbezogenen Daten.';
 $string['profile_classic'] = 'Klassisch';
 $string['profile_dark'] = 'Dunkel';
 $string['profile_develop'] = '🌿 Entwickeln';

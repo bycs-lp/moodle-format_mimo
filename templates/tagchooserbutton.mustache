@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/tagchooserbutton
+    @template format_mimo/tagchooserbutton
 
     Displays a tag-based content chooser button with dropdown.
 
@@ -36,7 +36,7 @@
         "uniqid": "abc123"
     }
 }}
-<div class="dropdown format-minimoodlewall-tagchooser">
+<div class="dropdown format-mimo-tagchooser">
     <button class="btn add-content d-flex justify-content-center align-items-center p-1 icon-no-margin"
             type="button"
             id="tagChooserButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}"
@@ -61,7 +61,7 @@
     <div class="dropdown-menu" aria-labelledby="tagChooserButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}">
         {{#tags}}
             <a href="#"
-               class="dropdown-item format-minimoodlewall-tag-link"
+               class="dropdown-item format-mimo-tag-link"
                data-tag-id="{{id}}"
                data-tag-name="{{name}}"
                data-activity-type1="{{activitytype1}}"

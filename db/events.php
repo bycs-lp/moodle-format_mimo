@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event observers for format_minimoodlewall.
+ * Event observers for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,18 +27,18 @@ defined('MOODLE_INTERNAL') || die();
 $observers = [
     [
         'eventname' => '\core\event\course_module_created',
-        'callback' => '\format_minimoodlewall\observer::course_module_created',
+        'callback' => '\format_mimo\observer::course_module_created',
     ],
     [
         'eventname' => '\core\event\course_module_deleted',
-        'callback' => '\format_minimoodlewall\observer::course_module_deleted',
+        'callback' => '\format_mimo\observer::course_module_deleted',
     ],
     [
         'eventname' => '\core\event\course_section_deleted',
-        'callback' => '\format_minimoodlewall\observer::course_section_deleted',
+        'callback' => '\format_mimo\observer::course_section_deleted',
     ],
     [
         'eventname' => '\core\event\course_deleted',
-        'callback' => '\format_minimoodlewall\observer::course_deleted',
+        'callback' => '\format_mimo\observer::course_deleted',
     ],
 ];

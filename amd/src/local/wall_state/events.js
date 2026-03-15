@@ -16,14 +16,14 @@
 /**
  * Custom event helpers for the wall state reactive.
  *
- * @module     format_minimoodlewall/local/wall_state/events
+ * @module     format_mimo/local/wall_state/events
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /** Event type constant. */
 export const eventTypes = {
-    wallStateChanged: 'format_minimoodlewall/wallStateChanged',
+    wallStateChanged: 'format_mimo/wallStateChanged',
 };
 
 /**

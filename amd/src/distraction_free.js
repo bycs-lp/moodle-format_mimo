@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Distraction-free mode toggle for minimoodlewall format.
+ * Distraction-free mode toggle for mimo format.
  *
- * @module     format_minimoodlewall/distraction_free
+ * @module     format_mimo/distraction_free
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,10 +25,10 @@ import Notification from 'core/notification';
 import {get_string as getString} from 'core/str';
 
 /** Cookie name for distraction-free state. */
-const COOKIE_NAME = 'format_minimoodlewall_df';
+const COOKIE_NAME = 'format_mimo_df';
 
 /** CSS class applied to body when distraction-free mode is active. */
-const ACTIVE_CLASS = 'format-minimoodlewall-distraction-free';
+const ACTIVE_CLASS = 'format-mimo-distraction-free';
 
 /**
  * Set a cookie value.
@@ -71,11 +71,11 @@ export const init = () => {
  * @returns {void}
  */
 const createToggleButtons = async(isActive) => {
-    const ariaLabel = await getString('aria_toggle_distractionfree', 'format_minimoodlewall');
+    const ariaLabel = await getString('aria_toggle_distractionfree', 'format_mimo');
 
     // Top chevron (show when distraction-free is active).
     const topToggle = document.createElement('button');
-    topToggle.className = 'format-minimoodlewall-df-toggle format-minimoodlewall-df-toggle-top';
+    topToggle.className = 'format-mimo-df-toggle format-mimo-df-toggle-top';
     topToggle.setAttribute('data-action', 'toggle-distraction-free');
     topToggle.setAttribute('aria-label', ariaLabel);
     topToggle.innerHTML = '<i class="fa fa-chevron-down" aria-hidden="true"></i>';
@@ -86,7 +86,7 @@ const createToggleButtons = async(isActive) => {
 
     // Bottom chevron (show when distraction-free is inactive).
     const bottomToggle = document.createElement('button');
-    bottomToggle.className = 'format-minimoodlewall-df-toggle format-minimoodlewall-df-toggle-bottom';
+    bottomToggle.className = 'format-mimo-df-toggle format-mimo-df-toggle-bottom';
     bottomToggle.setAttribute('data-action', 'toggle-distraction-free');
     bottomToggle.setAttribute('aria-label', ariaLabel);
     bottomToggle.innerHTML = '<i class="fa fa-chevron-up" aria-hidden="true"></i>';
@@ -137,8 +137,8 @@ const enableDistractionFree = () => {
     setCookie(COOKIE_NAME, 'true');
 
     // Show top chevron, hide bottom chevron.
-    const topToggle = document.querySelector('.format-minimoodlewall-df-toggle-top');
-    const bottomToggle = document.querySelector('.format-minimoodlewall-df-toggle-bottom');
+    const topToggle = document.querySelector('.format-mimo-df-toggle-top');
+    const bottomToggle = document.querySelector('.format-mimo-df-toggle-bottom');
     if (topToggle) {
         topToggle.style.display = '';
     }
@@ -157,8 +157,8 @@ const disableDistractionFree = () => {
     setCookie(COOKIE_NAME, 'false');
 
     // Hide top chevron, show bottom chevron.
-    const topToggle = document.querySelector('.format-minimoodlewall-df-toggle-top');
-    const bottomToggle = document.querySelector('.format-minimoodlewall-df-toggle-bottom');
+    const topToggle = document.querySelector('.format-mimo-df-toggle-top');
+    const bottomToggle = document.querySelector('.format-mimo-df-toggle-bottom');
     if (topToggle) {
         topToggle.style.display = 'none';
     }

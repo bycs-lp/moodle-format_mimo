@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings for minimoodlewall course format.
+ * Settings for mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,16 +27,16 @@ defined('MOODLE_INTERNAL') || die();
 // Single visible entry in admin nav – points to tag management page.
 // Users navigate to other admin pages via tabs on each page.
 $settings = new admin_externalpage(
-    'format_minimoodlewall_tags',
-    new lang_string('pluginname', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/tag_management.php'),
+    'format_mimo_tags',
+    new lang_string('pluginname', 'format_mimo'),
+    new moodle_url('/course/format/mimo/tag_management.php'),
     'moodle/site:config'
 );
 
 // Hidden settings page for distraction-free mode (still functional via tab navigation).
 $settingspage = new admin_settingpage(
-    'format_minimoodlewall',
-    new lang_string('distractionfreemode', 'format_minimoodlewall'),
+    'format_mimo',
+    new lang_string('distractionfreemode', 'format_mimo'),
     'moodle/site:config',
     true
 );
@@ -44,7 +44,7 @@ $settingspage = new admin_settingpage(
 if ($ADMIN->fulltree) {
     // Tab navigation across all admin pages.
     require_once(__DIR__ . '/classes/admin_setting_tabs.php');
-    $settingspage->add(new format_minimoodlewall_admin_setting_tabs());
+    $settingspage->add(new format_mimo_admin_setting_tabs());
 
     // Distraction-free mode settings.
     $distractionfreeselectorsdefault = [
@@ -63,25 +63,25 @@ if ($ADMIN->fulltree) {
     ];
 
     $settingspage->add(new admin_setting_configtextarea(
-        'format_minimoodlewall/distractionfreeselectors',
-        get_string('distractionfreeselectors', 'format_minimoodlewall'),
-        get_string('distractionfreeselectors_desc', 'format_minimoodlewall'),
+        'format_mimo/distractionfreeselectors',
+        get_string('distractionfreeselectors', 'format_mimo'),
+        get_string('distractionfreeselectors_desc', 'format_mimo'),
         implode("\n", $distractionfreeselectorsdefault),
         PARAM_TEXT
     ));
 
     $settingspage->add(new admin_setting_configtextarea(
-        'format_minimoodlewall/nopaddingselectors',
-        get_string('nopaddingselectors', 'format_minimoodlewall'),
-        get_string('nopaddingselectors_desc', 'format_minimoodlewall'),
+        'format_mimo/nopaddingselectors',
+        get_string('nopaddingselectors', 'format_mimo'),
+        get_string('nopaddingselectors_desc', 'format_mimo'),
         implode("\n", $nopaddingselectorsdefault),
         PARAM_TEXT
     ));
 
     $settingspage->add(new admin_setting_configcheckbox(
-        'format_minimoodlewall/closedrawers',
-        get_string('closedrawers', 'format_minimoodlewall'),
-        get_string('closedrawers_desc', 'format_minimoodlewall'),
+        'format_mimo/closedrawers',
+        get_string('closedrawers', 'format_mimo'),
+        get_string('closedrawers_desc', 'format_mimo'),
         1
     ));
 }
@@ -90,33 +90,33 @@ $ADMIN->add('formatsettings', $settingspage);
 
 // Hidden external pages – accessible via tab navigation, not shown in admin tree.
 $ADMIN->add('formatsettings', new admin_externalpage(
-    'format_minimoodlewall_descriptiontags',
-    get_string('desctagmanagement', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/description_tags.php'),
+    'format_mimo_descriptiontags',
+    get_string('desctagmanagement', 'format_mimo'),
+    new moodle_url('/course/format/mimo/description_tags.php'),
     'moodle/site:config',
     true
 ));
 
 $ADMIN->add('formatsettings', new admin_externalpage(
-    'format_minimoodlewall_activitydescriptions',
-    get_string('activitydescriptions', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/activity_descriptions.php'),
+    'format_mimo_activitydescriptions',
+    get_string('activitydescriptions', 'format_mimo'),
+    new moodle_url('/course/format/mimo/activity_descriptions.php'),
     'moodle/site:config',
     true
 ));
 
 $ADMIN->add('formatsettings', new admin_externalpage(
-    'format_minimoodlewall_profiles',
-    get_string('profilemanagement', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/profile_management.php'),
+    'format_mimo_profiles',
+    get_string('profilemanagement', 'format_mimo'),
+    new moodle_url('/course/format/mimo/profile_management.php'),
     'moodle/site:config',
     true
 ));
 
 $ADMIN->add('formatsettings', new admin_externalpage(
-    'format_minimoodlewall_completiondefaults',
-    get_string('completiondefaults', 'format_minimoodlewall'),
-    new moodle_url('/course/format/minimoodlewall/completion_defaults.php'),
+    'format_mimo_completiondefaults',
+    get_string('completiondefaults', 'format_mimo'),
+    new moodle_url('/course/format/mimo/completion_defaults.php'),
     'moodle/site:config',
     true
 ));

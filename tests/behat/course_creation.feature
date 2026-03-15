@@ -1,6 +1,6 @@
-@format @format_minimoodlewall @javascript
-Feature: Course creation with minimoodlewall format
-  In order to use the minimal moodle wall format
+@format @format_mimo @javascript
+Feature: Course creation with mimo format
+  In order to use the mimo wall format
   As a teacher
   I need to create courses and configure them
 
@@ -8,10 +8,10 @@ Feature: Course creation with minimoodlewall format
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
-    And the following "format_minimoodlewall > profiles" exist:
+    And the following "format_mimo > profiles" exist:
       | name    | displayname |
       | classic | Classic     |
-    And the following "format_minimoodlewall > tags" exist:
+    And the following "format_mimo > tags" exist:
       | name      | activitytype1 | activitytype2 |
       | Reading   | page          | book          |
       | Practice  | assign        | quiz          |
@@ -19,7 +19,7 @@ Feature: Course creation with minimoodlewall format
       | Chemistry | quiz          | workshop      |
 
   @javascript
-  Scenario: Create a course with minimoodlewall format and select tags
+  Scenario: Create a course with mimo format and select tags
     Given I log in as "admin"
     And I am on site homepage
     And I navigate to "Courses > Add a new course" in site administration
@@ -27,7 +27,7 @@ Feature: Course creation with minimoodlewall format
     And I set the following fields to these values:
       | Course full name    | Test Course 1        |
       | Course short name   | TC1                  |
-      | Format              | Minimal Moodle Wall  |
+      | Format              | mimo wall  |
       | Show tag filter bar | 1                    |
       | Activity Profile    | Classic              |
     And I press "Save and display"
@@ -42,13 +42,13 @@ Feature: Course creation with minimoodlewall format
     And I set the following fields to these values:
       | Course full name  | Test Course 2       |
       | Course short name | TC2                 |
-      | Format            | Minimal Moodle Wall |
+      | Format            | mimo wall |
     When I press "Save and display"
     Then I should see "Test Course 2"
 
   @javascript
   Scenario: Tags can be changed after course creation
-    Given the following "format_minimoodlewall > courses" exist:
+    Given the following "format_mimo > courses" exist:
       | fullname      | shortname |
       | Test Course 1 | TC1       |
     And the following "course enrolments" exist:
@@ -62,7 +62,7 @@ Feature: Course creation with minimoodlewall format
 
   @javascript
   Scenario: Course displays activities in wall format
-    Given the following "format_minimoodlewall > courses" exist:
+    Given the following "format_mimo > courses" exist:
       | fullname      | shortname |
       | Test Course 1 | TC1       |
     And the following "activities" exist:
@@ -78,4 +78,4 @@ Feature: Course creation with minimoodlewall format
     Then I should see "Assignment 1"
     And I should see "Quiz 1"
     And I should see "Page 1"
-    And ".minimoodlewall-activities" "css_element" should exist
+    And ".mimo-activities" "css_element" should exist

@@ -17,12 +17,12 @@
 /**
  * Unit tests for get_activity_descriptions external API.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 use ReflectionClass;
 use ReflectionMethod;
@@ -30,10 +30,10 @@ use ReflectionMethod;
 /**
  * Test case for get_activity_descriptions external API.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\external\get_activity_descriptions
+ * @covers     \format_mimo\external\get_activity_descriptions
  * @runTestsInSeparateProcesses
  */
 final class external_get_activity_descriptions_test extends \advanced_testcase {
@@ -58,7 +58,7 @@ final class external_get_activity_descriptions_test extends \advanced_testcase {
         }
 
         // Get the mapping from our external API class using reflection.
-        $class = new ReflectionClass(\format_minimoodlewall\external\get_activity_descriptions::class);
+        $class = new ReflectionClass(\format_mimo\external\get_activity_descriptions::class);
         $method = $class->getMethod('get_purpose_classname');
         $method->setAccessible(true);
 
@@ -102,7 +102,7 @@ final class external_get_activity_descriptions_test extends \advanced_testcase {
         }
 
         // Get the mapping method.
-        $class = new ReflectionClass(\format_minimoodlewall\external\get_activity_descriptions::class);
+        $class = new ReflectionClass(\format_mimo\external\get_activity_descriptions::class);
         $method = $class->getMethod('get_purpose_classname');
         $method->setAccessible(true);
 
@@ -135,7 +135,7 @@ final class external_get_activity_descriptions_test extends \advanced_testcase {
         // We just test with 'page' as it should exist in all Moodle installations.
         $activitytypes = ['page'];
 
-        $results = \format_minimoodlewall\external\get_activity_descriptions::execute($activitytypes);
+        $results = \format_mimo\external\get_activity_descriptions::execute($activitytypes);
 
         $this->assertIsArray($results);
         $this->assertCount(1, $results);

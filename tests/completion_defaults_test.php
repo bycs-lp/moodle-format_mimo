@@ -17,12 +17,12 @@
 /**
  * Unit tests for completion defaults override feature.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
@@ -31,14 +31,14 @@ require_once($CFG->libdir . '/completionlib.php');
 /**
  * Tests for completion_defaults_manager and the observer completion override logic.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\completion_defaults_manager
- * @covers     \format_minimoodlewall\observer::apply_completion_override
+ * @covers     \format_mimo\completion_defaults_manager
+ * @covers     \format_mimo\observer::apply_completion_override
  */
 final class completion_defaults_test extends \advanced_testcase {
-    /** @var \stdClass Test course with minimoodlewall format and completion enabled */
+    /** @var \stdClass Test course with mimo format and completion enabled */
     private $course;
 
     /**
@@ -49,9 +49,9 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        // Create a course with minimoodlewall format and completion enabled.
+        // Create a course with mimo format and completion enabled.
         $this->course = $this->getDataGenerator()->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'enablecompletion' => 1,
         ]);
     }
@@ -195,7 +195,7 @@ final class completion_defaults_test extends \advanced_testcase {
     /**
      * Test that completion override is applied when module matches core defaults.
      *
-     * Scenario: Core defaults are "none" for page activities, minimoodlewall override
+     * Scenario: Core defaults are "none" for page activities, mimo override
      * is set to "manual". When a page is created, it should get manual completion.
      */
     public function test_completion_override_applied_when_matching_core_defaults(): void {
@@ -213,7 +213,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'module' => $pageid,
         ]);
 
-        // Set minimoodlewall override: manual completion.
+        // Set mimo override: manual completion.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
@@ -233,14 +233,14 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(
             COMPLETION_TRACKING_MANUAL,
             (int)$cm->completion,
-            'Completion should be overridden to manual by minimoodlewall defaults'
+            'Completion should be overridden to manual by mimo defaults'
         );
     }
 
     /**
      * Test that completion override applies automatic tracking with core fields.
      *
-     * Scenario: Core defaults are "none", minimoodlewall override is "automatic"
+     * Scenario: Core defaults are "none", mimo override is "automatic"
      * with view required.
      */
     public function test_completion_override_automatic_with_view(): void {
@@ -258,7 +258,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'module' => $pageid,
         ]);
 
-        // Set minimoodlewall override: automatic with view required.
+        // Set mimo override: automatic with view required.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 1,
@@ -282,7 +282,7 @@ final class completion_defaults_test extends \advanced_testcase {
     /**
      * Test that override replaces core defaults when both exist.
      *
-     * Scenario: Core defaults set to "manual", minimoodlewall override set to
+     * Scenario: Core defaults set to "manual", mimo override set to
      * "automatic with view required". Since the module is created with core defaults
      * (manual), the override should replace them.
      */
@@ -307,7 +307,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'customrules' => null,
         ]);
 
-        // Set minimoodlewall override: automatic with view.
+        // Set mimo override: automatic with view.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 1,
@@ -328,7 +328,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(
             COMPLETION_TRACKING_AUTOMATIC,
             (int)$cm->completion,
-            'Observer should override core manual default with mmw automatic default'
+            'Observer should override core manual default with mimo automatic default'
         );
         $this->assertEquals(1, (int)$cm->completionview);
     }
@@ -338,14 +338,14 @@ final class completion_defaults_test extends \advanced_testcase {
     // =========================================================================
 
     /**
-     * Test that override is NOT applied when no minimoodlewall default exists.
+     * Test that override is NOT applied when no mimo default exists.
      */
-    public function test_no_override_when_no_mmw_default(): void {
+    public function test_no_override_when_no_mimo_default(): void {
         global $DB;
 
         $pageid = $this->get_module_id('page');
 
-        // Ensure NO minimoodlewall default exists.
+        // Ensure NO mimo default exists.
         completion_defaults_manager::delete_default($pageid);
 
         // Create a page.
@@ -363,12 +363,12 @@ final class completion_defaults_test extends \advanced_testcase {
     /**
      * Test that override is NOT applied when course uses a different format.
      */
-    public function test_no_override_for_non_minimoodlewall_course(): void {
+    public function test_no_override_for_non_mimo_course(): void {
         global $DB;
 
         $pageid = $this->get_module_id('page');
 
-        // Set a minimoodlewall override.
+        // Set a mimo override.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
@@ -378,7 +378,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'customrules' => null,
         ]);
 
-        // Create a course with topics format (not minimoodlewall).
+        // Create a course with topics format (not mimo).
         $topicscourse = $this->getDataGenerator()->create_course([
             'format' => 'topics',
             'enablecompletion' => 1,
@@ -404,7 +404,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(
             COMPLETION_TRACKING_NONE,
             (int)$cm->completion,
-            'Override should not apply to non-minimoodlewall courses'
+            'Override should not apply to non-mimo courses'
         );
     }
 
@@ -429,7 +429,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'module' => $pageid,
         ]);
 
-        // Set minimoodlewall override: manual.
+        // Set mimo override: manual.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
@@ -462,7 +462,7 @@ final class completion_defaults_test extends \advanced_testcase {
     }
 
     /**
-     * Test that override is NOT applied when both core and mmw defaults are NONE.
+     * Test that override is NOT applied when both core and mimo defaults are NONE.
      */
     public function test_no_override_when_both_none(): void {
         global $DB;
@@ -479,7 +479,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'module' => $pageid,
         ]);
 
-        // Set minimoodlewall override to NONE too.
+        // Set mimo override to NONE too.
         completion_defaults_manager::save_default($pageid, [
             'completion' => COMPLETION_TRACKING_NONE,
             'completionview' => 0,

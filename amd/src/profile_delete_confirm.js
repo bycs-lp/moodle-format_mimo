@@ -16,7 +16,7 @@
 /**
  * Activity profile deletion confirmation modal.
  *
- * @module     format_minimoodlewall/profile_delete_confirm
+ * @module     format_mimo/profile_delete_confirm
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -61,8 +61,8 @@ const handleDeleteProfile = async(button) => {
         const deleteUrl = button.href;
 
         const modal = await ModalDeleteCancel.create({
-            title: getString('deleteprofile', 'format_minimoodlewall'),
-            body: getString('confirmdeleteprofile', 'format_minimoodlewall', profileName),
+            title: getString('deleteprofile', 'format_mimo'),
+            body: getString('confirmdeleteprofile', 'format_mimo', profileName),
         });
 
         modal.getRoot().on(ModalEvents.delete, () => {

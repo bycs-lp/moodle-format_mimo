@@ -15,26 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity descriptions form for format_minimoodlewall.
+ * Activity descriptions form for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\form;
+namespace format_mimo\form;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/formslib.php');
 
-use format_minimoodlewall\activity_description_manager;
-use format_minimoodlewall\description_tag_manager;
+use format_mimo\activity_description_manager;
+use format_mimo\description_tag_manager;
 
 /**
  * Form for managing activity type descriptions.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -62,7 +62,7 @@ class activity_descriptions_form extends \moodleform {
             'static',
             'activitydescriptions_help',
             '',
-            get_string('activitydescriptions_help', 'format_minimoodlewall')
+            get_string('activitydescriptions_help', 'format_mimo')
         );
 
         // Add textarea and tag selector for each activity type.
@@ -83,7 +83,7 @@ class activity_descriptions_form extends \moodleform {
                 [
                     'rows' => 2,
                     'cols' => 80,
-                    'placeholder' => get_string('activitydescription_placeholder', 'format_minimoodlewall'),
+                    'placeholder' => get_string('activitydescription_placeholder', 'format_mimo'),
                 ]
             );
 
@@ -91,7 +91,7 @@ class activity_descriptions_form extends \moodleform {
             $mform->addElement(
                 'select',
                 'desctag_' . $type['name'],
-                get_string('descriptiontag', 'format_minimoodlewall'),
+                get_string('descriptiontag', 'format_mimo'),
                 $tagoptions
             );
             $mform->setType('desctag_' . $type['name'], PARAM_INT);

@@ -16,7 +16,7 @@
 /**
  * Section image modal — opens a dynamic form for uploading/changing section overview card images.
  *
- * @module     format_minimoodlewall/section_image_modal
+ * @module     format_mimo/section_image_modal
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +28,7 @@ import {getString} from 'core/str';
  * Initialise click handler on the overview grid.
  */
 export const init = () => {
-    const grid = document.querySelector('[data-region="mmw-overview-grid"]');
+    const grid = document.querySelector('[data-region="mimo-overview-grid"]');
     if (!grid) {
         return;
     }
@@ -45,10 +45,10 @@ export const init = () => {
         const sectionid = parseInt(button.dataset.sectionid, 10);
         const sectionname = button.dataset.sectionname || '';
 
-        const title = await getString('sectionimage_upload_title', 'format_minimoodlewall', sectionname);
+        const title = await getString('sectionimage_upload_title', 'format_mimo', sectionname);
 
         const modalForm = new ModalForm({
-            formClass: 'format_minimoodlewall\\form\\section_image_form',
+            formClass: 'format_mimo\\form\\section_image_form',
             args: {courseid, sectionid},
             modalConfig: {title},
             returnFocus: button,

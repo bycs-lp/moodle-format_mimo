@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity profile manager for format_minimoodlewall.
+ * Activity profile manager for format_mimo.
  *
  * Manages activity profiles (formerly called styles) and per-profile
  * tag overrides (name, bgcolor, activity types, enabled flag, images).
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 use context_system;
 use moodle_url;
@@ -37,21 +37,21 @@ defined('MOODLE_INTERNAL') || die();
  * Activity profile manager class for handling activity profiles.
  *
  * An activity profile controls the visual appearance and behaviour of
- * the minimoodlewall course format. Per-profile overrides allow each
+ * the mimo course format. Per-profile overrides allow each
  * profile to show different tag names, colours, activity types, images
  * and an enabled/disabled flag for each tag.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class profile_manager {
 
     /** Database table for profiles. */
-    private const TABLE_PROFILES = 'format_minimoodlewall_profiles';
+    private const TABLE_PROFILES = 'format_mimo_profiles';
 
     /** Database table for per-profile tag overrides. */
-    private const TABLE_PROFILE_TAGS = 'format_minimoodlewall_profile_tags';
+    private const TABLE_PROFILE_TAGS = 'format_mimo_profile_tags';
 
     /** File area for profile-specific card images. */
     public const FILEAREA_PROFILE_CARDIMAGE = 'profiletagcard';
@@ -182,7 +182,7 @@ class profile_manager {
                     'course_format_options',
                     'value',
                     $data['name'],
-                    "format = 'minimoodlewall' AND name = 'activityprofile' AND value = :oldname",
+                    "format = 'mimo' AND name = 'activityprofile' AND value = :oldname",
                     ['oldname' => $oldprofile->name]
                 );
                 // Clear tag cache for all affected courses.
@@ -488,7 +488,7 @@ class profile_manager {
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             self::FILEAREA_PROFILE_CARDIMAGE,
             $itemid,
             self::get_image_filemanager_options()
@@ -512,7 +512,7 @@ class profile_manager {
         file_prepare_draft_area(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             self::FILEAREA_PROFILE_FILTERIMAGE,
             $itemid,
             self::get_image_filemanager_options()
@@ -567,7 +567,7 @@ class profile_manager {
         file_save_draft_area_files(
             $draftitemid,
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             $filearea,
             $profiletag->id,
             self::get_image_filemanager_options()
@@ -698,7 +698,7 @@ class profile_manager {
     private static function get_image_file(int $profiletagid, string $filearea): ?\stored_file {
         $files = get_file_storage()->get_area_files(
             context_system::instance()->id,
-            'format_minimoodlewall',
+            'format_mimo',
             $filearea,
             $profiletagid,
             '',
@@ -721,8 +721,8 @@ class profile_manager {
         $fs = get_file_storage();
         $contextid = context_system::instance()->id;
 
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_PROFILE_CARDIMAGE, $profiletagid);
-        $fs->delete_area_files($contextid, 'format_minimoodlewall', self::FILEAREA_PROFILE_FILTERIMAGE, $profiletagid);
+        $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_PROFILE_CARDIMAGE, $profiletagid);
+        $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_PROFILE_FILTERIMAGE, $profiletagid);
     }
 
     // ---------------------------------------------------------------
@@ -754,7 +754,7 @@ class profile_manager {
             $counter++;
         }
 
-        $displayname = get_string('imported_profile_name', 'format_minimoodlewall', $coursename);
+        $displayname = get_string('imported_profile_name', 'format_mimo', $coursename);
 
         $maxorder = $DB->get_field_sql(
             "SELECT MAX(sortorder) FROM {" . self::TABLE_PROFILES . "}"
@@ -790,7 +790,7 @@ class profile_manager {
         // Promote any imported tags that have profile_tags records for this profile.
         $sql = "SELECT DISTINCT pt.tagid
                   FROM {" . self::TABLE_PROFILE_TAGS . "} pt
-                  JOIN {format_minimoodlewall_tags} t ON t.id = pt.tagid
+                  JOIN {format_mimo_tags} t ON t.id = pt.tagid
                  WHERE pt.profileid = :profileid AND t.scope = :scope";
         $importedtagids = $DB->get_fieldset_sql($sql, ['profileid' => $profileid, 'scope' => 'imported']);
 
@@ -814,7 +814,7 @@ class profile_manager {
                  WHERE p.scope = :scope
                    AND NOT EXISTS (
                        SELECT 1 FROM {course_format_options} cfo
-                        WHERE cfo.format = 'minimoodlewall'
+                        WHERE cfo.format = 'mimo'
                           AND cfo.name = 'activityprofile'
                           AND cfo.value = p.name
                    )";
@@ -845,9 +845,9 @@ class profile_manager {
      */
     public static function initialize_default_profiles(): void {
         $defaults = [
-            ['name' => 'explore', 'displayname' => get_string('profile_explore', 'format_minimoodlewall'), 'sortorder' => 0],
-            ['name' => 'develop', 'displayname' => get_string('profile_develop', 'format_minimoodlewall'), 'sortorder' => 1],
-            ['name' => 'master', 'displayname' => get_string('profile_master', 'format_minimoodlewall'), 'sortorder' => 2],
+            ['name' => 'explore', 'displayname' => get_string('profile_explore', 'format_mimo'), 'sortorder' => 0],
+            ['name' => 'develop', 'displayname' => get_string('profile_develop', 'format_mimo'), 'sortorder' => 1],
+            ['name' => 'master', 'displayname' => get_string('profile_master', 'format_mimo'), 'sortorder' => 2],
         ];
 
         $profileids = [];
@@ -871,7 +871,7 @@ class profile_manager {
             if (isset($taglist[0])) {
                 $pt = self::get_or_create_profile_tag($taglist[0]->id, $developid);
                 self::update_profile_tag($pt->id, [
-                    'name' => get_string('tag_analyze', 'format_minimoodlewall'),
+                    'name' => get_string('tag_analyze', 'format_mimo'),
                 ]);
             }
 
@@ -879,7 +879,7 @@ class profile_manager {
             if (isset($taglist[1])) {
                 $pt = self::get_or_create_profile_tag($taglist[1]->id, $developid);
                 self::update_profile_tag($pt->id, [
-                    'name' => get_string('tag_research', 'format_minimoodlewall'),
+                    'name' => get_string('tag_research', 'format_mimo'),
                 ]);
             }
         }

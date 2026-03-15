@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Main class for the Minimal Moodle Wall course format.
+ * Main class for the mimo wall course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,13 +26,13 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/course/format/lib.php');
 
 /**
- * Main class for the Minimal Moodle Wall course format.
+ * Main class for the mimo wall course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_minimoodlewall extends core_courseformat\base {
+class format_mimo extends core_courseformat\base {
     /**
      * Returns true if this course format uses sections.
      *
@@ -103,7 +103,7 @@ class format_minimoodlewall extends core_courseformat\base {
     }
 
     /**
-     * Returns the default section name for the minimoodlewall course format.
+     * Returns the default section name for the mimo course format.
      *
      * Section 0 is hidden in this format. In single-section mode, section 1 is
      * the sole wall and gets the primary wall name. In multi-section mode,
@@ -115,13 +115,13 @@ class format_minimoodlewall extends core_courseformat\base {
     public function get_default_section_name($section) {
         if ($section->section == 0) {
             // Section 0 is hidden — return a generic label (never shown to users).
-            return get_string('section0name', 'format_minimoodlewall');
+            return get_string('section0name', 'format_mimo');
         }
         if (!$this->is_multisection_enabled() && $section->section == 1) {
             // Single-section mode: section 1 is the sole wall.
-            return get_string('section0name', 'format_minimoodlewall');
+            return get_string('section0name', 'format_mimo');
         }
-        return get_string('sectionname', 'format_minimoodlewall') . ' ' . $section->section;
+        return get_string('sectionname', 'format_mimo') . ' ' . $section->section;
     }
 
     /**
@@ -194,33 +194,33 @@ class format_minimoodlewall extends core_courseformat\base {
         if ($forupdate) {
             // Add form elements for course settings.
             $courseformatoptions['enablemultisection'] += [
-                'label' => get_string('setting_enablemultisection', 'format_minimoodlewall'),
+                'label' => get_string('setting_enablemultisection', 'format_mimo'),
                 'help' => 'setting_enablemultisection',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'advcheckbox',
             ];
             $courseformatoptions['enablefiltering'] += [
-                'label' => get_string('setting_enablefiltering', 'format_minimoodlewall'),
+                'label' => get_string('setting_enablefiltering', 'format_mimo'),
                 'help' => 'setting_enablefiltering',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'advcheckbox',
             ];
             $courseformatoptions['distractionfree'] += [
-                'label' => get_string('setting_distractionfree', 'format_minimoodlewall'),
+                'label' => get_string('setting_distractionfree', 'format_mimo'),
                 'help' => 'setting_distractionfree',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'advcheckbox',
             ];
             $courseformatoptions['enablecompletionstars'] += [
-                'label' => get_string('setting_enablecompletionstars', 'format_minimoodlewall'),
+                'label' => get_string('setting_enablecompletionstars', 'format_mimo'),
                 'help' => 'setting_enablecompletionstars',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'advcheckbox',
             ];
             // Load activity profiles dynamically from database.
             // Show all global profiles + the current course's imported profile (if assigned).
             $profileoptions = [];
-            $profiles = \format_minimoodlewall\profile_manager::get_global_profiles();
+            $profiles = \format_mimo\profile_manager::get_global_profiles();
             foreach ($profiles as $profile) {
                 $profileoptions[$profile->name] = $profile->displayname;
             }
@@ -229,7 +229,7 @@ class format_minimoodlewall extends core_courseformat\base {
             if ($course) {
                 $currentprofilename = $course->activityprofile ?? '';
                 if ($currentprofilename !== '' && !isset($profileoptions[$currentprofilename])) {
-                    $currentprofile = \format_minimoodlewall\profile_manager::get_profile_by_name($currentprofilename);
+                    $currentprofile = \format_mimo\profile_manager::get_profile_by_name($currentprofilename);
                     if ($currentprofile) {
                         $profileoptions[$currentprofile->name] = $currentprofile->displayname;
                     }
@@ -237,26 +237,26 @@ class format_minimoodlewall extends core_courseformat\base {
             }
             // Fallback to default if no profiles exist.
             if (empty($profileoptions)) {
-                $profileoptions['explore'] = get_string('profile_explore', 'format_minimoodlewall');
+                $profileoptions['explore'] = get_string('profile_explore', 'format_mimo');
             }
             $bgdesignoptions = [
-                'primary-school' => get_string('backgrounddesign_primaryschool', 'format_minimoodlewall'),
-                'darkmode'       => get_string('backgrounddesign_darkmode', 'format_minimoodlewall'),
-                'whiteboard'     => get_string('backgrounddesign_whiteboard', 'format_minimoodlewall'),
-                'pinnwand'       => get_string('backgrounddesign_pinnwand', 'format_minimoodlewall'),
-                'paper'          => get_string('backgrounddesign_paper', 'format_minimoodlewall'),
+                'primary-school' => get_string('backgrounddesign_primaryschool', 'format_mimo'),
+                'darkmode'       => get_string('backgrounddesign_darkmode', 'format_mimo'),
+                'whiteboard'     => get_string('backgrounddesign_whiteboard', 'format_mimo'),
+                'pinnwand'       => get_string('backgrounddesign_pinnwand', 'format_mimo'),
+                'paper'          => get_string('backgrounddesign_paper', 'format_mimo'),
             ];
             $courseformatoptions['backgrounddesign'] += [
-                'label' => get_string('setting_backgrounddesign', 'format_minimoodlewall'),
+                'label' => get_string('setting_backgrounddesign', 'format_mimo'),
                 'help' => 'setting_backgrounddesign',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'select',
                 'element_attributes' => [$bgdesignoptions],
             ];
             $courseformatoptions['activityprofile'] += [
-                'label' => get_string('setting_activityprofile', 'format_minimoodlewall'),
+                'label' => get_string('setting_activityprofile', 'format_mimo'),
                 'help' => 'setting_activityprofile',
-                'help_component' => 'format_minimoodlewall',
+                'help_component' => 'format_mimo',
                 'element_type' => 'select',
                 'element_attributes' => [$profileoptions],
             ];
@@ -302,7 +302,7 @@ class format_minimoodlewall extends core_courseformat\base {
         }
 
         // Get all tags (flat list).
-        $alltags = \format_minimoodlewall\tag_manager::get_all_tags();
+        $alltags = \format_mimo\tag_manager::get_all_tags();
         if (empty($alltags)) {
             return $elements;
         }
@@ -311,29 +311,29 @@ class format_minimoodlewall extends core_courseformat\base {
         $course = $this->get_course();
 
         // Prepare renderer for mustache templates.
-        $output = $PAGE->get_renderer('format_minimoodlewall');
+        $output = $PAGE->get_renderer('format_mimo');
 
         // Get current activity profile for displaying correct images.
         $currentprofile = $course->activityprofile ?? 'explore';
 
         // Get all profiles for passing image URLs to template data attributes.
-        $profiles = \format_minimoodlewall\profile_manager::get_all_profiles();
+        $profiles = \format_mimo\profile_manager::get_all_profiles();
 
         // Build tag preview items with profile data attributes.
         $tagpreviews = [];
         foreach ($alltags as $tag) {
             // Get the image URL for the current profile.
-            $imageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $currentprofile);
+            $imageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $currentprofile);
 
             // Collect per-profile image URLs, name overrides, and enabled flags.
             $profileimages = [];
             $profilenames = [];
             $profileenabled = [];
             foreach ($profiles as $profile) {
-                $profileimageurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $profile->name);
+                $profileimageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $profile->name);
                 $profileimages[$profile->name] = $profileimageurl ? $profileimageurl->out(false) : null;
 
-                $pt = \format_minimoodlewall\profile_manager::get_profile_tag_for_profile($tag->id, $profile->id);
+                $pt = \format_mimo\profile_manager::get_profile_tag_for_profile($tag->id, $profile->id);
                 $profilenames[$profile->name] = ($pt && $pt->name !== null) ? $pt->name : $tag->name;
                 $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
             }
@@ -349,9 +349,9 @@ class format_minimoodlewall extends core_courseformat\base {
         }
 
         // Render the complete tag preview section.
-        $previewhtml = $output->render_from_template('format_minimoodlewall/form_tag_preview', [
+        $previewhtml = $output->render_from_template('format_mimo/form_tag_preview', [
             'tags' => $tagpreviews,
-            'label' => get_string('tag_preview_label', 'format_minimoodlewall'),
+            'label' => get_string('tag_preview_label', 'format_mimo'),
         ]);
 
         $elements[] = $mform->addElement(
@@ -362,7 +362,7 @@ class format_minimoodlewall extends core_courseformat\base {
         );
 
         // Initialize JS module for profile-reactive preview.
-        $PAGE->requires->js_call_amd('format_minimoodlewall/profile_image_switcher', 'init');
+        $PAGE->requires->js_call_amd('format_mimo/profile_image_switcher', 'init');
 
         return $elements;
     }
@@ -393,7 +393,7 @@ class format_minimoodlewall extends core_courseformat\base {
         // Clear course tags cache if the activity profile changed.
         $newprofile = $data['activityprofile'] ?? null;
         if ($result && $newprofile !== null && $newprofile !== $oldprofile) {
-            \format_minimoodlewall\tag_manager::clear_course_tags_cache($this->courseid);
+            \format_mimo\tag_manager::clear_course_tags_cache($this->courseid);
         }
 
         return $result;
@@ -445,7 +445,7 @@ class format_minimoodlewall extends core_courseformat\base {
         // In multi-section mode (learner view), add a body class so CSS can hide
         // the page-level section heading on course/section.php pages.
         if ($this->is_multisection_enabled() && !$page->user_is_editing()) {
-            $page->add_body_class('format-mmw-multisection-view');
+            $page->add_body_class('format-mimo-multisection-view');
         }
 
         // For non-editing users (students), replace the secondary navigation bar
@@ -453,12 +453,12 @@ class format_minimoodlewall extends core_courseformat\base {
         // Placed before the home button so it appears to its left.
         $coursecontext = \context_course::instance($this->courseid);
         if (!has_capability('moodle/course:update', $coursecontext)) {
-            $page->add_body_class('format-mmw-compact-secondarynav');
-            $menulabel = get_string('compactnav_menu', 'format_minimoodlewall');
-            $dropdownid = 'mmw-compact-nav-' . $this->courseid;
+            $page->add_body_class('format-mimo-compact-secondarynav');
+            $menulabel = get_string('compactnav_menu', 'format_mimo');
+            $dropdownid = 'mimo-compact-nav-' . $this->courseid;
             $page->add_header_action(
-                '<div class="dropdown mmw-compact-nav">' .
-                '<button class="mmw-compact-nav-btn" type="button"' .
+                '<div class="dropdown mimo-compact-nav">' .
+                '<button class="mimo-compact-nav-btn" type="button"' .
                 ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
                 ' aria-expanded="false" title="' . s($menulabel) . '">' .
                 '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">' .
@@ -467,10 +467,10 @@ class format_minimoodlewall extends core_courseformat\base {
                 '<span class="sr-only">' . s($menulabel) . '</span>' .
                 '</button>' .
                 '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="' . $dropdownid . '"' .
-                ' data-region="mmw-secondarynav-dropdown"></ul>' .
+                ' data-region="mimo-secondarynav-dropdown"></ul>' .
                 '</div>'
             );
-            $page->requires->js_call_amd('format_minimoodlewall/compact_nav', 'init');
+            $page->requires->js_call_amd('format_mimo/compact_nav', 'init');
         }
 
         // In multi-section mode, add a "back to overview" button to the page header
@@ -480,15 +480,15 @@ class format_minimoodlewall extends core_courseformat\base {
             if ($sectionparam !== null) {
                 $course = $this->get_course();
                 $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
-                $btnlabel = get_string('backtooverview', 'format_minimoodlewall');
+                $btnlabel = get_string('backtooverview', 'format_mimo');
                 $page->add_header_action(
                     \html_writer::link(
                         $overviewurl,
-                        '<svg class="mmw-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
+                        '<svg class="mimo-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
                         ' aria-hidden="true" width="22" height="22">' .
                         '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>' .
                         \html_writer::span($btnlabel, 'sr-only'),
-                        ['class' => 'mmw-overview-btn', 'title' => $btnlabel]
+                        ['class' => 'mimo-overview-btn', 'title' => $btnlabel]
                     )
                 );
             }
@@ -527,18 +527,18 @@ class format_minimoodlewall extends core_courseformat\base {
         if ($distractionfree) {
             // Check if user has overridden the default via cookie.
             $dfactive = true;
-            if (isset($_COOKIE['format_minimoodlewall_df'])) {
-                $dfactive = $_COOKIE['format_minimoodlewall_df'] === 'true';
+            if (isset($_COOKIE['format_mimo_df'])) {
+                $dfactive = $_COOKIE['format_mimo_df'] === 'true';
             }
 
             if ($dfactive) {
                 // Add body class for distraction-free mode.
                 // CSS is injected via hook callback in classes/hook_callbacks.php.
-                $page->add_body_class('format-minimoodlewall-distraction-free');
+                $page->add_body_class('format-mimo-distraction-free');
             }
 
             // Initialize JavaScript module for toggle functionality.
-            $page->requires->js_call_amd('format_minimoodlewall/distraction_free', 'init');
+            $page->requires->js_call_amd('format_mimo/distraction_free', 'init');
         }
     }
 
@@ -553,7 +553,7 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     public function get_remembered_section(): ?int {
         $course = $this->get_course();
-        $pref = get_user_preferences('format_minimoodlewall_lastsection_' . $course->id);
+        $pref = get_user_preferences('format_mimo_lastsection_' . $course->id);
         if ($pref === null) {
             return null;
         }
@@ -566,7 +566,7 @@ class format_minimoodlewall extends core_courseformat\base {
             }
         }
         // Stored section no longer exists or is not visible — clear stale preference.
-        unset_user_preference('format_minimoodlewall_lastsection_' . $course->id);
+        unset_user_preference('format_mimo_lastsection_' . $course->id);
         return null;
     }
 
@@ -626,7 +626,7 @@ class format_minimoodlewall extends core_courseformat\base {
      */
     #[\Override]
     public function is_section_visible(\section_info $section): bool {
-        // Section 0 is always hidden in minimoodlewall.
+        // Section 0 is always hidden in mimo.
         if ($section->sectionnum == 0) {
             return false;
         }
@@ -673,7 +673,7 @@ class format_minimoodlewall extends core_courseformat\base {
             $sectionnum = $PAGE->cm->sectionnum;
             if ($sectionnum > 0) {
                 $course = $this->get_course();
-                set_user_preference('format_minimoodlewall_lastsection_' . $course->id, $sectionnum);
+                set_user_preference('format_mimo_lastsection_' . $course->id, $sectionnum);
             }
         }
 
@@ -707,24 +707,24 @@ class format_minimoodlewall extends core_courseformat\base {
         $courseid = $this->get_courseid();
 
         // Delete orphaned cmtag records (course_modules are already removed by this point).
-        $sql = "DELETE FROM {format_minimoodlewall_cmtags}
+        $sql = "DELETE FROM {format_mimo_cmtags}
                  WHERE cmid NOT IN (SELECT id FROM {course_modules})";
         $DB->execute($sql);
 
-        \format_minimoodlewall\tag_manager::clear_mapping_cache();
-        \format_minimoodlewall\tag_manager::clear_course_tags_cache($courseid);
+        \format_mimo\tag_manager::clear_mapping_cache();
+        \format_mimo\tag_manager::clear_course_tags_cache($courseid);
 
         // Clean up remembered-section preferences for all users.
         $DB->delete_records_select(
             'user_preferences',
             'name = :prefname',
-            ['prefname' => 'format_minimoodlewall_lastsection_' . $courseid]
+            ['prefname' => 'format_mimo_lastsection_' . $courseid]
         );
     }
 }
 
 /**
- * Serve files from the minimoodlewall course format.
+ * Serve files from the mimo course format.
  *
  * Supports the tag card/filter image file areas stored in the system context.
  *
@@ -737,7 +737,7 @@ class format_minimoodlewall extends core_courseformat\base {
  * @param array $options Additional options passed to send_stored_file
  * @return void|false
  */
-function format_minimoodlewall_pluginfile(
+function format_mimo_pluginfile(
     $course,
     $cm,
     $context,
@@ -749,7 +749,7 @@ function format_minimoodlewall_pluginfile(
     require_login();
 
     // Section images use course context; tag/profile images use system context.
-    if ($filearea === \format_minimoodlewall\section_image_manager::FILEAREA) {
+    if ($filearea === \format_mimo\section_image_manager::FILEAREA) {
         if ($context->contextlevel !== CONTEXT_COURSE) {
             return false;
         }
@@ -759,11 +759,11 @@ function format_minimoodlewall_pluginfile(
     }
 
     $allowedareas = [
-        \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
-        \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
-        \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
-        \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
-        \format_minimoodlewall\section_image_manager::FILEAREA,
+        \format_mimo\tag_manager::FILEAREA_CARDIMAGE,
+        \format_mimo\tag_manager::FILEAREA_FILTERIMAGE,
+        \format_mimo\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+        \format_mimo\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
+        \format_mimo\section_image_manager::FILEAREA,
     ];
     if (!in_array($filearea, $allowedareas, true)) {
         return false;
@@ -781,7 +781,7 @@ function format_minimoodlewall_pluginfile(
     }
 
     $fs = get_file_storage();
-    $file = $fs->get_file($context->id, 'format_minimoodlewall', $filearea, $itemid, $filepath, $filename);
+    $file = $fs->get_file($context->id, 'format_mimo', $filearea, $itemid, $filepath, $filename);
     if (!$file) {
         return false;
     }
@@ -790,7 +790,7 @@ function format_minimoodlewall_pluginfile(
 }
 
 /**
- * Adds a tag selector to the module edit form for courses using the minimoodlewall format.
+ * Adds a tag selector to the module edit form for courses using the mimo format.
  *
  * This callback is invoked by Moodle core for every module form. It adds a dropdown
  * that lets teachers assign or change the tag on an activity.
@@ -799,44 +799,44 @@ function format_minimoodlewall_pluginfile(
  * @param \MoodleQuickForm $mform The form object
  * @return void
  */
-function format_minimoodlewall_coursemodule_standard_elements($formwrapper, $mform): void {
+function format_mimo_coursemodule_standard_elements($formwrapper, $mform): void {
     global $SESSION;
 
     $course = $formwrapper->get_course();
-    if ($course->format !== 'minimoodlewall') {
+    if ($course->format !== 'mimo') {
         return;
     }
 
-    $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+    $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
     if (empty($tags)) {
         return;
     }
 
     // Build options: 0 = no tag, then each available tag.
-    $options = [0 => get_string('notag', 'format_minimoodlewall')];
+    $options = [0 => get_string('notag', 'format_mimo')];
     foreach ($tags as $tag) {
         $options[$tag->id] = $tag->name;
     }
 
-    $mform->addElement('header', 'mmw_tagsection', get_string('activitytag', 'format_minimoodlewall'));
-    $mform->addElement('select', 'mmw_cmtag', get_string('selecttag', 'format_minimoodlewall'), $options);
-    $mform->addHelpButton('mmw_cmtag', 'selecttaghelp', 'format_minimoodlewall');
+    $mform->addElement('header', 'mimo_tagsection', get_string('activitytag', 'format_mimo'));
+    $mform->addElement('select', 'mimo_cmtag', get_string('selecttag', 'format_mimo'), $options);
+    $mform->addHelpButton('mimo_cmtag', 'selecttaghelp', 'format_mimo');
 
     // Determine default value.
     $defaulttagid = 0;
     $cm = $formwrapper->get_coursemodule();
     if ($cm) {
         // Editing existing module — load current tag assignment.
-        $currenttag = \format_minimoodlewall\tag_manager::get_cm_tag($cm->id);
+        $currenttag = \format_mimo\tag_manager::get_cm_tag($cm->id);
         if ($currenttag) {
             $defaulttagid = $currenttag->id;
         }
-    } else if (!empty($SESSION->format_minimoodlewall_pending_tag)) {
+    } else if (!empty($SESSION->format_mimo_pending_tag)) {
         // Creating new module — pre-select tag from chooser flow.
-        $defaulttagid = (int)$SESSION->format_minimoodlewall_pending_tag;
+        $defaulttagid = (int)$SESSION->format_mimo_pending_tag;
     }
 
-    $mform->setDefault('mmw_cmtag', $defaulttagid);
+    $mform->setDefault('mimo_cmtag', $defaulttagid);
 }
 
 /**
@@ -849,22 +849,22 @@ function format_minimoodlewall_coursemodule_standard_elements($formwrapper, $mfo
  * @param \stdClass $course The course object
  * @return \stdClass The (possibly modified) data object — must be returned for chaining
  */
-function format_minimoodlewall_coursemodule_edit_post_actions($data, $course) {
-    if ($course->format !== 'minimoodlewall') {
+function format_mimo_coursemodule_edit_post_actions($data, $course) {
+    if ($course->format !== 'mimo') {
         return $data;
     }
 
-    if (!isset($data->mmw_cmtag)) {
+    if (!isset($data->mimo_cmtag)) {
         return $data;
     }
 
     $cmid = $data->coursemodule;
-    $tagid = (int)$data->mmw_cmtag;
+    $tagid = (int)$data->mimo_cmtag;
 
     if ($tagid > 0) {
-        \format_minimoodlewall\tag_manager::assign_tag_to_cm($cmid, $tagid);
+        \format_mimo\tag_manager::assign_tag_to_cm($cmid, $tagid);
     } else {
-        \format_minimoodlewall\tag_manager::remove_cm_tag($cmid);
+        \format_mimo\tag_manager::remove_cm_tag($cmid);
     }
 
     return $data;
@@ -873,21 +873,21 @@ function format_minimoodlewall_coursemodule_edit_post_actions($data, $course) {
 /**
  * Implements callback for inplace editable (AJAX section name editing).
  *
- * Called by core when an inplace editable with component 'format_minimoodlewall' is saved.
+ * Called by core when an inplace editable with component 'format_mimo' is saved.
  *
  * @param string $itemtype The type of item being edited (sectionname or sectionnamenl)
  * @param int $itemid The section id
  * @param string $newvalue The new value
  * @return \core\output\inplace_editable
  */
-function format_minimoodlewall_inplace_editable($itemtype, $itemid, $newvalue) {
+function format_mimo_inplace_editable($itemtype, $itemid, $newvalue) {
     global $DB, $CFG;
     require_once($CFG->dirroot . '/course/lib.php');
 
     if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
         $section = $DB->get_record_sql(
             'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
-            [$itemid, 'minimoodlewall'],
+            [$itemid, 'mimo'],
             MUST_EXIST
         );
         return course_get_format($section->course)->inplace_editable_update_section_name(

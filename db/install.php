@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Post-installation script for format_minimoodlewall.
+ * Post-installation script for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,11 +25,11 @@
 /**
  * Post installation procedure.
  */
-function xmldb_format_minimoodlewall_install() {
+function xmldb_format_mimo_install() {
     // Initialize default tags.
-    \format_minimoodlewall\tag_manager::initialize_default_tags();
+    \format_mimo\tag_manager::initialize_default_tags();
     // Initialize default activity profiles (explore, develop, master).
-    \format_minimoodlewall\profile_manager::initialize_default_profiles();
+    \format_mimo\profile_manager::initialize_default_profiles();
     // Initialize default description tags.
-    \format_minimoodlewall\description_tag_manager::initialize_default_description_tags();
+    \format_mimo\description_tag_manager::initialize_default_description_tags();
 }

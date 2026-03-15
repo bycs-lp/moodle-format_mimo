@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/local/content
+    @template format_mimo/local/content
 
     Displays the complete course format as a minimal wall with all activities.
 
@@ -46,7 +46,7 @@ require(['core_courseformat/local/content', 'core_courseformat/courseeditor'], f
 {{< core_courseformat/local/content }}
     {{! Override the section block to use our custom section template. }}
     {{$ core_courseformat/local/content/section }}
-        {{> format_minimoodlewall/local/content/section }}
+        {{> format_mimo/local/content/section }}
     {{/ core_courseformat/local/content/section }}
 {{/ core_courseformat/local/content }}
 

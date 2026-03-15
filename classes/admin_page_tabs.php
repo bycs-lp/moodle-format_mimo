@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -22,9 +22,9 @@ use moodle_url;
 use tabobject;
 
 /**
- * Renders a shared tab navigation bar across all minimoodlewall admin pages.
+ * Renders a shared tab navigation bar across all mimo admin pages.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -41,33 +41,33 @@ class admin_page_tabs {
         $tabs = [
             new tabobject(
                 'tags',
-                new moodle_url('/course/format/minimoodlewall/tag_management.php'),
-                get_string('tagmanagement', 'format_minimoodlewall')
+                new moodle_url('/course/format/mimo/tag_management.php'),
+                get_string('tagmanagement', 'format_mimo')
             ),
             new tabobject(
                 'descriptiontags',
-                new moodle_url('/course/format/minimoodlewall/description_tags.php'),
-                get_string('desctagmanagement', 'format_minimoodlewall')
+                new moodle_url('/course/format/mimo/description_tags.php'),
+                get_string('desctagmanagement', 'format_mimo')
             ),
             new tabobject(
                 'activitydescriptions',
-                new moodle_url('/course/format/minimoodlewall/activity_descriptions.php'),
-                get_string('activitydescriptions', 'format_minimoodlewall')
+                new moodle_url('/course/format/mimo/activity_descriptions.php'),
+                get_string('activitydescriptions', 'format_mimo')
             ),
             new tabobject(
                 'profiles',
-                new moodle_url('/course/format/minimoodlewall/profile_management.php'),
-                get_string('profilemanagement', 'format_minimoodlewall')
+                new moodle_url('/course/format/mimo/profile_management.php'),
+                get_string('profilemanagement', 'format_mimo')
             ),
             new tabobject(
                 'completiondefaults',
-                new moodle_url('/course/format/minimoodlewall/completion_defaults.php'),
-                get_string('completiondefaults', 'format_minimoodlewall')
+                new moodle_url('/course/format/mimo/completion_defaults.php'),
+                get_string('completiondefaults', 'format_mimo')
             ),
             new tabobject(
                 'settings',
-                new moodle_url('/admin/settings.php', ['section' => 'format_minimoodlewall']),
-                get_string('distractionfreemode', 'format_minimoodlewall')
+                new moodle_url('/admin/settings.php', ['section' => 'format_mimo']),
+                get_string('distractionfreemode', 'format_mimo')
             ),
         ];
 

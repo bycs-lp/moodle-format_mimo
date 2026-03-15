@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/local/overview
+    @template format_mimo/local/overview
 
     Multi-section overview landing page showing all sections as clickable cards.
 
@@ -26,69 +26,69 @@
     * isediting - bool - Whether editing mode is active
     * bgdesignclass - string - Background design CSS class
     * styleclass - string - Style variant CSS class
-    * mmwaddsection - object - Add section data (editing mode)
+    * mimoaddsection - object - Add section data (editing mode)
     * bulkedittools - object - Bulk edit tools data (editing mode)
 
     Each overviewsection may contain:
     * hassectionimage - bool - Whether a custom image exists for this section
     * sectionimageurl - string - URL of the uploaded section image
 }}
-<div class="mmw-overview {{styleclass}}">
+<div class="mimo-overview {{styleclass}}">
     <h2 class="accesshide">{{{title}}}</h2>
-    <div class="mmw-bgdesign-wrapper {{bgdesignclass}}">
+    <div class="mimo-bgdesign-wrapper {{bgdesignclass}}">
         {{#hassections}}
-        <div class="mmw-overview-grid" data-region="mmw-overview-grid" data-section0id="{{section0id}}">
+        <div class="mimo-overview-grid" data-region="mimo-overview-grid" data-section0id="{{section0id}}">
             {{#overviewsections}}
             {{#isediting}}
-            <div class="mmw-overview-card mmw-overview-card--editing" data-for="mmw-overview-card" data-id="{{id}}" data-section-num="{{num}}" data-section-id="{{id}}">
-                <div class="mmw-overview-card__body">
-                    <h3 class="mmw-overview-card__name" draggable="false">{{{inplaceeditable}}}</h3>
+            <div class="mimo-overview-card mimo-overview-card--editing" data-for="mimo-overview-card" data-id="{{id}}" data-section-num="{{num}}" data-section-id="{{id}}">
+                <div class="mimo-overview-card__body">
+                    <h3 class="mimo-overview-card__name" draggable="false">{{{inplaceeditable}}}</h3>
                     {{#hassummary}}
-                    <div class="mmw-overview-card__summary">{{{summary}}}</div>
+                    <div class="mimo-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
                 {{#hassectionimage}}
-                <div class="mmw-overview-card__sectionimage-wrap">
-                    <img src="{{sectionimageurl}}" class="mmw-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
+                <div class="mimo-overview-card__sectionimage-wrap">
+                    <img src="{{sectionimageurl}}" class="mimo-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
                 </div>
                 {{/hassectionimage}}
                 {{^hassectionimage}}
                 {{#hasminitiles}}
-                <div class="mmw-overview-card__miniwall">
+                <div class="mimo-overview-card__miniwall">
                     {{#minitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
-                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
                     </span>
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
                 {{^hasminitiles}}
                 {{#hasdefaultminitiles}}
-                <div class="mmw-overview-card__miniwall mmw-overview-card__miniwall--placeholder">
+                <div class="mimo-overview-card__miniwall mimo-overview-card__miniwall--placeholder">
                     {{#defaultminitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
-                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
                     </span>
                     {{/defaultminitiles}}
                 </div>
                 {{/hasdefaultminitiles}}
                 {{/hasminitiles}}
                 {{/hassectionimage}}
-                <div class="mmw-overview-card__footer" draggable="false">
+                <div class="mimo-overview-card__footer" draggable="false">
                     <button type="button" class="btn btn-sm btn-outline-secondary" draggable="false"
                         data-action="section-image"
                         data-courseid="{{courseid}}"
                         data-sectionid="{{id}}"
                         data-sectionname="{{name}}">
                         {{#hassectionimage}}
-                        {{#str}}sectionimage_change, format_minimoodlewall{{/str}}
+                        {{#str}}sectionimage_change, format_mimo{{/str}}
                         {{/hassectionimage}}
                         {{^hassectionimage}}
-                        {{#str}}sectionimage_upload, format_minimoodlewall{{/str}}
+                        {{#str}}sectionimage_upload, format_mimo{{/str}}
                         {{/hassectionimage}}
                     </button>
-                    <a href="{{url}}" class="mmw-overview-card__link btn btn-sm btn-outline-primary" draggable="false">
-                        {{#str}}viewactivity, format_minimoodlewall{{/str}}
+                    <a href="{{url}}" class="mimo-overview-card__link btn btn-sm btn-outline-primary" draggable="false">
+                        {{#str}}viewactivity, format_mimo{{/str}}
                     </a>
                     {{#candeletesection}}
                     <button type="button" class="btn btn-sm btn-outline-danger" draggable="false"
@@ -96,43 +96,43 @@
                         data-section-id="{{id}}"
                         data-section-name="{{name}}"
                         data-activity-count="{{activitycount}}"
-                        title="{{#str}}deletesection, format_minimoodlewall{{/str}}">
+                        title="{{#str}}deletesection, format_mimo{{/str}}">
                         <i class="fa fa-trash" aria-hidden="true"></i>
-                        <span class="sr-only">{{#str}}deletesection, format_minimoodlewall{{/str}}</span>
+                        <span class="sr-only">{{#str}}deletesection, format_mimo{{/str}}</span>
                     </button>
                     {{/candeletesection}}
                 </div>
             </div>
             {{/isediting}}
             {{^isediting}}
-            <a href="{{url}}" class="mmw-overview-card" data-section-num="{{num}}">
-                <div class="mmw-overview-card__body">
-                    <h3 class="mmw-overview-card__name">{{name}}</h3>
+            <a href="{{url}}" class="mimo-overview-card" data-section-num="{{num}}">
+                <div class="mimo-overview-card__body">
+                    <h3 class="mimo-overview-card__name">{{name}}</h3>
                     {{#hassummary}}
-                    <div class="mmw-overview-card__summary">{{{summary}}}</div>
+                    <div class="mimo-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
                 {{#hassectionimage}}
-                <div class="mmw-overview-card__sectionimage-wrap">
-                    <img src="{{sectionimageurl}}" class="mmw-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
+                <div class="mimo-overview-card__sectionimage-wrap">
+                    <img src="{{sectionimageurl}}" class="mimo-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
                 </div>
                 {{/hassectionimage}}
                 {{^hassectionimage}}
                 {{#hasminitiles}}
-                <div class="mmw-overview-card__miniwall">
+                <div class="mimo-overview-card__miniwall">
                     {{#minitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
-                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
                     </span>
                     {{/minitiles}}
                 </div>
                 {{/hasminitiles}}
                 {{^hasminitiles}}
                 {{#hasdefaultminitiles}}
-                <div class="mmw-overview-card__miniwall mmw-overview-card__miniwall--placeholder">
+                <div class="mimo-overview-card__miniwall mimo-overview-card__miniwall--placeholder">
                     {{#defaultminitiles}}
-                    <span class="mmw-overview-card__minitile" style="background: {{color}}">
-                        {{#hasimage}}<img src="{{image}}" class="mmw-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
                     </span>
                     {{/defaultminitiles}}
                 </div>
@@ -140,12 +140,12 @@
                 {{/hasminitiles}}
                 {{/hassectionimage}}
                 {{#hastracking}}
-                <div class="mmw-overview-card__footer">
-                    <span class="mmw-overview-card__progress{{#allcomplete}} mmw-overview-card__progress--complete{{/allcomplete}}">
-                        <span class="mmw-overview-card__progress-bar">
-                            <span class="mmw-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
+                <div class="mimo-overview-card__footer">
+                    <span class="mimo-overview-card__progress{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
+                        <span class="mimo-overview-card__progress-bar">
+                            <span class="mimo-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
-                        <span class="mmw-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
+                        <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
                     </span>
                 </div>
                 {{/hastracking}}
@@ -155,15 +155,15 @@
         </div>
         {{/hassections}}
         {{^hassections}}
-        <div class="mmw-overview-empty">
-            <p>{{#str}}overviewnosections, format_minimoodlewall{{/str}}</p>
+        <div class="mimo-overview-empty">
+            <p>{{#str}}overviewnosections, format_mimo{{/str}}</p>
         </div>
         {{/hassections}}
     </div>
 
-    {{#mmwaddsection}}
+    {{#mimoaddsection}}
         {{> core_courseformat/local/content/addsection}}
-    {{/mmwaddsection}}
+    {{/mimoaddsection}}
 
     {{#bulkedittools}}
         {{> core_courseformat/local/content/bulkedittools}}
@@ -172,7 +172,7 @@
 
 {{#isediting}}
 {{#js}}
-require(['format_minimoodlewall/section_image_modal'], function(mod) { mod.init(); });
-require(['format_minimoodlewall/section_overview_actions'], function(mod) { mod.init(); });
+require(['format_mimo/section_image_modal'], function(mod) { mod.init(); });
+require(['format_mimo/section_overview_actions'], function(mod) { mod.init(); });
 {{/js}}
 {{/isediting}}

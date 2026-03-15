@@ -17,12 +17,12 @@
 /**
  * Contains the activity name with inplace editable support for minimal wall format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content;
+namespace format_mimo\output\courseformat\content;
 
 use core_courseformat\output\local\content\cm\cmname as cmname_base;
 use renderer_base;
@@ -30,7 +30,7 @@ use renderer_base;
 /**
  * Class to render a course module name with inplace editing in minimal wall format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

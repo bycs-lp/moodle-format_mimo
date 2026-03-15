@@ -17,20 +17,20 @@
 /**
  * Contains the course module item output class.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content\section;
+namespace format_mimo\output\courseformat\content\section;
 
 use core_courseformat\output\local\content\section\cmitem as cmitem_base;
-use format_minimoodlewall\tag_manager;
+use format_mimo\tag_manager;
 
 /**
  * Base class to render a course module item.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -42,7 +42,7 @@ class cmitem extends cmitem_base {
      * @return string
      */
     public function get_template_name(\renderer_base $renderer): string {
-        return 'format_minimoodlewall/local/content/section/cmitem';
+        return 'format_mimo/local/content/section/cmitem';
     }
 
     /**

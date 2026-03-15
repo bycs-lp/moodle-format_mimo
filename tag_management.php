@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Tag management interface for minimoodlewall course format.
+ * Tag management interface for mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,10 +25,10 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use format_minimoodlewall\tag_manager;
-use format_minimoodlewall\profile_manager;
+use format_mimo\tag_manager;
+use format_mimo\profile_manager;
 
-admin_externalpage_setup('format_minimoodlewall_tags');
+admin_externalpage_setup('format_mimo_tags');
 
 $action = optional_param('action', '', PARAM_ALPHA);
 $tagid = optional_param('tagid', 0, PARAM_INT);
@@ -41,9 +41,9 @@ $urlparams = [];
 if ($profilename !== '') {
     $urlparams['profile'] = $profilename;
 }
-$PAGE->set_url('/course/format/minimoodlewall/tag_management.php', $urlparams);
-$PAGE->set_title(get_string('tagmanagement', 'format_minimoodlewall'));
-$PAGE->set_heading(get_string('tagmanagement', 'format_minimoodlewall'));
+$PAGE->set_url('/course/format/mimo/tag_management.php', $urlparams);
+$PAGE->set_title(get_string('tagmanagement', 'format_mimo'));
+$PAGE->set_heading(get_string('tagmanagement', 'format_mimo'));
 
 // Handle delete tag.
 if ($action === 'deletetag' && confirm_sesskey()) {
@@ -51,7 +51,7 @@ if ($action === 'deletetag' && confirm_sesskey()) {
         tag_manager::delete_tag($tagid);
         redirect(
             $PAGE->url,
-            get_string('deletetag', 'format_minimoodlewall'),
+            get_string('deletetag', 'format_mimo'),
             null,
             \core\output\notification::NOTIFY_SUCCESS
         );
@@ -64,7 +64,7 @@ if ($action === 'promotetag' && confirm_sesskey()) {
         tag_manager::promote_tag_to_global($tagid);
         redirect(
             $PAGE->url,
-            get_string('promotetoglobal_success', 'format_minimoodlewall'),
+            get_string('promotetoglobal_success', 'format_mimo'),
             null,
             \core\output\notification::NOTIFY_SUCCESS
         );
@@ -78,7 +78,7 @@ if ($action === 'promoteprofile' && confirm_sesskey()) {
         profile_manager::promote_profile_to_global($promoteid);
         redirect(
             $PAGE->url,
-            get_string('promotetoglobal_success', 'format_minimoodlewall'),
+            get_string('promotetoglobal_success', 'format_mimo'),
             null,
             \core\output\notification::NOTIFY_SUCCESS
         );
@@ -86,11 +86,11 @@ if ($action === 'promoteprofile' && confirm_sesskey()) {
 }
 
 echo $OUTPUT->header();
-echo \format_minimoodlewall\admin_page_tabs::render('tags');
-echo $OUTPUT->heading(get_string('tagmanagement', 'format_minimoodlewall'));
+echo \format_mimo\admin_page_tabs::render('tags');
+echo $OUTPUT->heading(get_string('tagmanagement', 'format_mimo'));
 
 // Initialize delete confirmation modal.
-$PAGE->requires->js_call_amd('format_minimoodlewall/tag_delete_confirm', 'init');
+$PAGE->requires->js_call_amd('format_mimo/tag_delete_confirm', 'init');
 
 // Build template context with flat tag list.
 $tags = tag_manager::get_all_tags();
@@ -109,7 +109,7 @@ if ($profilename !== '') {
 $profilebuttons = [];
 $profilebuttons[] = [
     'name' => '',
-    'displayname' => get_string('basetagfields', 'format_minimoodlewall'),
+    'displayname' => get_string('basetagfields', 'format_mimo'),
     'active' => ($profilename === ''),
 ];
 foreach ($allprofiles as $profile) {
@@ -193,42 +193,42 @@ foreach ($tags as $tag) {
             'tagid' => $tag->id,
             'sesskey' => sesskey(),
         ]))->out(false),
-        'edittitle' => get_string('edittag', 'format_minimoodlewall'),
-        'deletetitle' => get_string('deletetag', 'format_minimoodlewall'),
+        'edittitle' => get_string('edittag', 'format_mimo'),
+        'deletetitle' => get_string('deletetag', 'format_mimo'),
     ];
 }
 
 $templatecontext = [
-    'createtagtext' => get_string('createtag', 'format_minimoodlewall'),
+    'createtagtext' => get_string('createtag', 'format_mimo'),
     'activeprofileid' => $activeprofileid,
-    'notagstext' => get_string('notags', 'format_minimoodlewall'),
+    'notagstext' => get_string('notags', 'format_mimo'),
     'hastags' => !empty($tags),
     'tableheaders' => [
-        'cardimage' => get_string('cardimage', 'format_minimoodlewall'),
-        'name' => get_string('tagname', 'format_minimoodlewall'),
-        'bgcolor' => get_string('tagbgcolor', 'format_minimoodlewall'),
-        'activitytype1' => get_string('activitytype1', 'format_minimoodlewall'),
-        'activitytype2' => get_string('activitytype2', 'format_minimoodlewall'),
-        'activitytype3' => get_string('activitytype3', 'format_minimoodlewall'),
+        'cardimage' => get_string('cardimage', 'format_mimo'),
+        'name' => get_string('tagname', 'format_mimo'),
+        'bgcolor' => get_string('tagbgcolor', 'format_mimo'),
+        'activitytype1' => get_string('activitytype1', 'format_mimo'),
+        'activitytype2' => get_string('activitytype2', 'format_mimo'),
+        'activitytype3' => get_string('activitytype3', 'format_mimo'),
         'actions' => get_string('actions'),
     ],
     'profilebuttons' => $profilebuttons,
     'tags' => $templatetags,
-    'disabledtext' => get_string('profiletag_disabled', 'format_minimoodlewall'),
-    'importedtext' => get_string('tag_imported', 'format_minimoodlewall'),
-    'promotetoglobaltext' => get_string('promotetoglobal', 'format_minimoodlewall'),
+    'disabledtext' => get_string('profiletag_disabled', 'format_mimo'),
+    'importedtext' => get_string('tag_imported', 'format_mimo'),
+    'promotetoglobaltext' => get_string('promotetoglobal', 'format_mimo'),
     'tagprofiledatajson' => json_encode($tagprofiledata),
     'profileidmapjson' => json_encode($profileidmap),
     'currentprofile' => $profilename,
-    'managementurl' => (new moodle_url('/course/format/minimoodlewall/tag_management.php'))->out(false),
+    'managementurl' => (new moodle_url('/course/format/mimo/tag_management.php'))->out(false),
 ];
 
 // Initialize profile switcher JS (data is passed via data attributes in template).
-$PAGE->requires->js_call_amd('format_minimoodlewall/tag_profile_switcher', 'init');
+$PAGE->requires->js_call_amd('format_mimo/tag_profile_switcher', 'init');
 
 // Initialize modal form JS for create/edit tag.
-$PAGE->requires->js_call_amd('format_minimoodlewall/tag_management_modal', 'init');
+$PAGE->requires->js_call_amd('format_mimo/tag_management_modal', 'init');
 
-echo $OUTPUT->render_from_template('format_minimoodlewall/tag_management', $templatecontext);
+echo $OUTPUT->render_from_template('format_mimo/tag_management', $templatecontext);
 
 echo $OUTPUT->footer();

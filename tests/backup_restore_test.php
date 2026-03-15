@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -25,9 +25,9 @@ require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 
 /**
- * Backup/restore coverage for format_minimoodlewall tag data.
+ * Backup/restore coverage for format_mimo tag data.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @coversNothing
@@ -50,22 +50,22 @@ final class backup_restore_test extends \advanced_testcase {
 
         // Create course.
         $course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
 
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
-        $backupid = 'mmw_backup_' . random_string(6);
+        $backupid = 'mimo_backup_' . random_string(6);
         $this->backup_course_to_tempdir((int)$course->id, $backupid);
-        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored minimoodlewall');
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored mimo');
 
         $tag = $DB->get_record_sql(
             "SELECT t.name
-               FROM {format_minimoodlewall_cmtags} cmt
+               FROM {format_mimo_cmtags} cmt
                JOIN {course_modules} cm ON cm.id = cmt.cmid
                JOIN {modules} m ON m.id = cm.module
-               JOIN {format_minimoodlewall_tags} t ON t.id = cmt.tagid
+               JOIN {format_mimo_tags} t ON t.id = cmt.tagid
               WHERE cm.course = :courseid AND m.name = :modname",
             ['courseid' => $restoredcourseid, 'modname' => 'page']
         );
@@ -96,21 +96,21 @@ final class backup_restore_test extends \advanced_testcase {
         );
 
         $course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
         ]);
         $quiz = $generator->create_module('quiz', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($quiz->cmid, $tagid);
 
-        $backupid = 'mmw_fields_' . random_string(6);
+        $backupid = 'mimo_fields_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored fields test');
 
         // Retrieve the tag that was restored and mapped to the new course.
         $tag = $DB->get_record_sql(
             "SELECT t.*
-               FROM {format_minimoodlewall_cmtags} cmt
+               FROM {format_mimo_cmtags} cmt
                JOIN {course_modules} cm ON cm.id = cmt.cmid
-               JOIN {format_minimoodlewall_tags} t ON t.id = cmt.tagid
+               JOIN {format_mimo_tags} t ON t.id = cmt.tagid
               WHERE cm.course = :courseid",
             ['courseid' => $restoredcourseid]
         );
@@ -145,13 +145,13 @@ final class backup_restore_test extends \advanced_testcase {
 
         // Create the course and assign the tag.
         $course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_profile_' . random_string(6);
+        $backupid = 'mimo_profile_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile test');
 
@@ -163,9 +163,9 @@ final class backup_restore_test extends \advanced_testcase {
         // Verify the profile_tag record was restored.
         $restoredtag = $DB->get_record_sql(
             "SELECT t.*
-               FROM {format_minimoodlewall_cmtags} cmt
+               FROM {format_mimo_cmtags} cmt
                JOIN {course_modules} cm ON cm.id = cmt.cmid
-               JOIN {format_minimoodlewall_tags} t ON t.id = cmt.tagid
+               JOIN {format_mimo_tags} t ON t.id = cmt.tagid
               WHERE cm.course = :courseid",
             ['courseid' => $restoredcourseid]
         );
@@ -189,21 +189,21 @@ final class backup_restore_test extends \advanced_testcase {
 
         // Create a course with a specific activity profile.
         $course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'activityprofile' => 'explore',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
-        $backupid = 'mmw_profopt_' . random_string(6);
+        $backupid = 'mimo_profopt_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile option test');
 
         // The activityprofile should be restored.
         $restoredprofile = $DB->get_field('course_format_options', 'value', [
             'courseid' => $restoredcourseid,
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'name' => 'activityprofile',
         ]);
         $this->assertEquals('explore', $restoredprofile);

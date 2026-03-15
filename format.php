@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Minimal Moodle Wall course format - display a single section with all activities.
+ * mimo wall course format - display a single section with all activities.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -37,19 +37,19 @@ if ($ismultisection) {
     // Ensure section 0 (required by Moodle core) and section 1 (first wall) exist.
     course_create_sections_if_missing($course, [0, 1]);
 
-    $renderer = $PAGE->get_renderer('format_minimoodlewall');
+    $renderer = $PAGE->get_renderer('format_mimo');
 
     if ($displaysection !== null) {
         // A specific section was requested — show that wall.
         $format->set_sectionnum($displaysection);
         // Remember this wall so the user returns here on their next plain course visit.
-        set_user_preference('format_minimoodlewall_lastsection_' . $course->id, $displaysection);
+        set_user_preference('format_mimo_lastsection_' . $course->id, $displaysection);
     } else {
         // No section param — check if user explicitly requested the overview.
         $showoverview = optional_param('overview', 0, PARAM_INT);
         if ($showoverview) {
             // Clear stored preference so future plain visits also show the overview.
-            unset_user_preference('format_minimoodlewall_lastsection_' . $course->id);
+            unset_user_preference('format_mimo_lastsection_' . $course->id);
         }
         // If the user had a remembered section, the redirect already happened
         // in page_set_course() (before output started). If we're still here,
@@ -62,7 +62,7 @@ if ($ismultisection) {
     // Ensure section 0 (required by Moodle core) and section 1 (the wall) exist.
     course_create_sections_if_missing($course, [0, 1]);
 
-    $renderer = $PAGE->get_renderer('format_minimoodlewall');
+    $renderer = $PAGE->get_renderer('format_mimo');
 
     // Always display section 1 (the sole wall in this format; section 0 is hidden).
     $format->set_sectionnum(1);

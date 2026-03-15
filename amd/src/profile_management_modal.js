@@ -16,7 +16,7 @@
 /**
  * Profile management modal forms (create/edit) using ModalForm.
  *
- * @module     format_minimoodlewall/profile_management_modal
+ * @module     format_mimo/profile_management_modal
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -59,14 +59,14 @@ const handleClick = (event) => {
  */
 const showProfileForm = (profileId, returnFocusElement) => {
     const modalForm = new ModalForm({
-        formClass: 'format_minimoodlewall\\form\\profile_form',
+        formClass: 'format_mimo\\form\\profile_form',
         args: {
             profileid: profileId,
         },
         modalConfig: {
             title: profileId
-                ? M.util.get_string('editprofile', 'format_minimoodlewall')
-                : M.util.get_string('createprofile', 'format_minimoodlewall'),
+                ? M.util.get_string('editprofile', 'format_mimo')
+                : M.util.get_string('createprofile', 'format_mimo'),
         },
         returnFocus: returnFocusElement,
     });

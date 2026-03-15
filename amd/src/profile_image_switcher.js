@@ -19,16 +19,16 @@
  * Updates tag preview images and visibility when the activity profile dropdown is changed.
  * Image URLs are read from data-profileimages attributes on each tag preview item.
  *
- * @module     format_minimoodlewall/profile_image_switcher
+ * @module     format_mimo/profile_image_switcher
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 const SELECTORS = {
     PROFILE_SELECT: '#id_activityprofile',
-    TAG_ITEM: '.mmw-tag-preview-item[data-profileimages]',
+    TAG_ITEM: '.mimo-tag-preview-item[data-profileimages]',
     TAG_IMAGE: '[data-tagimage]',
-    TAG_NAME: '.mmw-tag-name',
+    TAG_NAME: '.mimo-tag-name',
 };
 
 /**
@@ -127,7 +127,7 @@ const updateTagImages = (profileName) => {
             if (newImageUrl) {
                 const img = document.createElement('img');
                 img.src = newImageUrl;
-                img.className = 'mmw-tag-preview-img me-2';
+                img.className = 'mimo-tag-preview-img me-2';
                 img.dataset.tagimage = tagId;
                 img.alt = '';
                 img.setAttribute('aria-hidden', 'true');

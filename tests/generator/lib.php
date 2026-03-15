@@ -15,13 +15,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Data generator for format_minimoodlewall.
+ * Data generator for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_minimoodlewall_generator extends component_generator_base {
+class format_mimo_generator extends component_generator_base {
     /**
      * @var int Counter for tag creation
      */
@@ -44,7 +44,7 @@ class format_minimoodlewall_generator extends component_generator_base {
         }
 
         // Check if a tag with this name already exists and update it instead of creating a duplicate.
-        $existing = $DB->get_record('format_minimoodlewall_tags', ['name' => $record->name]);
+        $existing = $DB->get_record('format_mimo_tags', ['name' => $record->name]);
         if ($existing) {
             // Update existing tag with new values.
             $record->id = $existing->id;
@@ -57,7 +57,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->activitytype3 = $record->activitytype3 ?? $existing->activitytype3 ?? null;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
 
-            $DB->update_record('format_minimoodlewall_tags', $record);
+            $DB->update_record('format_mimo_tags', $record);
         } else {
             // Create new tag.
             if (!isset($record->activitytype1)) {
@@ -76,7 +76,7 @@ class format_minimoodlewall_generator extends component_generator_base {
                 $record->timemodified = time();
             }
 
-            $record->id = $DB->insert_record('format_minimoodlewall_tags', $record);
+            $record->id = $DB->insert_record('format_mimo_tags', $record);
         }
 
         return $record;
@@ -105,18 +105,18 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         // Check if tag is already assigned to this cm.
         $existing = $DB->get_record(
-            'format_minimoodlewall_cmtags',
+            'format_mimo_cmtags',
             ['cmid' => $record->cmid]
         );
         if ($existing) {
             // Update existing assignment.
             $existing->tagid = $record->tagid;
             $existing->timemodified = time();
-            $DB->update_record('format_minimoodlewall_cmtags', $existing);
+            $DB->update_record('format_mimo_cmtags', $existing);
             return $existing;
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_cmtags', $record);
+        $record->id = $DB->insert_record('format_mimo_cmtags', $record);
 
         return $record;
     }
@@ -145,7 +145,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->timemodified = time();
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_desc_tags', $record);
+        $record->id = $DB->insert_record('format_mimo_desc_tags', $record);
 
         return $record;
     }
@@ -176,7 +176,7 @@ class format_minimoodlewall_generator extends component_generator_base {
 
         // Check if description already exists for this activity type.
         $existing = $DB->get_record(
-            'format_minimoodlewall_actdesc',
+            'format_mimo_actdesc',
             ['activitytype' => $record->activitytype]
         );
         if ($existing) {
@@ -184,11 +184,11 @@ class format_minimoodlewall_generator extends component_generator_base {
             $existing->description = $record->description;
             $existing->desctagid = $record->desctagid ?? null;
             $existing->timemodified = time();
-            $DB->update_record('format_minimoodlewall_actdesc', $existing);
+            $DB->update_record('format_mimo_actdesc', $existing);
             return $existing;
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_actdesc', $record);
+        $record->id = $DB->insert_record('format_mimo_actdesc', $record);
 
         return $record;
     }
@@ -215,7 +215,7 @@ class format_minimoodlewall_generator extends component_generator_base {
         }
 
         // Check if a profile with this name already exists.
-        $existing = $DB->get_record('format_minimoodlewall_profiles', ['name' => $record->name]);
+        $existing = $DB->get_record('format_mimo_profiles', ['name' => $record->name]);
         if ($existing) {
             // Update existing profile with new values.
             $record->id = $existing->id;
@@ -224,7 +224,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->displayname = $record->displayname ?? $existing->displayname;
             $record->sortorder = $record->sortorder ?? $existing->sortorder;
 
-            $DB->update_record('format_minimoodlewall_profiles', $record);
+            $DB->update_record('format_mimo_profiles', $record);
             return $record;
         }
 
@@ -242,7 +242,7 @@ class format_minimoodlewall_generator extends component_generator_base {
             $record->timemodified = time();
         }
 
-        $record->id = $DB->insert_record('format_minimoodlewall_profiles', $record);
+        $record->id = $DB->insert_record('format_mimo_profiles', $record);
 
         return $record;
     }

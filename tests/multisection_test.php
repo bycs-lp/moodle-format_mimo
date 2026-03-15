@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Unit tests for multi-section mode in the minimoodlewall course format.
+ * Unit tests for multi-section mode in the mimo course format.
  *
  * Tests cover:
  * - Creating activities in different sections and verifying they appear in the correct section.
  * - Format behaviour with multi-section enabled vs disabled.
  * - Section visibility, URL generation, course index support, and navigation.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
@@ -37,20 +37,20 @@ use core_courseformat\base as course_format;
 /**
  * Multi-section mode test case.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall
+ * @covers     \format_mimo
  */
 final class multisection_test extends \advanced_testcase {
     /** @var \stdClass Course with multi-section enabled */
     private \stdClass $course;
 
-    /** @var \format_minimoodlewall Format instance */
-    private \format_minimoodlewall $format;
+    /** @var \format_mimo Format instance */
+    private \format_mimo $format;
 
     /**
-     * Set up a minimoodlewall course with multi-section mode and two sections.
+     * Set up a mimo course with multi-section mode and two sections.
      */
     protected function setUp(): void {
         parent::setUp();
@@ -59,7 +59,7 @@ final class multisection_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $this->course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'numsections' => 2,
         ]);
 
@@ -90,7 +90,7 @@ final class multisection_test extends \advanced_testcase {
      * Test that multi-section is off by default when creating a new course.
      */
     public function test_multisection_disabled_by_default(): void {
-        $course = $this->getDataGenerator()->create_course(['format' => 'minimoodlewall']);
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $format = course_get_format($course);
         $this->assertFalse($format->is_multisection_enabled());
     }
@@ -214,7 +214,7 @@ final class multisection_test extends \advanced_testcase {
 
     /**
      * Test that all sections except section 0 are visible when multi-section is enabled.
-     * Section 0 is always hidden in minimoodlewall.
+     * Section 0 is always hidden in mimo.
      */
     public function test_all_sections_visible_in_multisection(): void {
         $modinfo = get_fast_modinfo($this->course);
@@ -238,7 +238,7 @@ final class multisection_test extends \advanced_testcase {
 
     /**
      * Test that only section 1 is visible when multi-section is disabled.
-     * Section 0 is always hidden in minimoodlewall.
+     * Section 0 is always hidden in mimo.
      */
     public function test_only_section1_visible_in_singlesection(): void {
         $this->disable_multisection($this->course);
@@ -391,7 +391,7 @@ final class multisection_test extends \advanced_testcase {
         $sectioninfo = $modinfo->get_section_info(1);
         $widget = new $outputclass($format, $sectioninfo);
 
-        $renderer = $PAGE->get_renderer('format_minimoodlewall');
+        $renderer = $PAGE->get_renderer('format_mimo');
         // Rendering may emit debugging notices (e.g. deprecated properties).
         $data = @$widget->export_for_template($renderer);
         $this->resetDebugging();
@@ -430,7 +430,7 @@ final class multisection_test extends \advanced_testcase {
         $CFG->enablecompletion = 1;
         $generator = $this->getDataGenerator();
         $course = $generator->create_course([
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'numsections' => 2,
             'enablecompletion' => 1,
         ]);

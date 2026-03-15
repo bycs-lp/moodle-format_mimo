@@ -1,6 +1,6 @@
-# format_minimoodlewall · AI README
+# format_mimo · AI README
 
-> Working note for autonomous agents extending the Minimal Moodle Wall course format.
+> Working note for autonomous agents extending the mimo wall course format.
 
 ## TL;DR
 - **Goal**: Replace Moodle's section-per-week layout with a single responsive "wall" of activity cards. Optionally supports multi-section mode where each section has its own wall.
@@ -21,17 +21,17 @@
     - `uses_course_index()` — returns `true` in multi-section mode, `false` otherwise.
     - `get_view_url()` — single-section: plain course URL; multi-section: section-specific URL via `/course/view.php` for navigation.
     - `extend_course_navigation()` — single-section: hides section breadcrumbs; multi-section: shows section breadcrumbs + expands selected section in navigation + stores section preference when viewing an activity page (deep link support).
-    - `get_remembered_section()` — reads `format_minimoodlewall_lastsection_{courseid}` user preference, validates section exists and is visible (section 0 always fails), clears stale preferences. Returns section number or null.
-  - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'explore'`), `enablefiltering`, `backgrounddesign` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `primary-school`, `darkmode`, `whiteboard`, `pinnwand`, `paper` — apply full-theme overrides to the board, cards, filter bar, navigation, and completion via a `.mmw-bgdesign-wrapper.mmw-bgdesign-{value}` wrapper and `.mmw-bgdesign-{value}` on the `<ul>` board), `enablecompletionstars`, `distractionfree`.
+    - `get_remembered_section()` — reads `format_mimo_lastsection_{courseid}` user preference, validates section exists and is visible (section 0 always fails), clears stale preferences. Returns section number or null.
+  - Adds course options: `enablemultisection` (PARAM_BOOL, default `0`), `activityprofile` (PARAM_ALPHANUMEXT, selects which profile to use; default `'explore'`), `enablefiltering`, `backgrounddesign` (PARAM_ALPHANUMEXT, default `'default'`; "default" falls back to the style's background, other values — `primary-school`, `darkmode`, `whiteboard`, `pinnwand`, `paper` — apply full-theme overrides to the board, cards, filter bar, navigation, and completion via a `.mimo-bgdesign-wrapper.mimo-bgdesign-{value}` wrapper and `.mimo-bgdesign-{value}` on the `<ul>` board), `enablecompletionstars`, `distractionfree`.
   - Course settings form shows a read-only tag preview below the activity profile dropdown, rendered via `form_tag_preview.mustache`. Tags update dynamically when the profile is changed (via `profile_image_switcher.js`).
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
-    - `format_minimoodlewall_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for minimoodlewall courses). Pre-selects current tag on edit, or pending session tag on create.
-    - `format_minimoodlewall_coursemodule_edit_post_actions()` — persists the tag selection via `tag_manager::assign_tag_to_cm()` (upsert) or `remove_cm_tag()` on save. Returns `$data` for callback chaining.
+    - `format_mimo_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for mimo courses). Pre-selects current tag on edit, or pending session tag on create.
+    - `format_mimo_coursemodule_edit_post_actions()` — persists the tag selection via `tag_manager::assign_tag_to_cm()` (upsert) or `remove_cm_tag()` on save. Returns `$data` for callback chaining.
 - **Tag domain model** (`db/install.xml` + `classes/tag_manager.php`)
   - Table: `*_tags` (name, bgcolor hex, imgplacement center|lower, cardimage, filterimage, activitytype1-3, sortorder, **scope** CHAR(10) DEFAULT 'global' — values: 'global' or 'imported').
   - Table: `*_cmtags` (one tag per `cm`, unique cmid).
   - Table: `*_course_tags` (courseid, tagid, timecreated; unique index on courseid+tagid). Tracks which imported tags are available in which courses.
-  - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_minimoodlewall_pluginfile()`.
+  - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_mimo_pluginfile()`.
   - Key methods: `create_tag($name, ..., $scope = 'global')`, `get_all_tags()`, `get_tags_for_course($courseid)` (returns profile-filtered tags including imported tags bound to the course), `assign_tag_to_cm($cmid, $tagid)`, `get_cm_tag($cmid)`.
   - **Imported tag methods**: `bind_tag_to_course($tagid, $courseid)`, `unbind_tag_from_course($tagid, $courseid)`, `unbind_all_tags_from_course($courseid)`, `promote_tag_to_global($tagid)` (sets scope='global', deletes all bindings), `get_imported_tags_for_course($courseid)`, `cleanup_orphaned_imported_tags()` (deletes imported tags with zero bindings and zero cmtags), `find_tag_by_fingerprint($data, $excludeids)` (NULL-safe composite match on name+bgcolor+activitytype1-3).
   - `get_tags_for_course()` reads the course's `activityprofile` option, fetches imported tags bound to the course via `get_imported_tags_for_course()`, merges them with global tags, then resolves through `profile_manager::resolve_tags_for_profile()`.
@@ -60,17 +60,17 @@
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Event observers** (`classes/observer.php` + `db/events.php`)
-  - `course_module_created`: Auto-assign pending tag from session (guided creation flow) + apply minimoodlewall completion default overrides (see below).
+  - `course_module_created`: Auto-assign pending tag from session (guided creation flow) + apply mimo completion default overrides (see below).
   - `course_module_deleted`: Delete cmtag record for the deleted module + clear cache.
   - `course_section_deleted`: Delete section overview card image for the deleted section.
   - `course_deleted`: Delete all orphaned cmtag records + delete all section images for the course + **delete course_tags bindings + cleanup orphaned imported tags + cleanup orphaned imported profiles** + clear caches.
 - **Completion defaults override** (`classes/completion_defaults_manager.php` + `completion_defaults.php`)
   - Table: `*_compdefs` (module unique; completion, completionview, completionusegrade, completionpassgrade, completionexpected, customrules JSON).
-  - When a module is created in a minimoodlewall course and its completion matches Moodle's core defaults (meaning the teacher did not customize), the observer silently replaces completion with the minimoodlewall override.
+  - When a module is created in a mimo course and its completion matches Moodle's core defaults (meaning the teacher did not customize), the observer silently replaces completion with the mimo override.
   - Comparison logic: checks core fields (completion, completionview, completionpassgrade, completiongradeitemnumber↔completionusegrade) and custom rules on the module instance table.
   - Override applies to both `course_modules` (core fields) and the module instance table (custom rules from JSON blob).
   - Admin page (`completion_defaults.php`): lists all module types, allows editing per-type completion defaults using core's `defaultedit_form`.
-  - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mmwdefaults, $modname)`, `pack_form_data($formdata, $suffix)`.
+  - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mimodefaults, $modname)`, `pack_form_data($formdata, $suffix)`.
 - **Admin UX** (`settings.php`, `tag_management.php`, `classes/form/*`)
   - Tag management: Accordion-based UI with tagsets as expandable sections, tags as forms within. `data-tagset-name` attribute for Behat targeting.
   - **Imported badges**: Tags with `scope='imported'` show a blue "Imported" badge (`bg-info`) in the tag name column. Imported profiles show a blue "Imported" badge next to the profile button. Both have a "Make global" promote button (uses `i/publish` pix icon) that calls `promote_tag_to_global()` / `promote_profile_to_global()`.
@@ -86,11 +86,11 @@
   - Clear via `tag_manager::clear_course_tags_cache($courseid)` or `activity_description_manager::clear_cache()` whenever data changes.
 
 ## Backup & Restore Architecture
-- **Backup** (`backup/moodle2/backup_format_minimoodlewall_plugin.class.php`)
+- **Backup** (`backup/moodle2/backup_format_mimo_plugin.class.php`)
   - Course-level: Backs up tags (all fields incl. bgcolor, imgplacement, activitytype3, **scope**), profiles (**incl. scope**), profile_tags. File annotations for all image file areas. Also backs up section images (keyed by section ID in course context).
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
-  - XML tree: `pluginwrapper → mmw_tags → mmw_tag` + `pluginwrapper → mmw_section_images → mmw_section_image`.
-- **Restore** (`backup/moodle2/restore_format_minimoodlewall_plugin.class.php`)
+  - XML tree: `pluginwrapper → mimo_tags → mimo_tag` + `pluginwrapper → mimo_section_images → mimo_section_image`.
+- **Restore** (`backup/moodle2/restore_format_mimo_plugin.class.php`)
   - **Smart matching algorithm** (three-tier, processed per backup tag in sortorder):
     1. **Fingerprint match**: composite comparison of `name + bgcolor + activitytype1 + activitytype2 + activitytype3` (NULL-safe) against all unmatched existing tags. Reuses existing tag; no override needed.
     2. **Positional match**: takes the next unmatched existing tag (by sortorder). Reuses existing tag; full profile override needed.
@@ -106,13 +106,13 @@
       - Sets course's `activityprofile` format option to the new profile's name.
     - **Cleanup benefit**: deleting an imported profile = delete its profile_tags. All overrides gone in one step.
   - **Profile_tag from backup**: applied only for fingerprint-matched tags (safe — same conceptual tag). Skipped for positional/new matches to avoid contaminating target profiles.
-  - ID mapping: Sets `format_minimoodlewall_tag` mappings.
+  - ID mapping: Sets `format_mimo_tag` mappings.
   - `after_execute_course()`: Restores file areas including section images (uses core `course_section` mapping for ID remapping).
   - `after_restore_course()`: Clears all caches.
 
 ## Workflows & Entry Points
 1. **Course creation**
-   - User selects Minimal Moodle Wall format.
+   - User selects mimo wall format.
    - Selects an activity profile (determines which tags are active and how they appear).
    - A read-only tag preview shows the active tags for the selected profile.
    - Only section 0 (hidden, required by core) and section 1 (the wall) are created by default (single-section mode). If `enablemultisection` is ON, teachers can add more sections.
@@ -130,22 +130,22 @@
     - **Description tag pill** (if assigned): appears on top-right, slightly overlapping edge, with custom background color from database
   - This workflow ensures mandatory tagging and guides teachers toward recommended activity combinations.
   - **Version Support:** The plugin supports both Moodle 5.0 and earlier, and 5.1+ with automatic version detection:
-    - **Moodle 5.1+**: Uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class that extends the new `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
+    - **Moodle 5.1+**: Uses `format_mimo\output\courseformat\content\activitychooserbutton` class that extends the new `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
     - **Moodle 5.0 and earlier**: Falls back to template overrides in `cm.php` export method with backward compatibility checks.
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
 4. **Learner view**
    - **Single-section mode**: Wall shows all activities from section 1 in a responsive grid.
    - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. In editing mode: teachers can upload/change section images, delete sections (confirmation modal with activity count warning), and reorder sections via drag-and-drop (whole card is drag surface, interactive elements take priority via `draggable="false"`). Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
-   - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_minimoodlewall_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
-   - **Sticky wall behavior**: User preference `format_minimoodlewall_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
+   - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_mimo_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
+   - **Sticky wall behavior**: User preference `format_mimo_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
 5. **Course index drawer**
    - Disabled in single-section mode (`uses_course_index()` returns `false`).
    - Enabled in multi-section mode — shows all sections for navigation.
 6. **Compact secondary navigation** (students only)
    - Users without `moodle/course:update` capability see a compact three-dot (kebab) dropdown in the header actions area instead of the full secondary navigation bar.
-   - Body class `format-mmw-compact-secondarynav` hides `.secondary-navigation` via CSS. The nav is still rendered in the DOM so items are available.
-   - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mmw-secondarynav-dropdown"]`). If no items are found, the dropdown button is removed entirely.
+   - Body class `format-mimo-compact-secondarynav` hides `.secondary-navigation` via CSS. The nav is still rendered in the DOM so items are available.
+   - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mimo-secondarynav-dropdown"]`). If no items are found, the dropdown button is removed entirely.
    - Teachers/editors with `moodle/course:update` always see the standard secondary navigation bar.
 
 ## Common Extension Tasks
@@ -163,15 +163,15 @@
 Moodle has several unique patterns that cause issues with standard PHP linters and static analysis tools:
 
 ### Dynamic Class Loading & Missing Namespaces
-- **Legacy naming convention**: Many Moodle core classes use `plugintype_pluginname_classname` naming (e.g., `backup_format_minimoodlewall_plugin`, `restore_moodleform`) without namespaces.
+- **Legacy naming convention**: Many Moodle core classes use `plugintype_pluginname_classname` naming (e.g., `backup_format_mimo_plugin`, `restore_moodleform`) without namespaces.
 - **File naming pattern**: Classes in special directories use `.class.php` extension (backup/restore subsystems) which linters may not recognize.
 - **Autoloading limitations**: Moodle's autoloader expects:
   - Namespaced classes in `classes/` directory follow PSR-4
   - Legacy classes in root or subdirectories require explicit `require_once()`
 - **Mixed paradigms in same plugin**:
-  - `lib.php`: Legacy global class `format_minimoodlewall` (NO namespace, extends `core_courseformat\base`)
-  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`, `profile_manager`, `section_image_manager`
-  - `backup/moodle2/*.class.php`: Legacy classes `backup_format_minimoodlewall_plugin` (NO namespace)
+  - `lib.php`: Legacy global class `format_mimo` (NO namespace, extends `core_courseformat\base`)
+  - `classes/`: Modern namespaced classes `format_mimo\tag_manager`, `profile_manager`, `section_image_manager`
+  - `backup/moodle2/*.class.php`: Legacy classes `backup_format_mimo_plugin` (NO namespace)
   - `classes/form/*.php`: Modern but extend legacy `\moodleform` which requires explicit `require_once($CFG->libdir.'/formslib.php')`
 
 ### PSR Compliance Challenges
@@ -203,7 +203,7 @@ Moodle has several unique patterns that cause issues with standard PHP linters a
 
 ### Plugin-Specific Patterns
 This plugin demonstrates the hybrid approach:
-- `lib.php` (68 lines): Global `format_minimoodlewall` class, extends namespaced base
+- `lib.php` (68 lines): Global `format_mimo` class, extends namespaced base
 - `classes/tag_manager.php`: Fully namespaced, modern PSR-4
 - `classes/profile_manager.php`: Fully namespaced, profile CRUD and tag resolution
 - `classes/form/tag_form.php`: Namespaced but extends global `\moodleform`, requires explicit include
@@ -213,7 +213,7 @@ This plugin demonstrates the hybrid approach:
 - **Section 0 is always hidden**: Section 0 exists in DB (required by Moodle core — cannot be deleted or moved) but `is_section_visible()` always returns `false` for it. Never place activities in section 0. Never reference section 0 in URLs or navigation.
 - **Single-section mode** (default): all activities live in section 1. `get_sectionnum()` returns 1; `is_section_visible()` shows only section 1 and delegated sections. Don't add activities to other sections unless multi-section is enabled.
 - **Multi-section mode** (`enablemultisection`): each section (1+) is its own wall. Section 0 is excluded from overview, course index, and all rendering. `get_sectionnum()` returns the currently viewed section (or `null` on the overview landing page). Course index is active. Filter bars, completion counts, and tag usage counts are scoped per-section. Drag-drop is within-section only.
-- **Sticky wall** (`format_minimoodlewall_lastsection_{courseid}` user preference): Visiting a wall stores the section number. Returning to the course without `?section=` auto-redirects to the last wall. `?overview=1` clears the preference and shows overview. `extend_course_navigation()` also stores the preference when viewing an activity page (deep link and course index activity clicks). `get_remembered_section()` validates the stored section exists and is visible. `delete_format_data()` cleans up preferences for all users on course deletion.
+- **Sticky wall** (`format_mimo_lastsection_{courseid}` user preference): Visiting a wall stores the section number. Returning to the course without `?section=` auto-redirects to the last wall. `?overview=1` clears the preference and shows overview. `extend_course_navigation()` also stores the preference when viewing an activity page (deep link and course index activity clicks). `get_remembered_section()` validates the stored section exists and is visible. `delete_format_data()` cleans up preferences for all users on course deletion.
 - **Multi-section overview** (landing page): Shown when no `?section=` param AND no stored preference (or `?overview=1`). `format.php` does NOT call `set_sectionnum()`. `content.php` detects `get_sectionid() === null` and builds lightweight section card data via `export_overview()`, using `overview.mustache`. This avoids rendering full walls for every section.
 - **Back to overview button**: Home button in page header (SVG icon), rendered by `page_set_course()` via `$page->add_header_action()`. Links to `?overview=1` to clear the stored preference and show the overview.
 - When toggling multi-section OFF, activities in sections >1 become hidden. There is no auto-migration — only a help text warning.
@@ -235,16 +235,16 @@ This plugin demonstrates the hybrid approach:
 ## Version Compatibility Details
 
 ### Moodle 5.1+ Implementation (MDL-86337)
-- Activity chooser uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class
+- Activity chooser uses `format_mimo\output\courseformat\content\activitychooserbutton` class
 - Extends `core_courseformat\output\local\content\activitychooserbutton` (moved from core_course in 5.1)
-- Uses template: `format_minimoodlewall/local/content/activitychooserbutton.mustache`
+- Uses template: `format_mimo/local/content/activitychooserbutton.mustache`
 - Data attributes: `data-section-id`, `data-sectionreturnid` (alongside legacy attributes)
 - Hook support: Compatible with `\core_course\hook\before_activitychooserbutton_exported`
 - Commit: MDL-86337 (August 18, 2025)
 
 ### Moodle 5.0 and Earlier Fallback
 - Uses `cm.php` export method to inject tag data into activitychooserbutton context
-- Uses legacy template: `format_minimoodlewall/tagchooserbutton.mustache` (via cm.mustache)
+- Uses legacy template: `format_mimo/tagchooserbutton.mustache` (via cm.mustache)
 - Data attributes: `data-sectionnum`, `data-sectionreturnnum`
 - Version detection: `$CFG->branch < 501`
 
@@ -261,7 +261,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
 - `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course/section delete (including section images, **imported tag/profile bindings and orphan cleanup**).
-- `classes/completion_defaults_manager.php` – CRUD for minimoodlewall completion defaults (compdefs table), comparison with core defaults, application to course modules.
+- `classes/completion_defaults_manager.php` – CRUD for mimo completion defaults (compdefs table), comparison with core defaults, application to course modules.
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags, **promote actions for imported tags/profiles**.
@@ -270,7 +270,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/tag_form.php` – mform definition for tag create/edit (name, color, images, activity types).
 - `classes/form/tagset_form.php` – mform for tagset create/edit.
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
-- `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for minimoodlewall completion overrides.
+- `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for mimo completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
 - `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg). Extends `dynamic_form`.
@@ -300,8 +300,8 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/description_tag_management.js` – description tag admin helpers.
 - `amd/src/compact_nav.js` – compact secondary navigation: clones hidden secondary nav items into a three-dot header dropdown for students.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
-- `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tags **incl. scope**, profiles **incl. scope**, profile_tags, cmtags, files).
-- `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
+- `backup/moodle2/backup_format_mimo_plugin.class.php` – backup handler (tags **incl. scope**, profiles **incl. scope**, profile_tags, cmtags, files).
+- `backup/moodle2/restore_format_mimo_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
 - `db/install.xml` – **8** tables: tags, cmtags, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**.
 - `db/install.php` – creates default tags and default profiles on install.
 - `db/upgrade.php` – migration steps including profile introduction, selectedtags removal, and completion defaults table.

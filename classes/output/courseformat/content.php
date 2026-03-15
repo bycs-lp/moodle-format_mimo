@@ -17,19 +17,19 @@
 /**
  * Contains the content output class.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat;
+namespace format_mimo\output\courseformat;
 
 use core_courseformat\output\local\content as content_base;
 
 /**
  * Base class to render the course content.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -57,22 +57,22 @@ class content extends content_base {
         $activityprofile = $course->activityprofile ?? 'explore';
 
         // Validate profile exists in database, fallback to explore if not.
-        $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($activityprofile);
+        $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
         if (!$profile) {
             $activityprofile = 'explore';
         }
 
         $data->stylevariant = $activityprofile;
-        $data->styleclass = 'minimoodlewall-style-' . $activityprofile;
+        $data->styleclass = 'mimo-style-' . $activityprofile;
 
         // Resolve background design class.
         $bgdesign = $course->backgrounddesign ?? 'primary-school';
-        $data->bgdesignclass = 'mmw-bgdesign-' . $bgdesign;
+        $data->bgdesignclass = 'mimo-bgdesign-' . $bgdesign;
 
         // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
-        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+        $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
         if ($PAGE->user_is_editing() && !empty($tags)) {
-            $PAGE->requires->js_call_amd('format_minimoodlewall/tagchooserbutton', 'init');
+            $PAGE->requires->js_call_amd('format_mimo/tagchooserbutton', 'init');
 
             // Pass tag data to the template.
             $data->tags = array_values($tags);
@@ -101,7 +101,7 @@ class content extends content_base {
         $activityprofile = $course->activityprofile ?? 'explore';
 
         // Validate profile.
-        $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($activityprofile);
+        $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
         if (!$profile) {
             $activityprofile = 'explore';
         }
@@ -113,13 +113,13 @@ class content extends content_base {
         $isediting = $PAGE->user_is_editing();
 
         // Pre-fetch course tags for mini-wall tile colours and images.
-        $coursetags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
+        $coursetags = \format_mimo\tag_manager::get_tags_for_course($course->id);
         // Build tagid → accent colour and card image URL maps for quick lookup.
         // Image URLs are pre-computed and MUC-cached inside get_tags_for_course().
         $tagcolours = [];
         $tagimages = [];
         foreach ($coursetags as $tag) {
-            $tagcolours[$tag->id] = \format_minimoodlewall\tag_manager::get_tag_accent_color($tag);
+            $tagcolours[$tag->id] = \format_mimo\tag_manager::get_tag_accent_color($tag);
             if (!empty($tag->cached_cardimage_url)) {
                 $tagimages[$tag->id] = $tag->cached_cardimage_url;
             }
@@ -152,7 +152,7 @@ class content extends content_base {
                     $activitycount++;
 
                     // Determine tile colour and image from tag assignment.
-                    $cmtag = \format_minimoodlewall\tag_manager::get_cm_tag($cmid);
+                    $cmtag = \format_mimo\tag_manager::get_cm_tag($cmid);
                     $colour = $defaultcolour;
                     $tile = ['color' => $colour];
                     if ($cmtag && isset($tagcolours[$cmtag->id])) {
@@ -221,7 +221,7 @@ class content extends content_base {
             }
 
             // Check for a section overview card image.
-            $sectionimageurl = \format_minimoodlewall\section_image_manager::get_image_url(
+            $sectionimageurl = \format_mimo\section_image_manager::get_image_url(
                 $course->id,
                 $sectioninfo->id
             );
@@ -231,7 +231,7 @@ class content extends content_base {
                 // Read object-fit preference for this section.
                 $opts = $format->get_format_options($sectioninfo);
                 $fit = $opts['sectionimagefit'] ?? 'cover';
-                $sectioncard->sectionimagefitclass = 'mmw-overview-card__sectionimage--' . $fit;
+                $sectioncard->sectionimagefitclass = 'mimo-overview-card__sectionimage--' . $fit;
             } else {
                 $sectioncard->hassectionimage = false;
             }
@@ -268,9 +268,9 @@ class content extends content_base {
             'hassections' => !empty($sections),
             'isediting' => $isediting,
             'section0id' => $section0id,
-            'bgdesignclass' => 'mmw-bgdesign-' . $bgdesign,
+            'bgdesignclass' => 'mimo-bgdesign-' . $bgdesign,
             'stylevariant' => $activityprofile,
-            'styleclass' => 'minimoodlewall-style-' . $activityprofile,
+            'styleclass' => 'mimo-style-' . $activityprofile,
             'format' => $format->get_format(),
             'title' => $format->page_title(),
             'courseid' => $course->id,
@@ -281,7 +281,7 @@ class content extends content_base {
             $addsectionclass = $format->get_output_classname('content\\addsection');
             $addsection = new $addsectionclass($format);
             $data->numsections = $addsection->export_for_template($output);
-            $data->mmwaddsection = $data->numsections;
+            $data->mimoaddsection = $data->numsections;
         }
 
         if ($format->show_editor()) {
@@ -302,8 +302,8 @@ class content extends content_base {
     public function get_template_name(\renderer_base $renderer): string {
         // In overview mode, use the overview template.
         if ($this->format->is_multisection_enabled() && $this->format->get_sectionid() === null) {
-            return 'format_minimoodlewall/local/overview';
+            return 'format_mimo/local/overview';
         }
-        return 'format_minimoodlewall/local/content';
+        return 'format_mimo/local/content';
     }
 }

@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity chooser button output for minimal moodle wall format.
+ * Activity chooser button output for mimo wall format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content;
+namespace format_mimo\output\courseformat\content;
 
 use core_courseformat\output\local\content\activitychooserbutton as activitychooserbutton_base;
 use renderer_base;
@@ -34,7 +34,7 @@ use stdClass;
  * This class extends the core activitychooserbutton introduced in Moodle 5.1 (MDL-86337).
  * For Moodle 5.0 and earlier, the cm.php class handles tag data injection.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -56,7 +56,7 @@ class activitychooserbutton extends activitychooserbutton_base {
 
         if ($PAGE->user_is_editing()) {
             // Get tags selected for this course.
-            $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
+            $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
 
             // Add tag data to context.
             $data->tags = array_values($tags);
@@ -83,11 +83,11 @@ class activitychooserbutton extends activitychooserbutton_base {
         $courseid = $this->section->course;
 
         if ($PAGE->user_is_editing()) {
-            $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
+            $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
             
             if (!empty($tags)) {
                 // Use our custom template with tag chooser.
-                return 'format_minimoodlewall/local/content/activitychooserbutton';
+                return 'format_mimo/local/content/activitychooserbutton';
             }
         }
 

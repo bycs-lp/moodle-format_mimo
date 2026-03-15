@@ -17,12 +17,12 @@
 /**
  * Contains the section output class.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content;
+namespace format_mimo\output\courseformat\content;
 
 use context_course;
 use core_courseformat\output\local\content\section as section_base;
@@ -30,7 +30,7 @@ use core_courseformat\output\local\content\section as section_base;
 /**
  * Base class to render a course section.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -75,7 +75,7 @@ class section extends section_base {
         }
 
         // Get tags selected for this course.
-        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course((int)$course->id);
+        $tags = \format_mimo\tag_manager::get_tags_for_course((int)$course->id);
 
         // Determine the section id for scoping filter bar and completion to this section
         // when multi-section mode is active.
@@ -96,10 +96,10 @@ class section extends section_base {
                     $data->filterbar = (object) [
                         'tags' => $filtertags,
                         'hasitems' => true,
-                        'label' => get_string('filterbarlabel', 'format_minimoodlewall'),
-                        'emptylabel' => get_string('filterbarnoactivities', 'format_minimoodlewall'),
+                        'label' => get_string('filterbarlabel', 'format_mimo'),
+                        'emptylabel' => get_string('filterbarnoactivities', 'format_mimo'),
                         'isediting' => $isediting,
-                        'styleclass' => 'mmw-filterstyle-' . $filterbarstyle,
+                        'styleclass' => 'mimo-filterstyle-' . $filterbarstyle,
                     ];
                 }
             }
@@ -139,7 +139,7 @@ class section extends section_base {
         }
 
         $tagids = array_map('intval', array_keys($tags));
-        $usage = \format_minimoodlewall\tag_manager::get_tag_usage_counts($courseid, $tagids, $sectionid);
+        $usage = \format_mimo\tag_manager::get_tag_usage_counts($courseid, $tagids, $sectionid);
         $context = context_course::instance($courseid);
 
         $filtertags = [];
@@ -155,7 +155,7 @@ class section extends section_base {
                 'name' => format_string($tag->name, true, ['context' => $context]),
                 'imageurl' => $filterurl ?: null,
                 'hasactivities' => $hasactivities,
-                'bgcolor' => \format_minimoodlewall\tag_manager::get_tag_accent_color($tag),
+                'bgcolor' => \format_mimo\tag_manager::get_tag_accent_color($tag),
             ];
         }
 
@@ -244,6 +244,6 @@ class section extends section_base {
      * @return string
      */
     public function get_template_name(\renderer_base $renderer): string {
-        return 'format_minimoodlewall/local/content/section';
+        return 'format_mimo/local/content/section';
     }
 }

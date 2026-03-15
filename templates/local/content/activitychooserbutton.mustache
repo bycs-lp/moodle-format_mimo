@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/local/content/activitychooserbutton
+    @template format_mimo/local/content/activitychooserbutton
 
     Activity chooser button with tag selection dropdown for Moodle 5.1+.
 
@@ -43,7 +43,7 @@
 
 {{! Tag chooser with dropdown (for formats with tags configured) }}
 {{#hastags}}
-<div class="dropdown format-minimoodlewall-tagchooser">
+<div class="dropdown format-mimo-tagchooser">
     <button class="btn add-content d-flex justify-content-center align-items-center p-1 icon-no-margin"
             type="button"
             id="tagChooserButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}"
@@ -71,7 +71,7 @@
         {{#tags}}
         <li>
             <a href="#"
-               class="dropdown-item format-minimoodlewall-tag-link"
+               class="dropdown-item format-mimo-tag-link"
                data-tag-id="{{id}}"
                data-tag-name="{{name}}"
                data-activity-type1="{{activitytype1}}"

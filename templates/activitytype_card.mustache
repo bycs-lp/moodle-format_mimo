@@ -1,5 +1,5 @@
 {{!
-    @template format_minimoodlewall/activitytype_card
+    @template format_mimo/activitytype_card
 
     Activity type card partial template.
 
@@ -25,16 +25,16 @@
         "tagcolor": "#ff6b6b"
     }
 }}
-<div class="mmw-activity-card" data-activity-type="{{activitytype}}" data-testid="activity-card" role="button" tabindex="0">
-    <div class="mmw-activity-card-content">
+<div class="mimo-activity-card" data-activity-type="{{activitytype}}" data-testid="activity-card" role="button" tabindex="0">
+    <div class="mimo-activity-card-content">
         {{#tagname}}
-        <div class="mmw-activity-card-tag" data-testid="activity-tag" data-tag-name="{{tagname}}" style="background-color: {{tagcolor}};">
+        <div class="mimo-activity-card-tag" data-testid="activity-tag" data-tag-name="{{tagname}}" style="background-color: {{tagcolor}};">
             {{tagname}}
         </div>
         {{/tagname}}
-        <h3 class="mmw-activity-card-title">{{label}}</h3>
-        <p class="mmw-activity-card-description">{{{description}}}</p>
-        <div class="mmw-activity-card-icon activityiconcontainer {{purpose}} modicon_{{activitytype}}">
+        <h3 class="mimo-activity-card-title">{{label}}</h3>
+        <p class="mimo-activity-card-description">{{{description}}}</p>
+        <div class="mimo-activity-card-icon activityiconcontainer {{purpose}} modicon_{{activitytype}}">
             {{{icon}}}
         </div>
     </div>

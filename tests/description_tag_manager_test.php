@@ -17,22 +17,22 @@
 /**
  * Unit tests for description_tag_manager.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test cases for description tag manager.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_minimoodlewall\description_tag_manager
+ * @covers     \format_mimo\description_tag_manager
  */
 final class description_tag_manager_test extends \advanced_testcase {
     /**
@@ -45,9 +45,9 @@ final class description_tag_manager_test extends \advanced_testcase {
         $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
 
         $this->assertNotEmpty($tagid);
-        $this->assertTrue($DB->record_exists('format_minimoodlewall_desc_tags', ['id' => $tagid]));
+        $this->assertTrue($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
 
-        $tag = $DB->get_record('format_minimoodlewall_desc_tags', ['id' => $tagid]);
+        $tag = $DB->get_record('format_mimo_desc_tags', ['id' => $tagid]);
         $this->assertEquals('Test Tag', $tag->name);
         $this->assertEquals('#FF5733', $tag->color);
     }
@@ -60,7 +60,7 @@ final class description_tag_manager_test extends \advanced_testcase {
         $this->resetAfterTest(true);
 
         // Clear default description tags seeded by install.
-        $DB->delete_records('format_minimoodlewall_desc_tags');
+        $DB->delete_records('format_mimo_desc_tags');
 
         // Create some tags.
         description_tag_manager::create_tag('Tag 1', '#FF5733');
@@ -104,7 +104,7 @@ final class description_tag_manager_test extends \advanced_testcase {
 
         $this->assertTrue($result);
 
-        $tag = $DB->get_record('format_minimoodlewall_desc_tags', ['id' => $tagid]);
+        $tag = $DB->get_record('format_mimo_desc_tags', ['id' => $tagid]);
         $this->assertEquals('Updated Name', $tag->name);
         $this->assertEquals('#33FF57', $tag->color);
     }
@@ -117,12 +117,12 @@ final class description_tag_manager_test extends \advanced_testcase {
         $this->resetAfterTest(true);
 
         $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
-        $this->assertTrue($DB->record_exists('format_minimoodlewall_desc_tags', ['id' => $tagid]));
+        $this->assertTrue($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
 
         $result = description_tag_manager::delete_tag($tagid);
 
         $this->assertTrue($result);
-        $this->assertFalse($DB->record_exists('format_minimoodlewall_desc_tags', ['id' => $tagid]));
+        $this->assertFalse($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
     }
 
     /**
@@ -144,7 +144,7 @@ final class description_tag_manager_test extends \advanced_testcase {
         description_tag_manager::delete_tag($tagid);
 
         // Verify tag reference was removed from activity description.
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'assign']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
         $this->assertNotEmpty($desc);
         $this->assertNull($desc->desctagid);
     }
@@ -215,7 +215,7 @@ final class description_tag_manager_test extends \advanced_testcase {
 
         $this->assertTrue($result);
 
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'quiz']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'quiz']);
         $this->assertNotEmpty($desc);
         $this->assertEquals('This is a quiz', $desc->description);
         $this->assertEquals($tagid, $desc->desctagid);
@@ -234,13 +234,13 @@ final class description_tag_manager_test extends \advanced_testcase {
         // Save with tag 1.
         activity_description_manager::save_description('assign', 'Assignment description', $tag1id);
 
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'assign']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
         $this->assertEquals($tag1id, $desc->desctagid);
 
         // Update to tag 2.
         activity_description_manager::save_description('assign', 'Assignment description', $tag2id);
 
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'assign']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
         $this->assertEquals($tag2id, $desc->desctagid);
     }
 
@@ -256,13 +256,13 @@ final class description_tag_manager_test extends \advanced_testcase {
         // Save with tag.
         activity_description_manager::save_description('forum', 'Forum description', $tagid);
 
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'forum']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'forum']);
         $this->assertEquals($tagid, $desc->desctagid);
 
         // Update with null tag.
         activity_description_manager::save_description('forum', 'Forum description', null);
 
-        $desc = $DB->get_record('format_minimoodlewall_actdesc', ['activitytype' => 'forum']);
+        $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'forum']);
         $this->assertNull($desc->desctagid);
     }
 

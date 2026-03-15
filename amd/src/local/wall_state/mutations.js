@@ -14,13 +14,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Mutations for the minimoodlewall wall state reactive.
+ * Mutations for the mimo wall state reactive.
  *
  * Every mutation receives the stateManager as first argument and additional
  * parameters from the dispatch call. Mutations are the only code allowed
  * to modify state (via setReadOnly toggle).
  *
- * @module     format_minimoodlewall/local/wall_state/mutations
+ * @module     format_mimo/local/wall_state/mutations
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Web service definitions for minimoodlewall format.
+ * Web service definitions for mimo format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,32 +25,32 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'format_minimoodlewall_get_tags' => [
-        'classname'   => 'format_minimoodlewall\external\get_tags',
+    'format_mimo_get_tags' => [
+        'classname'   => 'format_mimo\external\get_tags',
         'methodname'  => 'execute',
         'description' => 'Get tags selected for a course',
         'type'        => 'read',
         'ajax'        => true,
         'loginrequired' => true,
     ],
-    'format_minimoodlewall_assign_tag' => [
-        'classname'   => 'format_minimoodlewall\external\assign_tag',
+    'format_mimo_assign_tag' => [
+        'classname'   => 'format_mimo\external\assign_tag',
         'methodname'  => 'execute',
         'description' => 'Assign a tag to a course module',
         'type'        => 'write',
         'ajax'        => true,
         'loginrequired' => true,
     ],
-    'format_minimoodlewall_store_pending_tag' => [
-        'classname'   => 'format_minimoodlewall\external\store_pending_tag',
+    'format_mimo_store_pending_tag' => [
+        'classname'   => 'format_mimo\external\store_pending_tag',
         'methodname'  => 'execute',
         'description' => 'Store a pending tag in session for assignment after activity creation',
         'type'        => 'write',
         'ajax'        => true,
         'loginrequired' => true,
     ],
-    'format_minimoodlewall_get_activity_descriptions' => [
-        'classname'   => 'format_minimoodlewall\external\get_activity_descriptions',
+    'format_mimo_get_activity_descriptions' => [
+        'classname'   => 'format_mimo\external\get_activity_descriptions',
         'methodname'  => 'execute',
         'description' => 'Get descriptions for activity types',
         'type'        => 'read',

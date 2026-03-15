@@ -16,7 +16,7 @@
 /**
  * Tag management modal forms (create/edit) using ModalForm.
  *
- * @module     format_minimoodlewall/tag_management_modal
+ * @module     format_mimo/tag_management_modal
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -73,15 +73,15 @@ const showTagForm = (tagId, returnFocusElement) => {
     const activeProfileId = parseInt(container?.dataset.activeProfileId || '0', 10);
 
     const modalForm = new ModalForm({
-        formClass: 'format_minimoodlewall\\form\\tag_form',
+        formClass: 'format_mimo\\form\\tag_form',
         args: {
             tagid: tagId,
             selectedprofileid: activeProfileId,
         },
         modalConfig: {
             title: tagId
-                ? M.util.get_string('edittag', 'format_minimoodlewall')
-                : M.util.get_string('createtag', 'format_minimoodlewall'),
+                ? M.util.get_string('edittag', 'format_mimo')
+                : M.util.get_string('createtag', 'format_mimo'),
         },
         returnFocus: returnFocusElement,
     });

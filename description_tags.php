@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Description tag management interface for minimoodlewall course format.
+ * Description tag management interface for mimo course format.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,9 +25,9 @@
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use format_minimoodlewall\description_tag_manager;
+use format_mimo\description_tag_manager;
 
-admin_externalpage_setup('format_minimoodlewall_descriptiontags');
+admin_externalpage_setup('format_mimo_descriptiontags');
 
 $context = context_system::instance();
 require_capability('moodle/site:config', $context);
@@ -35,9 +35,9 @@ require_capability('moodle/site:config', $context);
 $delete = optional_param('delete', 0, PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
-$PAGE->set_url('/course/format/minimoodlewall/description_tags.php');
-$PAGE->set_title(get_string('desctagmanagement', 'format_minimoodlewall'));
-$PAGE->set_heading(get_string('desctagmanagement', 'format_minimoodlewall'));
+$PAGE->set_url('/course/format/mimo/description_tags.php');
+$PAGE->set_title(get_string('desctagmanagement', 'format_mimo'));
+$PAGE->set_heading(get_string('desctagmanagement', 'format_mimo'));
 
 // Handle delete action (from AJAX).
 if ($delete && $confirm && confirm_sesskey()) {
@@ -47,9 +47,9 @@ if ($delete && $confirm && confirm_sesskey()) {
         description_tag_manager::delete_tag($delete);
 
         if ($usagecount > 0) {
-            $message = get_string('desctagdeletedwithusage', 'format_minimoodlewall', $usagecount);
+            $message = get_string('desctagdeletedwithusage', 'format_mimo', $usagecount);
         } else {
-            $message = get_string('desctagdeleted', 'format_minimoodlewall');
+            $message = get_string('desctagdeleted', 'format_mimo');
         }
 
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
@@ -58,18 +58,18 @@ if ($delete && $confirm && confirm_sesskey()) {
 
 // Output starts here.
 echo $OUTPUT->header();
-echo \format_minimoodlewall\admin_page_tabs::render('descriptiontags');
+echo \format_mimo\admin_page_tabs::render('descriptiontags');
 
 // List all description tags.
-echo $OUTPUT->heading(get_string('desctagmanagement', 'format_minimoodlewall'));
+echo $OUTPUT->heading(get_string('desctagmanagement', 'format_mimo'));
 
 echo html_writer::div(
-    get_string('desctagmanagement_help', 'format_minimoodlewall'),
+    get_string('desctagmanagement_help', 'format_mimo'),
     'mb-4'
 );
 
 // Initialize JavaScript for dynamic forms.
-$PAGE->requires->js_call_amd('format_minimoodlewall/description_tag_management', 'init');
+$PAGE->requires->js_call_amd('format_mimo/description_tag_management', 'init');
 
 $tags = description_tag_manager::get_all_tags();
 
@@ -94,6 +94,6 @@ if (!empty($tags)) {
     }
 }
 
-echo $OUTPUT->render_from_template('format_minimoodlewall/description_tags_list', $templatecontext);
+echo $OUTPUT->render_from_template('format_mimo/description_tags_list', $templatecontext);
 
 echo $OUTPUT->footer();

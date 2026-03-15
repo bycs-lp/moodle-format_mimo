@@ -17,12 +17,12 @@
 /**
  * Contains the course module output class.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\output\courseformat\content;
+namespace format_mimo\output\courseformat\content;
 
 use core_courseformat\output\local\content\cm as cm_base;
 use renderer_base;
@@ -31,7 +31,7 @@ use stdClass;
 /**
  * Base class to render a course module.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,7 +52,7 @@ class cm extends cm_base {
 
         // Get tags selected for this course.
         $courseid = $this->mod->course;
-        $tags = \format_minimoodlewall\tag_manager::get_tags_for_course($courseid);
+        $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
         $hastags = !empty($tags);
 
         // In Moodle 5.1+, the activitychooserbutton class handles tag data.
@@ -90,6 +90,6 @@ class cm extends cm_base {
      * @return string
      */
     public function get_template_name(renderer_base $renderer): string {
-        return 'format_minimoodlewall/local/content/cm';
+        return 'format_mimo/local/content/cm';
     }
 }

@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External functions for format_minimoodlewall.
+ * External functions for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\external;
+namespace format_mimo\external;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -33,12 +33,12 @@ use external_function_parameters;
 use external_value;
 use external_single_structure;
 use external_multiple_structure;
-use format_minimoodlewall\activity_description_manager;
+use format_mimo\activity_description_manager;
 
 /**
  * External functions for retrieving activity descriptions.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

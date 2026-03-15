@@ -17,24 +17,24 @@
 /**
  * Dynamic form for editing a tag with per-profile overrides.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall\form;
+namespace format_mimo\form;
 
 defined('MOODLE_INTERNAL') || die();
 
-use format_minimoodlewall\tag_manager;
-use format_minimoodlewall\profile_manager;
+use format_mimo\tag_manager;
+use format_mimo\profile_manager;
 use core_form\dynamic_form;
 use context;
 
 /**
  * Tag edit form (dynamic form for modal usage).
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -61,11 +61,11 @@ class tag_form extends dynamic_form {
             }
         } else {
             // ---- Base tag fields (only when no profile is selected) ----
-            $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_minimoodlewall'));
+            $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_mimo'));
             $mform->setExpanded('basetagheader', true);
 
             // Tag name.
-            $mform->addElement('text', 'name', get_string('tagname', 'format_minimoodlewall'), ['size' => 60]);
+            $mform->addElement('text', 'name', get_string('tagname', 'format_mimo'), ['size' => 60]);
             $mform->setType('name', PARAM_TEXT);
             $mform->addRule('name', get_string('required'), 'required', null, 'client');
 
@@ -73,28 +73,28 @@ class tag_form extends dynamic_form {
             $mform->addElement(
                 'select',
                 'activitytype1',
-                get_string('activitytype1', 'format_minimoodlewall'),
+                get_string('activitytype1', 'format_mimo'),
                 $activitytypes
             );
             $mform->setType('activitytype1', PARAM_TEXT);
             $mform->addRule('activitytype1', get_string('required'), 'required', null, 'client');
 
             // Activity type 2.
-            $activitytypes2 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
+            $activitytypes2 = ['' => get_string('selectactivitytype', 'format_mimo')] + $activitytypes;
             $mform->addElement(
                 'select',
                 'activitytype2',
-                get_string('activitytype2', 'format_minimoodlewall'),
+                get_string('activitytype2', 'format_mimo'),
                 $activitytypes2
             );
             $mform->setType('activitytype2', PARAM_TEXT);
 
             // Activity type 3.
-            $activitytypes3 = ['' => get_string('selectactivitytype', 'format_minimoodlewall')] + $activitytypes;
+            $activitytypes3 = ['' => get_string('selectactivitytype', 'format_mimo')] + $activitytypes;
             $mform->addElement(
                 'select',
                 'activitytype3',
-                get_string('activitytype3', 'format_minimoodlewall'),
+                get_string('activitytype3', 'format_mimo'),
                 $activitytypes3
             );
             $mform->setType('activitytype3', PARAM_TEXT);
@@ -105,21 +105,21 @@ class tag_form extends dynamic_form {
                     'radio',
                     'imgplacement',
                     '',
-                    get_string('imgplacement_center', 'format_minimoodlewall'),
+                    get_string('imgplacement_center', 'format_mimo'),
                     'center'
                 ),
                 $mform->createElement(
                     'radio',
                     'imgplacement',
                     '',
-                    get_string('imgplacement_lower', 'format_minimoodlewall'),
+                    get_string('imgplacement_lower', 'format_mimo'),
                     'lower'
                 ),
             ];
             $mform->addGroup(
                 $placementoptions,
                 'imgplacementgroup',
-                get_string('imgplacement', 'format_minimoodlewall'),
+                get_string('imgplacement', 'format_mimo'),
                 ['<br>'],
                 false
             );
@@ -132,28 +132,28 @@ class tag_form extends dynamic_form {
                     'radio',
                     'imgsize',
                     '',
-                    get_string('imgsize_bigger', 'format_minimoodlewall'),
+                    get_string('imgsize_bigger', 'format_mimo'),
                     'bigger'
                 ),
                 $mform->createElement(
                     'radio',
                     'imgsize',
                     '',
-                    get_string('imgsize_normal', 'format_minimoodlewall'),
+                    get_string('imgsize_normal', 'format_mimo'),
                     'normal'
                 ),
                 $mform->createElement(
                     'radio',
                     'imgsize',
                     '',
-                    get_string('imgsize_smaller', 'format_minimoodlewall'),
+                    get_string('imgsize_smaller', 'format_mimo'),
                     'smaller'
                 ),
             ];
             $mform->addGroup(
                 $sizeoptions,
                 'imgsizegroup',
-                get_string('imgsize', 'format_minimoodlewall'),
+                get_string('imgsize', 'format_mimo'),
                 ['<br>'],
                 false
             );
@@ -165,32 +165,32 @@ class tag_form extends dynamic_form {
             $mform->addElement(
                 'text',
                 'bgcolor',
-                get_string('tagbgcolor', 'format_minimoodlewall'),
+                get_string('tagbgcolor', 'format_mimo'),
                 ['size' => 8, 'type' => 'color']
             );
             $mform->setType('bgcolor', PARAM_TEXT);
             $mform->setDefault('bgcolor', $defaultcolor);
-            $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_minimoodlewall');
+            $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_mimo');
 
             // Card image (base).
             $mform->addElement(
                 'filemanager',
                 'cardimagefile',
-                get_string('cardimage', 'format_minimoodlewall'),
+                get_string('cardimage', 'format_mimo'),
                 null,
                 tag_manager::get_image_filemanager_options()
             );
-            $mform->addHelpButton('cardimagefile', 'cardimage', 'format_minimoodlewall');
+            $mform->addHelpButton('cardimagefile', 'cardimage', 'format_mimo');
 
             // Filter image (base).
             $mform->addElement(
                 'filemanager',
                 'filterimagefile',
-                get_string('filterimage', 'format_minimoodlewall'),
+                get_string('filterimage', 'format_mimo'),
                 null,
                 tag_manager::get_image_filemanager_options()
             );
-            $mform->addHelpButton('filterimagefile', 'filterimage', 'format_minimoodlewall');
+            $mform->addHelpButton('filterimagefile', 'filterimage', 'format_mimo');
         }
 
         // Store profile IDs as hidden field for processing.
@@ -214,7 +214,7 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'header',
             'profileheader_' . $profile->id,
-            get_string('profileoverrides', 'format_minimoodlewall', $profile->displayname)
+            get_string('profileoverrides', 'format_mimo', $profile->displayname)
         );
         $mform->setExpanded('profileheader_' . $profile->id, true);
 
@@ -222,8 +222,8 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'advcheckbox',
             'profile_enabled_' . $profile->id,
-            get_string('profiletag_enabled', 'format_minimoodlewall'),
-            get_string('profiletag_enabled_desc', 'format_minimoodlewall'),
+            get_string('profiletag_enabled', 'format_mimo'),
+            get_string('profiletag_enabled_desc', 'format_mimo'),
             [],
             [0, 1]
         );
@@ -233,28 +233,28 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'text',
             'profile_name_' . $profile->id,
-            get_string('profiletag_name', 'format_minimoodlewall'),
+            get_string('profiletag_name', 'format_mimo'),
             ['size' => 60]
         );
         $mform->setType('profile_name_' . $profile->id, PARAM_TEXT);
-        $mform->addHelpButton('profile_name_' . $profile->id, 'profiletag_name', 'format_minimoodlewall');
+        $mform->addHelpButton('profile_name_' . $profile->id, 'profiletag_name', 'format_mimo');
 
         // Override: Background color.
         $mform->addElement(
             'text',
             'profile_bgcolor_' . $profile->id,
-            get_string('profiletag_bgcolor', 'format_minimoodlewall'),
+            get_string('profiletag_bgcolor', 'format_mimo'),
             ['size' => 8, 'type' => 'color']
         );
         $mform->setType('profile_bgcolor_' . $profile->id, PARAM_TEXT);
-        $mform->addHelpButton('profile_bgcolor_' . $profile->id, 'profiletag_bgcolor', 'format_minimoodlewall');
+        $mform->addHelpButton('profile_bgcolor_' . $profile->id, 'profiletag_bgcolor', 'format_mimo');
 
         // Override: Activity types.
-        $overrideactivitytypes = ['' => get_string('inherit_from_base', 'format_minimoodlewall')] + $activitytypes;
+        $overrideactivitytypes = ['' => get_string('inherit_from_base', 'format_mimo')] + $activitytypes;
         $mform->addElement(
             'select',
             'profile_activitytype1_' . $profile->id,
-            get_string('profiletag_activitytype1', 'format_minimoodlewall'),
+            get_string('profiletag_activitytype1', 'format_mimo'),
             $overrideactivitytypes
         );
         $mform->setType('profile_activitytype1_' . $profile->id, PARAM_TEXT);
@@ -262,7 +262,7 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'select',
             'profile_activitytype2_' . $profile->id,
-            get_string('profiletag_activitytype2', 'format_minimoodlewall'),
+            get_string('profiletag_activitytype2', 'format_mimo'),
             $overrideactivitytypes
         );
         $mform->setType('profile_activitytype2_' . $profile->id, PARAM_TEXT);
@@ -270,36 +270,36 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'select',
             'profile_activitytype3_' . $profile->id,
-            get_string('profiletag_activitytype3', 'format_minimoodlewall'),
+            get_string('profiletag_activitytype3', 'format_mimo'),
             $overrideactivitytypes
         );
         $mform->setType('profile_activitytype3_' . $profile->id, PARAM_TEXT);
 
         // Override: Image placement.
         $overrideplacementoptions = [
-            '' => get_string('inherit_from_base', 'format_minimoodlewall'),
-            'center' => get_string('imgplacement_center', 'format_minimoodlewall'),
-            'lower' => get_string('imgplacement_lower', 'format_minimoodlewall'),
+            '' => get_string('inherit_from_base', 'format_mimo'),
+            'center' => get_string('imgplacement_center', 'format_mimo'),
+            'lower' => get_string('imgplacement_lower', 'format_mimo'),
         ];
         $mform->addElement(
             'select',
             'profile_imgplacement_' . $profile->id,
-            get_string('profiletag_imgplacement', 'format_minimoodlewall'),
+            get_string('profiletag_imgplacement', 'format_mimo'),
             $overrideplacementoptions
         );
         $mform->setType('profile_imgplacement_' . $profile->id, PARAM_TEXT);
 
         // Override: Image size.
         $overridesizeoptions = [
-            '' => get_string('inherit_from_base', 'format_minimoodlewall'),
-            'bigger' => get_string('imgsize_bigger', 'format_minimoodlewall'),
-            'normal' => get_string('imgsize_normal', 'format_minimoodlewall'),
-            'smaller' => get_string('imgsize_smaller', 'format_minimoodlewall'),
+            '' => get_string('inherit_from_base', 'format_mimo'),
+            'bigger' => get_string('imgsize_bigger', 'format_mimo'),
+            'normal' => get_string('imgsize_normal', 'format_mimo'),
+            'smaller' => get_string('imgsize_smaller', 'format_mimo'),
         ];
         $mform->addElement(
             'select',
             'profile_imgsize_' . $profile->id,
-            get_string('profiletag_imgsize', 'format_minimoodlewall'),
+            get_string('profiletag_imgsize', 'format_mimo'),
             $overridesizeoptions
         );
         $mform->setType('profile_imgsize_' . $profile->id, PARAM_TEXT);
@@ -308,21 +308,21 @@ class tag_form extends dynamic_form {
         $mform->addElement(
             'filemanager',
             'cardimage_profile_' . $profile->id,
-            get_string('cardimage_for_profile', 'format_minimoodlewall', $profile->displayname),
+            get_string('cardimage_for_profile', 'format_mimo', $profile->displayname),
             null,
             profile_manager::get_image_filemanager_options()
         );
-        $mform->addHelpButton('cardimage_profile_' . $profile->id, 'cardimage', 'format_minimoodlewall');
+        $mform->addHelpButton('cardimage_profile_' . $profile->id, 'cardimage', 'format_mimo');
 
         // Filter image for this profile.
         $mform->addElement(
             'filemanager',
             'filterimage_profile_' . $profile->id,
-            get_string('filterimage_for_profile', 'format_minimoodlewall', $profile->displayname),
+            get_string('filterimage_for_profile', 'format_mimo', $profile->displayname),
             null,
             profile_manager::get_image_filemanager_options()
         );
-        $mform->addHelpButton('filterimage_profile_' . $profile->id, 'filterimage', 'format_minimoodlewall');
+        $mform->addHelpButton('filterimage_profile_' . $profile->id, 'filterimage', 'format_mimo');
 
         // Load existing override data if editing.
         if ($tagid) {
@@ -361,7 +361,7 @@ class tag_form extends dynamic_form {
      */
     protected function get_activity_types() {
         return [
-            '' => get_string('selectactivitytype', 'format_minimoodlewall'),
+            '' => get_string('selectactivitytype', 'format_mimo'),
             'assign' => get_string('pluginname', 'mod_assign'),
             'book' => get_string('pluginname', 'mod_book'),
             'choice' => get_string('pluginname', 'mod_choice'),
@@ -398,7 +398,7 @@ class tag_form extends dynamic_form {
         // Check background color format.
         $color = $data['bgcolor'] ?? '';
         if (!empty($color) && !preg_match('/^#([0-9a-fA-F]{6})$/', $color)) {
-            $errors['bgcolor'] = get_string('invalidcolor', 'format_minimoodlewall');
+            $errors['bgcolor'] = get_string('invalidcolor', 'format_mimo');
         }
 
         // Check per-profile override bgcolor format (only for displayed profile).
@@ -407,7 +407,7 @@ class tag_form extends dynamic_form {
             $fieldname = 'profile_bgcolor_' . $profileid;
             $overridecolor = $data[$fieldname] ?? '';
             if (!empty($overridecolor) && !preg_match('/^#([0-9a-fA-F]{6})$/', $overridecolor)) {
-                $errors[$fieldname] = get_string('invalidcolor', 'format_minimoodlewall');
+                $errors[$fieldname] = get_string('invalidcolor', 'format_mimo');
             }
         }
 
@@ -450,7 +450,7 @@ class tag_form extends dynamic_form {
                 }
                 if (!$hasimage) {
                     $firstprofileid = reset($profileids);
-                    $errors['cardimage_profile_' . $firstprofileid] = get_string('atleastoneimage', 'format_minimoodlewall');
+                    $errors['cardimage_profile_' . $firstprofileid] = get_string('atleastoneimage', 'format_mimo');
                 }
             }
         }
@@ -626,6 +626,6 @@ class tag_form extends dynamic_form {
      * @return \moodle_url
      */
     protected function get_page_url_for_dynamic_submission(): \moodle_url {
-        return new \moodle_url('/course/format/minimoodlewall/tag_management.php');
+        return new \moodle_url('/course/format/mimo/tag_management.php');
     }
 }

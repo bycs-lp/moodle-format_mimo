@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Wall state reactive store for minimoodlewall format.
+ * Wall state reactive store for mimo format.
  *
  * Owns the client-side UI state for the activity wall: filters, pagination,
  * bulk mode, and activity order. One instance is created per section and
@@ -26,13 +26,13 @@
  *   bulk:          {enabled: boolean}
  *   activityOrder: {ids: number[]}
  *
- * @module     format_minimoodlewall/local/wall_state/wall_state
+ * @module     format_mimo/local/wall_state/wall_state
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {Reactive} from 'core/reactive';
-import mutations from 'format_minimoodlewall/local/wall_state/mutations';
-import {eventTypes, dispatchWallStateChanged} from 'format_minimoodlewall/local/wall_state/events';
+import mutations from 'format_mimo/local/wall_state/mutations';
+import {eventTypes, dispatchWallStateChanged} from 'format_mimo/local/wall_state/events';
 
 /** @type {Map<string, Reactive>} Cache of reactive instances keyed by section element id. */
 const instances = new Map();
@@ -44,7 +44,7 @@ const instances = new Map();
  * @returns {number[]} ordered array of cm IDs
  */
 function readActivityOrderFromDOM(sectionElement) {
-    const container = sectionElement.querySelector('.minimoodlewall-activities');
+    const container = sectionElement.querySelector('.mimo-activities');
     if (!container) {
         return [];
     }
@@ -82,7 +82,7 @@ export function getWallState(sectionElement) {
     }
 
     const wallState = new Reactive({
-        name: `minimoodlewall_wall_${key}`,
+        name: `mimo_wall_${key}`,
         eventName: eventTypes.wallStateChanged,
         eventDispatch: dispatchWallStateChanged,
         mutations,

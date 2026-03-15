@@ -14,15 +14,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Activity pagination for minimoodlewall format.
+ * Activity pagination for mimo format.
  *
- * @module     format_minimoodlewall/activity_pagination
+ * @module     format_mimo/activity_pagination
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 import {BaseComponent} from 'core/reactive';
-import {getWallState} from 'format_minimoodlewall/local/wall_state/wall_state';
+import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 import {get_string as getString} from 'core/str';
 
 // Animation and timing constants.
@@ -79,7 +79,7 @@ const announcePaginationStatus = async(page, totalPages, startIndex, endIndex, t
     const firstItem = startIndex + 1;
     const lastItem = Math.min(endIndex, totalItems);
 
-    liveRegion.textContent = await getString('aria_pagination_status', 'format_minimoodlewall', {
+    liveRegion.textContent = await getString('aria_pagination_status', 'format_mimo', {
         page: pageNumber,
         totalpages: totalPages,
         first: firstItem,
@@ -111,7 +111,7 @@ const announcePaginationStatus = async(page, totalPages, startIndex, endIndex, t
  * @returns {void}
  */
 export const init = () => {
-    const container = document.querySelector('.minimoodlewall-activities');
+    const container = document.querySelector('.mimo-activities');
     if (!container) {
         return;
     }
@@ -121,9 +121,9 @@ export const init = () => {
         return;
     }
 
-    const navContainer = document.querySelector('.minimoodlewall-navigation');
-    const prevBtn = document.getElementById('minimoodlewall-prev');
-    const nextBtn = document.getElementById('minimoodlewall-next');
+    const navContainer = document.querySelector('.mimo-navigation');
+    const prevBtn = document.getElementById('mimo-prev');
+    const nextBtn = document.getElementById('mimo-next');
 
     let currentPage = 0;
     let isAnimating = false;
@@ -535,13 +535,13 @@ export const init = () => {
             const offsetY = afterRect.top - beforeRect.top;
             const needsOffset = Math.abs(offsetX) > 1 || Math.abs(offsetY) > 1;
             if (needsOffset) {
-                card.dataset.mmwOffsetX = offsetX.toString();
-                card.dataset.mmwOffsetY = offsetY.toString();
+                card.dataset.mimoOffsetX = offsetX.toString();
+                card.dataset.mimoOffsetY = offsetY.toString();
                 card.style.transition = 'none';
                 card.style.translate = `${-offsetX}px ${-offsetY}px`;
             } else {
-                delete card.dataset.mmwOffsetX;
-                delete card.dataset.mmwOffsetY;
+                delete card.dataset.mimoOffsetX;
+                delete card.dataset.mimoOffsetY;
             }
         });
 
@@ -552,8 +552,8 @@ export const init = () => {
         requestAnimationFrame(() => {
             oldCards.forEach((card) => {
                 card.style.transition = 'translate 0.4s ease-in-out, opacity 0.4s ease-in-out';
-                const offsetX = parseFloat(card.dataset.mmwOffsetX || '0');
-                const offsetY = parseFloat(card.dataset.mmwOffsetY || '0');
+                const offsetX = parseFloat(card.dataset.mimoOffsetX || '0');
+                const offsetY = parseFloat(card.dataset.mimoOffsetY || '0');
                 const targetX = exitingX - offsetX;
                 const targetY = -offsetY;
                 card.style.translate = `${targetX}px ${targetY}px`;
@@ -577,8 +577,8 @@ export const init = () => {
                     card.style.transform = '';
                     card.style.translate = '';
                     card.style.opacity = '1';
-                    delete card.dataset.mmwOffsetX;
-                    delete card.dataset.mmwOffsetY;
+                    delete card.dataset.mimoOffsetX;
+                    delete card.dataset.mimoOffsetY;
 
                     if (card.hidden) {
                         card.style.display = 'none';
@@ -599,8 +599,8 @@ export const init = () => {
                     card.style.transform = '';
                     card.style.translate = '';
                     card.style.opacity = '1';
-                    delete card.dataset.mmwOffsetX;
-                    delete card.dataset.mmwOffsetY;
+                    delete card.dataset.mimoOffsetX;
+                    delete card.dataset.mimoOffsetY;
 
                     if (index < startIndex || index >= endIndex) {
                         card.style.display = 'none';
@@ -661,7 +661,7 @@ export const init = () => {
      */
     const createNavigation = () => {
         // Check if navigation already exists in template.
-        const existingNav = document.querySelector('.minimoodlewall-navigation');
+        const existingNav = document.querySelector('.mimo-navigation');
         if (existingNav) {
             return; // Navigation buttons are in template.
         }

@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Restore handler for format_minimoodlewall.
+ * Restore handler for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @category   backup
  * @copyright  2025 MBS
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Recreate minimoodlewall profile and tag data during course restores.
+ * Recreate mimo profile and tag data during course restores.
  *
  * Uses a two-phase approach:
  * 1. process_*() — match/create tags and profiles, collect override data.
  * 2. after_execute_course() — create imported profile with full overrides,
  *    disable surplus tags, bind imported tags, set course profile.
  */
-class restore_format_minimoodlewall_plugin extends restore_format_plugin {
+class restore_format_mimo_plugin extends restore_format_plugin {
 
     /** @var array|null Existing tags on target, keyed by id, loaded once. */
     private $existingtags = null;
@@ -61,20 +61,20 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
         // Profiles (global, restored before tags so profile IDs can be mapped).
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_profile',
-            $this->get_pathfor('/mmw_profiles/mmw_profile')
+            'format_mimo_profile',
+            $this->get_pathfor('/mimo_profiles/mimo_profile')
         );
 
         // Tags (flat list).
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_tag',
-            $this->get_pathfor('/mmw_tags/mmw_tag')
+            'format_mimo_tag',
+            $this->get_pathfor('/mimo_tags/mimo_tag')
         );
 
         // Per-profile tag overrides (nested under tags).
         $paths[] = new restore_path_element(
-            'format_minimoodlewall_profile_tag',
-            $this->get_pathfor('/mmw_tags/mmw_tag/mmw_profile_tags/mmw_profile_tag')
+            'format_mimo_profile_tag',
+            $this->get_pathfor('/mimo_tags/mimo_tag/mimo_profile_tags/mimo_profile_tag')
         );
 
         return $paths;
@@ -87,7 +87,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      */
     protected function define_module_plugin_structure() {
         $paths = [];
-        $paths[] = new restore_path_element('format_minimoodlewall_cmtag', $this->get_pathfor('/mmw_cmtag'));
+        $paths[] = new restore_path_element('format_mimo_cmtag', $this->get_pathfor('/mimo_cmtag'));
         return $paths;
     }
 
@@ -98,7 +98,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         if ($this->existingtags !== null) {
             return;
         }
-        $this->existingtags = \format_minimoodlewall\tag_manager::get_all_tags();
+        $this->existingtags = \format_mimo\tag_manager::get_all_tags();
         // Build positional pool: all existing tags in sortorder, as array values.
         $this->positionalpool = array_values($this->existingtags);
     }
@@ -108,15 +108,15 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_profile($data) {
+    public function process_format_mimo_profile($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
         // Profiles are unique by name; reuse existing ones.
-        if ($existing = $DB->get_record('format_minimoodlewall_profiles', ['name' => $data->name])) {
-            $this->set_mapping('format_minimoodlewall_profile', $oldid, $existing->id);
+        if ($existing = $DB->get_record('format_mimo_profiles', ['name' => $data->name])) {
+            $this->set_mapping('format_mimo_profile', $oldid, $existing->id);
             return;
         }
 
@@ -127,8 +127,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         }
         $data->timecreated = time();
         $data->timemodified = time();
-        $newid = $DB->insert_record('format_minimoodlewall_profiles', $data);
-        $this->set_mapping('format_minimoodlewall_profile', $oldid, $newid);
+        $newid = $DB->insert_record('format_mimo_profiles', $data);
+        $this->set_mapping('format_mimo_profile', $oldid, $newid);
     }
 
     /**
@@ -136,7 +136,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_tag($data) {
+    public function process_format_mimo_tag($data) {
         global $DB;
 
         $data = (object)$data;
@@ -149,10 +149,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $this->init_existing_tags();
 
         // Step 1: Fingerprint match (name + bgcolor + activitytype1-3).
-        $match = \format_minimoodlewall\tag_manager::find_tag_by_fingerprint($data, $this->matchedtagids);
+        $match = \format_mimo\tag_manager::find_tag_by_fingerprint($data, $this->matchedtagids);
         if ($match) {
             $this->matchedtagids[] = $match->id;
-            $this->set_mapping('format_minimoodlewall_tag', $oldid, $match->id);
+            $this->set_mapping('format_mimo_tag', $oldid, $match->id);
             $this->overridedata[$oldid] = [
                 'match' => 'fingerprint',
                 'targetid' => (int) $match->id,
@@ -168,10 +168,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
         // Step 2: Name match — same conceptual tag but properties changed by admin.
         // Trusts the instance's current values (admin's edits take precedence).
-        $namematch = \format_minimoodlewall\tag_manager::find_tag_by_name($data->name, $this->matchedtagids);
+        $namematch = \format_mimo\tag_manager::find_tag_by_name($data->name, $this->matchedtagids);
         if ($namematch) {
             $this->matchedtagids[] = $namematch->id;
-            $this->set_mapping('format_minimoodlewall_tag', $oldid, $namematch->id);
+            $this->set_mapping('format_mimo_tag', $oldid, $namematch->id);
             $this->overridedata[$oldid] = [
                 'match' => 'name',
                 'targetid' => (int) $namematch->id,
@@ -197,7 +197,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
         if ($posmatch) {
             $this->matchedtagids[] = $posmatch->id;
-            $this->set_mapping('format_minimoodlewall_tag', $oldid, $posmatch->id);
+            $this->set_mapping('format_mimo_tag', $oldid, $posmatch->id);
             $this->overridedata[$oldid] = [
                 'match' => 'positional',
                 'targetid' => (int) $posmatch->id,
@@ -210,8 +210,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         // Step 4: Create new imported tag (backup has more tags than instance).
         unset($data->id);
         $data->scope = 'imported';
-        $newid = $DB->insert_record('format_minimoodlewall_tags', $data);
-        $this->set_mapping('format_minimoodlewall_tag', $oldid, $newid);
+        $newid = $DB->insert_record('format_mimo_tags', $data);
+        $this->set_mapping('format_mimo_tag', $oldid, $newid);
         $this->overridedata[$oldid] = [
             'match' => 'new',
             'targetid' => (int) $newid,
@@ -228,7 +228,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_profile_tag($data) {
+    public function process_format_mimo_profile_tag($data) {
         global $DB;
 
         $data = (object)$data;
@@ -243,8 +243,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         }
 
         // Map tagid and profileid to restored IDs.
-        $newtagid = $this->get_mappingid('format_minimoodlewall_tag', $data->tagid);
-        $newprofileid = $this->get_mappingid('format_minimoodlewall_profile', $data->profileid);
+        $newtagid = $this->get_mappingid('format_mimo_tag', $data->tagid);
+        $newprofileid = $this->get_mappingid('format_mimo_profile', $data->profileid);
 
         if (!$newtagid || !$newprofileid) {
             return;
@@ -254,20 +254,20 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $data->profileid = $newprofileid;
 
         // Reuse existing profile_tag record if the combination already exists.
-        $existing = $DB->get_record('format_minimoodlewall_profile_tags', [
+        $existing = $DB->get_record('format_mimo_profile_tags', [
             'tagid' => $newtagid,
             'profileid' => $newprofileid,
         ]);
         if ($existing) {
-            $this->set_mapping('format_minimoodlewall_profile_tag', $oldid, $existing->id);
+            $this->set_mapping('format_mimo_profile_tag', $oldid, $existing->id);
             return;
         }
 
         unset($data->id);
         $data->timecreated = time();
         $data->timemodified = time();
-        $newid = $DB->insert_record('format_minimoodlewall_profile_tags', $data);
-        $this->set_mapping('format_minimoodlewall_profile_tag', $oldid, $newid);
+        $newid = $DB->insert_record('format_mimo_profile_tags', $data);
+        $this->set_mapping('format_mimo_profile_tag', $oldid, $newid);
     }
 
     /**
@@ -275,16 +275,16 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      *
      * @param array $data raw backup data
      */
-    public function process_format_minimoodlewall_cmtag($data) {
+    public function process_format_mimo_cmtag($data) {
         $data = (object)$data;
         $newcmid = $this->get_mappingid('course_module', $data->cmid);
-        $newtagid = $this->get_mappingid('format_minimoodlewall_tag', $data->tagid);
+        $newtagid = $this->get_mappingid('format_mimo_tag', $data->tagid);
 
         if (!$newcmid || !$newtagid) {
             return;
         }
 
-        \format_minimoodlewall\tag_manager::assign_tag_to_cm($newcmid, $newtagid);
+        \format_mimo\tag_manager::assign_tag_to_cm($newcmid, $newtagid);
     }
 
     /**
@@ -296,30 +296,30 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
         // Restore base tag files (for new and fingerprint-matched tags).
         $this->add_related_files(
-            'format_minimoodlewall',
-            \format_minimoodlewall\tag_manager::FILEAREA_CARDIMAGE,
-            'format_minimoodlewall_tag'
+            'format_mimo',
+            \format_mimo\tag_manager::FILEAREA_CARDIMAGE,
+            'format_mimo_tag'
         );
         $this->add_related_files(
-            'format_minimoodlewall',
-            \format_minimoodlewall\tag_manager::FILEAREA_FILTERIMAGE,
-            'format_minimoodlewall_tag'
+            'format_mimo',
+            \format_mimo\tag_manager::FILEAREA_FILTERIMAGE,
+            'format_mimo_tag'
         );
         // Restore profile-specific files for fingerprint-matched tags.
         $this->add_related_files(
-            'format_minimoodlewall',
-            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
-            'format_minimoodlewall_profile_tag'
+            'format_mimo',
+            \format_mimo\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+            'format_mimo_profile_tag'
         );
         $this->add_related_files(
-            'format_minimoodlewall',
-            \format_minimoodlewall\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
-            'format_minimoodlewall_profile_tag'
+            'format_mimo',
+            \format_mimo\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
+            'format_mimo_profile_tag'
         );
         // Section overview card images.
         $this->add_related_files(
-            'format_minimoodlewall',
-            \format_minimoodlewall\section_image_manager::FILEAREA,
+            'format_mimo',
+            \format_mimo\section_image_manager::FILEAREA,
             'course_section'
         );
 
@@ -333,10 +333,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         // Create the imported profile.
         $courseid = $this->task->get_courseid();
         $course = get_course($courseid);
-        $profile = \format_minimoodlewall\profile_manager::create_imported_profile($course->fullname);
+        $profile = \format_mimo\profile_manager::create_imported_profile($course->fullname);
 
         // Get all global profiles for disabling imported tags in them.
-        $globalprofiles = \format_minimoodlewall\profile_manager::get_global_profiles();
+        $globalprofiles = \format_mimo\profile_manager::get_global_profiles();
 
         // Build full profile_tag overrides for every matched tag.
         foreach ($this->overridedata as $info) {
@@ -345,8 +345,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             $matchtype = $info['match'];
 
             // Create profile_tag with full override values from backup.
-            $pt = \format_minimoodlewall\profile_manager::get_or_create_profile_tag($targetid, $profile->id);
-            \format_minimoodlewall\profile_manager::update_profile_tag($pt->id, [
+            $pt = \format_mimo\profile_manager::get_or_create_profile_tag($targetid, $profile->id);
+            \format_mimo\profile_manager::update_profile_tag($pt->id, [
                 'name' => $backupdata->name,
                 'bgcolor' => $backupdata->bgcolor ?? null,
                 'activitytype1' => $backupdata->activitytype1 ?? null,
@@ -357,10 +357,10 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
 
             // For newly created imported tags: disable in all global profiles.
             if ($matchtype === 'new') {
-                \format_minimoodlewall\tag_manager::bind_tag_to_course($targetid, $courseid);
+                \format_mimo\tag_manager::bind_tag_to_course($targetid, $courseid);
                 foreach ($globalprofiles as $gp) {
-                    $gpt = \format_minimoodlewall\profile_manager::get_or_create_profile_tag($targetid, $gp->id);
-                    \format_minimoodlewall\profile_manager::update_profile_tag($gpt->id, [
+                    $gpt = \format_mimo\profile_manager::get_or_create_profile_tag($targetid, $gp->id);
+                    \format_mimo\profile_manager::update_profile_tag($gpt->id, [
                         'enabled' => 0,
                     ]);
                 }
@@ -371,8 +371,8 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
         $allexisting = $this->existingtags ?? [];
         foreach ($allexisting as $etag) {
             if (!in_array((int) $etag->id, $this->matchedtagids, true)) {
-                $pt = \format_minimoodlewall\profile_manager::get_or_create_profile_tag($etag->id, $profile->id);
-                \format_minimoodlewall\profile_manager::update_profile_tag($pt->id, [
+                $pt = \format_mimo\profile_manager::get_or_create_profile_tag($etag->id, $profile->id);
+                \format_mimo\profile_manager::update_profile_tag($pt->id, [
                     'enabled' => 0,
                 ]);
             }
@@ -383,18 +383,18 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
             'course_format_options',
             'value',
             $profile->name,
-            "courseid = :courseid AND format = 'minimoodlewall' AND name = 'activityprofile'",
+            "courseid = :courseid AND format = 'mimo' AND name = 'activityprofile'",
             ['courseid' => $courseid]
         );
         // If the option doesn't exist yet, create it.
         if (!$DB->record_exists('course_format_options', [
             'courseid' => $courseid,
-            'format' => 'minimoodlewall',
+            'format' => 'mimo',
             'name' => 'activityprofile',
         ])) {
             $DB->insert_record('course_format_options', (object) [
                 'courseid' => $courseid,
-                'format' => 'minimoodlewall',
+                'format' => 'mimo',
                 'sectionid' => 0,
                 'name' => 'activityprofile',
                 'value' => $profile->name,
@@ -406,7 +406,7 @@ class restore_format_minimoodlewall_plugin extends restore_format_plugin {
      * Clear caches after full restore.
      */
     public function after_restore_course() {
-        \format_minimoodlewall\tag_manager::clear_tag_cache();
-        \format_minimoodlewall\tag_manager::clear_mapping_cache();
+        \format_mimo\tag_manager::clear_tag_cache();
+        \format_mimo\tag_manager::clear_mapping_cache();
     }
 }

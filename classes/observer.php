@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event observer for format_minimoodlewall.
+ * Event observer for format_mimo.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace format_minimoodlewall;
+namespace format_mimo;
 
 /**
  * Event observer class.
  *
- * @package    format_minimoodlewall
+ * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,17 +43,17 @@ class observer {
     public static function course_module_created(\core\event\course_module_created $event) {
         global $SESSION;
 
-        // Check if this course uses minimoodlewall format.
+        // Check if this course uses mimo format.
         $courseid = $event->courseid;
         $course = get_course($courseid);
 
-        if ($course->format !== 'minimoodlewall') {
+        if ($course->format !== 'mimo') {
             return;
         }
 
         // Check if there's a pending tag in the session.
-        if (isset($SESSION->format_minimoodlewall_pending_tag)) {
-            $tagid = $SESSION->format_minimoodlewall_pending_tag;
+        if (isset($SESSION->format_mimo_pending_tag)) {
+            $tagid = $SESSION->format_mimo_pending_tag;
             $cmid = $event->objectid;
 
             // Validate that the tag exists and is selected for this course.
@@ -66,18 +66,18 @@ class observer {
             }
 
             // Clear the pending tag from session.
-            unset($SESSION->format_minimoodlewall_pending_tag);
+            unset($SESSION->format_mimo_pending_tag);
         }
 
-        // Apply minimoodlewall completion defaults if the module was created with core defaults.
+        // Apply mimo completion defaults if the module was created with core defaults.
         self::apply_completion_override($event, $course);
     }
 
     /**
-     * Apply minimoodlewall completion default overrides to a newly created course module.
+     * Apply mimo completion default overrides to a newly created course module.
      *
      * If the module's completion settings match the core Moodle defaults (meaning the
-     * teacher did not customize them), and a minimoodlewall-specific override exists
+     * teacher did not customize them), and a mimo-specific override exists
      * for this module type, silently replace the completion settings.
      *
      * @param \core\event\course_module_created $event The event object.
@@ -95,9 +95,9 @@ class observer {
             return;
         }
 
-        // Check if we have a minimoodlewall completion override for this module type.
-        $mmwdefaults = completion_defaults_manager::get_default($module->id);
-        if (!$mmwdefaults) {
+        // Check if we have a mimo completion override for this module type.
+        $mimodefaults = completion_defaults_manager::get_default($module->id);
+        if (!$mimodefaults) {
             return;
         }
 
@@ -109,7 +109,7 @@ class observer {
         // and we want to change it to our settings.
         if (
             (int)($coredefaults->completion ?? COMPLETION_TRACKING_NONE) === COMPLETION_TRACKING_NONE
-            && (int)$mmwdefaults->completion === COMPLETION_TRACKING_NONE
+            && (int)$mimodefaults->completion === COMPLETION_TRACKING_NONE
         ) {
             // Both are "none", nothing to override.
             return;
@@ -127,8 +127,8 @@ class observer {
             return;
         }
 
-        // Apply the minimoodlewall override.
-        completion_defaults_manager::apply_defaults($cmrecord, $mmwdefaults, $modname);
+        // Apply the mimo override.
+        completion_defaults_manager::apply_defaults($cmrecord, $mimodefaults, $modname);
     }
 
     /**
@@ -140,7 +140,7 @@ class observer {
         global $DB;
 
         $cmid = $event->objectid;
-        $DB->delete_records('format_minimoodlewall_cmtags', ['cmid' => $cmid]);
+        $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
         tag_manager::clear_mapping_cache();
     }
 
@@ -170,7 +170,7 @@ class observer {
         section_image_manager::delete_all_for_course($courseid);
 
         // Delete orphaned cmtags for this course's modules.
-        $sql = "DELETE FROM {format_minimoodlewall_cmtags}
+        $sql = "DELETE FROM {format_mimo_cmtags}
                  WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
         $DB->execute($sql, ['courseid' => $courseid]);
 

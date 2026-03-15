@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template format_minimoodlewall/local/content/section/cmitem
+    @template format_mimo/local/content/section/cmitem
 
     Displays a course module item (activity) in the minimal wall format.
 
@@ -28,10 +28,10 @@
     data-id="{{id}}"
     {{#cmformat.tagid}}data-tagid="{{cmformat.tagid}}"{{/cmformat.tagid}}
     {{#cmformat.completion.hascompletion}}data-completed="{{#cmformat.completion.iscomplete}}true{{/cmformat.completion.iscomplete}}{{^cmformat.completion.iscomplete}}false{{/cmformat.completion.iscomplete}}"{{/cmformat.completion.hascompletion}}
-    style="list-style: none;{{#cmformat.tagcolor}} --mmw-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
+    style="list-style: none;{{#cmformat.tagcolor}} --mimo-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
 >
 {{#cmformat}}
-<div class="minimoodlewall-card card h-100" data-cmid="{{cmid}}" data-sectionid="{{sectionid}}">
+<div class="mimo-card card h-100" data-cmid="{{cmid}}" data-sectionid="{{sectionid}}">
     {{! Bulk selection checkbox }}
     {{#cmbulk}}
     <div class="bulkselect d-none position-absolute top-0 start-0 m-2" data-for="cmBulkSelect" style="z-index: 10;">
@@ -49,25 +49,25 @@
     </div>
     {{/cmbulk}}
     {{! Activity card region for drag-drop }}
-    <div data-region="activity-card" class="minimoodlewall-card-content">
+    <div data-region="activity-card" class="mimo-card-content">
     {{! Controls (visibility, settings, delete) in top-right corner }}
     {{#controlmenu}}
     <div class="activity-badges position-absolute top-0 end-0 m-2 d-flex align-items-end" style="z-index: 10;">
         {{$ core_courseformat/local/content/cm/controlmenu }}
-            {{> format_minimoodlewall/local/content/cm/controlmenu }}
+            {{> format_mimo/local/content/cm/controlmenu }}
         {{/ core_courseformat/local/content/cm/controlmenu }}
     </div>
     {{/controlmenu}}
     {{! Tag Image at top }}
-    <div class="minimoodlewall-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}{{#imgsize}} imgsize-{{imgsize}}{{/imgsize}}">
+    <div class="mimo-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}{{#imgsize}} imgsize-{{imgsize}}{{/imgsize}}">
         {{#tagimage}}
         <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
         {{/tagimage}}
         {{^tagimage}}
-        <div class="minimoodlewall-card-placeholder"></div>
+        <div class="mimo-card-placeholder"></div>
         {{/tagimage}}
         {{#tagname}}
-        <span class="minimoodlewall-tag-pill">{{tagname}}</span>
+        <span class="mimo-tag-pill">{{tagname}}</span>
         {{/tagname}}
     </div>
     
@@ -75,14 +75,14 @@
     {{^editing}}
     {{#completion}}
     {{#hascompletion}}
-    <div class="minimoodlewall-completion-badge">
+    <div class="mimo-completion-badge">
         {{#iscomplete}}
-        <span class="badge-complete" title="{{#str}}completed, format_minimoodlewall{{/str}}">
+        <span class="badge-complete" title="{{#str}}completed, format_mimo{{/str}}">
             <i class="fa fa-check"></i>
         </span>
         {{/iscomplete}}
         {{^iscomplete}}
-        <span class="badge-incomplete" title="{{#str}}notcompleted, format_minimoodlewall{{/str}}">
+        <span class="badge-incomplete" title="{{#str}}notcompleted, format_mimo{{/str}}">
             <i class="fa fa-hourglass-half"></i>
         </span>
         {{/iscomplete}}
@@ -92,12 +92,12 @@
     {{/editing}}
     
     {{! Card body with activity name }}
-    <div class="card-body minimoodlewall-card-body">
+    <div class="card-body mimo-card-body">
         {{! Activity name with inplace editable support }}
-        <div class="minimoodlewall-card-description text-muted small">
+        <div class="mimo-card-description text-muted small">
             {{#cmname}}
                 {{$ core_courseformat/local/content/cm/cmname }}
-                    {{> format_minimoodlewall/local/content/cm/cmname }}
+                    {{> format_mimo/local/content/cm/cmname }}
                 {{/ core_courseformat/local/content/cm/cmname }}
             {{/cmname}}
             {{^cmname}}

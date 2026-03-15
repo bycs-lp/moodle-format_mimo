@@ -17,7 +17,7 @@
  * Compact secondary navigation — clones items from the hidden secondary nav bar
  * into a dropdown in the header actions area.
  *
- * @module     format_minimoodlewall/compact_nav
+ * @module     format_mimo/compact_nav
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -64,7 +64,7 @@ const collectNavItems = () => {
  * and removes the dropdown entirely if no items are found.
  */
 export const init = () => {
-    const dropdown = document.querySelector('[data-region="mmw-secondarynav-dropdown"]');
+    const dropdown = document.querySelector('[data-region="mimo-secondarynav-dropdown"]');
     if (!dropdown) {
         return;
     }
@@ -73,7 +73,7 @@ export const init = () => {
 
     if (items.length === 0) {
         // No nav items — remove the entire dropdown wrapper.
-        const wrapper = dropdown.closest('.mmw-compact-nav');
+        const wrapper = dropdown.closest('.mimo-compact-nav');
         if (wrapper) {
             wrapper.remove();
         }
