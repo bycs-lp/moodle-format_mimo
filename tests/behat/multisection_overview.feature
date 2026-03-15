@@ -107,7 +107,7 @@ Feature: Multi-section overview in mimo format
     Then ".mimo-overview-card__miniwall" "css_element" should exist in the ".mimo-overview-card[data-section-num='1']" "css_element"
     And ".mimo-overview-card__minitile" "css_element" should exist in the ".mimo-overview-card[data-section-num='1']" "css_element"
 
-  Scenario: Empty section has no mini-tiles
+  Scenario: Empty section shows placeholder mini-tiles
     Given I log in as "student1"
     When I am on "Test Course 1" course homepage
-    Then ".mimo-overview-card__miniwall" "css_element" should not exist in the ".mimo-overview-card[data-section-num='3']" "css_element"
+    Then ".mimo-overview-card__miniwall--placeholder" "css_element" should exist in the ".mimo-overview-card[data-section-num='3']" "css_element"
