@@ -115,13 +115,13 @@ class content extends content_base {
         // Pre-fetch course tags for mini-wall tile colours and images.
         $coursetags = \format_minimoodlewall\tag_manager::get_tags_for_course($course->id);
         // Build tagid → accent colour and card image URL maps for quick lookup.
+        // Image URLs are pre-computed and MUC-cached inside get_tags_for_course().
         $tagcolours = [];
         $tagimages = [];
         foreach ($coursetags as $tag) {
             $tagcolours[$tag->id] = \format_minimoodlewall\tag_manager::get_tag_accent_color($tag);
-            $cardurl = \format_minimoodlewall\tag_manager::get_cardimage_url($tag, $activityprofile);
-            if ($cardurl) {
-                $tagimages[$tag->id] = $cardurl->out(false);
+            if (!empty($tag->cached_cardimage_url)) {
+                $tagimages[$tag->id] = $tag->cached_cardimage_url;
             }
         }
         // Default colour for activities without a tag.

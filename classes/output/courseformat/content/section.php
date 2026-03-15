@@ -53,7 +53,6 @@ class section extends section_base {
         $course = $this->format->get_course();
         $options = $this->format->get_format_options();
         $enablefiltering = !empty($options['enablefiltering']);
-        $stylevariant = $options['activityprofile'] ?? 'explore';
         $isediting = $PAGE->user_is_editing();
         $ismultisection = !empty($options['enablemultisection']);
 
@@ -90,7 +89,7 @@ class section extends section_base {
             }
 
             if ($enablefiltering) {
-                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $stylevariant, $sectionid);
+                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $sectionid);
                 if (!empty($filtertags)) {
                     $bgdesign = $options['backgrounddesign'] ?? 'primary-school';
                     $filterbarstyle = self::get_filterbarstyle_for_bgdesign($bgdesign);
@@ -126,7 +125,6 @@ class section extends section_base {
      * @param array $tags Tag records keyed by id
      * @param int $courseid Course ID
      * @param bool $isediting Whether editing mode is enabled
-     * @param string $stylevariant The style variant name
      * @param int|null $sectionid Optional section id to scope tag usage counts
      * @return array
      */
@@ -134,7 +132,6 @@ class section extends section_base {
         array $tags,
         int $courseid,
         bool $isediting,
-        string $stylevariant = 'explore',
         ?int $sectionid = null
     ): array {
         if (empty($tags)) {
@@ -147,7 +144,7 @@ class section extends section_base {
 
         $filtertags = [];
         foreach ($tags as $tag) {
-            $filterurl = \format_minimoodlewall\tag_manager::get_filterimage_url($tag, $stylevariant);
+            $filterurl = $tag->cached_filterimage_url ?? null;
             $hasactivities = !empty($usage[$tag->id]);
             if (!$isediting && !$hasactivities) {
                 continue;
@@ -156,7 +153,7 @@ class section extends section_base {
             $filtertags[] = [
                 'id' => $tag->id,
                 'name' => format_string($tag->name, true, ['context' => $context]),
-                'imageurl' => $filterurl ? $filterurl->out(false) : null,
+                'imageurl' => $filterurl ?: null,
                 'hasactivities' => $hasactivities,
                 'bgcolor' => \format_minimoodlewall\tag_manager::get_tag_accent_color($tag),
             ];

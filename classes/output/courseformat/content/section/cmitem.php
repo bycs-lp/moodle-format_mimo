@@ -52,8 +52,6 @@ class cmitem extends cmitem_base {
      * @return \stdClass data context for a mustache template
      */
     public function export_for_template(\renderer_base $output): \stdClass {
-        global $DB;
-
         $data = parent::export_for_template($output);
 
         // Get the course module.
@@ -63,11 +61,6 @@ class cmitem extends cmitem_base {
         // Get the full cm_info object for more details.
         $modinfo = get_fast_modinfo($mod->course);
         $cm = $modinfo->get_cm($cmid);
-
-        // Get course format options to determine style variant.
-        $format = course_get_format($mod->course);
-        $options = $format->get_format_options();
-        $stylevariant = $options['activityprofile'] ?? 'explore';
 
         // Initialize cmformat if not set.
         if (!isset($data->cmformat)) {
@@ -80,14 +73,13 @@ class cmitem extends cmitem_base {
         $data->cmformat->sectionid = $cm->sectionid;
 
         // Get tag information for this activity.
-        $tag = tag_manager::get_cm_tag($cmid);
+        $basetag = tag_manager::get_cm_tag($cmid);
 
-        if ($tag) {
-            // Resolve tag with profile overrides applied.
-            $profile = \format_minimoodlewall\profile_manager::get_profile_by_name($stylevariant);
-            if ($profile) {
-                $tag = \format_minimoodlewall\profile_manager::resolve_tag_for_profile($tag, $profile->id);
-            }
+        if ($basetag) {
+            // Use the fully resolved tag from the course cache (profile overrides + image URLs
+            // already applied and MUC-cached), falling back to the base tag.
+            $coursetags = tag_manager::get_tags_for_course($mod->course);
+            $tag = $coursetags[$basetag->id] ?? $basetag;
 
             $data->cmformat->tagname = format_string($tag->name, true, ['context' => \context_course::instance($cm->course)]);
             $data->cmformat->tagid = $tag->id;
@@ -95,17 +87,14 @@ class cmitem extends cmitem_base {
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';
             $data->cmformat->imgsize = $tag->imgsize ?? 'normal';
 
-            $cardurl = tag_manager::get_cardimage_url($tag, $stylevariant);
-            if ($cardurl) {
-                $data->cmformat->tagimage = $cardurl->out(false);
+            if (!empty($tag->cached_cardimage_url)) {
+                $data->cmformat->tagimage = $tag->cached_cardimage_url;
             }
 
-            $filterurl = tag_manager::get_filterimage_url($tag, $stylevariant);
-            if ($filterurl) {
-                $data->cmformat->filterimage = $filterurl->out(false);
+            if (!empty($tag->cached_filterimage_url)) {
+                $data->cmformat->filterimage = $tag->cached_filterimage_url;
             }
         }
-
 
         // Add completion status - get from cm_info object.
         $completioninfo = new \completion_info($cm->get_course());

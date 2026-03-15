@@ -579,6 +579,10 @@ class profile_manager {
 
         $DB->set_field(self::TABLE_PROFILE_TAGS, $dbfield, $filename, ['id' => $profiletag->id]);
         $DB->set_field(self::TABLE_PROFILE_TAGS, 'timemodified', time(), ['id' => $profiletag->id]);
+
+        // Image URLs are baked into the course_tags_* MUC cache.
+        tag_manager::clear_tag_cache();
+        self::$imageurlcache = [];
     }
 
     /**

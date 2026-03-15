@@ -480,6 +480,15 @@ class tag_manager {
         // Return only enabled tags with profile overrides applied.
         $tags = profile_manager::resolve_tags_for_profile($alltags, $profile->id, true);
 
+        // Pre-compute image URLs so they are cached in the MUC payload,
+        // avoiding repeated get_area_files() calls on every page load.
+        foreach ($tags as $tag) {
+            $cardurl = self::get_cardimage_url($tag, $profilename);
+            $tag->cached_cardimage_url = $cardurl ? $cardurl->out(false) : null;
+            $filterurl = self::get_filterimage_url($tag, $profilename);
+            $tag->cached_filterimage_url = $filterurl ? $filterurl->out(false) : null;
+        }
+
         self::$tagcache->set($cachekey, $tags);
 
         return $tags;
