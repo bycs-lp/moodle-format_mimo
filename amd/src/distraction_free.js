@@ -22,7 +22,6 @@
  */
 
 import Notification from 'core/notification';
-import {get_string as getString} from 'core/str';
 
 /** Cookie name for distraction-free state. */
 const COOKIE_NAME = 'format_mimo_df';
@@ -46,18 +45,12 @@ const setCookie = (name, value, days = 365) => {
 
 /**
  * Initialize distraction-free mode toggle functionality.
+ * The toggle button is rendered server-side as a header action (.mimo-df-btn).
  *
  * @returns {void}
  */
 export const init = () => {
     try {
-        // Get current state - body class is already set server-side.
-        const isActive = document.body.classList.contains(ACTIVE_CLASS);
-
-        // Create toggle buttons.
-        createToggleButtons(isActive);
-
-        // Set up event listeners.
         setupToggleListeners();
     } catch (error) {
         Notification.exception(error);
@@ -65,46 +58,7 @@ export const init = () => {
 };
 
 /**
- * Create chevron toggle buttons at top and bottom of page.
- *
- * @param {boolean} isActive - Current state of distraction-free mode
- * @returns {void}
- */
-const createToggleButtons = async(isActive) => {
-    const ariaLabel = await getString('aria_toggle_distractionfree', 'format_mimo');
-
-    // Top chevron (show when distraction-free is active).
-    const topToggle = document.createElement('button');
-    topToggle.className = 'format-mimo-df-toggle format-mimo-df-toggle-top';
-    topToggle.setAttribute('data-action', 'toggle-distraction-free');
-    topToggle.setAttribute('aria-label', ariaLabel);
-    topToggle.innerHTML = '<i class="fa fa-chevron-down" aria-hidden="true"></i>';
-    if (!isActive) {
-        topToggle.style.display = 'none';
-    }
-    document.body.prepend(topToggle);
-
-    // Bottom chevron (show when distraction-free is inactive).
-    const bottomToggle = document.createElement('button');
-    bottomToggle.className = 'format-mimo-df-toggle format-mimo-df-toggle-bottom';
-    bottomToggle.setAttribute('data-action', 'toggle-distraction-free');
-    bottomToggle.setAttribute('aria-label', ariaLabel);
-    bottomToggle.innerHTML = '<i class="fa fa-chevron-up" aria-hidden="true"></i>';
-    if (isActive) {
-        bottomToggle.style.display = 'none';
-    }
-
-    // Insert after fixed-top nav or at start of page content.
-    const nav = document.querySelector('nav.fixed-top');
-    if (nav) {
-        nav.after(bottomToggle);
-    } else {
-        document.body.prepend(bottomToggle);
-    }
-};
-
-/**
- * Set up click event listeners for toggle buttons.
+ * Set up click event listeners for the header action toggle button.
  *
  * @returns {void}
  */
@@ -117,52 +71,13 @@ const setupToggleListeners = () => {
 
         event.preventDefault();
 
-        // Toggle state.
         const isActive = document.body.classList.contains(ACTIVE_CLASS);
         if (isActive) {
-            disableDistractionFree();
+            document.body.classList.remove(ACTIVE_CLASS);
+            setCookie(COOKIE_NAME, 'false');
         } else {
-            enableDistractionFree();
+            document.body.classList.add(ACTIVE_CLASS);
+            setCookie(COOKIE_NAME, 'true');
         }
     });
-};
-
-/**
- * Enable distraction-free mode.
- *
- * @returns {void}
- */
-const enableDistractionFree = () => {
-    document.body.classList.add(ACTIVE_CLASS);
-    setCookie(COOKIE_NAME, 'true');
-
-    // Show top chevron, hide bottom chevron.
-    const topToggle = document.querySelector('.format-mimo-df-toggle-top');
-    const bottomToggle = document.querySelector('.format-mimo-df-toggle-bottom');
-    if (topToggle) {
-        topToggle.style.display = '';
-    }
-    if (bottomToggle) {
-        bottomToggle.style.display = 'none';
-    }
-};
-
-/**
- * Disable distraction-free mode.
- *
- * @returns {void}
- */
-const disableDistractionFree = () => {
-    document.body.classList.remove(ACTIVE_CLASS);
-    setCookie(COOKIE_NAME, 'false');
-
-    // Hide top chevron, show bottom chevron.
-    const topToggle = document.querySelector('.format-mimo-df-toggle-top');
-    const bottomToggle = document.querySelector('.format-mimo-df-toggle-bottom');
-    if (topToggle) {
-        topToggle.style.display = 'none';
-    }
-    if (bottomToggle) {
-        bottomToggle.style.display = '';
-    }
 };

@@ -1325,40 +1325,46 @@ body.format-mimo {
     }    
 }
 
-/* Distraction-free mode toggle buttons */
-.format-mimo-df-toggle {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1040;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid #dee2e6;
-    border-radius: 0 0 8px 8px;
-    padding: 0.25rem 1rem;
+/* Distraction-free mode toggle button in header actions. */
+.mimo-df-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary, #0073aa);
+    color: #fff;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, box-shadow 0.15s ease;
+    padding: 0;
+    flex-shrink: 0;
 
-    &:hover {
-        background: #fff;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    &:hover,
+    &:focus {
+        background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        color: #fff;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary, #0073aa);
+        outline-offset: 2px;
     }
 }
 
-.format-mimo-df-toggle-top {
-    top: 0;
-    border-top: none;
+/* Show expand icon by default, collapse icon when active. */
+.mimo-df-btn .mimo-df-btn__icon--collapse {
+    display: none;
 }
 
-.format-mimo-df-toggle-bottom {
-    bottom: auto;
-    border-radius: 0 0 8px 8px;
-    border-bottom: none;
+body.format-mimo-distraction-free .mimo-df-btn .mimo-df-btn__icon--expand {
+    display: none;
 }
 
-/* Position bottom toggle after fixed-top nav */
-nav.fixed-top + .format-mimo-df-toggle-bottom {
-    top: var(--navbar-height, 60px);
+body.format-mimo-distraction-free .mimo-df-btn .mimo-df-btn__icon--collapse {
+    display: inline;
 }
 
 // Change course overview on distraction-free mode.

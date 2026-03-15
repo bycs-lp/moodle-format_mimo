@@ -439,6 +439,18 @@ class format_mimo extends core_courseformat\base {
                 $page->add_body_class('format-mimo-distraction-free');
             }
 
+            // Add toggle button as leftmost header action (before compact nav and home button).
+            $dflabel = get_string('aria_toggle_distractionfree', 'format_mimo');
+            $page->add_header_action(
+                '<button class="mimo-df-btn" type="button"' .
+                ' data-action="toggle-distraction-free"' .
+                ' title="' . s($dflabel) . '">' .
+                '<i class="fa fa-up-right-and-down-left-from-center mimo-df-btn__icon--expand" aria-hidden="true"></i>' .
+                '<i class="fa fa-down-left-and-up-right-to-center mimo-df-btn__icon--collapse" aria-hidden="true"></i>' .
+                '<span class="sr-only">' . s($dflabel) . '</span>' .
+                '</button>'
+            );
+
             // Initialize JavaScript module for toggle functionality.
             $page->requires->js_call_amd('format_mimo/distraction_free', 'init');
         }
