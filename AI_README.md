@@ -8,7 +8,7 @@
 - **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts. **Overview landing page**: shows a card grid of all sections (section 0 is always hidden) with activity counts and completion progress; clicking a card navigates to that wall; each wall has a home button ("← Back to overview") in the page header. **Sticky wall**: the last-visited section is remembered per user per course via `set_user_preference`. Returning to the course URL without `?section=` auto-redirects to the remembered wall. The home button passes `?overview=1` which clears the preference and shows the overview. Deep-linking to an activity also stores its section. When OFF (default): classic single-wall behavior with all activities in section 1.
 - **Section 0 is always hidden**: Section 0 exists in the DB (required by Moodle core) but is never rendered or accessible to any user. All walls start at section 1. Activities should never be placed in section 0.
 - **Imported tag/profile scoping**: On cross-instance restore, a dedicated *imported activity profile* is created to override existing tags to match the backup's configuration. New tag records are only created when the backup has MORE tags than the instance. Imported tags/profiles have `scope='imported'` and are course-bound via `course_tags`. Admins see "Imported" badges in the tag management UI and can promote them to global.
-- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache + imported tag bindings), `classes/profile_manager.php` (profile CRUD + per-tag overrides + imported profile management), `classes/style_manager.php` (style variants + per-tag images), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI + promote actions), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (style variants), `amd/` (JS helpers).
+- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache + imported tag bindings), `classes/profile_manager.php` (profile CRUD + per-tag overrides + imported profile management), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI + promote actions), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (wall CSS), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
@@ -46,12 +46,6 @@
   - **Profile dropdown filtering**: `lib.php` course_format_options uses `get_global_profiles()` for the dropdown, then adds the current course's imported profile if already assigned. Other courses don't see imported profiles in their dropdowns.
   - Default profiles (created on install): `explore` (🌱 Explore Level, sortorder 0), `develop` (🌿 Develop Level, sortorder 1), `master` (🌳 Master Level, sortorder 2).
   - The `develop` profile overrides first two tags with name overrides: 📖 Read → 📚 Analyze, 🔍 Explore → 🔎 Research.
-- **Style system** (`classes/style_manager.php`)
-  - Table: `*_styles` (name unique, displayname, sortorder).
-  - Table: `*_tag_images` (tagid+styleid unique, cardimage, filterimage filenames).
-  - File areas: `FILEAREA_STYLE_CARDIMAGE = 'styletagcard'`, `FILEAREA_STYLE_FILTERIMAGE = 'styletagfilter'`.
-  - Key methods: `create_style($name, $displayname)`, `get_all_styles()`, `get_style_by_name($name)`, `get_or_create_tag_image($tagid, $styleid)`, `get_tag_image_for_style($tagid, $styleid)`.
-  - Styles allow different card/filter images per tag per visual theme.
 - **Section image system** (`classes/section_image_manager.php`)
   - No dedicated table — uses Moodle File API only. File area: `FILEAREA = 'sectionimage'` in **course context** with `course_sections.id` as itemid.
   - Accepted types: jpg, png, webp, svg.
@@ -77,15 +71,14 @@
   - Override applies to both `course_modules` (core fields) and the module instance table (custom rules from JSON blob).
   - Admin page (`completion_defaults.php`): lists all module types, allows editing per-type completion defaults using core's `defaultedit_form`.
   - Key methods: `get_default($moduleid)`, `save_default($moduleid, $data)`, `delete_default($moduleid)`, `matches_core_defaults($cm, $coredefaults, $modname)`, `apply_defaults($cm, $mmwdefaults, $modname)`, `pack_form_data($formdata, $suffix)`.
-- **Admin UX** (`settings.php`, `tag_management.php`, `style_management.php`, `classes/form/*`)
+- **Admin UX** (`settings.php`, `tag_management.php`, `classes/form/*`)
   - Tag management: Accordion-based UI with tagsets as expandable sections, tags as forms within. `data-tagset-name` attribute for Behat targeting.
   - **Imported badges**: Tags with `scope='imported'` show a blue "Imported" badge (`bg-info`) in the tag name column. Imported profiles show a blue "Imported" badge next to the profile button. Both have a "Make global" promote button (uses `i/publish` pix icon) that calls `promote_tag_to_global()` / `promote_profile_to_global()`.
-  - Style management: Tab-based style image management per tag.
-  - Only admins (`moodle/site:config`) can manage tags/tagsets/styles; links exposed under Site administration > Courses.
+  - Only admins (`moodle/site:config`) can manage tags/tagsets/profiles; links exposed under Site administration > Courses.
 - **Rendering** (`format.php`, `classes/output/courseformat/*`, `templates/local/content/*.mustache`)
   - Modern Moodle 4.x component-based stack: base content → section → `cmitem` templates.
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
-  - `styles.scss` hosts shared wall styles + style variants (`explore`, `develop`, `master`).
+  - `styles.scss` hosts shared wall styles + profile-specific CSS (`explore`, `develop`, `master`).
 - **Caching** (`db/caches.php`)
   - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`).
   - `activitytagmappings`: cm→tag lookup.
@@ -94,9 +87,9 @@
 
 ## Backup & Restore Architecture
 - **Backup** (`backup/moodle2/backup_format_minimoodlewall_plugin.class.php`)
-  - Course-level: Backs up styles (only those referenced by course tags), tags (all fields incl. bgcolor, imgplacement, activitytype3, **scope**), profiles (**incl. scope**), profile_tags, and tag_images. File annotations for all image file areas. Also backs up section images (keyed by section ID in course context).
+  - Course-level: Backs up tags (all fields incl. bgcolor, imgplacement, activitytype3, **scope**), profiles (**incl. scope**), profile_tags. File annotations for all image file areas. Also backs up section images (keyed by section ID in course context).
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
-  - XML tree: `pluginwrapper → mmw_styles → mmw_style` + `pluginwrapper → mmw_tags → mmw_tag → mmw_tag_images → mmw_tag_image` + `pluginwrapper → mmw_section_images → mmw_section_image`.
+  - XML tree: `pluginwrapper → mmw_tags → mmw_tag` + `pluginwrapper → mmw_section_images → mmw_section_image`.
 - **Restore** (`backup/moodle2/restore_format_minimoodlewall_plugin.class.php`)
   - **Smart matching algorithm** (three-tier, processed per backup tag in sortorder):
     1. **Fingerprint match**: composite comparison of `name + bgcolor + activitytype1 + activitytype2 + activitytype3` (NULL-safe) against all unmatched existing tags. Reuses existing tag; no override needed.
@@ -113,7 +106,7 @@
       - Sets course's `activityprofile` format option to the new profile's name.
     - **Cleanup benefit**: deleting an imported profile = delete its profile_tags. All overrides gone in one step.
   - **Profile_tag from backup**: applied only for fingerprint-matched tags (safe — same conceptual tag). Skipped for positional/new matches to avoid contaminating target profiles.
-  - ID mapping: Sets `format_minimoodlewall_tag`, `format_minimoodlewall_style`, `format_minimoodlewall_tag_image` mappings.
+  - ID mapping: Sets `format_minimoodlewall_tag` mappings.
   - `after_execute_course()`: Restores file areas including section images (uses core `course_section` mapping for ID remapping).
   - `after_restore_course()`: Clears all caches.
 
@@ -128,10 +121,7 @@
    - Tags have forms for name, color, images, activity types.
    - Profiles determine which tags are visible/active per course.
    - Deleting a tag cascades to profile_tags and cmtags.
-3. **Style management**
-   - Admin page (`style_management.php`) manages style variants.
-   - Per-tag images for each style variant via `tag_images` table.
-4. **Course editing**
+3. **Course editing**
   - Teachers see a tag-based activity chooser: clicking the "+" button reveals a dropdown of configured tags.
   - Selecting a tag opens a modal with three options: two quick-create shortcuts (pre-configured activity types) and a link to the full activity chooser.
   - **Activity type cards** in the modal display:
@@ -143,16 +133,16 @@
     - **Moodle 5.1+**: Uses `format_minimoodlewall\output\courseformat\content\activitychooserbutton` class that extends the new `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
     - **Moodle 5.0 and earlier**: Falls back to template overrides in `cm.php` export method with backward compatibility checks.
     - JavaScript is version-agnostic and works with both `data-section-id` (5.1+) and `data-sectionnum` (5.0 and earlier) attributes.
-5. **Learner view**
+4. **Learner view**
    - **Single-section mode**: Wall shows all activities from section 1 in a responsive grid.
    - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. In editing mode: teachers can upload/change section images, delete sections (confirmation modal with activity count warning), and reorder sections via drag-and-drop (whole card is drag surface, interactive elements take priority via `draggable="false"`). Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
    - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section number in the user's preference (`format_minimoodlewall_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
    - **Sticky wall behavior**: User preference `format_minimoodlewall_lastsection_{courseid}` tracks last-visited section. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Cleaned up when course is deleted.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
-6. **Course index drawer**
+5. **Course index drawer**
    - Disabled in single-section mode (`uses_course_index()` returns `false`).
    - Enabled in multi-section mode — shows all sections for navigation.
-7. **Compact secondary navigation** (students only)
+6. **Compact secondary navigation** (students only)
    - Users without `moodle/course:update` capability see a compact three-dot (kebab) dropdown in the header actions area instead of the full secondary navigation bar.
    - Body class `format-mmw-compact-secondarynav` hides `.secondary-navigation` via CSS. The nav is still rendered in the DOM so items are available.
    - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mmw-secondarynav-dropdown"]`). If no items are found, the dropdown button is removed entirely.
@@ -165,12 +155,9 @@
 - **Enhance filtering UX**
   - Extend `amd/src/*` to add reactive filtering, track active tag, and animate card visibility.
   - Expose filter data via `section.mustache` context.
-- **Style variants**
-  - Expand `stylevariant` option and `styles.scss` tokens (background, accent, typography).
-  - Upload style-specific tag images via `style_manager`.
 - **Testing**
   - Behat: cover tag selection workflow, filter interactions, and admin CRUD.
-  - PHPUnit: tag/tagset/style CRUD, backup/restore, observer handlers, cache invalidation.
+  - PHPUnit: tag/profile CRUD, backup/restore, observer handlers, cache invalidation.
 
 ## Moodle-Specific Linter Considerations
 Moodle has several unique patterns that cause issues with standard PHP linters and static analysis tools:
@@ -183,7 +170,7 @@ Moodle has several unique patterns that cause issues with standard PHP linters a
   - Legacy classes in root or subdirectories require explicit `require_once()`
 - **Mixed paradigms in same plugin**:
   - `lib.php`: Legacy global class `format_minimoodlewall` (NO namespace, extends `core_courseformat\base`)
-  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`, `tagset_manager`, `style_manager`
+  - `classes/`: Modern namespaced classes `format_minimoodlewall\tag_manager`, `profile_manager`, `section_image_manager`
   - `backup/moodle2/*.class.php`: Legacy classes `backup_format_minimoodlewall_plugin` (NO namespace)
   - `classes/form/*.php`: Modern but extend legacy `\moodleform` which requires explicit `require_once($CFG->libdir.'/formslib.php')`
 
@@ -219,7 +206,6 @@ This plugin demonstrates the hybrid approach:
 - `lib.php` (68 lines): Global `format_minimoodlewall` class, extends namespaced base
 - `classes/tag_manager.php`: Fully namespaced, modern PSR-4
 - `classes/profile_manager.php`: Fully namespaced, profile CRUD and tag resolution
-- `classes/style_manager.php`: Fully namespaced, manages styles + tag_images
 - `classes/form/tag_form.php`: Namespaced but extends global `\moodleform`, requires explicit include
 - `backup/moodle2/*.class.php`: Legacy naming, NO namespaces, loaded by Moodle's backup API
 
@@ -234,8 +220,8 @@ This plugin demonstrates the hybrid approach:
 - The course index is disabled in single-section mode. Do not re-enable it without also enabling multi-section.
 - Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
 - Every course should have a valid `activityprofile` option — defaults to `'explore'`.
-- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `style_manager` / `profile_manager` helpers to avoid orphans.
-- Update caches after any tag/profile/style change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
+- When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `profile_manager` helpers to avoid orphans.
+- Update caches after any tag/profile change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
 - Tags and profiles are **global by default** — shared across all courses; courses reference profiles via the `activityprofile` format option. **Imported** tags/profiles have `scope='imported'` and are course-scoped via `course_tags` bindings.
 - **Imported scope rules**: Imported tags are only visible in courses with explicit `course_tags` bindings. Imported profiles only appear in the course settings dropdown for the course already using them. New imported tags get explicit `profile_tag` with `enabled=0` in ALL global profiles to prevent implicit-enable leaking. Never skip this step when creating imported tags.
 - **Imported profile cleanup**: `course_deleted` observer calls `unbind_all_tags_from_course()`, `cleanup_orphaned_imported_tags()`, and `cleanup_orphaned_imported_profiles()`. Don't add manual cleanup elsewhere.
@@ -272,7 +258,6 @@ This plugin demonstrates the hybrid approach:
 - `format.php` – entry point; branches on `is_multisection_enabled()`: multi-section stores preference on wall visit, restores preference on plain visit (redirects to `?section=N`), handles `?overview=1` (clears preference, shows overview); single-section ensures section 1 exists and locks to section 1.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes, **imported tag binding/unbinding/promotion/cleanup, fingerprint matching**. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered + imported tags), `get_tag_usage_counts($courseid, $tagids, $sectionid)` (optional section scoping), `find_tag_by_fingerprint()`, `bind_tag_to_course()`, `promote_tag_to_global()`, `cleanup_orphaned_imported_tags()`.
 - `classes/profile_manager.php` – profile CRUD, per-tag profile overrides (name, bgcolor, activity types, enabled), tag resolution, **imported profile creation/promotion/cleanup**. Key methods: `resolve_tags_for_profile()`, `resolve_tag_for_profile()`, `get_or_create_profile_tag()`, `create_imported_profile()`, `promote_profile_to_global()`, `cleanup_orphaned_imported_profiles()`, `get_global_profiles()`.
-- `classes/style_manager.php` – style CRUD, per-tag style images (tag_images table), file areas for style card/filter images.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
 - `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course/section delete (including section images, **imported tag/profile bindings and orphan cleanup**).
@@ -280,7 +265,6 @@ This plugin demonstrates the hybrid approach:
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags, **promote actions for imported tags/profiles**.
-- `style_management.php` – admin UI for style variants and per-tag images.
 - `description_tags.php` – admin UI for managing description tags (name + hex color).
 - `activity_descriptions.php` – admin UI for editing activity type descriptions and assigning description tags.
 - `classes/form/tag_form.php` – mform definition for tag create/edit (name, color, images, activity types).
@@ -298,7 +282,6 @@ This plugin demonstrates the hybrid approach:
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates. `content.php` detects overview mode (multi-section + no section selected) and returns lightweight section card data via `export_overview()`, switching to `overview.mustache`; in wall view provides `overviewurl`, `showoverviewlink`, `currentsectionname`. `cmitem.php` resolves tags through profile for card rendering.
 - `templates/tag_management.mustache` – accordion-based tag admin UI, **imported badges (blue `bg-info`) and promote buttons for imported tags/profiles**.
 - `templates/form_tag_preview.mustache` – read-only tag preview for course settings form (shows active tags for selected profile).
-- `templates/style_management.mustache` – style admin with per-tag image tabs.
 - `templates/local/content/activitychooserbutton.mustache` – **Moodle 5.1+ tag chooser template**.
 - `templates/local/overview.mustache` – **Multi-section overview landing page** with section card grid, activity counts, and completion progress.
 - `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
@@ -306,23 +289,21 @@ This plugin demonstrates the hybrid approach:
 - `templates/activitytype_chooser_modal.mustache` – modal body for activity type selection.
 - `templates/activitytype_card.mustache` – activity type card with optional description tag pill.
 - `templates/description_tags_list.mustache` – table view for description tags management page.
-- `styles.scss` / `styles.css` – wall styling + style variants + activity card styles + description tag pill styling.
+- `styles.scss` / `styles.css` – wall styling + profile-specific CSS + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (version-agnostic).
 - `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags (event capturing phase).
 - `amd/src/tag_filter.js` – client-side tag filtering.
 - `amd/src/activity_pagination.js` – responsive pagination with swipe.
 - `amd/src/activity_dragdrop.js` – drag and drop reordering.
 - `amd/src/profile_image_switcher.js` – swaps tag images/names/visibility in course form when activity profile changes.
-- `amd/src/style_delete_confirm.js` – style deletion confirmation modal.
 - `amd/src/section_overview_actions.js` – section overview card delete + drag-and-drop reorder (editing mode). Uses `BaseComponent` + `DragDrop` from `core/reactive`. Whole card is drag surface; interactive children protected via `draggable="false"`. Calls `core_courseformat_update_course` with `section_delete` / `section_move_after`.
-- `amd/src/style_image_switcher.js` – style image tab switching.
 - `amd/src/description_tag_management.js` – description tag admin helpers.
 - `amd/src/compact_nav.js` – compact secondary navigation: clones hidden secondary nav items into a three-dot header dropdown for students.
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
-- `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tagsets, tags **incl. scope**, styles, tag_images, profiles **incl. scope**, cmtags, files).
+- `backup/moodle2/backup_format_minimoodlewall_plugin.class.php` – backup handler (tags **incl. scope**, profiles **incl. scope**, profile_tags, cmtags, files).
 - `backup/moodle2/restore_format_minimoodlewall_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
-- `db/install.xml` – **10** tables: tags, cmtags, styles, tag_images, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**.
-- `db/install.php` – creates default tags, default styles, and default profiles on install.
+- `db/install.xml` – **8** tables: tags, cmtags, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**.
+- `db/install.php` – creates default tags and default profiles on install.
 - `db/upgrade.php` – migration steps including profile introduction, selectedtags removal, and completion defaults table.
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
 - `db/hooks.php` – hook registrations.
@@ -331,14 +312,14 @@ This plugin demonstrates the hybrid approach:
 - `tests/behat/tag_management.feature` – 6 scenarios for tag/tagset CRUD (create, edit, delete).
 - `tests/behat/activity_tag_edit.feature` – 4 scenarios for changing/removing tags on activities via the module edit form.
 - `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
-- `tests/behat/style_management.feature` – style admin scenarios.
+- `tests/behat/style_management.feature` – style admin scenarios (legacy, may need update).
 - `tests/tag_manager_test.php` – tag CRUD, assignment, caching, profile-based filtering.
-- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, style/tag_image restore, profile restore.
+- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, profile restore.
 - `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection (invalid tag, profile-disabled tag), module deletion cleanup, course deletion cleanup.
 
 ## Open Questions / TODO Hooks
 - ~~Teacher-side workflow for assigning/changing tags per activity~~ — **Implemented** via legacy `coursemodule_standard_elements` / `coursemodule_edit_post_actions` callbacks in `lib.php`. Teachers see a tag dropdown in the module edit form.
 - JS filter bar enhancements (persist active filter, animate cards) planned but not shipped.
-- Additional style variants + documentation for recommended SVG sizing still pending.
+- Documentation for recommended SVG sizing still pending.
 
 Keep this document synchronized with functional changes so future AI runs can reason about intent without re-deriving it from the whole codebase.
