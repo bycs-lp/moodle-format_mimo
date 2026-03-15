@@ -23,8 +23,7 @@ Feature: Activity type descriptions with tags
   Scenario: Admin can manage activity descriptions with description tags
     Given I log in as "admin"
     And I am on site homepage
-    When I navigate to "Plugins > Course formats > Minimal Moodle Wall > Activity Descriptions" in site administration
-    When I navigate to "Plugins > Course formats > Minimal Moodle Wall > Description Tag Management" in site administration
+    When I visit "/course/format/minimoodlewall/description_tags.php"
     Then "[data-region='tag-management']" "css_element" should exist
     And I click on "[data-testid='create-tag-button']" "css_element"
     And I set the following fields to these values:
@@ -34,7 +33,7 @@ Feature: Activity type descriptions with tags
     And I wait until the page is ready
     Then "[data-region='tag-list-table']" "css_element" should exist
     And "[data-testid='tag-row'][data-tag-name='Homework']" "css_element" should exist
-    When I navigate to "Plugins > Course formats > Minimal Moodle Wall > Activity Descriptions" in site administration
+    When I visit "/course/format/minimoodlewall/activity_descriptions.php"
     And I set the field "description_assign" to "Create homework assignments for students"
     And I set the field "desctag_assign" to "Homework"
     And I press "Save"
