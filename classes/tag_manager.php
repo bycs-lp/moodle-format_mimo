@@ -1025,7 +1025,7 @@ class tag_manager {
                 $tag['activitytype2'],
                 $tag['activitytype3'],
                 $tag['bgcolor'],
-                'lower'
+                'center'
             );
 
             self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
