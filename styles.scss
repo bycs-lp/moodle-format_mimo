@@ -1,5 +1,22 @@
 // Base styles for mimo card layout.
 
+// ByDSLesen font family for activity descriptions.
+@font-face {
+    font-family: "ByDSLesen";
+    src: url([[font:format_mimo|ByDSLesen-medium.ttf]]) format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "ByDSLesen";
+    src: url([[font:format_mimo|ByDSLesen-thin.ttf]]) format("truetype");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
 // Completion status colors - shared across badges and pills.
 :root {
     --mimo-completion-complete: #5fc76d;
@@ -334,6 +351,7 @@ body:not(.bulkenabled) .mimo-activities {
             container-type: inline-size;
 
             .mimo-card-description {
+                font-family: "ByDSLesen", system-ui, sans-serif;
                 font-size: clamp(1rem, 10cqw, 1.8rem);
                 font-weight: 500;
                 color: #666;

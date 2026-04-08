@@ -84,7 +84,7 @@ class activitychooserbutton extends activitychooserbutton_base {
 
         if ($PAGE->user_is_editing()) {
             $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
-            
+
             if (!empty($tags)) {
                 // Use our custom template with tag chooser.
                 return 'format_mimo/local/content/activitychooserbutton';
