@@ -152,10 +152,11 @@ class stateactions extends core_stateactions {
         ?int $targetsectionid = null,
         ?int $targetcmid = null
     ): void {
+        parent::cm_show($updates, $course, $ids, $targetsectionid, $targetcmid);
+        // Clear done flag only after parent has validated capabilities.
         foreach ($ids as $cmid) {
             done_manager::unset_done($cmid);
         }
-        parent::cm_show($updates, $course, $ids, $targetsectionid, $targetcmid);
     }
 
     /**
@@ -174,10 +175,11 @@ class stateactions extends core_stateactions {
         ?int $targetsectionid = null,
         ?int $targetcmid = null
     ): void {
+        parent::cm_hide($updates, $course, $ids, $targetsectionid, $targetcmid);
+        // Clear done flag only after parent has validated capabilities.
         foreach ($ids as $cmid) {
             done_manager::unset_done($cmid);
         }
-        parent::cm_hide($updates, $course, $ids, $targetsectionid, $targetcmid);
     }
 
     /**
@@ -196,10 +198,11 @@ class stateactions extends core_stateactions {
         ?int $targetsectionid = null,
         ?int $targetcmid = null
     ): void {
+        parent::cm_stealth($updates, $course, $ids, $targetsectionid, $targetcmid);
+        // Clear done flag only after parent has validated capabilities.
         foreach ($ids as $cmid) {
             done_manager::unset_done($cmid);
         }
-        parent::cm_stealth($updates, $course, $ids, $targetsectionid, $targetcmid);
     }
 
     /**

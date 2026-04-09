@@ -24,7 +24,6 @@
 
 namespace format_mimo\output\courseformat\content;
 
-use context_course;
 use core_courseformat\output\local\content\section as section_base;
 
 /**

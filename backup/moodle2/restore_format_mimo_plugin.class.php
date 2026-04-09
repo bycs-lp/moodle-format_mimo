@@ -125,8 +125,9 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         if (!isset($data->scope)) {
             $data->scope = 'global';
         }
-        $data->timecreated = time();
-        $data->timemodified = time();
+        $now = \core\di::get(\core\clock::class)->time();
+        $data->timecreated = $now;
+        $data->timemodified = $now;
         $newid = $DB->insert_record('format_mimo_profiles', $data);
         $this->set_mapping('format_mimo_profile', $oldid, $newid);
     }
@@ -266,8 +267,9 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         }
 
         unset($data->id);
-        $data->timecreated = time();
-        $data->timemodified = time();
+        $now = \core\di::get(\core\clock::class)->time();
+        $data->timecreated = $now;
+        $data->timemodified = $now;
         $newid = $DB->insert_record('format_mimo_profile_tags', $data);
         $this->set_mapping('format_mimo_profile_tag', $oldid, $newid);
     }

@@ -27,7 +27,6 @@
 
 namespace format_mimo;
 
-use context_course;
 use moodle_url;
 
 /**

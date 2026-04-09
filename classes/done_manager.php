@@ -51,7 +51,7 @@ class done_manager {
         if (!self::is_done($cmid)) {
             $DB->insert_record(self::TABLE, (object) [
                 'cmid' => $cmid,
-                'timecreated' => time(),
+                'timecreated' => \core\di::get(\core\clock::class)->time(),
             ]);
         }
     }

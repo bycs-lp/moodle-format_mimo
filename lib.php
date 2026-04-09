@@ -741,6 +741,12 @@ class format_mimo extends core_courseformat\base {
             "NOT EXISTS (SELECT 1 FROM {course_modules} cm WHERE cm.id = {format_mimo_cmtags}.cmid)"
         );
 
+        // Delete orphaned done records (same pattern as cmtags above).
+        $DB->delete_records_select(
+            'format_mimo_cmdone',
+            "NOT EXISTS (SELECT 1 FROM {course_modules} cm WHERE cm.id = {format_mimo_cmdone}.cmid)"
+        );
+
         \format_mimo\tag_manager::clear_mapping_cache();
         \format_mimo\tag_manager::clear_course_tags_cache($courseid);
 

@@ -27,7 +27,6 @@
 
 namespace format_mimo;
 
-use context_system;
 use moodle_url;
 use stdClass;
 

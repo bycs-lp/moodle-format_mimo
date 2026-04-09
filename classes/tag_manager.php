@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-use context_system;
 use core_component;
 use moodle_url;
 
