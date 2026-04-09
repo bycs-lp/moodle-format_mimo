@@ -72,6 +72,11 @@ $string['activitytype2'] = 'Zweiter vorgeschlagener Aktivitätstyp';
 $string['activitytype3'] = 'Dritter vorgeschlagener Aktivitätstyp';
 $string['addactivity'] = 'Aktivität hinzufügen';
 $string['allcomplete'] = 'Alle Aktivitäten abgeschlossen!';
+$string['aria_completion_status'] = '{$a->completed} von {$a->total} Aktivitäten abgeschlossen';
+$string['aria_filter_active'] = '{$a->visible} von {$a->total} Aktivitäten mit Tag \'{$a->tagname}\' werden angezeigt.';
+$string['aria_filter_cleared'] = 'Filter zurückgesetzt. Alle {$a} Aktivitäten werden angezeigt.';
+$string['aria_pagination_status'] = 'Seite {$a->page} von {$a->totalpages}. Zeige Aktivitäten {$a->first} bis {$a->last} von {$a->total}.';
+$string['aria_toggle_distractionfree'] = 'Ablenkungsfreien Modus umschalten';
 $string['atleastoneimage'] = 'Mindestens ein Profil muss ein Kartenbild hochgeladen haben.';
 $string['backgrounddesign_dark'] = 'Dunkel';
 $string['backgrounddesign_darkmode'] = 'Darkmode';
@@ -276,10 +281,3 @@ $string['themesetting'] = 'Kurs-Pinnwand-Thema';
 $string['themesetting_desc'] = 'Wählen Sie das visuelle Thema für das Kursformat.';
 $string['usage'] = 'Verwendung';
 $string['viewactivity'] = 'Abschnitt anzeigen';
-
-// Barrierefreiheit / ARIA-Strings.
-$string['aria_pagination_status'] = 'Seite {$a->page} von {$a->totalpages}. Zeige Aktivitäten {$a->first} bis {$a->last} von {$a->total}.';
-$string['aria_filter_active'] = '{$a->visible} von {$a->total} Aktivitäten mit Tag \'{$a->tagname}\' werden angezeigt.';
-$string['aria_filter_cleared'] = 'Filter zurückgesetzt. Alle {$a} Aktivitäten werden angezeigt.';
-$string['aria_completion_status'] = '{$a->completed} von {$a->total} Aktivitäten abgeschlossen';
-$string['aria_toggle_distractionfree'] = 'Ablenkungsfreien Modus umschalten';
