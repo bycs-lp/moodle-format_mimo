@@ -141,6 +141,7 @@ class observer {
 
         $cmid = $event->objectid;
         $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
+        done_manager::delete_for_cm($cmid);
         tag_manager::clear_mapping_cache();
     }
 
@@ -168,6 +169,9 @@ class observer {
 
         // Delete section images.
         section_image_manager::delete_all_for_course($courseid);
+
+        // Delete done flags for this course's modules.
+        done_manager::delete_for_course($courseid);
 
         // Note: cmtags are already cleaned up per-module by the course_module_deleted observer.
         // No additional cmtags cleanup needed here — course_modules are already gone at this point.

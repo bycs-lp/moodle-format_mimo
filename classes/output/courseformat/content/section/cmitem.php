@@ -25,6 +25,7 @@
 namespace format_mimo\output\courseformat\content\section;
 
 use core_courseformat\output\local\content\section\cmitem as cmitem_base;
+use format_mimo\done_manager;
 use format_mimo\tag_manager;
 
 /**
@@ -96,21 +97,28 @@ class cmitem extends cmitem_base {
             }
         }
 
-        // Add completion status - get from cm_info object.
-        $completioninfo = new \completion_info($cm->get_course());
-        if ($completioninfo->is_enabled($cm)) {
-            if (!isset($data->cmformat->completion)) {
-                $data->cmformat->completion = new \stdClass();
-            }
-            $data->cmformat->completion->hascompletion = true;
+        // Check if this activity is flagged as done.
+        $isdone = done_manager::is_done($cmid);
+        $data->cmformat->isdone = $isdone;
 
-            // Check if activity is completed.
-            $completiondata = $completioninfo->get_data($cm, false);
-            if ($completiondata) {
-                $data->cmformat->completion->iscomplete = (
-                    $completiondata->completionstate == COMPLETION_COMPLETE ||
-                    $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                );
+        // Add completion status - get from cm_info object.
+        // Done activities are excluded from completion tracking on the wall.
+        if (!$isdone) {
+            $completioninfo = new \completion_info($cm->get_course());
+            if ($completioninfo->is_enabled($cm)) {
+                if (!isset($data->cmformat->completion)) {
+                    $data->cmformat->completion = new \stdClass();
+                }
+                $data->cmformat->completion->hascompletion = true;
+
+                // Check if activity is completed.
+                $completiondata = $completioninfo->get_data($cm, false);
+                if ($completiondata) {
+                    $data->cmformat->completion->iscomplete = (
+                        $completiondata->completionstate == COMPLETION_COMPLETE ||
+                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                    );
+                }
             }
         }
 

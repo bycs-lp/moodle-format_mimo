@@ -22,12 +22,13 @@
     This template extends the core cmitem template.
 }}
 <li
-    class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}} {{#cmformat.modhiddenfromstudents}}dimmed{{/cmformat.modhiddenfromstudents}}{{#cmformat.modstealth}}dimmed{{/cmformat.modstealth}}"
+    class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}} {{#cmformat.modhiddenfromstudents}}dimmed{{/cmformat.modhiddenfromstudents}}{{#cmformat.modstealth}}dimmed{{/cmformat.modstealth}}{{#cmformat.isdone}} mimo-done{{/cmformat.isdone}}"
     id="module-{{id}}"
     data-for="cmitem"
     data-id="{{id}}"
     {{#cmformat.tagid}}data-tagid="{{cmformat.tagid}}"{{/cmformat.tagid}}
     {{#cmformat.completion.hascompletion}}data-completed="{{#cmformat.completion.iscomplete}}true{{/cmformat.completion.iscomplete}}{{^cmformat.completion.iscomplete}}false{{/cmformat.completion.iscomplete}}"{{/cmformat.completion.hascompletion}}
+    {{#cmformat.isdone}}data-done="true"{{/cmformat.isdone}}
     style="list-style: none;{{#cmformat.tagcolor}} --mimo-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
 >
 {{#cmformat}}
@@ -73,6 +74,14 @@
     
     {{! Completion indicator overlay (top-right) - hidden in editing mode }}
     {{^editing}}
+    {{#isdone}}
+    <div class="mimo-completion-badge">
+        <span class="badge-done" title="{{#str}}done, format_mimo{{/str}}">
+            <i class="fa fa-check-circle"></i>
+        </span>
+    </div>
+    {{/isdone}}
+    {{^isdone}}
     {{#completion}}
     {{#hascompletion}}
     <div class="mimo-completion-badge">
@@ -89,6 +98,7 @@
     </div>
     {{/hascompletion}}
     {{/completion}}
+    {{/isdone}}
     {{/editing}}
     
     {{! Card body with activity name }}

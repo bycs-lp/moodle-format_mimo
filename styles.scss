@@ -221,6 +221,26 @@ body:not(.bulkenabled) .mimo-activities {
             z-index: 100;
         }
     }
+
+    // Gray out activities marked as done
+    .activity.mimo-done {
+        // Override tag accent color to grey.
+        --mimo-card-accent: #b0b0b0 !important;
+
+        .mimo-card {
+            border-color: #d0d0d0;
+        }
+
+        .mimo-completion-badge .badge-done {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        // Ensure dropdown menu escapes card stacking context when open
+        .mimo-card:has(.visibility-icon-control .show) {
+            z-index: 100;
+        }
+    }
     
     li.activity {
         border: none !important; // Remove any default borders

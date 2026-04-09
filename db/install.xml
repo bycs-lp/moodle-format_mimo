@@ -156,5 +156,19 @@
         <INDEX NAME="module_unique" UNIQUE="true" FIELDS="module" COMMENT="One override per module type"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="format_mimo_cmdone" COMMENT="Flags course modules as done (greyed out, excluded from completion)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course module ID"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="cmid" TYPE="foreign" FIELDS="cmid" REFTABLE="course_modules" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid_unique" UNIQUE="true" FIELDS="cmid" COMMENT="Each course module can only be flagged once"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>

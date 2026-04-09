@@ -79,6 +79,9 @@ class content extends content_base {
             $data->hastags = true;
         }
 
+        // Register mimo-specific course editor mutations (Done state).
+        $PAGE->requires->js_call_amd('format_mimo/mutations', 'init');
+
         return $data;
     }
 
@@ -127,6 +130,9 @@ class content extends content_base {
         // Default colour for activities without a tag.
         $defaultcolour = '#d0d0d0';
 
+        // Pre-fetch done cmids for the course to exclude from completion tracking.
+        $donecmids = \format_mimo\done_manager::get_done_cmids($course->id);
+
         $sections = [];
         foreach ($modinfo->get_section_info_all() as $sectioninfo) {
             // Skip orphaned or delegated sections.
@@ -163,6 +169,11 @@ class content extends content_base {
                         }
                     }
                     $minitiles[] = $tile;
+
+                    // Skip done activities from completion tracking.
+                    if (in_array((int) $cmid, $donecmids, true)) {
+                        continue;
+                    }
 
                     if ($completionenabled && $completioninfo->is_enabled($cm)) {
                         $totaltracked++;

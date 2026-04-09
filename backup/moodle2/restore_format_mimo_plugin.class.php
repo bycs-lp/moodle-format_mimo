@@ -87,6 +87,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     protected function define_module_plugin_structure() {
         $paths = [];
         $paths[] = new restore_path_element('format_mimo_cmtag', $this->get_pathfor('/mimo_cmtag'));
+        $paths[] = new restore_path_element('format_mimo_cmdone', $this->get_pathfor('/mimo_cmdone'));
         return $paths;
     }
 
@@ -286,6 +287,22 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         }
 
         \format_mimo\tag_manager::assign_tag_to_cm($newcmid, $newtagid);
+    }
+
+    /**
+     * Restore done flag for each activity.
+     *
+     * @param array $data raw backup data
+     */
+    public function process_format_mimo_cmdone($data) {
+        $data = (object)$data;
+        $newcmid = $this->get_mappingid('course_module', $data->cmid);
+
+        if (!$newcmid) {
+            return;
+        }
+
+        \format_mimo\done_manager::set_done($newcmid);
     }
 
     /**

@@ -150,6 +150,19 @@
 .mimo-activities .activity.dimmed .mimo-card:has(.visibility-icon-control .show) {
   z-index: 100;
 }
+.mimo-activities .activity.mimo-done {
+  --mimo-card-accent: #b0b0b0 !important;
+}
+.mimo-activities .activity.mimo-done .mimo-card {
+  border-color: #d0d0d0;
+}
+.mimo-activities .activity.mimo-done .mimo-completion-badge .badge-done {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+.mimo-activities .activity.mimo-done .mimo-card:has(.visibility-icon-control .show) {
+  z-index: 100;
+}
 .mimo-activities li.activity {
   border: none !important;
 }

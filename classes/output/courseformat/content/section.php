@@ -175,6 +175,7 @@ class section extends section_base {
     private function build_completion_status_data(\stdClass $course, ?int $sectionnum = null): \stdClass {
         $modinfo = get_fast_modinfo($course);
         $completioninfo = new \completion_info($course);
+        $donecmids = \format_mimo\done_manager::get_done_cmids($course->id);
 
         $completedcount = 0;
         $incompletecount = 0;
@@ -190,6 +191,10 @@ class section extends section_base {
                 $cm = $modinfo->cms[$cmid];
                 // Skip hidden activities and activities without user visibility.
                 if (!$cm->uservisible) {
+                    continue;
+                }
+                // Skip activities flagged as done.
+                if (in_array((int) $cmid, $donecmids, true)) {
                     continue;
                 }
                 // Only count activities with completion tracking enabled.

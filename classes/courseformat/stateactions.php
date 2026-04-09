@@ -26,6 +26,7 @@ namespace format_mimo\courseformat;
 
 use core_courseformat\stateactions as core_stateactions;
 use core_courseformat\stateupdates;
+use format_mimo\done_manager;
 use format_mimo\tag_manager;
 use moodle_exception;
 use stdClass;
@@ -133,5 +134,135 @@ class stateactions extends core_stateactions {
 
         // Persist the mapping for the duplicate; tag_manager abstracts cache updates.
         tag_manager::assign_tag_to_cm($duplicatedcmid, (int)$tag->id);
+    }
+
+    /**
+     * Show course modules and clear done flag.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids cm ids
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
+     */
+    public function cm_show(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids = [],
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
+        foreach ($ids as $cmid) {
+            done_manager::unset_done($cmid);
+        }
+        parent::cm_show($updates, $course, $ids, $targetsectionid, $targetcmid);
+    }
+
+    /**
+     * Hide course modules and clear done flag.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids cm ids
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
+     */
+    public function cm_hide(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids = [],
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
+        foreach ($ids as $cmid) {
+            done_manager::unset_done($cmid);
+        }
+        parent::cm_hide($updates, $course, $ids, $targetsectionid, $targetcmid);
+    }
+
+    /**
+     * Stealth course modules and clear done flag.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids cm ids
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
+     */
+    public function cm_stealth(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids = [],
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
+        foreach ($ids as $cmid) {
+            done_manager::unset_done($cmid);
+        }
+        parent::cm_stealth($updates, $course, $ids, $targetsectionid, $targetcmid);
+    }
+
+    /**
+     * Mark course modules as done.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids cm ids
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
+     */
+    public function cm_done(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids = [],
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
+        $this->validate_cms(
+            $course,
+            $ids,
+            __FUNCTION__,
+            ['moodle/course:activityvisibility']
+        );
+
+        foreach ($ids as $cmid) {
+            // Ensure the activity is visible (shown) when marking as done.
+            set_coursemodule_visible($cmid, true, 1, false);
+            done_manager::set_done($cmid);
+        }
+
+        rebuild_course_cache($course->id, false, true);
+        $this->cm_state($updates, $course, $ids);
+    }
+
+    /**
+     * Unmark course modules as done.
+     *
+     * @param stateupdates $updates the affected course elements track
+     * @param stdClass $course the course object
+     * @param int[] $ids cm ids
+     * @param int|null $targetsectionid not used
+     * @param int|null $targetcmid not used
+     */
+    public function cm_undone(
+        stateupdates $updates,
+        stdClass $course,
+        array $ids = [],
+        ?int $targetsectionid = null,
+        ?int $targetcmid = null
+    ): void {
+        $this->validate_cms(
+            $course,
+            $ids,
+            __FUNCTION__,
+            ['moodle/course:activityvisibility']
+        );
+
+        foreach ($ids as $cmid) {
+            done_manager::unset_done($cmid);
+        }
+
+        rebuild_course_cache($course->id, false, true);
+        $this->cm_state($updates, $course, $ids);
     }
 }

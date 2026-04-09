@@ -188,8 +188,12 @@ class backup_format_mimo_plugin extends backup_format_plugin {
         $cmtag = new backup_nested_element('mimo_cmtag', ['cmid'], ['tagid', 'timecreated']);
         $cmtag->set_source_table('format_mimo_cmtags', ['cmid' => backup::VAR_MODID]);
 
+        $cmdone = new backup_nested_element('mimo_cmdone', ['cmid'], ['timecreated']);
+        $cmdone->set_source_table('format_mimo_cmdone', ['cmid' => backup::VAR_MODID]);
+
         $plugin->add_child($pluginwrapper);
         $pluginwrapper->add_child($cmtag);
+        $pluginwrapper->add_child($cmdone);
 
         return $plugin;
     }
