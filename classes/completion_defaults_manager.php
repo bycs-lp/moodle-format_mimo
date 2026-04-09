@@ -80,7 +80,7 @@ class completion_defaults_manager {
         global $DB;
 
         $data = (object)$data;
-        $now = time();
+        $now = \core\di::get(\core\clock::class)->time();
 
         $existing = $DB->get_record(self::TABLE, ['module' => $moduleid]);
         if ($existing) {
@@ -190,7 +190,7 @@ class completion_defaults_manager {
     public static function apply_defaults(\stdClass $cmrecord, \stdClass $mimodefaults, string $modname): void {
         global $DB;
 
-        $now = time();
+        $now = \core\di::get(\core\clock::class)->time();
 
         // Update course_modules with core completion fields.
         $cmdata = new \stdClass();

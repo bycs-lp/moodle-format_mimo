@@ -116,7 +116,7 @@ class activity_description_manager {
     public static function save_description(string $activitytype, string $description, ?int $desctagid = null): bool {
         global $DB;
 
-        $time = time();
+        $time = \core\di::get(\core\clock::class)->time();
         $record = $DB->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($record) {

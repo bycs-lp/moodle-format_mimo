@@ -150,7 +150,7 @@ class profile_manager {
             $sortorder = ($maxorder ?? 0) + 1;
         }
 
-        $now = time();
+        $now = \core\di::get(\core\clock::class)->time();
         $record = new stdClass();
         $record->name = $name;
         $record->displayname = $displayname;
@@ -192,7 +192,7 @@ class profile_manager {
 
         $record = new stdClass();
         $record->id = $id;
-        $record->timemodified = time();
+        $record->timemodified = \core\di::get(\core\clock::class)->time();
 
         foreach ($data as $field => $value) {
             if (in_array($field, ['name', 'displayname', 'sortorder'])) {
@@ -267,7 +267,7 @@ class profile_manager {
         ]);
 
         if (!$record) {
-            $now = time();
+            $now = \core\di::get(\core\clock::class)->time();
             $record = new stdClass();
             $record->tagid = $tagid;
             $record->profileid = $profileid;
@@ -362,7 +362,7 @@ class profile_manager {
         $allowed = ['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'enabled', 'imgplacement', 'imgsize'];
         $record = new stdClass();
         $record->id = $id;
-        $record->timemodified = time();
+        $record->timemodified = \core\di::get(\core\clock::class)->time();
 
         foreach ($data as $field => $value) {
             if (in_array($field, $allowed)) {
@@ -799,7 +799,7 @@ class profile_manager {
         );
         $sortorder = ($maxorder ?? 0) + 1;
 
-        $now = time();
+        $now = \core\di::get(\core\clock::class)->time();
         $record = new stdClass();
         $record->name = $name;
         $record->displayname = $displayname;

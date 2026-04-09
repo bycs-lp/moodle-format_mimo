@@ -551,8 +551,9 @@ class tag_manager {
         $record->imgplacement = $imgplacement ?? 'center';
         $record->imgsize = $imgsize ?? 'normal';
         $record->sortorder = $sortorder;
-        $record->timecreated = time();
-        $record->timemodified = time();
+        $now = \core\di::get(\core\clock::class)->time();
+        $record->timecreated = $now;
+        $record->timemodified = $now;
 
         $id = $DB->insert_record('format_mimo_tags', $record);
 
@@ -604,7 +605,7 @@ class tag_manager {
 
         $record = new \stdClass();
         $record->id = $id;
-        $record->timemodified = time();
+        $record->timemodified = \core\di::get(\core\clock::class)->time();
 
         foreach ($data as $key => $value) {
             if ($key === 'bgcolor') {
@@ -676,7 +677,7 @@ class tag_manager {
             $record = new \stdClass();
             $record->cmid = $cmid;
             $record->tagid = $tagid;
-            $record->timecreated = time();
+            $record->timecreated = \core\di::get(\core\clock::class)->time();
             $result = $DB->insert_record('format_mimo_cmtags', $record);
             $result = !empty($result);
         }
@@ -816,7 +817,7 @@ class tag_manager {
         $record = new \stdClass();
         $record->courseid = $courseid;
         $record->tagid = $tagid;
-        $record->timecreated = time();
+        $record->timecreated = \core\di::get(\core\clock::class)->time();
         $DB->insert_record('format_mimo_course_tags', $record);
 
         self::clear_course_tags_cache($courseid);

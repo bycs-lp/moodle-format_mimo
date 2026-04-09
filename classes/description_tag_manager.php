@@ -70,7 +70,7 @@ class description_tag_manager {
             throw new \invalid_parameter_exception('Invalid hex color: ' . $color);
         }
 
-        $time = time();
+        $time = \core\di::get(\core\clock::class)->time();
         $record = new \stdClass();
         $record->name = trim($name);
         $record->color = $color;
@@ -103,7 +103,7 @@ class description_tag_manager {
 
         $record->name = trim($name);
         $record->color = $color;
-        $record->timemodified = time();
+        $record->timemodified = \core\di::get(\core\clock::class)->time();
 
         return $DB->update_record('format_mimo_desc_tags', $record);
     }
