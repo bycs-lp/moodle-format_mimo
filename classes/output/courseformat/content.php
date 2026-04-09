@@ -109,7 +109,7 @@ class content extends content_base {
         $modinfo = get_fast_modinfo($course);
         $completioninfo = new \completion_info($course);
         $completionenabled = $completioninfo->is_enabled();
-        $context = \context_course::instance($course->id);
+        $context = \core\context\course::instance($course->id);
         $isediting = $PAGE->user_is_editing();
 
         // Pre-fetch course tags for mini-wall tile colours and images.

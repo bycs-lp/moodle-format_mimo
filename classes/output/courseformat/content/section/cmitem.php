@@ -81,7 +81,7 @@ class cmitem extends cmitem_base {
             $coursetags = tag_manager::get_tags_for_course($mod->course);
             $tag = $coursetags[$basetag->id] ?? $basetag;
 
-            $data->cmformat->tagname = format_string($tag->name, true, ['context' => \context_course::instance($cm->course)]);
+            $data->cmformat->tagname = format_string($tag->name, true, ['context' => \core\context\course::instance($cm->course)]);
             $data->cmformat->tagid = $tag->id;
             $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';

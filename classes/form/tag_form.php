@@ -464,14 +464,14 @@ class tag_form extends dynamic_form {
      * @return context
      */
     protected function get_context_for_dynamic_submission(): context {
-        return \context_system::instance();
+        return \core\context\system::instance();
     }
 
     /**
      * Checks if current user has sufficient permissions.
      */
     protected function check_access_for_dynamic_submission(): void {
-        require_capability('moodle/site:config', \context_system::instance());
+        require_capability('moodle/site:config', \core\context\system::instance());
     }
 
     /**

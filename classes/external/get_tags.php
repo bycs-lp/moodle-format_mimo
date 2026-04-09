@@ -61,7 +61,7 @@ class get_tags extends external_api {
             'courseid' => $courseid,
         ]);
 
-        $context = \context_course::instance($params['courseid']);
+        $context = \core\context\course::instance($params['courseid']);
         self::validate_context($context);
 
         $tags = tag_manager::get_tags_for_course($params['courseid']);

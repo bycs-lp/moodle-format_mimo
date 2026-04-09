@@ -95,7 +95,7 @@ class format_mimo extends core_courseformat\base {
             return format_string(
                 $section->name,
                 true,
-                ['context' => \context_course::instance($this->courseid)]
+                ['context' => \core\context\course::instance($this->courseid)]
             );
         } else {
             return $this->get_default_section_name($section);
@@ -456,7 +456,7 @@ class format_mimo extends core_courseformat\base {
         // with a compact three-dot dropdown in the header actions area.
         // Placed before the home button so it appears to its left.
         // Also runs before the has_set_url() guard for the same reason as above.
-        $coursecontext = \context_course::instance($this->courseid);
+        $coursecontext = \core\context\course::instance($this->courseid);
         if (!has_capability('moodle/course:update', $coursecontext)) {
             $page->add_body_class('format-mimo-compact-secondarynav');
             $menulabel = get_string('compactnav_menu', 'format_mimo');

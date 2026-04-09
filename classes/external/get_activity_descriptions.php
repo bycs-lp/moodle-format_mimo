@@ -68,7 +68,7 @@ class get_activity_descriptions extends external_api {
         ]);
 
         // Validate context — activity descriptions are site-wide, so use system context.
-        $context = \context_system::instance();
+        $context = \core\context\system::instance();
         self::validate_context($context);
 
         // Set up a minimal context for rendering (required for external webservices).
@@ -87,7 +87,7 @@ class get_activity_descriptions extends external_api {
 
             $description = $descdata->description ?? '';
             if (!empty($description)) {
-                $description = format_text($description, FORMAT_HTML, ['context' => \context_system::instance()]);
+                $description = format_text($description, FORMAT_HTML, ['context' => \core\context\system::instance()]);
             }
 
             $descriptions[] = [
@@ -95,7 +95,7 @@ class get_activity_descriptions extends external_api {
                 'description' => $description,
                 'iconhtml' => $iconhtml,
                 'purpose' => $purposeclass,
-                'tagname' => !empty($descdata->tagname) ? format_string($descdata->tagname, true, ['context' => \context_system::instance()]) : '',
+                'tagname' => !empty($descdata->tagname) ? format_string($descdata->tagname, true, ['context' => \core\context\system::instance()]) : '',
                 'tagcolor' => $descdata->tagcolor ?? '',
             ];
         }

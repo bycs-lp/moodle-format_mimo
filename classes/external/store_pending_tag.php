@@ -65,7 +65,7 @@ class store_pending_tag extends external_api {
         ]);
 
         // Validate context and capability.
-        $context = \context_course::instance($params['courseid']);
+        $context = \core\context\course::instance($params['courseid']);
         self::validate_context($context);
         require_capability('moodle/course:manageactivities', $context);
 

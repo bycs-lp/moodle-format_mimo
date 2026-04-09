@@ -32,7 +32,7 @@ $sectionid = required_param('sectionid', PARAM_INT);
 $course = get_course($courseid);
 require_login($course);
 
-$context = context_course::instance($courseid);
+$context = \core\context\course::instance($courseid);
 require_capability('moodle/course:update', $context);
 require_sesskey();
 

@@ -73,7 +73,7 @@ class section_image_manager {
      * @return int Draft item ID populated with existing file (if any)
      */
     public static function prepare_draft(int $courseid, int $sectionid): int {
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
         $draftitemid = file_get_submitted_draft_itemid('sectionimagefile');
         file_prepare_draft_area(
             $draftitemid,
@@ -94,7 +94,7 @@ class section_image_manager {
      * @param int $draftitemid Draft area identifier
      */
     public static function save_image(int $courseid, int $sectionid, int $draftitemid): void {
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
         file_save_draft_area_files(
             $draftitemid,
             $context->id,
@@ -145,7 +145,7 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      */
     public static function delete_image(int $courseid, int $sectionid): void {
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
         $fs = get_file_storage();
         $fs->delete_area_files($context->id, self::COMPONENT, self::FILEAREA, $sectionid);
     }
@@ -158,7 +158,7 @@ class section_image_manager {
      * @param int $courseid Course ID
      */
     public static function delete_all_for_course(int $courseid): void {
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
         $fs = get_file_storage();
         $fs->delete_area_files($context->id, self::COMPONENT, self::FILEAREA);
     }
@@ -171,7 +171,7 @@ class section_image_manager {
      * @return \stored_file|null
      */
     private static function get_stored_file(int $courseid, int $sectionid): ?\stored_file {
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
         $files = get_file_storage()->get_area_files(
             $context->id,
             self::COMPONENT,

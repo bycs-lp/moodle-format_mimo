@@ -34,7 +34,7 @@ $action = optional_param('action', '', PARAM_ALPHA);
 $tagid = optional_param('tagid', 0, PARAM_INT);
 $profilename = optional_param('profile', '', PARAM_ALPHANUMEXT);
 
-$context = context_system::instance();
+$context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
 $urlparams = [];

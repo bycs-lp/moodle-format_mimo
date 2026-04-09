@@ -32,7 +32,7 @@ admin_externalpage_setup('format_mimo_profiles');
 $action = optional_param('action', '', PARAM_ALPHA);
 $profileid = optional_param('profileid', 0, PARAM_INT);
 
-$context = context_system::instance();
+$context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
 $PAGE->set_url('/course/format/mimo/profile_management.php');

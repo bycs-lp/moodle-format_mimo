@@ -118,7 +118,7 @@ class tag_manager {
         $draftitemid = file_get_submitted_draft_itemid('cardimagefile');
         file_prepare_draft_area(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             self::FILEAREA_CARDIMAGE,
             $tagid ?? 0,
@@ -138,7 +138,7 @@ class tag_manager {
         $draftitemid = file_get_submitted_draft_itemid('filterimagefile');
         file_prepare_draft_area(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             self::FILEAREA_FILTERIMAGE,
             $tagid ?? 0,
@@ -189,7 +189,7 @@ class tag_manager {
     private static function save_image_from_draft(int $tagid, int $draftitemid, string $filearea, string $dbfield): void {
         file_save_draft_area_files(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             $filearea,
             $tagid,
@@ -281,7 +281,7 @@ class tag_manager {
      */
     private static function get_image_file(int $tagid, string $filearea): ?\stored_file {
         $files = get_file_storage()->get_area_files(
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             $filearea,
             $tagid,
@@ -342,7 +342,7 @@ class tag_manager {
             return;
         }
 
-        $context = context_system::instance();
+        $context = \core\context\system::instance();
         $fs = get_file_storage();
         if ($fs->file_exists($context->id, 'format_mimo', $filearea, $tagid, '/', $filename)) {
             return;
@@ -643,7 +643,7 @@ class tag_manager {
 
         // Delete base tag image files.
         $fs = get_file_storage();
-        $contextid = context_system::instance()->id;
+        $contextid = \core\context\system::instance()->id;
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_CARDIMAGE, $id);
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_FILTERIMAGE, $id);
 

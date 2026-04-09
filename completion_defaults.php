@@ -37,7 +37,7 @@ $confirm = optional_param('confirm', 0, PARAM_INT);
 
 // Authentication and capabilities.
 admin_externalpage_setup('format_mimo_completiondefaults');
-$context = context_system::instance();
+$context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
 $pageurl = new moodle_url('/course/format/mimo/completion_defaults.php');

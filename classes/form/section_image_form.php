@@ -72,7 +72,7 @@ class section_image_form extends dynamic_form {
      */
     protected function get_context_for_dynamic_submission(): context {
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
-        return \context_course::instance($courseid);
+        return \core\context\course::instance($courseid);
     }
 
     /**
@@ -80,7 +80,7 @@ class section_image_form extends dynamic_form {
      */
     protected function check_access_for_dynamic_submission(): void {
         $courseid = $this->optional_param('courseid', 0, PARAM_INT);
-        require_capability('moodle/course:update', \context_course::instance($courseid));
+        require_capability('moodle/course:update', \core\context\course::instance($courseid));
     }
 
     /**

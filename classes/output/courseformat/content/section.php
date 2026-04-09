@@ -140,7 +140,7 @@ class section extends section_base {
 
         $tagids = array_map('intval', array_keys($tags));
         $usage = \format_mimo\tag_manager::get_tag_usage_counts($courseid, $tagids, $sectionid);
-        $context = context_course::instance($courseid);
+        $context = \core\context\course::instance($courseid);
 
         $filtertags = [];
         foreach ($tags as $tag) {

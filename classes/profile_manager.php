@@ -487,7 +487,7 @@ class profile_manager {
         $draftitemid = file_get_submitted_draft_itemid("cardimage_profile_{$profileid}");
         file_prepare_draft_area(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             self::FILEAREA_PROFILE_CARDIMAGE,
             $itemid,
@@ -511,7 +511,7 @@ class profile_manager {
         $draftitemid = file_get_submitted_draft_itemid("filterimage_profile_{$profileid}");
         file_prepare_draft_area(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             self::FILEAREA_PROFILE_FILTERIMAGE,
             $itemid,
@@ -566,7 +566,7 @@ class profile_manager {
 
         file_save_draft_area_files(
             $draftitemid,
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             $filearea,
             $profiletag->id,
@@ -697,7 +697,7 @@ class profile_manager {
      */
     private static function get_image_file(int $profiletagid, string $filearea): ?\stored_file {
         $files = get_file_storage()->get_area_files(
-            context_system::instance()->id,
+            \core\context\system::instance()->id,
             'format_mimo',
             $filearea,
             $profiletagid,
@@ -719,7 +719,7 @@ class profile_manager {
      */
     private static function delete_profile_tag_files(int $profiletagid): void {
         $fs = get_file_storage();
-        $contextid = context_system::instance()->id;
+        $contextid = \core\context\system::instance()->id;
 
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_PROFILE_CARDIMAGE, $profiletagid);
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_PROFILE_FILTERIMAGE, $profiletagid);
@@ -740,7 +740,7 @@ class profile_manager {
             return;
         }
 
-        $context = context_system::instance();
+        $context = \core\context\system::instance();
         $fs = get_file_storage();
         if ($fs->file_exists($context->id, 'format_mimo', $filearea, $profiletagid, '/', $filename)) {
             return;

@@ -48,7 +48,7 @@ final class privacy_provider_test extends provider_testcase {
 
         provider::export_user_preferences($user->id);
 
-        $writer = writer::with_context(\context_system::instance());
+        $writer = writer::with_context(\core\context\system::instance());
         $prefs = $writer->get_user_preferences('format_mimo');
 
         $this->assertEmpty((array) $prefs);
@@ -65,7 +65,7 @@ final class privacy_provider_test extends provider_testcase {
 
         provider::export_user_preferences($user->id);
 
-        $writer = writer::with_context(\context_system::instance());
+        $writer = writer::with_context(\core\context\system::instance());
         $prefs = $writer->get_user_preferences('format_mimo');
 
         $prefkey = 'format_mimo_lastsection_' . $course->id;
@@ -90,7 +90,7 @@ final class privacy_provider_test extends provider_testcase {
 
         provider::export_user_preferences($user->id);
 
-        $writer = writer::with_context(\context_system::instance());
+        $writer = writer::with_context(\core\context\system::instance());
         $prefs = $writer->get_user_preferences('format_mimo');
 
         $key1 = 'format_mimo_lastsection_' . $course1->id;

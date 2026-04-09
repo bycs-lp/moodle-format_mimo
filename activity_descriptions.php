@@ -30,7 +30,7 @@ use format_mimo\form\activity_descriptions_form;
 
 admin_externalpage_setup('format_mimo_activitydescriptions');
 
-$context = context_system::instance();
+$context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
 $PAGE->set_url('/course/format/mimo/activity_descriptions.php');

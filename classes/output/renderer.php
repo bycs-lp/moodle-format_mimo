@@ -46,7 +46,7 @@ class renderer extends section_renderer {
     public function course_section_add_cm_control($course, $section, $sectionreturn = null, $displayoptions = []) {
         // Check to see if user can add menus.
         if (
-            !has_capability('moodle/course:manageactivities', \context_course::instance($course->id))
+            !has_capability('moodle/course:manageactivities', \core\context\course::instance($course->id))
                 || !$this->page->user_is_editing()
         ) {
             return '';

@@ -66,7 +66,7 @@ class assign_tag extends external_api {
 
         // Verify the course module exists and user has permission.
         $cm = $DB->get_record('course_modules', ['id' => $params['cmid']], '*', MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+        $context = \core\context\module::instance($cm->id);
         self::validate_context($context);
         require_capability('moodle/course:manageactivities', $context);
 

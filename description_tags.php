@@ -29,7 +29,7 @@ use format_mimo\description_tag_manager;
 
 admin_externalpage_setup('format_mimo_descriptiontags');
 
-$context = context_system::instance();
+$context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
 $delete = optional_param('delete', 0, PARAM_INT);
