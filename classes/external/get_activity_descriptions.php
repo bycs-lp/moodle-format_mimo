@@ -95,7 +95,9 @@ class get_activity_descriptions extends external_api {
                 'description' => $description,
                 'iconhtml' => $iconhtml,
                 'purpose' => $purposeclass,
-                'tagname' => !empty($descdata->tagname) ? format_string($descdata->tagname, true, ['context' => \core\context\system::instance()]) : '',
+                'tagname' => !empty($descdata->tagname)
+                    ? format_string($descdata->tagname, true, ['context' => \core\context\system::instance()])
+                    : '',
                 'tagcolor' => $descdata->tagcolor ?? '',
             ];
         }

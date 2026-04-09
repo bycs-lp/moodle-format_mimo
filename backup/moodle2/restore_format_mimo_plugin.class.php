@@ -32,7 +32,6 @@
  *    disable surplus tags, bind imported tags, set course profile.
  */
 class restore_format_mimo_plugin extends restore_format_plugin {
-
     /** @var array|null Existing tags on target, keyed by id, loaded once. */
     private $existingtags = null;
 
@@ -236,8 +235,10 @@ class restore_format_mimo_plugin extends restore_format_plugin {
 
         // Check the match type for the parent tag.
         $oldtagid = $data->tagid;
-        if (isset($this->overridedata[$oldtagid])
-                && !in_array($this->overridedata[$oldtagid]['match'], ['fingerprint', 'name'])) {
+        if (
+            isset($this->overridedata[$oldtagid])
+                && !in_array($this->overridedata[$oldtagid]['match'], ['fingerprint', 'name'])
+        ) {
             // Skip profile_tag records for positional/new matches.
             return;
         }
@@ -387,11 +388,13 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             ['courseid' => $courseid]
         );
         // If the option doesn't exist yet, create it.
-        if (!$DB->record_exists('course_format_options', [
+        if (
+            !$DB->record_exists('course_format_options', [
             'courseid' => $courseid,
             'format' => 'mimo',
             'name' => 'activityprofile',
-        ])) {
+            ])
+        ) {
             $DB->insert_record('course_format_options', (object) [
                 'courseid' => $courseid,
                 'format' => 'mimo',

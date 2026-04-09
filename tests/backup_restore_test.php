@@ -86,13 +86,13 @@ final class backup_restore_test extends \advanced_testcase {
         $generator = $this->getDataGenerator();
         $tagid = tag_manager::create_tag(
             'Colored Tag',
-            null, // cardimage.
-            null, // filterimage.
-            null, // activitytype1.
-            null, // activitytype2.
-            'quiz', // activitytype3.
-            '#ff5733', // bgcolor.
-            'lower' // imgplacement.
+            null, // Cardimage.
+            null, // Filterimage.
+            null, // Activitytype1.
+            null, // Activitytype2.
+            'quiz', // Activitytype3.
+            '#ff5733', // Bgcolor.
+            'lower' // Imgplacement.
         );
 
         $course = $generator->create_course([

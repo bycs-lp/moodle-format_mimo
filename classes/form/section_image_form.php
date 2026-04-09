@@ -60,8 +60,12 @@ class section_image_form extends dynamic_form {
             'cover' => get_string('sectionimagefit_cover', 'format_mimo'),
             'contain' => get_string('sectionimagefit_contain', 'format_mimo'),
         ];
-        $mform->addElement('select', 'sectionimagefit',
-            get_string('sectionimagefit', 'format_mimo'), $fitoptions);
+        $mform->addElement(
+            'select',
+            'sectionimagefit',
+            get_string('sectionimagefit', 'format_mimo'),
+            $fitoptions
+        );
         $mform->setDefault('sectionimagefit', 'cover');
     }
 

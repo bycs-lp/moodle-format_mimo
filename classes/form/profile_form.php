@@ -24,7 +24,6 @@
 
 namespace format_mimo\form;
 
-defined('MOODLE_INTERNAL') || die();
 
 use format_mimo\profile_manager;
 use format_mimo\tag_manager;

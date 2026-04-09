@@ -30,7 +30,6 @@ use format_mimo\privacy\provider;
  * @covers     \format_mimo\privacy\provider
  */
 final class privacy_provider_test extends provider_testcase {
-
     public function test_get_metadata(): void {
         $collection = new collection('format_mimo');
         $collection = provider::get_metadata($collection);

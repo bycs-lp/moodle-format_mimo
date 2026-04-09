@@ -16,7 +16,6 @@
 
 namespace format_mimo;
 
-defined('MOODLE_INTERNAL') || die();
 
 use moodle_url;
 use tabobject;

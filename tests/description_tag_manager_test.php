@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test cases for description tag manager.

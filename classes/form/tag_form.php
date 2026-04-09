@@ -24,7 +24,6 @@
 
 namespace format_mimo\form;
 
-defined('MOODLE_INTERNAL') || die();
 
 use format_mimo\tag_manager;
 use format_mimo\profile_manager;
@@ -54,13 +53,13 @@ class tag_form extends dynamic_form {
         $activitytypes = $this->get_activity_types();
 
         if ($selectedprofileid) {
-            // ---- Profile override mode: show only profile-specific fields ----
+            // Profile override mode: show only profile-specific fields.
             $profile = profile_manager::get_profile($selectedprofileid);
             if ($profile) {
                 $this->add_profile_section($mform, $profile, $activitytypes, $tagid);
             }
         } else {
-            // ---- Base tag fields (only when no profile is selected) ----
+            // Base tag fields (only when no profile is selected).
             $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_mimo'));
             $mform->setExpanded('basetagheader', true);
 

@@ -35,7 +35,6 @@ use renderer_base;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cmname extends cmname_base {
-
     /**
      * Export this data so it can be used as the context for a mustache template.
      *

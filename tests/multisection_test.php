@@ -29,6 +29,8 @@
 
 namespace format_mimo;
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
 
@@ -70,9 +72,9 @@ final class multisection_test extends \advanced_testcase {
         $this->format = course_get_format($this->course);
     }
 
-    // -----------------------------------------------------------------------
-    // Core multi-section toggle tests.
-    // -----------------------------------------------------------------------
+    /* ================================== *
+     * Core multi-section toggle tests.  *
+     * ================================== */
 
     /**
      * Test that multi-section mode can be toggled on and off.
@@ -95,9 +97,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertFalse($format->is_multisection_enabled());
     }
 
-    // -----------------------------------------------------------------------
-    // Activities in sections: the main feature test.
-    // -----------------------------------------------------------------------
+    /* ================================================ *
+     * Activities in sections: the main feature test.  *
+     * ================================================ */
 
     /**
      * Test that activities created in different sections belong to the correct section.
@@ -208,9 +210,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertContains('Moveable assignment', $sec2names);
     }
 
-    // -----------------------------------------------------------------------
-    // Section visibility tests.
-    // -----------------------------------------------------------------------
+    /* =========================== *
+     * Section visibility tests.  *
+     * =========================== */
 
     /**
      * Test that all sections except section 0 are visible when multi-section is enabled.
@@ -263,9 +265,9 @@ final class multisection_test extends \advanced_testcase {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // get_sectionnum() tests.
-    // -----------------------------------------------------------------------
+    /* ============================= *
+     * The get_sectionnum() tests.  *
+     * ============================= */
 
     /**
      * Test get_sectionnum returns 1 for single-section mode.
@@ -296,9 +298,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertSame(0, $this->format->get_sectionnum());
     }
 
-    // -----------------------------------------------------------------------
-    // URL generation tests.
-    // -----------------------------------------------------------------------
+    /* ======================= *
+     * URL generation tests.  *
+     * ======================= */
 
     /**
      * Test that get_view_url uses course/view.php with section parameter in multi-section mode.
@@ -349,9 +351,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertStringContainsString('section=0', $url->out(false));
     }
 
-    // -----------------------------------------------------------------------
-    // Course index support.
-    // -----------------------------------------------------------------------
+    /* ======================= *
+     * Course index support.  *
+     * ======================= */
 
     /**
      * Test that course index is enabled only in multi-section mode.
@@ -364,9 +366,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertFalse($format->uses_course_index());
     }
 
-    // -----------------------------------------------------------------------
-    // Section header stripping in output.
-    // -----------------------------------------------------------------------
+    /* ===================================== *
+     * Section header stripping in output.  *
+     * ===================================== */
 
     /**
      * Test that section output strips headers in multi-section non-editing mode.
@@ -401,9 +403,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertObjectNotHasProperty('singleheader', $data);
     }
 
-    // -----------------------------------------------------------------------
-    // Completion scoping per section.
-    // -----------------------------------------------------------------------
+    /* ================================= *
+     * Completion scoping per section.  *
+     * ================================= */
 
     /**
      * Test that section 0 is always hidden in multi-section mode.
@@ -501,9 +503,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertNotContains('Page in s2', $sec1names);
     }
 
-    // -----------------------------------------------------------------------
-    // Format option persistence.
-    // -----------------------------------------------------------------------
+    /* ============================ *
+     * Format option persistence.  *
+     * ============================ */
 
     /**
      * Test that enablemultisection option is persisted in format options.
@@ -520,14 +522,14 @@ final class multisection_test extends \advanced_testcase {
     public function test_section_count(): void {
         $modinfo = get_fast_modinfo($this->course);
         $sections = $modinfo->get_section_info_all();
-        // numsections=2 means sections 0, 1, 2.
+        // Numsections=2 means sections 0, 1, 2.
         $nondelegated = array_filter($sections, fn($s) => !$s->is_delegated());
         $this->assertCount(3, $nondelegated);
     }
 
-    // -----------------------------------------------------------------------
-    // Data provider tests for get_view_url with various section numbers.
-    // -----------------------------------------------------------------------
+    /* ==================================================================== *
+     * Data provider tests for get_view_url with various section numbers.  *
+     * ==================================================================== */
 
     /**
      * Data provider for URL section parameter tests.
@@ -555,9 +557,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertStringContainsString('/course/view.php', $url->out(false));
     }
 
-    // -----------------------------------------------------------------------
-    // Section name tests.
-    // -----------------------------------------------------------------------
+    /* ===================== *
+     * Section name tests.  *
+     * ===================== */
 
     /**
      * Test default section names.
@@ -596,9 +598,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertEquals('My Custom Section', $name);
     }
 
-    // -----------------------------------------------------------------------
-    // Format capabilities.
-    // -----------------------------------------------------------------------
+    /* ====================== *
+     * Format capabilities.  *
+     * ====================== */
 
     /**
      * Test basic format capabilities.
@@ -613,9 +615,9 @@ final class multisection_test extends \advanced_testcase {
         $this->assertTrue($this->format->supports_components());
     }
 
-    // -----------------------------------------------------------------------
-    // Helpers.
-    // -----------------------------------------------------------------------
+    /* ========== *
+     * Helpers.  *
+     * ========== */
 
     /**
      * Enable multi-section mode for a course.

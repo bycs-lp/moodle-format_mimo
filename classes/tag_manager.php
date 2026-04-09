@@ -28,7 +28,6 @@ use context_system;
 use core_component;
 use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Tag manager class for handling tag sets and tags.

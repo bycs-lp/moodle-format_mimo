@@ -46,7 +46,7 @@ class hook_callbacks {
 
         // Generate CSS content.
         $css = self::get_distraction_free_css_content();
-        
+
         // Add CSS to head.
         $hook->add_html('<style type="text/css" id="format-mimo-df-css">' . $css . '</style>');
     }

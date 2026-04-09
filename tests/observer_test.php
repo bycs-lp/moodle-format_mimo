@@ -24,6 +24,8 @@
 
 namespace format_mimo;
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
 

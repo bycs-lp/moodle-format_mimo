@@ -667,8 +667,10 @@ class format_mimo extends core_courseformat\base {
         if ($this->is_multisection_enabled()) {
             if ($navigation->includesectionnum === false) {
                 $selectedsection = optional_param('section', null, PARAM_INT);
-                if ($selectedsection !== null && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0') &&
-                        $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)) {
+                if (
+                    $selectedsection !== null && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0') &&
+                        $PAGE->url->compare(new moodle_url('/course/view.php'), URL_MATCH_BASE)
+                ) {
                     $navigation->includesectionnum = $selectedsection;
                 }
             }
@@ -679,10 +681,12 @@ class format_mimo extends core_courseformat\base {
 
         // In multi-section mode, remember the section when viewing an activity page.
         // This ensures deep links and course index activity clicks set the correct wall.
-        if ($this->is_multisection_enabled()
+        if (
+            $this->is_multisection_enabled()
                 && $PAGE->context->contextlevel == CONTEXT_MODULE
                 && $PAGE->cm
-                && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0')) {
+                && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0')
+        ) {
             $sectionnum = $PAGE->cm->sectionnum;
             if ($sectionnum > 0) {
                 $course = $this->get_course();

@@ -368,10 +368,12 @@ function xmldb_format_mimo_upgrade($oldversion) {
             $tags = $DB->get_records('format_mimo_tags');
             foreach ($tags as $tag) {
                 // Check if tag_images record already exists.
-                if (!$DB->record_exists('format_mimo_tag_images', [
+                if (
+                    !$DB->record_exists('format_mimo_tag_images', [
                     'tagid' => $tag->id,
                     'designid' => $classicdesign->id,
-                ])) {
+                    ])
+                ) {
                     $record = new stdClass();
                     $record->tagid = $tag->id;
                     $record->designid = $classicdesign->id;
@@ -548,11 +550,11 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026021000, 'format', 'mimo');
     }
 
-    // Phase 1: Remove tagset architecture (single flat tag list).
-    // Phase 2: Rename "style" → "profile" (activity profiles).
-    // Phase 3: Extend profile_tags with name/bgcolor/activitytype overrides + enabled flag.
+    /* Phase 1: Remove tagset architecture (single flat tag list).
+     * Phase 2: Rename "style" to "profile" (activity profiles).
+     * Phase 3: Extend profile_tags with name/bgcolor/activitytype overrides + enabled flag. */
     if ($oldversion < 2026022600) {
-        // ========== Phase 1: Remove tagsets ==========
+        /* === Phase 1: Remove tagsets. === */
 
         // Step 1: Ensure every course has selectedtags populated from its tagset.
         $sql = "SELECT cfo.courseid, cfo.value AS tagsetid
@@ -639,7 +641,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
             $dbman->drop_table($table);
         }
 
-        // ========== Phase 2: Rename "style" → "profile" ==========
+        /* === Phase 2: Rename "style" to "profile". === */
 
         // Step 5: Rename table styles → profiles.
         $table = new xmldb_table('format_mimo_styles');
@@ -697,7 +699,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
               WHERE component = 'format_mimo' AND filearea = 'styletagfilter'"
         );
 
-        // ========== Phase 3: Extend profile_tags with overrides ==========
+        /* === Phase 3: Extend profile_tags with overrides. === */
 
         $ptable = new xmldb_table('format_mimo_profile_tags');
 

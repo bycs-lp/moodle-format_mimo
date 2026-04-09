@@ -24,6 +24,8 @@
 
 namespace format_mimo;
 
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -71,9 +73,9 @@ final class completion_defaults_test extends \advanced_testcase {
         return (int)$DB->get_field('modules', 'id', ['name' => $modname], MUST_EXIST);
     }
 
-    // =========================================================================
-    // CRUD tests for completion_defaults_manager.
-    // =========================================================================
+    /* ================================================ *
+     * CRUD tests for completion_defaults_manager.      *
+     * ================================================ */
 
     /**
      * Test saving and retrieving a completion default.
@@ -192,9 +194,9 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(COMPLETION_TRACKING_MANUAL, (int)$all[$pageid]->completion);
     }
 
-    // =========================================================================
-    // Observer integration: positive tests.
-    // =========================================================================
+    /* ========================================= *
+     * Observer integration: positive tests.     *
+     * ========================================= */
 
     /**
      * Test that completion override is applied when module matches core defaults.
@@ -337,9 +339,9 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(1, (int)$cm->completionview);
     }
 
-    // =========================================================================
-    // Observer integration: negative tests.
-    // =========================================================================
+    /* ========================================= *
+     * Observer integration: negative tests.     *
+     * ========================================= */
 
     /**
      * Test that override is NOT applied when no mimo default exists.
@@ -503,9 +505,9 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(COMPLETION_TRACKING_NONE, (int)$cm->completion);
     }
 
-    // =========================================================================
-    // Unit tests for matches_core_defaults().
-    // =========================================================================
+    /* ========================================== *
+     * Unit tests for matches_core_defaults().    *
+     * ========================================== */
 
     /**
      * Test matches_core_defaults returns true for matching core fields.

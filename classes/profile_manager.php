@@ -31,7 +31,6 @@ use context_system;
 use moodle_url;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Activity profile manager class for handling activity profiles.
@@ -46,7 +45,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class profile_manager {
-
     /** Database table for profiles. */
     private const TABLE_PROFILES = 'format_mimo_profiles';
 
@@ -87,9 +85,9 @@ class profile_manager {
         'subdirs' => 0,
     ];
 
-    // ---------------------------------------------------------------
-    // Profile CRUD.
-    // ---------------------------------------------------------------
+    /* =============== *
+     * Profile CRUD.  *
+     * =============== */
 
     /**
      * Get all profiles ordered by sortorder.
@@ -140,7 +138,12 @@ class profile_manager {
      * @param string $scope Profile scope: 'global' or 'imported'
      * @return int The new profile ID
      */
-    public static function create_profile(string $name, string $displayname, ?int $sortorder = null, string $scope = 'global'): int {
+    public static function create_profile(
+        string $name,
+        string $displayname,
+        ?int $sortorder = null,
+        string $scope = 'global',
+    ): int {
         global $DB;
 
         if ($sortorder === null) {
@@ -247,9 +250,9 @@ class profile_manager {
         return $options;
     }
 
-    // ---------------------------------------------------------------
-    // Profile-tag override management.
-    // ---------------------------------------------------------------
+    /* ================================== *
+     * Profile-tag override management.  *
+     * ================================== */
 
     /**
      * Get or create a profile_tags record for a tag/profile combination.
@@ -405,9 +408,9 @@ class profile_manager {
         self::$imageurlcache = [];
     }
 
-    // ---------------------------------------------------------------
-    // Tag resolution with profile overrides.
-    // ---------------------------------------------------------------
+    /* ======================================== *
+     * Tag resolution with profile overrides.  *
+     * ======================================== */
 
     /**
      * Resolve a tag record with profile-specific overrides applied.
@@ -460,9 +463,9 @@ class profile_manager {
         return $resolved;
     }
 
-    // ---------------------------------------------------------------
-    // Image management (draft areas, saving, URLs).
-    // ---------------------------------------------------------------
+    /* =============================================== *
+     * Image management (draft areas, saving, URLs).  *
+     * =============================================== */
 
     /**
      * Retrieve the shared filemanager options for profile image uploads.
@@ -661,9 +664,9 @@ class profile_manager {
         return $url;
     }
 
-    // ---------------------------------------------------------------
-    // Private file helpers.
-    // ---------------------------------------------------------------
+    /* ======================= *
+     * Private file helpers.  *
+     * ======================= */
 
     /**
      * Resolve the pluginfile URL for a stored file.
@@ -763,9 +766,9 @@ class profile_manager {
         $fs->create_file_from_pathname($filerecord, $source);
     }
 
-    // ---------------------------------------------------------------
-    // Imported profile management.
-    // ---------------------------------------------------------------
+    /* ============================== *
+     * Imported profile management.  *
+     * ============================== */
 
     /**
      * Create a new imported profile for a restored course.
@@ -873,9 +876,9 @@ class profile_manager {
         return $DB->get_records(self::TABLE_PROFILES, ['scope' => 'global'], 'sortorder ASC, id ASC');
     }
 
-    // ---------------------------------------------------------------
-    // Initialization.
-    // ---------------------------------------------------------------
+    /* ================= *
+     * Initialization.  *
+     * ================= */
 
     /**
      * Initialize default profiles if they don't exist.

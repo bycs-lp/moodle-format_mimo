@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Manages description tags for activity type descriptions.

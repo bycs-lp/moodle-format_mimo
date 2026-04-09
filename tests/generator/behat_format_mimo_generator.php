@@ -295,7 +295,7 @@ class behat_format_mimo_generator extends behat_generator_base {
                     $tagids[] = $this->get_tag_id($tagname);
                 }
             }
-            // selectedtags is no longer a course format option, but we still resolve tag names
+            // The selectedtags is no longer a course format option, but we still resolve tag names
             // to IDs for backward compatibility in test data. The IDs are not stored.
             unset($data['selectedtags']);
         }

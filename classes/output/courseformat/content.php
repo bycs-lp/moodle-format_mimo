@@ -167,8 +167,10 @@ class content extends content_base {
                     if ($completionenabled && $completioninfo->is_enabled($cm)) {
                         $totaltracked++;
                         $completiondata = $completioninfo->get_data($cm, false);
-                        if ($completiondata->completionstate == COMPLETION_COMPLETE ||
-                                $completiondata->completionstate == COMPLETION_COMPLETE_PASS) {
+                        if (
+                            $completiondata->completionstate == COMPLETION_COMPLETE ||
+                                $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                        ) {
                             $completedcount++;
                         }
                     }

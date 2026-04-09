@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Manages activity type descriptions for the tag chooser modal.
