@@ -55,6 +55,17 @@ class format_mimo extends core_courseformat\base {
     }
 
     /**
+     * Allow the stealth module visibility state inside visible sections.
+     *
+     * @param stdClass|cm_info $cm course module (may be null if we are displaying a form for adding a module)
+     * @param stdClass|section_info $section section where this module is located or will be added to
+     * @return bool
+     */
+    public function allow_stealth_module_visibility($cm, $section) {
+        return !$section->section || $section->visible;
+    }
+
+    /**
      * Returns whether this course format uses indentation.
      *
      * @return bool
