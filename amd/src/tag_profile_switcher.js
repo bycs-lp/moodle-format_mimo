@@ -32,6 +32,7 @@ const SELECTORS = {
     TAG_ROW: 'tr[data-tag-id]',
     EDIT_LINK: '[data-action="edit-tag"]',
     DELETE_LINK: '[data-action="delete-tag"]',
+    CREATE_TAG: '[data-action="create-tag"]',
 };
 
 /** @type {Object} Per-tag per-profile resolved data. */
@@ -116,6 +117,13 @@ const switchProfile = (profileName) => {
         url.searchParams.set('profile', profileName);
     }
     window.history.replaceState(null, '', url.toString());
+
+    // Toggle create-tag button (only enabled in base view).
+    const isBase = profileName === '';
+    const createBtn = document.querySelector(SELECTORS.CREATE_TAG);
+    if (createBtn) {
+        createBtn.disabled = !isBase;
+    }
 
     // Update each tag row.
     document.querySelectorAll(SELECTORS.TAG_ROW).forEach((row) => {

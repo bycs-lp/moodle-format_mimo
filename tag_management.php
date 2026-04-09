@@ -201,6 +201,7 @@ foreach ($tags as $tag) {
 
 $templatecontext = [
     'createtagtext' => get_string('createtag', 'format_mimo'),
+    'isbaseview' => ($profilename === ''),
     'activeprofileid' => $activeprofileid,
     'notagstext' => get_string('notags', 'format_mimo'),
     'hastags' => !empty($tags),
