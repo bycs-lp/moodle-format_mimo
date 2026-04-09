@@ -1654,6 +1654,8 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 /* Editing-mode card: whole card is the drag surface. */
 .mimo-overview-card--editing {
   cursor: move;
+  position: relative;
+  aspect-ratio: auto;
 }
 .mimo-overview-card--editing.dragging {
   cursor: move;
@@ -1664,6 +1666,29 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 .mimo-overview-card--editing.drag-over {
   border: 2px dashed #007bff;
   background: rgba(0, 123, 255, 0.05);
+}
+.mimo-overview-card--editing.selected {
+  outline: 3px solid #0d6efd;
+  outline-offset: 2px;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+.mimo-overview-card--editing > .bulkselect {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  padding: 4px;
+}
+.mimo-overview-card--editing > .bulkselect input[type=checkbox] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  margin: 0;
+}
+.mimo-overview-card--editing.dimmed {
+  opacity: 0.6;
+}
+.mimo-overview-card--editing > .bulkselect:not(.d-none) ~ .mimo-overview-card__body .mimo-overview-card__name,
+.mimo-overview-card--editing > .bulkselect:not(.d-none) ~ .mimo-overview-card__visibility {
+  padding-left: 28px;
 }
 
 .mimo-overview-card__body {
@@ -1914,14 +1939,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 
 /* Overview card editing variant. */
 .mimo-overview-card--editing {
-  display: flex;
-  flex-direction: column;
-  background: #fff;
   border: 2px dashed rgba(0, 0, 0, 0.2);
-  border-radius: 1.2rem;
-  padding: 1.25rem;
-  color: inherit;
-  aspect-ratio: 1/1.06;
 }
 
 .mimo-overview-card--editing .mimo-overview-card__footer {

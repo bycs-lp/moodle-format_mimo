@@ -40,13 +40,30 @@
         <div class="mimo-overview-grid" data-region="mimo-overview-grid" data-section0id="{{section0id}}">
             {{#overviewsections}}
             {{#isediting}}
-            <div class="mimo-overview-card mimo-overview-card--editing" data-for="mimo-overview-card" data-id="{{id}}" data-section-num="{{num}}" data-section-id="{{id}}">
+            <div class="mimo-overview-card mimo-overview-card--editing{{#ishidden}} dimmed{{/ishidden}}" data-for="mimo-overview-card" data-id="{{id}}" data-section-num="{{num}}" data-section-id="{{id}}">
+                <div class="bulkselect d-none position-absolute top-0 start-0 m-2" data-for="sectionBulkSelect" style="z-index: 10;">
+                    <input
+                        id="sectionCheckbox{{id}}"
+                        type="checkbox"
+                        data-id="{{id}}"
+                        data-action="toggleSelectionSection"
+                        data-bulkcheckbox="1"
+                    >
+                    <label class="visually-hidden" for="sectionCheckbox{{id}}">
+                        {{selecttext}}
+                    </label>
+                </div>
                 <div class="mimo-overview-card__body">
                     <h3 class="mimo-overview-card__name" draggable="false">{{{inplaceeditable}}}</h3>
                     {{#hassummary}}
                     <div class="mimo-overview-card__summary">{{{summary}}}</div>
                     {{/hassummary}}
                 </div>
+                {{#visibility}}
+                <div class="mimo-overview-card__visibility" data-region="sectionvisibility" draggable="false">
+                    {{> core_courseformat/local/content/section/visibility}}
+                </div>
+                {{/visibility}}
                 {{#hassectionimage}}
                 <div class="mimo-overview-card__sectionimage-wrap">
                     <img src="{{sectionimageurl}}" class="mimo-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
@@ -174,5 +191,6 @@
 {{#js}}
 require(['format_mimo/section_image_modal'], function(mod) { mod.init(); });
 require(['format_mimo/section_overview_actions'], function(mod) { mod.init(); });
+require(['format_mimo/section_overview_bulk'], function(mod) { mod.init(); });
 {{/js}}
 {{/isediting}}

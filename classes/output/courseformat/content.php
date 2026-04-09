@@ -254,6 +254,13 @@ class content extends content_base {
                 $sectioncard->courseid = $course->id;
                 $sectioncard->candeletesection = course_can_delete_section($course, $sectioninfo);
                 $sectioncard->activitycount = $activitycount;
+                $sectioncard->selecttext = $format->get_format_string('selectsection', $sectionname);
+
+                // Section visibility badge (same output class as core section rendering).
+                $visibilityclass = $format->get_output_classname('content\\section\\visibility');
+                $visibility = new $visibilityclass($format, $sectioninfo);
+                $sectioncard->visibility = $visibility->export_for_template($output);
+                $sectioncard->ishidden = !$sectioninfo->visible;
             }
 
             // Render inplace editable for section name in editing mode.
