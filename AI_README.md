@@ -240,6 +240,13 @@ This plugin demonstrates the hybrid approach:
 - Keep AI-facing docs (this file + README) updated when adding new options or data flows to minimize forgotten invariants.
 - **Version Compatibility**: The plugin automatically detects Moodle version and uses appropriate classes/templates. The split is at Moodle 5.1 (branch 501) where MDL-86337 moved activity chooser to core_courseformat. Test changes in both 5.0 and 5.1+ environments.
 - **Linter warnings**: Expect false positives for dynamic class loading, missing namespaces in legacy code, and global variable usage—these are intentional Moodle patterns, not bugs.
+- **Section heading comments**: Use C-style block comments for visual section separators inside classes and test files. Moodle's inline comment sniffs (`InvalidEndChar`, `NotCapital`) only apply to `//` comments, so block comments pass cleanly. Preferred style:
+  ```php
+  /* =============== *
+   * Profile CRUD.  *
+   * =============== */
+  ```
+  Do NOT use `// -------` or `// =======` separators — they trigger inline comment linter warnings.
 
 ## Version Compatibility Details
 
