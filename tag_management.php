@@ -183,6 +183,7 @@ foreach ($tags as $tag) {
         'enabled' => $data['enabled'],
         'disabled' => !$data['enabled'],
         'isimported' => ($tag->scope ?? 'global') === 'imported',
+        'isbaseview' => ($profilename === ''),
         'deleteurl' => (new moodle_url($PAGE->url, [
             'action' => 'deletetag',
             'tagid' => $tag->id,

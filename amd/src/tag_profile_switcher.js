@@ -31,6 +31,7 @@ const SELECTORS = {
     PROFILE_BUTTON: '[data-action="switch-profile"]',
     TAG_ROW: 'tr[data-tag-id]',
     EDIT_LINK: '[data-action="edit-tag"]',
+    DELETE_LINK: '[data-action="delete-tag"]',
 };
 
 /** @type {Object} Per-tag per-profile resolved data. */
@@ -204,6 +205,12 @@ const updateRow = (row, data, tagId, profileName) => {
             editUrl.searchParams.set('profile', profileName);
         }
         editLink.href = editUrl.toString();
+    }
+
+    // Show delete button only in base view (no profile selected).
+    const deleteLink = row.querySelector(SELECTORS.DELETE_LINK);
+    if (deleteLink) {
+        deleteLink.style.display = profileName === '' ? '' : 'none';
     }
 };
 

@@ -130,6 +130,7 @@
                                                     {{#pix}}i/publish, core, {{promotetoglobaltext}}{{/pix}}
                                                 </a>
                                             {{/isimported}}
+                                            {{#isbaseview}}
                                             <a href="{{deleteurl}}"
                                                title="{{deletetitle}}"
                                                class="btn btn-sm btn-icon"
@@ -139,6 +140,7 @@
                                                data-tag-name="{{name}}">
                                                 {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
                                             </a>
+                                            {{/isbaseview}}
                                         </div>
                                     </td>
                                 </tr>
