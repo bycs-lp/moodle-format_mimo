@@ -285,7 +285,7 @@ class format_mimo extends core_courseformat\base {
     public function section_format_options($foreditform = false) {
         return [
             'sectionimagefit' => [
-                'default' => 'cover',
+                'default' => 'contain',
                 'type' => PARAM_ALPHA,
             ],
         ];

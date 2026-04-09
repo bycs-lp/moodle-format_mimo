@@ -57,8 +57,8 @@ class section_image_form extends dynamic_form {
         );
 
         $fitoptions = [
-            'cover' => get_string('sectionimagefit_cover', 'format_mimo'),
             'contain' => get_string('sectionimagefit_contain', 'format_mimo'),
+            'cover' => get_string('sectionimagefit_cover', 'format_mimo'),
         ];
         $mform->addElement(
             'select',
@@ -66,7 +66,7 @@ class section_image_form extends dynamic_form {
             get_string('sectionimagefit', 'format_mimo'),
             $fitoptions
         );
-        $mform->setDefault('sectionimagefit', 'cover');
+        $mform->setDefault('sectionimagefit', 'contain');
     }
 
     /**
@@ -112,7 +112,7 @@ class section_image_form extends dynamic_form {
                 break;
             }
         }
-        $fitoption = 'cover';
+        $fitoption = 'contain';
         if ($sectioninfo) {
             $opts = $format->get_format_options($sectioninfo);
             $fitoption = $opts['sectionimagefit'] ?? 'cover';
