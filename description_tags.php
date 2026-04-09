@@ -85,7 +85,7 @@ if (!empty($tags)) {
 
         $templatecontext['tags'][] = [
             'id' => $tag->id,
-            'name' => $tag->name,
+            'name' => format_string($tag->name),
             'color' => $tag->color,
             'usagecount' => $usagecount,
             'editicon' => $OUTPUT->pix_icon('t/edit', get_string('edit')),
