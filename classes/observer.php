@@ -169,10 +169,8 @@ class observer {
         // Delete section images.
         section_image_manager::delete_all_for_course($courseid);
 
-        // Delete orphaned cmtags for this course's modules.
-        $sql = "DELETE FROM {format_mimo_cmtags}
-                 WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
-        $DB->execute($sql, ['courseid' => $courseid]);
+        // Note: cmtags are already cleaned up per-module by the course_module_deleted observer.
+        // No additional cmtags cleanup needed here — course_modules are already gone at this point.
 
         // Delete course_tags bindings for this course.
         tag_manager::unbind_all_tags_from_course($courseid);

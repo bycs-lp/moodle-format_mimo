@@ -720,9 +720,11 @@ class format_mimo extends core_courseformat\base {
         $courseid = $this->get_courseid();
 
         // Delete orphaned cmtag records (course_modules are already removed by this point).
-        $sql = "DELETE FROM {format_mimo_cmtags}
-                 WHERE cmid NOT IN (SELECT id FROM {course_modules})";
-        $DB->execute($sql);
+        // Uses NOT EXISTS for better performance than NOT IN on large instances.
+        $DB->delete_records_select(
+            'format_mimo_cmtags',
+            "NOT EXISTS (SELECT 1 FROM {course_modules} cm WHERE cm.id = {format_mimo_cmtags}.cmid)"
+        );
 
         \format_mimo\tag_manager::clear_mapping_cache();
         \format_mimo\tag_manager::clear_course_tags_cache($courseid);
