@@ -45,6 +45,7 @@ class store_pending_tag extends external_api {
     public static function execute_parameters() {
         return new external_function_parameters([
             'tagid' => new external_value(PARAM_INT, 'Tag ID to store in session'),
+            'courseid' => new external_value(PARAM_INT, 'Course ID for capability check'),
         ]);
     }
 
@@ -52,17 +53,21 @@ class store_pending_tag extends external_api {
      * Store a tag ID in session for later assignment to a course module.
      *
      * @param int $tagid Tag ID
+     * @param int $courseid Course ID
      * @return array
      */
-    public static function execute($tagid) {
+    public static function execute($tagid, $courseid) {
         global $SESSION;
 
         $params = self::validate_parameters(self::execute_parameters(), [
             'tagid' => $tagid,
+            'courseid' => $courseid,
         ]);
 
-        // Require user to be logged in.
-        require_login();
+        // Validate context and capability.
+        $context = \context_course::instance($params['courseid']);
+        self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
 
         // Store the tag ID in session.
         $SESSION->format_mimo_pending_tag = $params['tagid'];

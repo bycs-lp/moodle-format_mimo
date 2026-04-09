@@ -36,8 +36,9 @@ final class privacy_provider_test extends provider_testcase {
         $collection = provider::get_metadata($collection);
 
         $items = $collection->get_collection();
-        $this->assertCount(1, $items);
+        $this->assertCount(2, $items);
         $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $items[0]);
+        $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $items[1]);
     }
 
     public function test_export_user_preferences_no_data(): void {

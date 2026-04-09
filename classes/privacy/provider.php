@@ -47,6 +47,10 @@ class provider implements metadata_provider, user_preference_provider {
             'format_mimo_lastsection',
             'privacy:metadata:preference:lastsection'
         );
+        $collection->add_user_preference(
+            'format_mimo_df_active',
+            'privacy:metadata:preference:dfactive'
+        );
         return $collection;
     }
 
@@ -71,6 +75,17 @@ class provider implements metadata_provider, user_preference_provider {
                 $preference->name,
                 $preference->value,
                 get_string('privacy:metadata:preference:lastsection', 'format_mimo', $courseid)
+            );
+        }
+
+        // Export distraction-free mode preference.
+        $dfpref = get_user_preferences('format_mimo_df_active', null, $userid);
+        if ($dfpref !== null) {
+            \core_privacy\local\request\writer::export_user_preference(
+                'format_mimo',
+                'format_mimo_df_active',
+                $dfpref,
+                get_string('privacy:metadata:preference:dfactive', 'format_mimo')
             );
         }
     }

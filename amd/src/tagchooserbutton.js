@@ -258,7 +258,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
         // Store tag ID in session via AJAX call
         await Ajax.call([{
             methodname: 'format_mimo_store_pending_tag',
-            args: {tagid: parseInt(tagId, 10)},
+            args: {tagid: parseInt(tagId, 10), courseid: M.cfg.courseId},
         }])[0];
 
         // Build URL for modedit.php
@@ -298,7 +298,7 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
         // Store tag ID in session via AJAX call
         await Ajax.call([{
             methodname: 'format_mimo_store_pending_tag',
-            args: {tagid: parseInt(tagId, 10)},
+            args: {tagid: parseInt(tagId, 10), courseid: M.cfg.courseId},
         }])[0];
 
         // Dynamically import activity chooser modules (available in Moodle 5.1+)

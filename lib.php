@@ -427,11 +427,8 @@ class format_mimo extends core_courseformat\base {
         // triggering page_set_course() before the URL is available.
         $distractionfree = $this->get_course()->distractionfree ?? false;
         if ($distractionfree) {
-            // Check if user has overridden the default via cookie.
-            $dfactive = true;
-            if (isset($_COOKIE['format_mimo_df'])) {
-                $dfactive = $_COOKIE['format_mimo_df'] === 'true';
-            }
+            // Check if user has overridden the default via user preference.
+            $dfactive = get_user_preferences('format_mimo_df_active', 'true') === 'true';
 
             if ($dfactive) {
                 // Add body class for distraction-free mode.

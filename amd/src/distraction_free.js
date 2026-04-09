@@ -22,26 +22,13 @@
  */
 
 import Notification from 'core/notification';
+import {setUserPreference} from 'core_user/repository';
 
-/** Cookie name for distraction-free state. */
-const COOKIE_NAME = 'format_mimo_df';
+/** User preference name for distraction-free state. */
+const PREF_NAME = 'format_mimo_df_active';
 
 /** CSS class applied to body when distraction-free mode is active. */
 const ACTIVE_CLASS = 'format-mimo-distraction-free';
-
-/**
- * Set a cookie value.
- *
- * @param {string} name - Cookie name
- * @param {string} value - Cookie value
- * @param {number} days - Days until expiration (default: 365)
- * @returns {void}
- */
-const setCookie = (name, value, days = 365) => {
-    const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;SameSite=Lax`;
-};
 
 /**
  * Initialize distraction-free mode toggle functionality.
@@ -72,12 +59,12 @@ const setupToggleListeners = () => {
         event.preventDefault();
 
         const isActive = document.body.classList.contains(ACTIVE_CLASS);
-        if (isActive) {
-            document.body.classList.remove(ACTIVE_CLASS);
-            setCookie(COOKIE_NAME, 'false');
-        } else {
+        const newState = !isActive;
+        if (newState) {
             document.body.classList.add(ACTIVE_CLASS);
-            setCookie(COOKIE_NAME, 'true');
+        } else {
+            document.body.classList.remove(ACTIVE_CLASS);
         }
+        setUserPreference(PREF_NAME, newState ? 'true' : 'false').catch(Notification.exception);
     });
 };
