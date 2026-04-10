@@ -87,7 +87,8 @@
     <div class="mimo-completion-badge">
         {{#isteacherview}}
         <a href="{{reporturl}}" class="badge-teacher-completion" title="{{#str}}teachercompletiontitle, format_mimo{{/str}}">
-            {{completedcount}}/{{trackedtotal}}
+            <span class="badge-teacher-completion__count">{{completedcount}}</span>
+            <span class="badge-teacher-completion__total">{{trackedtotal}}</span>
         </a>
         {{/isteacherview}}
         {{^isteacherview}}
