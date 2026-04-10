@@ -122,6 +122,56 @@
             </div>
             {{/isediting}}
             {{^isediting}}
+            {{#isteacherview}}
+            <div class="mimo-overview-card mimo-overview-card--teacher" data-section-num="{{num}}">
+                <a href="{{url}}" class="mimo-overview-card__section-link stretched-link">
+                    <div class="mimo-overview-card__body">
+                        <h3 class="mimo-overview-card__name">{{name}}</h3>
+                        {{#hassummary}}
+                        <div class="mimo-overview-card__summary">{{{summary}}}</div>
+                        {{/hassummary}}
+                    </div>
+                </a>
+                {{#hassectionimage}}
+                <div class="mimo-overview-card__sectionimage-wrap">
+                    <img src="{{sectionimageurl}}" class="mimo-overview-card__sectionimage {{sectionimagefitclass}}" alt="{{name}}" />
+                </div>
+                {{/hassectionimage}}
+                {{^hassectionimage}}
+                {{#hasminitiles}}
+                <div class="mimo-overview-card__miniwall">
+                    {{#minitiles}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
+                    {{/minitiles}}
+                </div>
+                {{/hasminitiles}}
+                {{^hasminitiles}}
+                {{#hasdefaultminitiles}}
+                <div class="mimo-overview-card__miniwall mimo-overview-card__miniwall--placeholder">
+                    {{#defaultminitiles}}
+                    <span class="mimo-overview-card__minitile" style="background: {{color}}">
+                        {{#hasimage}}<img src="{{image}}" class="mimo-overview-card__minitile-img" alt="" />{{/hasimage}}
+                    </span>
+                    {{/defaultminitiles}}
+                </div>
+                {{/hasdefaultminitiles}}
+                {{/hasminitiles}}
+                {{/hassectionimage}}
+                {{#hastracking}}
+                <div class="mimo-overview-card__footer" style="position: relative; z-index: 2;">
+                    <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
+                        <span class="mimo-overview-card__progress-bar">
+                            <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
+                        </span>
+                        <span class="mimo-overview-card__progress-text">{{completionpercent}}%</span>
+                    </a>
+                </div>
+                {{/hastracking}}
+            </div>
+            {{/isteacherview}}
+            {{^isteacherview}}
             <a href="{{url}}" class="mimo-overview-card" data-section-num="{{num}}">
                 <div class="mimo-overview-card__body">
                     <h3 class="mimo-overview-card__name">{{name}}</h3>
@@ -158,25 +208,16 @@
                 {{/hassectionimage}}
                 {{#hastracking}}
                 <div class="mimo-overview-card__footer">
-                    {{#isteacherview}}
-                    <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
-                        <span class="mimo-overview-card__progress-bar">
-                            <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
-                        </span>
-                        <span class="mimo-overview-card__progress-text">{{completionpercent}}%</span>
-                    </a>
-                    {{/isteacherview}}
-                    {{^isteacherview}}
                     <span class="mimo-overview-card__progress{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
                         <span class="mimo-overview-card__progress-bar">
                             <span class="mimo-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
                         <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
                     </span>
-                    {{/isteacherview}}
                 </div>
                 {{/hastracking}}
             </a>
+            {{/isteacherview}}
             {{/isediting}}
             {{/overviewsections}}
         </div>

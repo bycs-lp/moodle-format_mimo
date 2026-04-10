@@ -1868,12 +1868,27 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 .mimo-overview-card__progress--teacher {
   text-decoration: none;
   color: inherit;
+  position: relative;
+  z-index: 2;
 }
 .mimo-overview-card__progress--teacher:hover {
   text-decoration: none;
 }
 .mimo-overview-card__progress--teacher:hover .mimo-overview-card__progress-text {
   color: #007bff;
+}
+
+/* Teacher overview card: uses div with stretched-link instead of wrapping <a>. */
+.mimo-overview-card--teacher {
+  position: relative;
+}
+.mimo-overview-card--teacher .mimo-overview-card__section-link {
+  text-decoration: none;
+  color: inherit;
+}
+.mimo-overview-card--teacher .mimo-overview-card__section-link:hover, .mimo-overview-card--teacher .mimo-overview-card__section-link:focus {
+  text-decoration: none;
+  color: inherit;
 }
 
 .mimo-overview-card__progress-text {

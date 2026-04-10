@@ -2363,12 +2363,30 @@ body.single-section-page.format-mimo-multisection-view {
 .mimo-overview-card__progress--teacher {
     text-decoration: none;
     color: inherit;
+    position: relative;
+    z-index: 2;
 
     &:hover {
         text-decoration: none;
 
         .mimo-overview-card__progress-text {
             color: #007bff;
+        }
+    }
+}
+
+/* Teacher overview card: uses div with stretched-link instead of wrapping <a>. */
+.mimo-overview-card--teacher {
+    position: relative;
+
+    .mimo-overview-card__section-link {
+        text-decoration: none;
+        color: inherit;
+
+        &:hover,
+        &:focus {
+            text-decoration: none;
+            color: inherit;
         }
     }
 }

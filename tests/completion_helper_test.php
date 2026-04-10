@@ -345,4 +345,96 @@ final class completion_helper_test extends \advanced_testcase {
         $this->assertObjectNotHasProperty('isteacherview', $data->cmformat->completion);
         $this->assertTrue($data->cmformat->completion->iscomplete);
     }
+
+    /**
+     * Test that the overview export includes teacher completion percentage per section.
+     */
+    public function test_overview_teacher_completion_percentage(): void {
+        global $DB, $PAGE;
+
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course([
+            'format' => 'mimo',
+            'enablecompletion' => 1,
+            'numsections' => 2,
+            'enablemultisection' => 1,
+        ]);
+
+        // Create activities in section 1.
+        $page1 = $generator->create_module('page', [
+            'course' => $course->id,
+            'completion' => COMPLETION_TRACKING_MANUAL,
+            'section' => 1,
+        ]);
+        $page2 = $generator->create_module('page', [
+            'course' => $course->id,
+            'completion' => COMPLETION_TRACKING_MANUAL,
+            'section' => 1,
+        ]);
+
+        // Enrol 2 students.
+        $student1 = $generator->create_user();
+        $student2 = $generator->create_user();
+        $generator->enrol_user($student1->id, $course->id, 'student');
+        $generator->enrol_user($student2->id, $course->id, 'student');
+
+        // Student 1 completes both, student 2 completes one.
+        $now = time();
+        $DB->insert_record('course_modules_completion', (object) [
+            'coursemoduleid' => $page1->cmid,
+            'userid' => $student1->id,
+            'completionstate' => COMPLETION_COMPLETE,
+            'timemodified' => $now,
+        ]);
+        $DB->insert_record('course_modules_completion', (object) [
+            'coursemoduleid' => $page2->cmid,
+            'userid' => $student1->id,
+            'completionstate' => COMPLETION_COMPLETE,
+            'timemodified' => $now,
+        ]);
+        $DB->insert_record('course_modules_completion', (object) [
+            'coursemoduleid' => $page1->cmid,
+            'userid' => $student2->id,
+            'completionstate' => COMPLETION_COMPLETE,
+            'timemodified' => $now,
+        ]);
+
+        // View as teacher.
+        $teacher = $generator->create_user();
+        $generator->enrol_user($teacher->id, $course->id, 'editingteacher');
+        $this->setUser($teacher);
+
+        $course = get_course($course->id);
+        $PAGE->set_course($course);
+        $PAGE->set_url(new \moodle_url('/course/view.php', ['id' => $course->id]));
+
+        $format = course_get_format($course);
+        $contentclass = $format->get_output_classname('content');
+        $content = new $contentclass($format);
+
+        $renderer = $PAGE->get_renderer('format_mimo');
+        $data = $content->export_for_template($renderer);
+
+        // Should be overview mode (multisection with no section selected).
+        $this->assertTrue($data->isoverview);
+
+        // Find the section 1 card.
+        $section1card = null;
+        foreach ($data->overviewsections as $section) {
+            if ($section->num === 1) {
+                $section1card = $section;
+                break;
+            }
+        }
+
+        $this->assertNotNull($section1card, 'Section 1 should exist in overview');
+        $this->assertTrue($section1card->isteacherview);
+        $this->assertTrue($section1card->hastracking);
+
+        // 3 completions out of 4 possible (2 CMs x 2 students) = 75%.
+        $this->assertEquals(75, $section1card->completionpercent);
+        $this->assertStringContainsString('report/progress/index.php', $section1card->reporturl);
+    }
 }
