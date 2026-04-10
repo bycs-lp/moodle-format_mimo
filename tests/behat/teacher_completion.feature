@@ -47,14 +47,37 @@ Feature: Teacher completion counts on activity cards
     When I click on ".badge-teacher-completion" "css_element"
     Then I should see "Activity completion"
 
-  Scenario: Student marks activity complete and teacher count updates
-    # First, student completes the activity.
-    Given I log in as "student1"
-    And I am on "Test Course 1" course homepage
-    And I click on "Page 1" "link"
-    And I press "Mark as done"
-    And I log out
-    # Now teacher checks the wall.
+  Scenario: Teacher sees completion percentage on overview section cards
+    Given the following "format_mimo > courses" exist:
+      | fullname               | shortname | enablecompletion | enablemultisection | numsections |
+      | Multi Section Course 1 | MSC1      | 1                | 1                  | 2           |
+    And the following "format_mimo > activities" exist:
+      | activity | name       | intro        | course | section | tag     | completion |
+      | page     | MS Page 1  | First page   | MSC1   | 1       | Reading | 1          |
+      | page     | MS Page 2  | Second page  | MSC1   | 1       | Reading | 1          |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | teacher1 | MSC1   | editingteacher |
+      | student1 | MSC1   | student        |
+      | student2 | MSC1   | student        |
     When I log in as "teacher1"
-    And I am on "Test Course 1" course homepage
-    Then I should see "1/3" in the ".mimo-completion-badge" "css_element"
+    And I am on "Multi Section Course 1" course homepage
+    Then ".mimo-overview-grid" "css_element" should exist
+    And ".mimo-overview-card__progress--teacher" "css_element" should exist
+    And I should see "0%" in the ".mimo-overview-card__progress-text" "css_element"
+
+  Scenario: Student sees personal progress on overview not percentage
+    Given the following "format_mimo > courses" exist:
+      | fullname               | shortname | enablecompletion | enablemultisection | numsections |
+      | Multi Section Course 2 | MSC2      | 1                | 1                  | 2           |
+    And the following "format_mimo > activities" exist:
+      | activity | name       | intro        | course | section | tag     | completion |
+      | page     | MS Page 3  | Third page   | MSC2   | 1       | Reading | 1          |
+    And the following "course enrolments" exist:
+      | user     | course | role    |
+      | student1 | MSC2   | student |
+    When I log in as "student1"
+    And I am on "Multi Section Course 2" course homepage
+    Then ".mimo-overview-grid" "css_element" should exist
+    And ".mimo-overview-card__progress--teacher" "css_element" should not exist
+    And I should see "0 / 1" in the ".mimo-overview-card__progress-text" "css_element"
