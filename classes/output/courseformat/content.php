@@ -114,6 +114,7 @@ class content extends content_base {
         $completionenabled = $completioninfo->is_enabled();
         $context = \core\context\course::instance($course->id);
         $isediting = $PAGE->user_is_editing();
+        $isteacherview = has_capability('moodle/grade:viewall', $context);
 
         // Pre-fetch course tags for mini-wall tile colours and images.
         $coursetags = \format_mimo\tag_manager::get_tags_for_course($course->id);
@@ -148,7 +149,16 @@ class content extends content_base {
             $activitycount = 0;
             $completedcount = 0;
             $totaltracked = 0;
+            $teachersectioncompletions = 0;
+            $teachersectiontrackedcms = 0;
             $minitiles = [];
+
+            // Pre-fetch teacher completion data (batch-loaded, cached per request).
+            if ($isteacherview && $completionenabled) {
+                $teachercounts = \format_mimo\completion_helper::get_teacher_completion_counts($course->id);
+                $trackedusercount = \format_mimo\completion_helper::get_tracked_user_count($course->id);
+            }
+
             if (!empty($modinfo->sections[$sectionnum])) {
                 foreach ($modinfo->sections[$sectionnum] as $cmid) {
                     $cm = $modinfo->cms[$cmid];
@@ -177,12 +187,19 @@ class content extends content_base {
 
                     if ($completionenabled && $completioninfo->is_enabled($cm)) {
                         $totaltracked++;
-                        $completiondata = $completioninfo->get_data($cm, false);
-                        if (
-                            $completiondata->completionstate == COMPLETION_COMPLETE ||
-                                $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                        ) {
-                            $completedcount++;
+
+                        if ($isteacherview) {
+                            // Aggregate completion counts for teacher percentage.
+                            $teachersectiontrackedcms++;
+                            $teachersectioncompletions += $teachercounts[(int) $cmid] ?? 0;
+                        } else {
+                            $completiondata = $completioninfo->get_data($cm, false);
+                            if (
+                                $completiondata->completionstate == COMPLETION_COMPLETE ||
+                                    $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                            ) {
+                                $completedcount++;
+                            }
                         }
                     }
                 }
@@ -214,6 +231,20 @@ class content extends content_base {
                 'minitiles' => $minitiles,
                 'hasminitiles' => !empty($minitiles),
             ];
+
+            // Teacher view: add average completion percentage.
+            if ($isteacherview && $teachersectiontrackedcms > 0 && !empty($trackedusercount)) {
+                $totalpossible = $teachersectiontrackedcms * $trackedusercount;
+                $pct = (int) round($teachersectioncompletions / $totalpossible * 100);
+                $sectioncard->isteacherview = true;
+                $sectioncard->completionpercent = $pct;
+                $sectioncard->hastracking = true;
+                $sectioncard->allcomplete = ($pct === 100);
+                $sectioncard->reporturl = (new \moodle_url(
+                    '/report/progress/index.php',
+                    ['course' => $course->id]
+                ))->out(false);
+            }
 
             // Provide default placeholder tiles for empty sections using course tag colours.
             if (empty($minitiles) && !empty($tagcolours)) {

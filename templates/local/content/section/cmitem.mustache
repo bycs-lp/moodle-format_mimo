@@ -85,6 +85,12 @@
     {{#completion}}
     {{#hascompletion}}
     <div class="mimo-completion-badge">
+        {{#isteacherview}}
+        <a href="{{reporturl}}" class="badge-teacher-completion" title="{{#str}}teachercompletiontitle, format_mimo{{/str}}">
+            {{completedcount}}/{{trackedtotal}}
+        </a>
+        {{/isteacherview}}
+        {{^isteacherview}}
         {{#iscomplete}}
         <span class="badge-complete" title="{{#str}}completed, format_mimo{{/str}}">
             <i class="fa fa-check"></i>
@@ -95,6 +101,7 @@
             <i class="fa fa-hourglass-half"></i>
         </span>
         {{/iscomplete}}
+        {{/isteacherview}}
     </div>
     {{/hascompletion}}
     {{/completion}}

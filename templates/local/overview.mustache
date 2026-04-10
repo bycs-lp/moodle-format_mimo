@@ -158,12 +158,22 @@
                 {{/hassectionimage}}
                 {{#hastracking}}
                 <div class="mimo-overview-card__footer">
+                    {{#isteacherview}}
+                    <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
+                        <span class="mimo-overview-card__progress-bar">
+                            <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
+                        </span>
+                        <span class="mimo-overview-card__progress-text">{{completionpercent}}%</span>
+                    </a>
+                    {{/isteacherview}}
+                    {{^isteacherview}}
                     <span class="mimo-overview-card__progress{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
                         <span class="mimo-overview-card__progress-bar">
                             <span class="mimo-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
                         <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
                     </span>
+                    {{/isteacherview}}
                 </div>
                 {{/hastracking}}
             </a>

@@ -25,6 +25,7 @@
 namespace format_mimo\output\courseformat\content\section;
 
 use core_courseformat\output\local\content\section\cmitem as cmitem_base;
+use format_mimo\completion_helper;
 use format_mimo\done_manager;
 use format_mimo\tag_manager;
 
@@ -111,13 +112,27 @@ class cmitem extends cmitem_base {
                 }
                 $data->cmformat->completion->hascompletion = true;
 
-                // Check if activity is completed.
-                $completiondata = $completioninfo->get_data($cm, false);
-                if ($completiondata) {
-                    $data->cmformat->completion->iscomplete = (
-                        $completiondata->completionstate == COMPLETION_COMPLETE ||
-                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                    );
+                $coursecontext = \core\context\course::instance($cm->course);
+                if (has_capability('moodle/grade:viewall', $coursecontext)) {
+                    // Teacher view: show aggregated completion count.
+                    $counts = completion_helper::get_teacher_completion_counts($cm->course);
+                    $totalusers = completion_helper::get_tracked_user_count($cm->course);
+                    $data->cmformat->completion->isteacherview = true;
+                    $data->cmformat->completion->completedcount = $counts[$cmid] ?? 0;
+                    $data->cmformat->completion->trackedtotal = $totalusers;
+                    $data->cmformat->completion->reporturl = (new \moodle_url(
+                        '/report/progress/index.php',
+                        ['course' => $cm->course]
+                    ))->out(false);
+                } else {
+                    // Student view: show personal completion state.
+                    $completiondata = $completioninfo->get_data($cm, false);
+                    if ($completiondata) {
+                        $data->cmformat->completion->iscomplete = (
+                            $completiondata->completionstate == COMPLETION_COMPLETE ||
+                            $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                        );
+                    }
                 }
             }
         }
