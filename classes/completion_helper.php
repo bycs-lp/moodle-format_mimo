@@ -34,6 +34,17 @@ class completion_helper {
     private static array $trackedusercounts = [];
 
     /**
+     * Reset all internal caches.
+     *
+     * This is intended for unit testing where the database is rolled back
+     * between tests but static properties survive.
+     */
+    public static function reset_caches(): void {
+        self::$completioncounts = [];
+        self::$trackedusercounts = [];
+    }
+
+    /**
      * Get the number of successful completions per activity for a course.
      *
      * Successful means completionstate IN (COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS).
