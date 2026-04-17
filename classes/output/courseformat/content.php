@@ -114,7 +114,15 @@ class content extends content_base {
         $completionenabled = $completioninfo->is_enabled();
         $context = \core\context\course::instance($course->id);
         $isediting = $PAGE->user_is_editing();
-        $isteacherview = has_capability('moodle/grade:viewall', $context);
+        $isteacherview = has_capability('report/progress:view', $context);
+
+        // Pre-fetch teacher completion data once per course (batch-loaded, cached per request).
+        $teachercounts = [];
+        $trackedusercount = 0;
+        if ($isteacherview && $completionenabled) {
+            $teachercounts = \format_mimo\completion_helper::get_teacher_completion_counts($course->id);
+            $trackedusercount = \format_mimo\completion_helper::get_tracked_user_count($course->id);
+        }
 
         // Pre-fetch course tags for mini-wall tile colours and images.
         $coursetags = \format_mimo\tag_manager::get_tags_for_course($course->id);
@@ -152,12 +160,6 @@ class content extends content_base {
             $teachersectioncompletions = 0;
             $teachersectiontrackedcms = 0;
             $minitiles = [];
-
-            // Pre-fetch teacher completion data (batch-loaded, cached per request).
-            if ($isteacherview && $completionenabled) {
-                $teachercounts = \format_mimo\completion_helper::get_teacher_completion_counts($course->id);
-                $trackedusercount = \format_mimo\completion_helper::get_tracked_user_count($course->id);
-            }
 
             if (!empty($modinfo->sections[$sectionnum])) {
                 foreach ($modinfo->sections[$sectionnum] as $cmid) {

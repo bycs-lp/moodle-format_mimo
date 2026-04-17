@@ -22,6 +22,12 @@ namespace format_mimo;
  * All results are request-cached so that rendering N activity cards
  * does not cause N+1 database queries.
  *
+ * Trust contract: the methods in this class do NOT perform capability
+ * checks. Callers must ensure the current user is authorized to see
+ * aggregated completion data (typically {@see has_capability()} on
+ * 'report/progress:view' in the course context) before displaying the
+ * returned values.
+ *
  * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,8 +36,8 @@ class completion_helper {
     /** @var array<int, array<int, int>> Cached completion counts keyed by courseid => [cmid => count]. */
     private static array $completioncounts = [];
 
-    /** @var array<int, int> Cached tracked-user counts keyed by courseid. */
-    private static array $trackedusercounts = [];
+    /** @var array<int, int[]> Cached tracked user IDs keyed by courseid. */
+    private static array $trackeduserids = [];
 
     /**
      * Reset all internal caches.
@@ -41,14 +47,55 @@ class completion_helper {
      */
     public static function reset_caches(): void {
         self::$completioncounts = [];
-        self::$trackedusercounts = [];
+        self::$trackeduserids = [];
+    }
+
+    /**
+     * Get the list of user IDs whose completion is tracked in a course.
+     *
+     * "Tracked" means currently actively enrolled AND holding
+     * moodle/course:isincompletionreports — the same definition Moodle's
+     * {@see \completion_info::get_num_tracked_users()} uses.
+     *
+     * Result is request-cached so the (expensive) enrolment subquery is
+     * executed at most once per course per request. Both
+     * {@see self::get_teacher_completion_counts()} and
+     * {@see self::get_tracked_user_count()} share this cache, which also
+     * guarantees numerator and denominator refer to the exact same user set.
+     *
+     * @param int $courseid Course ID.
+     * @return int[] List of user IDs.
+     */
+    private static function get_tracked_userids(int $courseid): array {
+        if (isset(self::$trackeduserids[$courseid])) {
+            return self::$trackeduserids[$courseid];
+        }
+
+        $context = \core\context\course::instance($courseid);
+        $users = get_enrolled_users(
+            $context,
+            'moodle/course:isincompletionreports',
+            0,
+            'u.id',
+            null,
+            0,
+            0,
+            true
+        );
+
+        self::$trackeduserids[$courseid] = array_map('intval', array_keys($users));
+        return self::$trackeduserids[$courseid];
     }
 
     /**
      * Get the number of successful completions per activity for a course.
      *
      * Successful means completionstate IN (COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS).
-     * Only course modules with completion tracking enabled are included.
+     * Only course modules with completion tracking enabled are included, and
+     * only completions by users returned by {@see self::get_tracked_userids()}
+     * are counted. This keeps the numerator consistent with
+     * {@see self::get_tracked_user_count()} so the ratio cannot exceed 100 %
+     * when users are unenrolled or change roles after completing an activity.
      *
      * @param int $courseid Course ID.
      * @return array<int, int> Map of coursemoduleid => completed user count.
@@ -72,14 +119,20 @@ class completion_helper {
         }
 
         $counts = [];
-        if (!empty($cmids)) {
-            [$insql, $params] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED);
-            $params['complete'] = COMPLETION_COMPLETE;
-            $params['completepass'] = COMPLETION_COMPLETE_PASS;
+        $trackedids = self::get_tracked_userids($courseid);
+        if (!empty($cmids) && !empty($trackedids)) {
+            [$cmsql, $cmparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cmid');
+            [$usersql, $userparams] = $DB->get_in_or_equal($trackedids, SQL_PARAMS_NAMED, 'usr');
+
+            $params = array_merge($cmparams, $userparams, [
+                'complete' => COMPLETION_COMPLETE,
+                'completepass' => COMPLETION_COMPLETE_PASS,
+            ]);
 
             $sql = "SELECT coursemoduleid, COUNT(1) AS cnt
                       FROM {course_modules_completion}
-                     WHERE coursemoduleid $insql
+                     WHERE coursemoduleid $cmsql
+                       AND userid $usersql
                        AND completionstate IN (:complete, :completepass)
                   GROUP BY coursemoduleid";
 
@@ -97,20 +150,13 @@ class completion_helper {
      * Get the number of users whose completion is tracked in a course.
      *
      * Uses the standard Moodle capability moodle/course:isincompletionreports.
+     * Shares the request-cached user list with
+     * {@see self::get_teacher_completion_counts()}.
      *
      * @param int $courseid Course ID.
      * @return int Number of tracked users.
      */
     public static function get_tracked_user_count(int $courseid): int {
-        if (array_key_exists($courseid, self::$trackedusercounts)) {
-            return self::$trackedusercounts[$courseid];
-        }
-
-        $course = get_course($courseid);
-        $completioninfo = new \completion_info($course);
-        $count = (int) $completioninfo->get_num_tracked_users();
-
-        self::$trackedusercounts[$courseid] = $count;
-        return $count;
+        return count(self::get_tracked_userids($courseid));
     }
 }

@@ -161,7 +161,7 @@
                 {{/hassectionimage}}
                 {{#hastracking}}
                 <div class="mimo-overview-card__footer" style="position: relative; z-index: 2;">
-                    <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
+                    <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}" aria-label="{{#str}}teacheroverviewprogress, format_mimo, {{completionpercent}}{{/str}}" title="{{#str}}teacheroverviewprogress, format_mimo, {{completionpercent}}{{/str}}">
                         <span class="mimo-overview-card__progress-bar">
                             <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
                         </span>

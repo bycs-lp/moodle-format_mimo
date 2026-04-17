@@ -113,7 +113,7 @@ class cmitem extends cmitem_base {
                 $data->cmformat->completion->hascompletion = true;
 
                 $coursecontext = \core\context\course::instance($cm->course);
-                if (has_capability('moodle/grade:viewall', $coursecontext)) {
+                if (has_capability('report/progress:view', $coursecontext)) {
                     // Teacher view: show aggregated completion count.
                     $counts = completion_helper::get_teacher_completion_counts($cm->course);
                     $totalusers = completion_helper::get_tracked_user_count($cm->course);

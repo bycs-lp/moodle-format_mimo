@@ -45,7 +45,7 @@ Feature: Teacher completion counts on activity cards
     Given I log in as "teacher1"
     And I am on "Test Course 1" course homepage
     When I click on ".badge-teacher-completion" "css_element"
-    Then I should see "Activity completion"
+    Then "#page-report-progress-index" "css_element" should exist
 
   Scenario: Teacher sees completion percentage on overview section cards
     Given the following "format_mimo > courses" exist:
