@@ -179,8 +179,10 @@ class section extends section_base {
 
         if ($completioninfo->is_enabled()) {
             // When scoped to a section, iterate only that section's CMs instead of every CM in the course.
-            if ($sectionnum !== null && isset($modinfo->sections[$sectionnum])) {
-                $cmids = $modinfo->sections[$sectionnum];
+            // A newly added (empty) section has no entry in $modinfo->sections, so treat that as zero CMs
+            // rather than falling back to the whole course.
+            if ($sectionnum !== null) {
+                $cmids = $modinfo->sections[$sectionnum] ?? [];
             } else {
                 $cmids = array_keys($modinfo->cms);
             }
