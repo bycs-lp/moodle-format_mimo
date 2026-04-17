@@ -411,9 +411,9 @@ const updateCompletionCounts = (statusRegion, items) => {
 /**
  * Update the completion star display.
  *
- * Shows a single gold star only when there is at least one tracked activity
- * and all tracked activities are complete. When the star transitions from
- * absent to present, a short entrance animation plays.
+ * Shows an animated sparkle star only when there is at least one tracked
+ * activity and all tracked activities are complete. Visibility is driven
+ * by toggling the `is-visible` class on the pre-rendered container.
  *
  * @param {HTMLElement} statusRegion - Completion status region element
  * @param {number} completedCount - Number of completed activities
@@ -427,22 +427,12 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
     }
 
     const allComplete = totalWithCompletion > 0 && completedCount === totalWithCompletion;
-    const hasStar = !!starsContainer.querySelector('.star-icon');
+    const wasVisible = starsContainer.classList.contains('is-visible');
+    starsContainer.classList.toggle('is-visible', allComplete);
+    starsContainer.dataset.completedCount = completedCount;
+    starsContainer.dataset.totalCount = totalWithCompletion;
 
-    if (allComplete && !hasStar) {
-        const span = document.createElement('span');
-        span.className = 'star-icon star-new';
-        span.setAttribute('aria-hidden', 'true');
-        const icon = document.createElement('i');
-        icon.className = 'fa fa-star';
-        span.appendChild(icon);
-        starsContainer.innerHTML = '';
-        starsContainer.appendChild(span);
-    } else if (!allComplete && hasStar) {
-        starsContainer.innerHTML = '';
-    }
-
-    if (allComplete !== hasStar) {
+    if (allComplete !== wasVisible) {
         // Aria label refresh only when star visibility changed.
         getString('aria_completion_status', 'format_mimo', {
             completed: completedCount,
@@ -454,11 +444,6 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
             // Fallback silently if string loading fails.
         });
     }
-
-    // Update data attributes and all-complete state.
-    starsContainer.dataset.completedCount = completedCount;
-    starsContainer.dataset.totalCount = totalWithCompletion;
-    starsContainer.classList.toggle('all-complete', allComplete);
 };
 
 /**

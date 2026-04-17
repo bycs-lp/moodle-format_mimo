@@ -1323,47 +1323,140 @@ body.format-mimo-distraction-free #topofscroll {
   display: none;
 }
 
-@keyframes mimo-star-enter {
-  0% {
-    opacity: 0;
-    transform: scale(0) rotate(-45deg);
-  }
-  60% {
-    transform: scale(1.3) rotate(10deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-@keyframes mimo-stars-pulse {
+@keyframes mimo-sparkle-star {
   0%, 100% {
-    filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
+  }
+  25% {
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
   }
   50% {
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+  }
+  75% {
+    transform: scale(1.1) rotate(-5deg);
+    filter: drop-shadow(0 0 10px rgb(255, 215, 0));
+  }
+}
+@keyframes mimo-sparkle-rays {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+@keyframes mimo-twinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) translate(-3px, -5px);
+  }
+  40% {
+    opacity: 0.6;
+    transform: scale(0.8) translate(4px, -3px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) translate(-2px, 4px);
+  }
+  80% {
+    opacity: 0.4;
+    transform: scale(0.6) translate(3px, 2px);
   }
 }
 .completion-stars {
+  display: none;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  margin-left: 0.5rem;
+}
+.completion-stars.is-visible {
   display: flex;
   align-items: center;
-  gap: 2px;
-  margin-left: 0.5rem;
-  flex-wrap: wrap;
-  max-width: 200px;
+  justify-content: center;
 }
 .completion-stars .star-icon {
-  font-size: 0.9rem;
+  font-size: 1.5rem;
   color: #ffd700;
-  line-height: 1;
-  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
-  transition: transform 0.2s ease;
+  animation: mimo-sparkle-star 2s ease-in-out infinite;
+  z-index: 2;
+  position: relative;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
 }
-.completion-stars .star-new {
-  animation: mimo-star-enter 0.4s ease-out forwards;
+.completion-stars .star-rays {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
-.completion-stars.all-complete {
-  animation: mimo-stars-pulse 2.5s ease-in-out infinite;
+.completion-stars .star-rays::before, .completion-stars .star-rays::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0.1) 40%, transparent 70%);
+  border-radius: 50%;
+  animation: mimo-sparkle-rays 1.5s ease-in-out infinite;
+}
+.completion-stars .star-rays::after {
+  animation-delay: 0.75s;
+  transform: scale(1.2);
+}
+.completion-stars .star-sparkles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+.completion-stars .star-sparkles::before, .completion-stars .star-sparkles::after {
+  content: "✦";
+  position: absolute;
+  font-size: 0.5rem;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
+}
+.completion-stars .star-sparkles::before {
+  top: 0;
+  right: 2px;
+  animation: mimo-twinkle 2s ease-in-out infinite;
+}
+.completion-stars .star-sparkles::after {
+  top: 2px;
+  left: 0;
+  animation: mimo-twinkle 2s ease-in-out infinite 0.5s;
+}
+.completion-stars .star-sparkle-dot {
+  position: absolute;
+  font-size: 0.45rem;
+  color: #fffacd;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.8);
+}
+.completion-stars .star-sparkle-dot:nth-of-type(1) {
+  top: 0;
+  left: 4px;
+  animation: mimo-twinkle 2.2s ease-in-out infinite 0.3s;
+}
+.completion-stars .star-sparkle-dot:nth-of-type(2) {
+  top: 4px;
+  right: 0;
+  animation: mimo-twinkle 1.8s ease-in-out infinite 0.8s;
 }
 
 .mimo-overview-card__progress-text .mimo-overview-card__complete-star {

@@ -1674,60 +1674,174 @@ body.format-mimo-distraction-free {
 }
 
 // ============================================================================
-// Completion Stars - Row of gold stars for completed activities
+// Completion Star - Animated sparkle star for the all-complete state
 // ============================================================================
 
-// Entrance animation for newly appearing stars.
-@keyframes mimo-star-enter {
-    0% {
-        opacity: 0;
-        transform: scale(0) rotate(-45deg);
-    }
-    60% {
-        transform: scale(1.3) rotate(10deg);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-// Subtle pulse for the all-complete state.
-@keyframes mimo-stars-pulse {
+// Sparkle keyframes for star animation.
+@keyframes mimo-sparkle-star {
     0%, 100% {
-        filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.4));
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
+    }
+    25% {
+        transform: scale(1.15) rotate(5deg);
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
     }
     50% {
-        filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.7));
+    }
+    75% {
+        transform: scale(1.1) rotate(-5deg);
+        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 1));
     }
 }
 
-// Completion stars container.
+// Sparkle rays that radiate from the star.
+@keyframes mimo-sparkle-rays {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+// Twinkle effect for small sparkles around the star.
+@keyframes mimo-twinkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0) translate(0, 0);
+    }
+    20% {
+        opacity: 1;
+        transform: scale(1) translate(-3px, -5px);
+    }
+    40% {
+        opacity: 0.6;
+        transform: scale(0.8) translate(4px, -3px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.1) translate(-2px, 4px);
+    }
+    80% {
+        opacity: 0.4;
+        transform: scale(0.6) translate(3px, 2px);
+    }
+}
+
+// Completion star container (hidden until JS/mustache toggles `is-visible`).
 .completion-stars {
-    display: flex;
-    align-items: center;
-    gap: 2px;
+    display: none; // Hidden by default; shown via `is-visible` when all complete.
+    position: relative;
+    width: 32px;
+    height: 32px;
     margin-left: 0.5rem;
-    flex-wrap: wrap;
-    max-width: 200px;
 
-    // Filled star for the all-complete state.
+    &.is-visible {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    // Main star icon.
     .star-icon {
-        font-size: 0.9rem;
+        font-size: 1.5rem;
         color: #ffd700;
-        line-height: 1;
-        text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
-        transition: transform 0.2s ease;
+        animation: mimo-sparkle-star 2s ease-in-out infinite;
+        z-index: 2;
+        position: relative;
+        text-shadow:
+            0 0 5px rgba(255, 215, 0, 0.8),
+            0 0 10px rgba(255, 215, 0, 0.5);
     }
 
-    // Entrance animation for new stars.
-    .star-new {
-        animation: mimo-star-enter 0.4s ease-out forwards;
+    // Sparkle rays behind the star.
+    .star-rays {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 215, 0, 0.4) 0%,
+                rgba(255, 215, 0, 0.1) 40%,
+                transparent 70%
+            );
+            border-radius: 50%;
+            animation: mimo-sparkle-rays 1.5s ease-in-out infinite;
+        }
+
+        &::after {
+            animation-delay: 0.75s;
+            transform: scale(1.2);
+        }
     }
 
-    // All complete state — subtle glow on the whole row.
-    &.all-complete {
-        animation: mimo-stars-pulse 2.5s ease-in-out infinite;
+    // Small sparkle dots emitted via pseudo-elements.
+    .star-sparkles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 3;
+        pointer-events: none;
+
+        &::before,
+        &::after {
+            content: '✦';
+            position: absolute;
+            font-size: 0.5rem;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
+        }
+
+        &::before {
+            top: 0;
+            right: 2px;
+            animation: mimo-twinkle 2s ease-in-out infinite;
+        }
+
+        &::after {
+            top: 2px;
+            left: 0;
+            animation: mimo-twinkle 2s ease-in-out infinite 0.5s;
+        }
+    }
+
+    // Additional sparkle dots rendered as spans for variety.
+    .star-sparkle-dot {
+        position: absolute;
+        font-size: 0.45rem;
+        color: #fffacd;
+        text-shadow: 0 0 3px rgba(255, 215, 0, 0.8);
+
+        &:nth-of-type(1) {
+            top: 0;
+            left: 4px;
+            animation: mimo-twinkle 2.2s ease-in-out infinite 0.3s;
+        }
+
+        &:nth-of-type(2) {
+            top: 4px;
+            right: 0;
+            animation: mimo-twinkle 1.8s ease-in-out infinite 0.8s;
+        }
     }
 }
 
