@@ -109,8 +109,6 @@ class section extends section_base {
         if (!$isediting) {
             $completionstatus = $this->build_completion_status_data($course, $ismultisection ? $this->section->section : null);
             if ($completionstatus->total > 0) {
-                $enablecompletionstars = !empty($options['enablecompletionstars']);
-                $completionstatus->enablecompletionstars = $enablecompletionstars;
                 $data->completionstatus = $completionstatus;
             }
         }

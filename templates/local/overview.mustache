@@ -165,7 +165,7 @@
                         <span class="mimo-overview-card__progress-bar">
                             <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
                         </span>
-                        <span class="mimo-overview-card__progress-text">{{completionpercent}}%</span>
+                        <span class="mimo-overview-card__progress-text">{{completionpercent}}%{{#allcomplete}} <i class="fa fa-star mimo-overview-card__complete-star" aria-hidden="true"></i>{{/allcomplete}}</span>
                     </a>
                 </div>
                 {{/hastracking}}
@@ -212,7 +212,7 @@
                         <span class="mimo-overview-card__progress-bar">
                             <span class="mimo-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
-                        <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}</span>
+                        <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}{{#allcomplete}} <i class="fa fa-star mimo-overview-card__complete-star" aria-hidden="true"></i>{{/allcomplete}}</span>
                     </span>
                 </div>
                 {{/hastracking}}

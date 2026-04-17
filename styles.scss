@@ -1711,22 +1711,13 @@ body.format-mimo-distraction-free {
     flex-wrap: wrap;
     max-width: 200px;
 
-    // Filled star for completed activities.
+    // Filled star for the all-complete state.
     .star-icon {
         font-size: 0.9rem;
         color: #ffd700;
         line-height: 1;
         text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
         transition: transform 0.2s ease;
-    }
-
-    // Unfilled star for incomplete activities — smaller outline.
-    .star-icon--incomplete {
-        font-size: 0.65rem;
-        color: #ccc;
-        line-height: 1;
-        opacity: 0.6;
-        transition: transform 0.2s ease, color 0.3s ease, opacity 0.3s ease;
     }
 
     // Entrance animation for new stars.
@@ -1738,6 +1729,13 @@ body.format-mimo-distraction-free {
     &.all-complete {
         animation: mimo-stars-pulse 2.5s ease-in-out infinite;
     }
+}
+
+// Inline completion star on multi-section overview cards.
+.mimo-overview-card__progress-text .mimo-overview-card__complete-star {
+    margin-left: 0.35rem;
+    color: #ffd700;
+    text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
 }
 
 body.format-mimo .mb-0-override {

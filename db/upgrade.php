@@ -1036,5 +1036,16 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026040900, 'format', 'mimo');
     }
 
+    // Remove the deprecated enablecompletionstars course format option.
+    // Stars are now always shown (single all-complete star) and no longer configurable.
+    if ($oldversion < 2026041700) {
+        $DB->delete_records('course_format_options', [
+            'format' => 'mimo',
+            'name' => 'enablecompletionstars',
+        ]);
+
+        upgrade_plugin_savepoint(true, 2026041700, 'format', 'mimo');
+    }
+
     return true;
 }

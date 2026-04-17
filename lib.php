@@ -188,10 +188,6 @@ class format_mimo extends core_courseformat\base {
                 'default' => 0,
                 'type' => PARAM_BOOL,
             ],
-            'enablecompletionstars' => [
-                'default' => 1,
-                'type' => PARAM_BOOL,
-            ],
             'backgrounddesign' => [
                 'default' => 'primary-school',
                 'type' => PARAM_ALPHANUMEXT,
@@ -219,12 +215,6 @@ class format_mimo extends core_courseformat\base {
             $courseformatoptions['distractionfree'] += [
                 'label' => get_string('setting_distractionfree', 'format_mimo'),
                 'help' => 'setting_distractionfree',
-                'help_component' => 'format_mimo',
-                'element_type' => 'advcheckbox',
-            ];
-            $courseformatoptions['enablecompletionstars'] += [
-                'label' => get_string('setting_enablecompletionstars', 'format_mimo'),
-                'help' => 'setting_enablecompletionstars',
                 'help_component' => 'format_mimo',
                 'element_type' => 'advcheckbox',
             ];
@@ -932,4 +922,20 @@ function format_mimo_inplace_editable($itemtype, $itemid, $newvalue) {
             $newvalue
         );
     }
+}
+
+/**
+ * Register user preferences that can be set via the core_user_set_user_preferences webservice.
+ *
+ * @return array Array of preference definitions keyed by preference name.
+ */
+function format_mimo_user_preferences(): array {
+    return [
+        'format_mimo_df_active' => [
+            'type' => PARAM_ALPHA,
+            'null' => NULL_NOT_ALLOWED,
+            'default' => 'true',
+            'choices' => ['true', 'false'],
+        ],
+    ];
 }

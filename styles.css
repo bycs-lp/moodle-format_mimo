@@ -487,13 +487,13 @@
 .mimo-completion-badge .badge-teacher-completion::after {
   content: "";
   position: absolute;
-  left: 50%;
-  top: 55%;
+  left: 58%;
+  top: 57%;
   width: 22px;
   height: 1px;
   background: currentcolor;
   opacity: 0.3;
-  transform: translate(-50%, -50%) rotate(-25deg);
+  transform: translate(-50%, -50%) rotate(-31deg);
 }
 .mimo-completion-badge .badge-teacher-completion:hover {
   color: #007bff;
@@ -504,14 +504,14 @@
   font-size: 16px;
   font-weight: 800;
   align-self: flex-start;
-  padding-left: 10px;
+  padding-left: 8px;
 }
 .mimo-completion-badge .badge-teacher-completion__total {
   font-size: 10px;
   font-weight: 600;
   opacity: 0.65;
   align-self: flex-end;
-  padding-right: 8px;
+  padding-right: 6px;
 }
 
 .format-mimo .course-content {
@@ -1359,18 +1359,17 @@ body.format-mimo-distraction-free #topofscroll {
   text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
   transition: transform 0.2s ease;
 }
-.completion-stars .star-icon--incomplete {
-  font-size: 0.65rem;
-  color: #ccc;
-  line-height: 1;
-  opacity: 0.6;
-  transition: transform 0.2s ease, color 0.3s ease, opacity 0.3s ease;
-}
 .completion-stars .star-new {
   animation: mimo-star-enter 0.4s ease-out forwards;
 }
 .completion-stars.all-complete {
   animation: mimo-stars-pulse 2.5s ease-in-out infinite;
+}
+
+.mimo-overview-card__progress-text .mimo-overview-card__complete-star {
+  margin-left: 0.35rem;
+  color: #ffd700;
+  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
 }
 
 body.format-mimo .mb-0-override {

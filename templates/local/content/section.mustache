@@ -136,16 +136,17 @@
                     </span>
                     <span class="completion-pill-count" data-count="incomplete">{{incompletecount}}</span>
                 </button>
-                {{#enablecompletionstars}}
-                {{! Completion stars - filled for completed, unfilled for incomplete }}
+                {{! Completion star - single gold star, shown only when all tracked activities are complete. }}
                 <div class="completion-stars{{#allcomplete}} all-complete{{/allcomplete}}"
                      data-region="completion-stars"
                      data-completed-count="{{completedcount}}"
                      data-total-count="{{total}}"
                      role="img"
                      aria-label="{{#str}}completionstars, format_mimo, {{completedcount}}{{/str}}">
+                    {{#allcomplete}}
+                    <span class="star-icon" aria-hidden="true"><i class="fa fa-star"></i></span>
+                    {{/allcomplete}}
                 </div>
-                {{/enablecompletionstars}}
             </div>
             {{! No activities message - shown when filters result in 0 items }}
             <div class="completion-status-empty" data-region="no-activities" hidden>

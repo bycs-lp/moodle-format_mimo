@@ -409,12 +409,11 @@ const updateCompletionCounts = (statusRegion, items) => {
 };
 
 /**
- * Update the completion stars display to show filled stars for completed
- * activities and smaller unfilled stars for incomplete activities.
+ * Update the completion star display.
  *
- * Stars are rendered dynamically based on the current counts.
- * A subtle entrance animation is applied to newly appearing stars.
- * When all activities are complete, the container gets an all-complete class.
+ * Shows a single gold star only when there is at least one tracked activity
+ * and all tracked activities are complete. When the star transitions from
+ * absent to present, a short entrance animation plays.
  *
  * @param {HTMLElement} statusRegion - Completion status region element
  * @param {number} completedCount - Number of completed activities
@@ -427,45 +426,24 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
         return;
     }
 
-    const incompleteCount = totalWithCompletion - completedCount;
-    const currentFilledCount = starsContainer.querySelectorAll('.star-icon:not(.star-icon--incomplete)').length;
-    const currentUnfilledCount = starsContainer.querySelectorAll('.star-icon--incomplete').length;
     const allComplete = totalWithCompletion > 0 && completedCount === totalWithCompletion;
+    const hasStar = !!starsContainer.querySelector('.star-icon');
 
-    // Only rebuild if counts changed.
-    if (currentFilledCount !== completedCount || currentUnfilledCount !== incompleteCount) {
-        const fragment = document.createDocumentFragment();
-
-        // Filled stars for completed activities.
-        for (let i = 0; i < completedCount; i++) {
-            const span = document.createElement('span');
-            span.className = 'star-icon';
-            span.setAttribute('aria-hidden', 'true');
-            const icon = document.createElement('i');
-            icon.className = 'fa fa-star';
-            span.appendChild(icon);
-            // Animate only newly added stars.
-            if (i >= currentFilledCount) {
-                span.classList.add('star-new');
-            }
-            fragment.appendChild(span);
-        }
-
-        // Unfilled stars for incomplete activities.
-        for (let i = 0; i < incompleteCount; i++) {
-            const span = document.createElement('span');
-            span.className = 'star-icon--incomplete';
-            span.setAttribute('aria-hidden', 'true');
-            const icon = document.createElement('i');
-            icon.className = 'fa fa-star-o';
-            span.appendChild(icon);
-            fragment.appendChild(span);
-        }
-
+    if (allComplete && !hasStar) {
+        const span = document.createElement('span');
+        span.className = 'star-icon star-new';
+        span.setAttribute('aria-hidden', 'true');
+        const icon = document.createElement('i');
+        icon.className = 'fa fa-star';
+        span.appendChild(icon);
         starsContainer.innerHTML = '';
-        starsContainer.appendChild(fragment);
+        starsContainer.appendChild(span);
+    } else if (!allComplete && hasStar) {
+        starsContainer.innerHTML = '';
+    }
 
-        // Update aria label.
+    if (allComplete !== hasStar) {
+        // Aria label refresh only when star visibility changed.
         getString('aria_completion_status', 'format_mimo', {
             completed: completedCount,
             total: totalWithCompletion,
