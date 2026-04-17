@@ -646,18 +646,7 @@ body:not(.bulkenabled) .mimo-activities {
         line-height: 1;
         gap: 0;
         position: relative;
-
-        &::after {
-            content: '';
-            position: absolute;
-            left: 58%;
-            top: 57%;
-            width: 22px;
-            height: 1px;
-            background: currentcolor;
-            opacity: 0.3;
-            transform: translate(-50%, -50%) rotate(-31deg);
-        }
+        font-variant-numeric: tabular-nums;
 
         &:hover {
             color: #007bff;
@@ -669,16 +658,18 @@ body:not(.bulkenabled) .mimo-activities {
     .badge-teacher-completion__count {
         font-size: 16px;
         font-weight: 800;
-        align-self: flex-start;
-        padding-left: 8px;
     }
 
     .badge-teacher-completion__total {
         font-size: 10px;
         font-weight: 600;
         opacity: 0.65;
-        align-self: flex-end;
-        padding-right: 6px;
+        transform: translateX(4px);
+
+        &::before {
+            content: '/';
+            margin-right: 1px;
+        }
     }
 }
 
