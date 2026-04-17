@@ -138,6 +138,44 @@ class section_image_manager {
     }
 
     /**
+     * Get pluginfile URLs for all section images in a course in a single file-storage lookup.
+     *
+     * Intended for overview rendering where every section may need its image URL.
+     * Returns a map keyed by section ID (course_sections.id → itemid). Sections
+     * without an uploaded image are absent from the map.
+     *
+     * @param int $courseid Course ID
+     * @return array<int, moodle_url> Map of sectionid => URL.
+     */
+    public static function get_image_urls_for_course(int $courseid): array {
+        $context = \core\context\course::instance($courseid);
+        $files = get_file_storage()->get_area_files(
+            $context->id,
+            self::COMPONENT,
+            self::FILEAREA,
+            false,
+            '',
+            false
+        );
+
+        $urls = [];
+        foreach ($files as $file) {
+            if ($file->is_directory()) {
+                continue;
+            }
+            $urls[(int) $file->get_itemid()] = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                $file->get_itemid(),
+                $file->get_filepath(),
+                $file->get_filename()
+            );
+        }
+        return $urls;
+    }
+
+    /**
      * Delete the section image for a specific section.
      *
      * @param int $courseid Course ID

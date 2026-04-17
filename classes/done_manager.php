@@ -31,14 +31,79 @@ class done_manager {
     private const TABLE = 'format_mimo_cmdone';
 
     /**
+     * Request-level cache of done cmids per course.
+     *
+     * Shape: [courseid => [cmid => true]]. A value of `null` for a courseid
+     * means "not yet primed". Using a map instead of a flat list lets
+     * {@see self::is_done()} answer in O(1) without rescanning.
+     *
+     * @var array<int, array<int, true>>
+     */
+    private static array $donecache = [];
+
+    /**
+     * Reset the request-level cache.
+     *
+     * Intended for unit tests; the DB is rolled back between tests but
+     * static properties survive.
+     */
+    public static function reset_cache(): void {
+        self::$donecache = [];
+    }
+
+    /**
+     * Prime the cache for a course by loading its done cmids in one query.
+     *
+     * @param int $courseid Course ID.
+     */
+    private static function prime_course(int $courseid): void {
+        global $DB;
+        if (isset(self::$donecache[$courseid])) {
+            return;
+        }
+        $sql = "SELECT d.cmid
+                  FROM {" . self::TABLE . "} d
+                  JOIN {course_modules} cm ON cm.id = d.cmid
+                 WHERE cm.course = :courseid";
+        $records = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        $map = [];
+        foreach ($records as $record) {
+            $map[(int) $record->cmid] = true;
+        }
+        self::$donecache[$courseid] = $map;
+    }
+
+    /**
+     * Resolve the course id for a given cm id.
+     *
+     * Uses the core modinfo request cache when available (populated during
+     * course rendering), falls back to a single {course_modules} query.
+     *
+     * @param int $cmid Course module ID.
+     * @return int Course ID, or 0 if the cm does not exist.
+     */
+    private static function get_courseid_for_cm(int $cmid): int {
+        global $DB;
+        return (int) $DB->get_field('course_modules', 'course', ['id' => $cmid]);
+    }
+
+    /**
      * Check if a course module is flagged as done.
+     *
+     * Results are request-cached per course: the first call for any cm in a
+     * course loads the full done-cmid set in one query, subsequent calls for
+     * the same course are served from memory.
      *
      * @param int $cmid Course module ID.
      * @return bool
      */
     public static function is_done(int $cmid): bool {
-        global $DB;
-        return $DB->record_exists(self::TABLE, ['cmid' => $cmid]);
+        $courseid = self::get_courseid_for_cm($cmid);
+        if ($courseid === 0) {
+            return false;
+        }
+        self::prime_course($courseid);
+        return isset(self::$donecache[$courseid][$cmid]);
     }
 
     /**
@@ -53,6 +118,10 @@ class done_manager {
                 'cmid' => $cmid,
                 'timecreated' => \core\di::get(\core\clock::class)->time(),
             ]);
+            $courseid = self::get_courseid_for_cm($cmid);
+            if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
+                self::$donecache[$courseid][$cmid] = true;
+            }
         }
     }
 
@@ -64,6 +133,10 @@ class done_manager {
     public static function unset_done(int $cmid): void {
         global $DB;
         $DB->delete_records(self::TABLE, ['cmid' => $cmid]);
+        $courseid = self::get_courseid_for_cm($cmid);
+        if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
+            unset(self::$donecache[$courseid][$cmid]);
+        }
     }
 
     /**
@@ -73,12 +146,8 @@ class done_manager {
      * @return int[] Array of cmids that are flagged done.
      */
     public static function get_done_cmids(int $courseid): array {
-        global $DB;
-        $sql = "SELECT d.cmid
-                  FROM {" . self::TABLE . "} d
-                  JOIN {course_modules} cm ON cm.id = d.cmid
-                 WHERE cm.course = :courseid";
-        return array_map('intval', array_keys($DB->get_records_sql($sql, ['courseid' => $courseid])));
+        self::prime_course($courseid);
+        return array_keys(self::$donecache[$courseid]);
     }
 
     /**
@@ -88,7 +157,11 @@ class done_manager {
      */
     public static function delete_for_cm(int $cmid): void {
         global $DB;
+        $courseid = self::get_courseid_for_cm($cmid);
         $DB->delete_records(self::TABLE, ['cmid' => $cmid]);
+        if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
+            unset(self::$donecache[$courseid][$cmid]);
+        }
     }
 
     /**
@@ -101,5 +174,6 @@ class done_manager {
         $sql = "DELETE FROM {" . self::TABLE . "}
                  WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
         $DB->execute($sql, ['courseid' => $courseid]);
+        unset(self::$donecache[$courseid]);
     }
 }

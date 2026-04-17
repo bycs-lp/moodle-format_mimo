@@ -33,7 +33,8 @@ Feature: Teacher completion counts on activity cards
     Given I log in as "teacher1"
     When I am on "Test Course 1" course homepage
     Then ".badge-teacher-completion" "css_element" should exist
-    And I should see "0/3" in the ".mimo-completion-badge" "css_element"
+    And I should see "0" in the ".badge-teacher-completion__count" "css_element"
+    And I should see "3" in the ".badge-teacher-completion__total" "css_element"
 
   Scenario: Student sees personal completion badge instead of counts
     Given I log in as "student1"

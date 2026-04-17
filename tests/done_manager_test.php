@@ -32,6 +32,7 @@ final class done_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        done_manager::reset_cache();
     }
 
     /**

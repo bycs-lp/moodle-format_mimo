@@ -142,6 +142,9 @@ class content extends content_base {
         // Pre-fetch done cmids for the course to exclude from completion tracking.
         $donecmids = \format_mimo\done_manager::get_done_cmids($course->id);
 
+        // Pre-fetch section overview images for the whole course in one file-storage lookup.
+        $sectionimageurls = \format_mimo\section_image_manager::get_image_urls_for_course($course->id);
+
         $sections = [];
         foreach ($modinfo->get_section_info_all() as $sectioninfo) {
             // Skip orphaned or delegated sections.
@@ -266,11 +269,8 @@ class content extends content_base {
                 $sectioncard->hasdefaultminitiles = true;
             }
 
-            // Check for a section overview card image.
-            $sectionimageurl = \format_mimo\section_image_manager::get_image_url(
-                $course->id,
-                $sectioninfo->id
-            );
+            // Check for a section overview card image (pre-fetched in one lookup above).
+            $sectionimageurl = $sectionimageurls[(int) $sectioninfo->id] ?? null;
             if ($sectionimageurl) {
                 $sectioncard->sectionimageurl = $sectionimageurl->out(false);
                 $sectioncard->hassectionimage = true;
