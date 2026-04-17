@@ -446,6 +446,104 @@ const updateCompletionStars = (statusRegion, completedCount, totalWithCompletion
     }
 };
 
+/** Glyphs used for firework particles — gold stars and sparkles. */
+const FIREWORK_GLYPHS = ['★', '✦', '✧', '✨', '⭐'];
+
+/** Number of particles launched per firework burst. */
+const FIREWORK_PARTICLE_COUNT = 42;
+
+/** Duration of the firework animation in milliseconds (must match SCSS). */
+const FIREWORK_DURATION_MS = 1400;
+
+/**
+ * Launch a firework of star particles from the given container.
+ *
+ * Particles are rendered as fixed-position elements appended to the document
+ * body so they can extend far beyond the small completion-star container and
+ * are not clipped by any ancestor with `overflow: hidden`. Each particle gets
+ * random trajectory CSS variables (--tx, --ty, --rot) and is removed once the
+ * CSS animation finishes.
+ *
+ * @param {HTMLElement} container - The `.completion-stars` container
+ * @returns {void}
+ */
+const launchStarFirework = (container) => {
+    // Trigger a one-shot "punch" animation on the main star.
+    container.classList.remove('is-bursting');
+    // Force reflow so the class re-add restarts the animation.
+    void container.offsetWidth;
+    container.classList.add('is-bursting');
+
+    // Anchor the burst at the center of the star on the viewport.
+    const rect = container.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    // Scale burst radius with viewport so it looks large everywhere.
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    const maxDistance = Math.max(260, vmin * 0.45);
+    const minDistance = maxDistance * 0.45;
+
+    const particles = [];
+    for (let i = 0; i < FIREWORK_PARTICLE_COUNT; i++) {
+        const particle = document.createElement('span');
+        particle.className = 'mimo-star-firework';
+        particle.setAttribute('aria-hidden', 'true');
+        particle.textContent = FIREWORK_GLYPHS[i % FIREWORK_GLYPHS.length];
+
+        // Random angle (0–360°) and distance for a wide radial burst.
+        const angle = Math.random() * Math.PI * 2;
+        const distance = minDistance + Math.random() * (maxDistance - minDistance);
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        const rot = (Math.random() * 720 - 360).toFixed(0);
+        // Randomize size a bit so the burst feels organic.
+        const scale = (0.8 + Math.random() * 1.4).toFixed(2);
+
+        particle.style.left = `${cx}px`;
+        particle.style.top = `${cy}px`;
+        particle.style.setProperty('--tx', `${tx.toFixed(1)}px`);
+        particle.style.setProperty('--ty', `${ty.toFixed(1)}px`);
+        particle.style.setProperty('--rot', `${rot}deg`);
+        particle.style.setProperty('--scale', scale);
+
+        // Slight per-particle delay for a more natural burst.
+        particle.style.animationDelay = `${(Math.random() * 120).toFixed(0)}ms`;
+
+        document.body.appendChild(particle);
+        particles.push(particle);
+    }
+
+    // Clean up our own particles after the animation completes.
+    setTimeout(() => {
+        particles.forEach((el) => el.remove());
+        container.classList.remove('is-bursting');
+    }, FIREWORK_DURATION_MS + 250);
+};
+
+/** Guard to ensure the firework click delegation is registered only once. */
+let fireworkListenerRegistered = false;
+
+/**
+ * Register a single document-level click delegation that launches a firework
+ * whenever a visible completion star is clicked.
+ *
+ * @returns {void}
+ */
+const registerFireworkListener = () => {
+    if (fireworkListenerRegistered) {
+        return;
+    }
+    fireworkListenerRegistered = true;
+    document.addEventListener('click', (event) => {
+        const container = event.target.closest('[data-region="completion-stars"]');
+        if (!container || !container.classList.contains('is-visible')) {
+            return;
+        }
+        launchStarFirework(container);
+    });
+};
+
 /**
  * Update the active tag image display in the completion status region.
  *
@@ -816,6 +914,9 @@ const initCompletionStatusOnly = (statusRegion) => {
  * @returns {void}
  */
 export const init = () => {
+    // Register the one-shot firework click delegation (guarded internally).
+    registerFireworkListener();
+
     // Initialize filter bars (which also handle their associated completion status regions).
     document
         .querySelectorAll('[data-region="mimo-filterbar"]')

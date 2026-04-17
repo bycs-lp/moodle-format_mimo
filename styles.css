@@ -1458,7 +1458,57 @@ body.format-mimo-distraction-free #topofscroll {
   right: 0;
   animation: mimo-twinkle 1.8s ease-in-out infinite 0.8s;
 }
+.completion-stars.is-visible {
+  cursor: pointer;
+}
+.completion-stars.is-bursting .star-icon {
+  animation: mimo-star-punch 0.5s ease-out;
+}
 
+.mimo-star-firework {
+  position: fixed;
+  width: 1.6rem;
+  height: 1.6rem;
+  pointer-events: none;
+  z-index: 10000;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #fff3a0;
+  text-shadow: 0 0 6px rgb(255, 215, 0), 0 0 14px rgba(255, 140, 0, 0.9), 0 0 22px rgba(255, 90, 0, 0.6);
+  animation: mimo-firework-fly 1400ms cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes mimo-firework-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(calc(var(--tx) * 0.18), calc(var(--ty) * 0.18)) scale(calc(var(--scale, 1) * 1.2)) rotate(calc(var(--rot) * 0.2));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(calc(var(--scale, 1) * 0.5)) rotate(var(--rot));
+  }
+}
+@keyframes mimo-star-punch {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  30% {
+    transform: scale(0.8) rotate(-8deg);
+    filter: drop-shadow(0 0 12px rgb(255, 215, 0));
+  }
+  60% {
+    transform: scale(1.35) rotate(6deg);
+    filter: drop-shadow(0 0 18px rgb(255, 215, 0));
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
 .mimo-overview-card__progress-text .mimo-overview-card__complete-star {
   margin-left: 0.35rem;
   color: #ffd700;
