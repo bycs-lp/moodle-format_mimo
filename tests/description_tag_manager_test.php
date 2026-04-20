@@ -18,7 +18,7 @@
  * Unit tests for description_tag_manager.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,7 +29,7 @@ namespace format_mimo;
  * Test cases for description tag manager.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo\description_tag_manager
  */

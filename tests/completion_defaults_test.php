@@ -18,7 +18,7 @@
  * Unit tests for completion defaults override feature.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -34,7 +34,7 @@ require_once($CFG->libdir . '/completionlib.php');
  * Tests for completion_defaults_manager and the observer completion override logic.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo\completion_defaults_manager
  * @covers     \format_mimo\observer::apply_completion_override

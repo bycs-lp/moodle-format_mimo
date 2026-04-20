@@ -23,7 +23,7 @@
  * - Section visibility, URL generation, course index support, and navigation.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -40,7 +40,7 @@ use core_courseformat\base as course_format;
  * Multi-section mode test case.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo
  */

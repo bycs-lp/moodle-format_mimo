@@ -18,7 +18,7 @@
  * Unit tests for get_activity_descriptions external API.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ use ReflectionMethod;
  * Test case for get_activity_descriptions external API.
  *
  * @package    format_mimo
- * @copyright  2025 Your Name
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo\external\get_activity_descriptions
  * @runTestsInSeparateProcesses
