@@ -42,7 +42,19 @@ use core_courseformat\base as course_format;
  * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_mimo
+ * @covers     \format_mimo::is_multisection_enabled
+ * @covers     \format_mimo::is_section_visible
+ * @covers     \format_mimo::get_sectionnum
+ * @covers     \format_mimo::set_sectionnum
+ * @covers     \format_mimo::get_view_url
+ * @covers     \format_mimo::uses_course_index
+ * @covers     \format_mimo::uses_sections
+ * @covers     \format_mimo::uses_indentation
+ * @covers     \format_mimo::supports_ajax
+ * @covers     \format_mimo::supports_components
+ * @covers     \format_mimo::get_section_name
+ * @covers     \format_mimo::update_course_format_options
+ * @covers     \format_mimo::get_output_classname
  */
 final class multisection_test extends \advanced_testcase {
     /** @var \stdClass Course with multi-section enabled */

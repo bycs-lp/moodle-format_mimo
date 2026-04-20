@@ -22,7 +22,11 @@ namespace format_mimo;
  * @package    format_mimo
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_mimo\completion_helper
+ * @covers     \format_mimo\completion_helper::get_teacher_completion_counts
+ * @covers     \format_mimo\completion_helper::get_tracked_user_count
+ * @covers     \format_mimo\completion_helper::reset_caches
+ * @covers     \format_mimo\output\courseformat\content\section\cmitem::export_for_template
+ * @covers     \format_mimo\output\courseformat\content
  */
 final class completion_helper_test extends \advanced_testcase {
     protected function setUp(): void {

@@ -30,7 +30,24 @@ namespace format_mimo;
  * @package    format_mimo
  * @copyright  2026 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \format_mimo
+ * @covers     \format_mimo::uses_sections
+ * @covers     \format_mimo::uses_indentation
+ * @covers     \format_mimo::supports_components
+ * @covers     \format_mimo::supports_ajax
+ * @covers     \format_mimo::get_default_blocks
+ * @covers     \format_mimo::section_format_options
+ * @covers     \format_mimo::course_format_options
+ * @covers     \format_mimo::get_default_section_name
+ * @covers     \format_mimo::get_section_name
+ * @covers     \format_mimo::update_course_format_options
+ * @covers     \format_mimo::is_section_visible
+ * @covers     \format_mimo::can_delete_section
+ * @covers     \format_mimo::allow_stealth_module_visibility
+ * @covers     \format_mimo::get_format_options
+ * @covers     \format_mimo::get_remembered_section
+ * @covers     \format_mimo::delete_format_data
+ * @covers     ::format_mimo_coursemodule_edit_post_actions
+ * @covers     ::format_mimo_pluginfile
  */
 final class format_mimo_test extends \advanced_testcase {
     /**
