@@ -50,34 +50,37 @@ final class compare_templates_test extends \advanced_testcase {
      * @return array
      */
     public static function overridden_templates_provider(): array {
+        global $CFG;
+        $fixtures = $CFG->dirroot . '/course/format/mimo/tests/fixtures';
+        $core = $CFG->dirroot . '/course/format/templates/local';
         return [
             'content' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/content-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content.mustache',
+                'copy' => $fixtures . '/content-copy.mustache',
+                'orig' => $core . '/content.mustache',
             ],
             'section' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/section-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/section.mustache',
+                'copy' => $fixtures . '/section-copy.mustache',
+                'orig' => $core . '/content/section.mustache',
             ],
             'cm' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/cm-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/cm.mustache',
+                'copy' => $fixtures . '/cm-copy.mustache',
+                'orig' => $core . '/content/cm.mustache',
             ],
             'cmname' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/cmname-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/cm/cmname.mustache',
+                'copy' => $fixtures . '/cmname-copy.mustache',
+                'orig' => $core . '/content/cm/cmname.mustache',
             ],
             'controlmenu' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/controlmenu-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/cm/controlmenu.mustache',
+                'copy' => $fixtures . '/controlmenu-copy.mustache',
+                'orig' => $core . '/content/cm/controlmenu.mustache',
             ],
             'cmitem' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/cmitem-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/section/cmitem.mustache',
+                'copy' => $fixtures . '/cmitem-copy.mustache',
+                'orig' => $core . '/content/section/cmitem.mustache',
             ],
             'activitychooserbutton' => [
-                'copy' => 'public/course/format/mimo/tests/fixtures/activitychooserbutton-copy.mustache',
-                'orig' => 'public/course/format/templates/local/content/activitychooserbutton.mustache',
+                'copy' => $fixtures . '/activitychooserbutton-copy.mustache',
+                'orig' => $core . '/content/activitychooserbutton.mustache',
             ],
         ];
     }

@@ -167,8 +167,15 @@ class observer {
 
         $courseid = $event->objectid;
 
-        // Delete section images.
-        section_image_manager::delete_all_for_course($courseid);
+        // Delete section images. The course context has already been purged by
+        // core at this point, so swallow missing-context errors — the files are
+        // then cleaned up by core's context deletion anyway.
+        try {
+            section_image_manager::delete_all_for_course($courseid);
+        } catch (\dml_missing_record_exception $e) {
+            // Context already deleted: nothing to do.
+            unset($e);
+        }
 
         // Delete done flags for this course's modules.
         done_manager::delete_for_course($courseid);

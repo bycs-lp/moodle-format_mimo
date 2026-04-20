@@ -849,6 +849,10 @@ class profile_manager {
     public static function cleanup_orphaned_imported_profiles(): void {
         global $DB;
 
+        // The course_format_options.value column is a text column on most DB engines
+        // and cannot be compared directly; use sql_compare_text() for portability.
+        $valcompare = $DB->sql_compare_text('cfo.value');
+        $namecompare = $DB->sql_compare_text('p.name');
         $sql = "SELECT p.id
                   FROM {" . self::TABLE_PROFILES . "} p
                  WHERE p.scope = :scope
@@ -856,7 +860,7 @@ class profile_manager {
                        SELECT 1 FROM {course_format_options} cfo
                         WHERE cfo.format = 'mimo'
                           AND cfo.name = 'activityprofile'
-                          AND cfo.value = p.name
+                          AND $valcompare = $namecompare
                    )";
         $orphanids = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
 

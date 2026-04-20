@@ -372,4 +372,119 @@ final class observer_test extends \advanced_testcase {
 
         $this->assertFalse(section_image_manager::has_image($course->id, $sectionid));
     }
+
+    /**
+     * course_deleted must also remove done-flags, course_tags bindings, and orphaned
+     * imported tags / imported profiles in addition to cmtag rows.
+     *
+     * Covers observer::course_deleted() branches that were previously uncovered.
+     */
+    public function test_course_deleted_full_cleanup(): void {
+        global $DB;
+
+        // Second course acts as a control: nothing attached to it must be touched.
+        $survivor = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $survivormodule = $this->getDataGenerator()->create_module('page', ['course' => $survivor->id]);
+        done_manager::set_done($survivormodule->cmid);
+
+        // Tags and profiles with various scopes/attachment states relative to $this->course.
+        $boundonlyimportedtag = tag_manager::create_tag(
+            'BoundOnly', 'b.svg', 'b-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        tag_manager::bind_tag_to_course($boundonlyimportedtag, $this->course->id);
+
+        $boundandsurvivingimportedtag = tag_manager::create_tag(
+            'AlsoElsewhere', 'e.svg', 'e-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $this->course->id);
+        tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $survivor->id);
+
+        $globaltag = $this->tagid; // Created in setUp().
+
+        // Module in the doomed course with a done flag and a cmtag.
+        $doomedmodule = $this->getDataGenerator()->create_module('page', [
+            'course' => $this->course->id,
+        ]);
+        tag_manager::assign_tag_to_cm($doomedmodule->cmid, $globaltag);
+        done_manager::set_done($doomedmodule->cmid);
+
+        // Imported profile used exclusively by the doomed course.
+        $orphanprofileid = profile_manager::create_profile(
+            'orphan_profile', 'Orphan Profile', 99, 'imported',
+        );
+        // Imported profile used by the survivor — must remain.
+        $keptprofileid = profile_manager::create_profile(
+            'kept_profile', 'Kept Profile', 98, 'imported',
+        );
+        // Directly wire the cfo rows to bypass the format's value-allowlist.
+        $DB->set_field_select(
+            'course_format_options',
+            'value',
+            'orphan_profile',
+            "format = 'mimo' AND name = 'activityprofile' AND courseid = :courseid",
+            ['courseid' => $this->course->id],
+        );
+        $DB->set_field_select(
+            'course_format_options',
+            'value',
+            'kept_profile',
+            "format = 'mimo' AND name = 'activityprofile' AND courseid = :courseid",
+            ['courseid' => $survivor->id],
+        );
+
+        // Baseline sanity.
+        $this->assertTrue($DB->record_exists('format_mimo_cmdone', ['cmid' => $doomedmodule->cmid]));
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_cmdone', ['cmid' => $survivormodule->cmid]),
+            'Survivor done flag must be persisted before course deletion',
+        );
+        $this->assertTrue($DB->record_exists('format_mimo_course_tags', [
+            'courseid' => $this->course->id,
+            'tagid' => $boundonlyimportedtag,
+        ]));
+
+        // Fire course_deleted.
+        delete_course($this->course, false);
+
+        // 1. done flags for the deleted course are gone; survivor's stay.
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_cmdone', ['cmid' => $doomedmodule->cmid]),
+            'Done flags for the deleted course must be purged',
+        );
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_cmdone', ['cmid' => $survivormodule->cmid]),
+            'Done flags on unrelated courses must survive',
+        );
+
+        // 2. course_tags bindings for the deleted course are gone.
+        $this->assertSame(
+            0,
+            $DB->count_records('format_mimo_course_tags', ['courseid' => $this->course->id]),
+        );
+
+        // 3. Orphaned imported tag (only bound to the deleted course, no cmtag refs) is deleted.
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_tags', ['id' => $boundonlyimportedtag]),
+            'Imported tag that became orphaned by course deletion must be removed',
+        );
+
+        // 4. Imported tag still bound to survivor must survive.
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_tags', ['id' => $boundandsurvivingimportedtag]),
+        );
+
+        // 5. Orphan imported profile is gone; kept imported profile survives.
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_profiles', ['id' => $orphanprofileid]),
+            'Imported profile referenced only by the deleted course must be removed',
+        );
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_profiles', ['id' => $keptprofileid]),
+        );
+
+        // 6. Global tag is never cleaned up by this path.
+        $this->assertTrue($DB->record_exists('format_mimo_tags', ['id' => $globaltag]));
+    }
 }

@@ -354,16 +354,31 @@ final class completion_defaults_test extends \advanced_testcase {
         // Ensure NO mimo default exists.
         completion_defaults_manager::delete_default($pageid);
 
+        // Clear any course/site completion defaults so core default is NONE.
+        $DB->delete_records('course_completion_defaults', [
+            'course' => $this->course->id,
+            'module' => $pageid,
+        ]);
+        $DB->delete_records('course_completion_defaults', [
+            'course' => SITEID,
+            'module' => $pageid,
+        ]);
+
         // Create a page.
         $page = $this->getDataGenerator()->create_module('page', [
             'course' => $this->course->id,
         ]);
 
-        // Completion should remain as whatever core sets (likely NONE).
+        // Without a mimo override the observer must leave core's result in place (NONE).
         $cm = $DB->get_record('course_modules', ['id' => $page->cmid]);
-        // We don't assert a specific value — just that the observer didn't crash.
-        // The important thing is that the completion is whatever core set, not our override.
-        $this->assertNotNull($cm);
+        $this->assertSame(
+            (int) COMPLETION_TRACKING_NONE,
+            (int) $cm->completion,
+            'No mimo default must not change completion tracking',
+        );
+        $this->assertSame(0, (int) $cm->completionview);
+        $this->assertSame(0, (int) $cm->completionpassgrade);
+        $this->assertNull($cm->completiongradeitemnumber);
     }
 
     /**
@@ -780,5 +795,72 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertEquals(1, (int) $assign->completionusegrade);
         $this->assertNotNull($assign->customrules);
         $this->assertSame(['completionsubmit' => 1], json_decode($assign->customrules, true));
+    }
+
+    /**
+     * apply_defaults() must emit a developer debugging notice for invalid customrules JSON,
+     * still apply the core completion fields, and leave the module instance untouched.
+     */
+    public function test_apply_defaults_invalid_json_custom_rules(): void {
+        global $DB;
+
+        $assignid = $this->get_module_id('assign');
+
+        // Seed a mimo override with deliberately broken JSON.
+        $DB->insert_record(completion_defaults_manager::TABLE, (object) [
+            'module' => $assignid,
+            'completion' => COMPLETION_TRACKING_AUTOMATIC,
+            'completionview' => 0,
+            'completionusegrade' => 0,
+            'completionpassgrade' => 0,
+            'completionexpected' => 0,
+            'customrules' => '{not valid json',
+            'timecreated' => time(),
+            'timemodified' => time(),
+        ]);
+
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $this->course->id,
+        ]);
+
+        $this->assertDebuggingCalled();
+
+        $cm = $DB->get_record('course_modules', ['id' => $assign->cmid]);
+        $this->assertSame(
+            (int) COMPLETION_TRACKING_AUTOMATIC,
+            (int) $cm->completion,
+            'Core completion fields must be applied even when customrules JSON is broken',
+        );
+
+        // The module instance must NOT have been overwritten from broken JSON.
+        $assigninstance = $DB->get_record('assign', ['id' => $assign->id]);
+        $this->assertSame(0, (int) $assigninstance->completionsubmit);
+    }
+
+    /**
+     * When the module-instance custom completion rule already differs from the mimo default
+     * (teacher customized it on creation), apply_defaults must still overwrite it —
+     * the observer only skips when core fields differ, not when customrules differ.
+     */
+    public function test_apply_defaults_overwrites_module_custom_rules(): void {
+        global $DB;
+
+        $assignid = $this->get_module_id('assign');
+
+        completion_defaults_manager::save_default($assignid, [
+            'completion' => COMPLETION_TRACKING_AUTOMATIC,
+            'completionview' => 0,
+            'completionusegrade' => 0,
+            'completionpassgrade' => 0,
+            'completionexpected' => 0,
+            'customrules' => json_encode(['completionsubmit' => 1]),
+        ]);
+
+        $assign = $this->getDataGenerator()->create_module('assign', [
+            'course' => $this->course->id,
+        ]);
+
+        $assigninstance = $DB->get_record('assign', ['id' => $assign->id]);
+        $this->assertSame(1, (int) $assigninstance->completionsubmit);
     }
 }

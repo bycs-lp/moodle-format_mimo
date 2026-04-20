@@ -234,29 +234,44 @@ final class profile_manager_test extends \advanced_testcase {
     }
 
     /**
-     * Test tag_manager fallback to profile-specific image.
+     * When a profile has a stored card image, the tag_manager lookup must resolve
+     * to that per-profile file (not to the tag-level default).
      */
     public function test_tag_manager_uses_profile_image(): void {
         global $DB;
 
         // Create profile and tag.
         $profileid = profile_manager::create_profile('fallback', 'Fallback Test', 1);
-        $tagid = tag_manager::create_tag('Fallback Tag', null, null, 'page');
+        $tagid = tag_manager::create_tag('Fallback Tag', 'base.svg', 'base-s.svg', 'page');
 
-        // Create profile tag record with a filename.
+        // Create the profile_tag record and store an actual file in the profile card area.
         $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
-        $DB->set_field('format_mimo_profile_tags', 'cardimage', 'test.svg', ['id' => $profiletag->id]);
+        $filename = 'profilecard.svg';
+        get_file_storage()->create_file_from_string(
+            [
+                'contextid' => \core\context\system::instance()->id,
+                'component' => 'format_mimo',
+                'filearea'  => profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+                'itemid'    => $profiletag->id,
+                'filepath'  => '/',
+                'filename'  => $filename,
+            ],
+            '<svg/>',
+        );
+        $DB->set_field('format_mimo_profile_tags', 'cardimage', $filename, ['id' => $profiletag->id]);
 
-        // Get the tag.
+        // Invalidate caches so the request-level URL cache is not hit.
+        tag_manager::clear_tag_cache();
+
         $tag = tag_manager::get_tag($tagid);
-
-        // Without a file in file storage, get_cardimage_url should still work via profile_manager.
-        // It will return null because no actual file exists, but the lookup path is tested.
         $url = tag_manager::get_cardimage_url($tag, 'fallback');
 
-        // Since we didn't actually upload a file, URL should be null.
-        // But we've tested that the profile lookup path is exercised.
-        $this->assertNull($url);
+        $this->assertNotNull($url, 'Profile-specific card image must resolve to a URL');
+        $this->assertStringContainsString($filename, $url->out());
+        $this->assertStringContainsString(
+            profile_manager::FILEAREA_PROFILE_CARDIMAGE,
+            $url->out(),
+        );
     }
 
     /**
@@ -473,5 +488,83 @@ final class profile_manager_test extends \advanced_testcase {
         $this->assertIsArray($options);
         $this->assertArrayHasKey('maxfiles', $options);
         $this->assertSame(1, $options['maxfiles']);
+    }
+
+    /* ==================================== *
+     * Imported profile lifecycle.          *
+     * ==================================== */
+
+    /**
+     * promote_profile_to_global flips the profile scope, leaves course references
+     * intact, and cascades promotion to any imported tags that have profile_tag rows.
+     */
+    public function test_promote_profile_to_global_cascades_to_imported_tags(): void {
+        global $DB;
+
+        $importedprofile = profile_manager::create_profile(
+            'imp_profile', 'Imported Profile', 99, 'imported',
+        );
+        // Imported tag attached to this profile via a profile_tag row.
+        $importedtagid = tag_manager::create_tag(
+            'ImpTag', 'i.svg', 'i-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        // Global tag attached to the same profile must not be re-promoted (no-op).
+        $globaltagid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
+        profile_manager::get_or_create_profile_tag($importedtagid, $importedprofile);
+        profile_manager::get_or_create_profile_tag($globaltagid, $importedprofile);
+
+        profile_manager::promote_profile_to_global($importedprofile);
+
+        $this->assertSame(
+            'global',
+            $DB->get_field('format_mimo_profiles', 'scope', ['id' => $importedprofile]),
+        );
+        $this->assertSame(
+            'global',
+            $DB->get_field('format_mimo_tags', 'scope', ['id' => $importedtagid]),
+            'Imported tags referenced by the promoted profile must also be promoted',
+        );
+        $this->assertSame(
+            'global',
+            $DB->get_field('format_mimo_tags', 'scope', ['id' => $globaltagid]),
+            'Already-global tags stay global',
+        );
+    }
+
+    /**
+     * cleanup_orphaned_imported_profiles deletes imported profiles that are not
+     * referenced by any course's activityprofile option, and leaves the rest alone.
+     */
+    public function test_cleanup_orphaned_imported_profiles(): void {
+        global $DB;
+
+        $orphanid = profile_manager::create_profile('imp_orphan', 'Orphan', 99, 'imported');
+        $usedid = profile_manager::create_profile('imp_used', 'Used', 98, 'imported');
+        $globalunused = profile_manager::create_profile('glob_unused', 'GlobalUnused', 97, 'global');
+
+        // Hook $usedid into a course by directly inserting its activityprofile
+        // option row. This bypasses the format's value-allowlist, which does not
+        // include imported profiles for programmatic set.
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $DB->set_field_select(
+            'course_format_options',
+            'value',
+            'imp_used',
+            "format = 'mimo' AND name = 'activityprofile' AND courseid = :courseid",
+            ['courseid' => $course->id],
+        );
+
+        profile_manager::cleanup_orphaned_imported_profiles();
+
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_profiles', ['id' => $orphanid]),
+            'Orphan imported profile must be deleted',
+        );
+        $this->assertTrue($DB->record_exists('format_mimo_profiles', ['id' => $usedid]));
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_profiles', ['id' => $globalunused]),
+            'Global profiles are out of scope for cleanup',
+        );
     }
 }

@@ -395,7 +395,7 @@ final class multisection_test extends \advanced_testcase {
 
         $renderer = $PAGE->get_renderer('format_mimo');
         // Rendering may emit debugging notices (e.g. deprecated properties).
-        $data = @$widget->export_for_template($renderer);
+        $data = $widget->export_for_template($renderer);
         $this->resetDebugging();
 
         // Headers should be stripped for learners in multi-section mode.

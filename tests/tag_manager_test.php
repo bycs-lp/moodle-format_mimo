@@ -317,12 +317,20 @@ final class tag_manager_test extends \advanced_testcase {
         $tags = tag_manager::get_all_tags();
         $this->assertCount(7, $tags);
 
-        // Verify tag names.
+        // Verify the full set of default tag names in one strict comparison.
         $tagnames = array_column($tags, 'name');
-        $expectednames = ['Reading', 'Discover', 'Writing', 'Show', 'Practice', 'Teamwork'];
-        foreach ($expectednames as $expected) {
-            $this->assertContains($expected, $tagnames);
-        }
+        sort($tagnames);
+        $expected = [
+            get_string('tag_create', 'format_mimo'),
+            get_string('tag_discover', 'format_mimo'),
+            get_string('tag_practice_base', 'format_mimo'),
+            get_string('tag_reading', 'format_mimo'),
+            get_string('tag_show', 'format_mimo'),
+            get_string('tag_teamwork', 'format_mimo'),
+            get_string('tag_writing', 'format_mimo'),
+        ];
+        sort($expected);
+        $this->assertSame($expected, $tagnames);
     }
 
     /**
@@ -482,5 +490,168 @@ final class tag_manager_test extends \advanced_testcase {
         $second = tag_manager::get_tags_for_course($course->id);
 
         $this->assertEquals(array_keys($first), array_keys($second));
+    }
+
+    /* ================================ *
+     * Imported tag lifecycle.          *
+     * ================================ */
+
+    /**
+     * bind/unbind an imported tag to a course and verify `get_imported_tags_for_course`.
+     */
+    public function test_imported_tag_binding_lifecycle(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $globalid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
+        $importedid = tag_manager::create_tag(
+            'ImportedTag', 'i.svg', 'i-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+
+        // Before binding: no imported tags for the course.
+        $this->assertSame([], tag_manager::get_imported_tags_for_course($course->id));
+
+        tag_manager::bind_tag_to_course($importedid, $course->id);
+
+        // Duplicate binding is a no-op (no exception, no second row).
+        tag_manager::bind_tag_to_course($importedid, $course->id);
+        $this->assertSame(
+            1,
+            $DB->count_records('format_mimo_course_tags', [
+                'tagid' => $importedid,
+                'courseid' => $course->id,
+            ]),
+        );
+
+        $bound = tag_manager::get_imported_tags_for_course($course->id);
+        $this->assertArrayHasKey($importedid, $bound);
+        $this->assertArrayNotHasKey($globalid, $bound, 'Global tags must not appear in the imported bucket');
+
+        tag_manager::unbind_tag_from_course($importedid, $course->id);
+        $this->assertSame([], tag_manager::get_imported_tags_for_course($course->id));
+    }
+
+    /**
+     * promote_tag_to_global flips the scope and drops all course bindings.
+     */
+    public function test_promote_tag_to_global(): void {
+        global $DB;
+
+        $course1 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $course2 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $tagid = tag_manager::create_tag(
+            'ToPromote', 'p.svg', 'p-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        tag_manager::bind_tag_to_course($tagid, $course1->id);
+        tag_manager::bind_tag_to_course($tagid, $course2->id);
+        $this->assertSame(2, $DB->count_records('format_mimo_course_tags', ['tagid' => $tagid]));
+
+        tag_manager::promote_tag_to_global($tagid);
+
+        $this->assertSame(
+            'global',
+            $DB->get_field('format_mimo_tags', 'scope', ['id' => $tagid]),
+        );
+        $this->assertSame(0, $DB->count_records('format_mimo_course_tags', ['tagid' => $tagid]));
+    }
+
+    /**
+     * cleanup_orphaned_imported_tags deletes imported tags that have no
+     * course-bindings and no cmtag references, but leaves referenced ones alone.
+     */
+    public function test_cleanup_orphaned_imported_tags(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $module = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+
+        // Three imported tags with different attachment states.
+        $orphan = tag_manager::create_tag(
+            'Orphan', 'o.svg', 'o-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        $bound = tag_manager::create_tag(
+            'Bound', 'b.svg', 'b-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+        $cmattached = tag_manager::create_tag(
+            'Attached', 'a.svg', 'a-s.svg', 'page',
+            null, null, null, 'center', 'normal', 'imported',
+        );
+
+        tag_manager::bind_tag_to_course($bound, $course->id);
+        tag_manager::assign_tag_to_cm($module->cmid, $cmattached);
+
+        // Also a global tag with no attachments — must never be collected.
+        $globalunused = tag_manager::create_tag('GlobalUnused', 'gu.svg', 'gu-s.svg', 'page');
+
+        tag_manager::cleanup_orphaned_imported_tags();
+
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_tags', ['id' => $orphan]),
+            'Orphan imported tag must be deleted',
+        );
+        $this->assertTrue($DB->record_exists('format_mimo_tags', ['id' => $bound]));
+        $this->assertTrue($DB->record_exists('format_mimo_tags', ['id' => $cmattached]));
+        $this->assertTrue(
+            $DB->record_exists('format_mimo_tags', ['id' => $globalunused]),
+            'Global tags are out of scope for cleanup',
+        );
+    }
+
+    /* ========================================== *
+     * Restore-helper matching.                   *
+     * ========================================== */
+
+    /**
+     * find_tag_by_fingerprint matches on name + bgcolor + activity types
+     * (NULL-safe), and honours the excludeids filter.
+     */
+    public function test_find_tag_by_fingerprint(): void {
+        $id1 = tag_manager::create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'page', 'forum', null, '#abcdef');
+        // A differently-configured tag with the same name must not match.
+        $id2 = tag_manager::create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'quiz', null, null, '#123456');
+
+        $probe = (object) [
+            'name' => 'Fingerprinted',
+            'bgcolor' => '#abcdef',
+            'activitytype1' => 'page',
+            'activitytype2' => 'forum',
+            'activitytype3' => null,
+        ];
+
+        $hit = tag_manager::find_tag_by_fingerprint($probe);
+        $this->assertNotNull($hit);
+        $this->assertSame($id1, (int) $hit->id);
+
+        // Excluding the only match returns null.
+        $this->assertNull(tag_manager::find_tag_by_fingerprint($probe, [$id1]));
+
+        // Differing colour prevents matching.
+        $noncolor = clone $probe;
+        $noncolor->bgcolor = '#000000';
+        $this->assertNull(tag_manager::find_tag_by_fingerprint($noncolor));
+
+        // Sanity: the second tag with same name but different fingerprint is not returned.
+        $this->assertNotSame($id2, (int) $hit->id);
+    }
+
+    /**
+     * find_tag_by_name is a lenient fallback that ignores colour / activity types.
+     */
+    public function test_find_tag_by_name(): void {
+        $id = tag_manager::create_tag('OnlyName', 'n.svg', 'n-s.svg', 'page');
+
+        $hit = tag_manager::find_tag_by_name('OnlyName');
+        $this->assertNotNull($hit);
+        $this->assertSame($id, (int) $hit->id);
+
+        // Name-mismatch returns null.
+        $this->assertNull(tag_manager::find_tag_by_name('Nope'));
+
+        // Exclusion works.
+        $this->assertNull(tag_manager::find_tag_by_name('OnlyName', [$id]));
     }
 }

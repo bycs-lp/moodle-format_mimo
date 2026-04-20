@@ -36,8 +36,40 @@ final class privacy_provider_test extends provider_testcase {
 
         $items = $collection->get_collection();
         $this->assertCount(2, $items);
-        $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $items[0]);
-        $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $items[1]);
+        // Collect preference names independently of ordering.
+        $names = [];
+        foreach ($items as $item) {
+            $this->assertInstanceOf(\core_privacy\local\metadata\types\user_preference::class, $item);
+            $names[] = $item->get_name();
+        }
+        sort($names);
+        $this->assertSame(
+            ['format_mimo_df_active', 'format_mimo_lastsection'],
+            $names,
+        );
+    }
+
+    /**
+     * The distraction-free preference must be exported for the user.
+     */
+    public function test_export_user_preferences_df_active(): void {
+        $this->resetAfterTest();
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+
+        set_user_preference('format_mimo_df_active', 1, $user);
+
+        provider::export_user_preferences($user->id);
+
+        $writer = writer::with_context(\core\context\system::instance());
+        $prefs = $writer->get_user_preferences('format_mimo');
+
+        $this->assertObjectHasProperty('format_mimo_df_active', $prefs);
+        $this->assertSame('1', (string) $prefs->format_mimo_df_active->value);
+        $this->assertSame(
+            get_string('privacy:metadata:preference:dfactive', 'format_mimo'),
+            $prefs->format_mimo_df_active->description,
+        );
     }
 
     public function test_export_user_preferences_no_data(): void {

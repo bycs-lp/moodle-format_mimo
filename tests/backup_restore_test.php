@@ -210,6 +210,111 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
+     * Fingerprint-matched restore: a tag with identical name/bgcolor/activitytypes
+     * already exists on the target site, so the restore logic must reuse it
+     * instead of creating a duplicate imported tag.
+     */
+    public function test_restore_reuses_tag_by_fingerprint(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+
+        $tagid = tag_manager::create_tag(
+            'Fingerprint Match',
+            null, null, 'page', 'forum', null,
+            '#a1b2c3', 'center',
+        );
+
+        $course = $generator->create_course(['format' => 'mimo']);
+        $page = $generator->create_module('page', ['course' => $course->id]);
+        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+
+        $before = $DB->count_records('format_mimo_tags', ['name' => 'Fingerprint Match']);
+        $this->assertSame(1, $before);
+
+        $backupid = 'mimo_fp_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'FP restored');
+
+        // No duplicate tag has been created: the existing one was reused.
+        $this->assertSame(
+            1,
+            $DB->count_records('format_mimo_tags', ['name' => 'Fingerprint Match']),
+            'Fingerprint match must reuse the existing tag, not insert a duplicate',
+        );
+
+        // The restored course module is bound to the pre-existing tag id.
+        $restoredtagid = $DB->get_field_sql(
+            "SELECT cmt.tagid
+               FROM {format_mimo_cmtags} cmt
+               JOIN {course_modules} cm ON cm.id = cmt.cmid
+              WHERE cm.course = :courseid",
+            ['courseid' => $restoredcourseid],
+        );
+        $this->assertSame($tagid, (int) $restoredtagid);
+    }
+
+    /**
+     * Name-only match after an admin edit: the backup tag has a different colour
+     * from the target tag. Fingerprint match fails but name match succeeds, so the
+     * restore reuses the target tag and the admin's edit is preserved.
+     */
+    public function test_restore_reuses_tag_by_name_after_admin_edit(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+
+        // Create the tag with the ORIGINAL colour, back up, then change the colour
+        // on the target site. On restore only the name still matches.
+        $tagid = tag_manager::create_tag(
+            'Name Match',
+            null, null, 'page', null, null,
+            '#111111', 'center',
+        );
+
+        $course = $generator->create_course(['format' => 'mimo']);
+        $page = $generator->create_module('page', ['course' => $course->id]);
+        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+
+        $backupid = 'mimo_nm_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        // Admin changes the tag colour after the backup was made.
+        tag_manager::update_tag($tagid, ['bgcolor' => '#999999']);
+
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'NM restored');
+
+        // No duplicate tag has been created.
+        $this->assertSame(
+            1,
+            $DB->count_records('format_mimo_tags', ['name' => 'Name Match']),
+            'Name match must reuse the existing tag, not insert a duplicate',
+        );
+
+        // The restored cmtag points to the pre-existing tag…
+        $restoredtagid = (int) $DB->get_field_sql(
+            "SELECT cmt.tagid
+               FROM {format_mimo_cmtags} cmt
+               JOIN {course_modules} cm ON cm.id = cmt.cmid
+              WHERE cm.course = :courseid",
+            ['courseid' => $restoredcourseid],
+        );
+        $this->assertSame($tagid, $restoredtagid);
+
+        // …and the admin's post-backup colour edit is preserved (not overwritten).
+        $this->assertSame(
+            '#999999',
+            $DB->get_field('format_mimo_tags', 'bgcolor', ['id' => $tagid]),
+        );
+    }
+
+    /**
      * Back up a course and extract it into the temp directory Moodle expects for restores.
      *
      * @param int $courseid course id to back up
