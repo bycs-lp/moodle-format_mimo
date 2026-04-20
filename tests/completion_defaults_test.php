@@ -609,4 +609,176 @@ final class completion_defaults_test extends \advanced_testcase {
             completion_defaults_manager::matches_core_defaults($cmrecord, $coredefaults, 'assign')
         );
     }
+
+    /**
+     * get_all_defaults returns every saved record.
+     */
+    public function test_get_all_defaults(): void {
+        $assignid = $this->get_module_id('assign');
+        $pageid = $this->get_module_id('page');
+
+        completion_defaults_manager::save_default($assignid, [
+            'completion' => COMPLETION_TRACKING_AUTOMATIC,
+            'completionview' => 0,
+            'completionusegrade' => 1,
+            'completionpassgrade' => 0,
+            'completionexpected' => 0,
+            'customrules' => null,
+        ]);
+        completion_defaults_manager::save_default($pageid, [
+            'completion' => COMPLETION_TRACKING_MANUAL,
+            'completionview' => 0,
+            'completionusegrade' => 0,
+            'completionpassgrade' => 0,
+            'completionexpected' => 0,
+            'customrules' => null,
+        ]);
+
+        $all = completion_defaults_manager::get_all_defaults();
+
+        $this->assertCount(2, $all);
+    }
+
+    /**
+     * Data provider for pack_form_data.
+     *
+     * @return array
+     */
+    public static function pack_form_data_provider(): array {
+        return [
+            'minimal core fields' => [
+                'input' => [
+                    'completion' => COMPLETION_TRACKING_MANUAL,
+                    'completionview' => 0,
+                ],
+                'suffix' => '',
+                'expected' => [
+                    'completion' => COMPLETION_TRACKING_MANUAL,
+                    'completionview' => 0,
+                    'completionusegrade' => 0,
+                    'completionpassgrade' => 0,
+                    'completionexpected' => 0,
+                    'customrules' => null,
+                ],
+            ],
+            'custom rule becomes json' => [
+                'input' => [
+                    'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                    'completionview' => 0,
+                    'completionusegrade' => 0,
+                    'completionpassgrade' => 0,
+                    'completionsubmit' => 1,
+                ],
+                'suffix' => '',
+                'expected' => null,
+                'expectedcustom' => ['completionsubmit' => 1],
+            ],
+            'passgrade reset when usegrade is zero' => [
+                'input' => [
+                    'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                    'completionview' => 0,
+                    'completionusegrade' => 0,
+                    'completionpassgrade' => 1,
+                ],
+                'suffix' => '',
+                'expected' => [
+                    'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                    'completionview' => 0,
+                    'completionusegrade' => 0,
+                    'completionpassgrade' => 0,
+                    'completionexpected' => 0,
+                    'customrules' => null,
+                ],
+            ],
+            'suffix is stripped from keys' => [
+                'input' => [
+                    'completion_assign' => COMPLETION_TRACKING_AUTOMATIC,
+                    'completionview_assign' => 0,
+                    'completionusegrade_assign' => 1,
+                    'completionpassgrade_assign' => 1,
+                    'completionsubmit_assign' => 1,
+                ],
+                'suffix' => '_assign',
+                'expected' => [
+                    'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                    'completionview' => 0,
+                    'completionusegrade' => 1,
+                    'completionpassgrade' => 1,
+                    'completionexpected' => 0,
+                ],
+                'expectedcustom' => ['completionsubmit' => 1],
+            ],
+            'noise keys are dropped' => [
+                'input' => [
+                    'completion' => COMPLETION_TRACKING_MANUAL,
+                    'completionview' => 0,
+                    'id' => 5,
+                    'modids' => [1, 2],
+                    'modules' => 'page',
+                    'submitbutton' => 'Save',
+                    '_qf__format_mimo_completion_defaults_form' => 1,
+                ],
+                'suffix' => '',
+                'expected' => [
+                    'completion' => COMPLETION_TRACKING_MANUAL,
+                    'customrules' => null,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * pack_form_data normalizes raw form submissions into the record shape.
+     *
+     * @dataProvider pack_form_data_provider
+     * @param array $input
+     * @param string $suffix
+     * @param array|null $expected Subset of fields that must match exactly.
+     * @param array|null $expectedCustom Optional expected decoded custom rules.
+     */
+    public function test_pack_form_data(
+        array $input,
+        string $suffix,
+        ?array $expected = null,
+        ?array $expectedcustom = null,
+    ): void {
+        $record = completion_defaults_manager::pack_form_data($input, $suffix);
+
+        if ($expected !== null) {
+            foreach ($expected as $field => $value) {
+                $this->assertSame($value, $record->$field, "Field $field");
+            }
+        }
+
+        if ($expectedcustom !== null) {
+            $this->assertNotNull($record->customrules);
+            $this->assertSame($expectedcustom, json_decode($record->customrules, true));
+        }
+    }
+
+    /**
+     * initialize_default_completion_defaults should seed a populated table and be idempotent.
+     */
+    public function test_initialize_default_completion_defaults(): void {
+        global $DB;
+
+        // setUp() already wiped the table, so this should seed.
+        $this->assertTrue(completion_defaults_manager::initialize_default_completion_defaults());
+        $this->assertGreaterThan(0, $DB->count_records('format_mimo_compdefs'));
+
+        $firstcount = $DB->count_records('format_mimo_compdefs');
+
+        // Second call should be a no-op (guard on empty table).
+        $this->assertFalse(completion_defaults_manager::initialize_default_completion_defaults());
+        $this->assertSame($firstcount, $DB->count_records('format_mimo_compdefs'));
+
+        // Spot-check an entry: 'assign' should be automatic + use grade + have customrules.
+        $assignid = $this->get_module_id('assign');
+        $assign = completion_defaults_manager::get_default($assignid);
+        $this->assertNotNull($assign);
+        $this->assertEquals(COMPLETION_TRACKING_AUTOMATIC, (int) $assign->completion);
+        $this->assertEquals(1, (int) $assign->completionusegrade);
+        $this->assertNotNull($assign->customrules);
+        $this->assertSame(['completionsubmit' => 1], json_decode($assign->customrules, true));
+    }
 }

@@ -332,4 +332,44 @@ final class observer_test extends \advanced_testcase {
         $exists2 = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module2->cmid]);
         $this->assertTrue($exists2, 'cmtag for unrelated course should survive');
     }
+
+    /**
+     * Deleting a section should delete any stored section image for that section
+     * via the course_section_deleted observer.
+     */
+    public function test_course_section_deleted_cleans_section_image(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'numsections' => 2,
+        ]);
+
+        $sectionid = (int) $DB->get_field('course_sections', 'id', [
+            'course' => $course->id,
+            'section' => 1,
+        ]);
+
+        // Store a dummy image file in the section image area.
+        $context = \core\context\course::instance($course->id);
+        get_file_storage()->create_file_from_string(
+            [
+                'contextid' => $context->id,
+                'component' => section_image_manager::COMPONENT,
+                'filearea'  => section_image_manager::FILEAREA,
+                'itemid'    => $sectionid,
+                'filepath'  => '/',
+                'filename'  => 'section.png',
+            ],
+            'fake-image-bytes'
+        );
+
+        $this->assertTrue(section_image_manager::has_image($course->id, $sectionid));
+
+        // Delete the section (fires course_section_deleted).
+        $sectioninfo = get_fast_modinfo($course->id)->get_section_info(1);
+        course_delete_section($course->id, $sectioninfo, false, true);
+
+        $this->assertFalse(section_image_manager::has_image($course->id, $sectionid));
+    }
 }

@@ -258,4 +258,220 @@ final class profile_manager_test extends \advanced_testcase {
         // But we've tested that the profile lookup path is exercised.
         $this->assertNull($url);
     }
+
+    /**
+     * get_profile should return the record when found and null otherwise.
+     */
+    public function test_get_profile_found_and_not_found(): void {
+        $id = profile_manager::create_profile('lookup', 'Lookup', 1);
+
+        $profile = profile_manager::get_profile($id);
+        $this->assertNotNull($profile);
+        $this->assertEquals('lookup', $profile->name);
+
+        $this->assertNull(profile_manager::get_profile(999999));
+    }
+
+    /**
+     * Renaming a profile should cascade to course_format_options.activityprofile.
+     */
+    public function test_update_profile_renames_course_format_options(): void {
+        global $DB;
+
+        $id = profile_manager::create_profile('rename_me', 'Rename Me', 1);
+
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'activityprofile' => 'rename_me',
+        ]);
+
+        profile_manager::update_profile($id, ['name' => 'renamed']);
+
+        $value = $DB->get_field('course_format_options', 'value', [
+            'courseid' => $course->id,
+            'format' => 'mimo',
+            'name' => 'activityprofile',
+        ]);
+        $this->assertEquals('renamed', $value);
+    }
+
+    /**
+     * get_profile_options should return name => displayname keyed array.
+     */
+    public function test_get_profile_options(): void {
+        global $DB;
+
+        $DB->delete_records('format_mimo_profiles');
+
+        profile_manager::create_profile('opt1', 'Option One', 1);
+        profile_manager::create_profile('opt2', 'Option Two', 2);
+
+        $options = profile_manager::get_profile_options();
+
+        $this->assertSame(['opt1' => 'Option One', 'opt2' => 'Option Two'], $options);
+    }
+
+    /**
+     * get_profile_tag should return null for an unknown id.
+     */
+    public function test_get_profile_tag_not_found(): void {
+        $this->assertNull(profile_manager::get_profile_tag(999999));
+    }
+
+    /**
+     * get_profile_tags_for_tag should only return records for the matching tag.
+     */
+    public function test_get_profile_tags_for_tag(): void {
+        $profile1 = profile_manager::create_profile('p1', 'P1', 1);
+        $profile2 = profile_manager::create_profile('p2', 'P2', 2);
+        $tag1 = tag_manager::create_tag('T1');
+        $tag2 = tag_manager::create_tag('T2');
+
+        profile_manager::get_or_create_profile_tag($tag1, $profile1);
+        profile_manager::get_or_create_profile_tag($tag1, $profile2);
+        profile_manager::get_or_create_profile_tag($tag2, $profile1);
+
+        $records = profile_manager::get_profile_tags_for_tag($tag1);
+
+        $this->assertCount(2, $records);
+        foreach ($records as $record) {
+            $this->assertEquals($tag1, (int) $record->tagid);
+        }
+    }
+
+    /**
+     * get_profile_tag_for_profile should return the record when present, null otherwise.
+     */
+    public function test_get_profile_tag_for_profile(): void {
+        $profileid = profile_manager::create_profile('ptforprofile', 'PT For Profile', 1);
+        $tagid = tag_manager::create_tag('PT Tag');
+
+        // Initially no override record exists.
+        $this->assertNull(profile_manager::get_profile_tag_for_profile($tagid, $profileid));
+
+        profile_manager::get_or_create_profile_tag($tagid, $profileid);
+
+        $record = profile_manager::get_profile_tag_for_profile($tagid, $profileid);
+        $this->assertNotNull($record);
+        $this->assertEquals($tagid, (int) $record->tagid);
+        $this->assertEquals($profileid, (int) $record->profileid);
+    }
+
+    /**
+     * update_profile_tag should normalize bgcolor and persist allowed fields only.
+     */
+    public function test_update_profile_tag_normalises_bgcolor(): void {
+        $profileid = profile_manager::create_profile('ptupdate', 'PT Update', 1);
+        $tagid = tag_manager::create_tag('PT Update Tag');
+        $pt = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+
+        $result = profile_manager::update_profile_tag($pt->id, [
+            'name' => 'Override Name',
+            'bgcolor' => 'A1B2C3',
+            'enabled' => 0,
+            'notallowed' => 'ignored',
+        ]);
+        $this->assertTrue($result);
+
+        $updated = profile_manager::get_profile_tag($pt->id);
+        $this->assertEquals('Override Name', $updated->name);
+        $this->assertEquals('#a1b2c3', $updated->bgcolor);
+        $this->assertEquals(0, (int) $updated->enabled);
+        $this->assertObjectNotHasProperty('notallowed', $updated);
+    }
+
+    /**
+     * delete_profile_tags_for_tag should remove all override records for the given tag only.
+     */
+    public function test_delete_profile_tags_for_tag(): void {
+        $profile1 = profile_manager::create_profile('d1', 'D1', 1);
+        $profile2 = profile_manager::create_profile('d2', 'D2', 2);
+        $tag1 = tag_manager::create_tag('Delete Me');
+        $tag2 = tag_manager::create_tag('Keep Me');
+
+        profile_manager::get_or_create_profile_tag($tag1, $profile1);
+        profile_manager::get_or_create_profile_tag($tag1, $profile2);
+        profile_manager::get_or_create_profile_tag($tag2, $profile1);
+
+        profile_manager::delete_profile_tags_for_tag($tag1);
+
+        $this->assertEmpty(profile_manager::get_profile_tags_for_tag($tag1));
+        $this->assertCount(1, profile_manager::get_profile_tags_for_tag($tag2));
+    }
+
+    /**
+     * resolve_tag_for_profile without an override returns the base tag with enabled=1.
+     */
+    public function test_resolve_tag_for_profile_no_override(): void {
+        $profileid = profile_manager::create_profile('resolve1', 'Resolve 1', 1);
+        $tagid = tag_manager::create_tag('Base', null, null, null, null, null, '#111111');
+        $tag = tag_manager::get_tag($tagid);
+
+        $resolved = profile_manager::resolve_tag_for_profile($tag, $profileid);
+
+        $this->assertEquals('Base', $resolved->name);
+        $this->assertEquals('#111111', $resolved->bgcolor);
+        $this->assertEquals(1, (int) $resolved->enabled);
+    }
+
+    /**
+     * resolve_tag_for_profile applies non-null overrides and enabled flag.
+     */
+    public function test_resolve_tag_for_profile_with_override(): void {
+        $profileid = profile_manager::create_profile('resolve2', 'Resolve 2', 1);
+        $tagid = tag_manager::create_tag('BaseName', null, null, null, null, null, '#111111');
+        $tag = tag_manager::get_tag($tagid);
+
+        $pt = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        profile_manager::update_profile_tag($pt->id, [
+            'name' => 'Overridden',
+            'bgcolor' => '#222222',
+            'enabled' => 0,
+        ]);
+
+        $resolved = profile_manager::resolve_tag_for_profile($tag, $profileid);
+
+        $this->assertEquals('Overridden', $resolved->name);
+        $this->assertEquals('#222222', $resolved->bgcolor);
+        $this->assertEquals(0, (int) $resolved->enabled);
+    }
+
+    /**
+     * resolve_tags_for_profile should exclude disabled tags when $onlyenabled is true.
+     */
+    public function test_resolve_tags_for_profile_filters_by_enabled(): void {
+        global $DB;
+
+        $DB->delete_records('format_mimo_tags');
+        tag_manager::clear_tag_cache();
+
+        $profileid = profile_manager::create_profile('resolveall', 'Resolve All', 1);
+        $t1 = tag_manager::create_tag('Enabled One');
+        $t2 = tag_manager::create_tag('Disabled One');
+
+        $pt = profile_manager::get_or_create_profile_tag($t2, $profileid);
+        profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+
+        $all = tag_manager::get_all_tags();
+
+        $enabled = profile_manager::resolve_tags_for_profile($all, $profileid, true);
+        $this->assertArrayHasKey($t1, $enabled);
+        $this->assertArrayNotHasKey($t2, $enabled);
+
+        $withDisabled = profile_manager::resolve_tags_for_profile($all, $profileid, false);
+        $this->assertArrayHasKey($t1, $withDisabled);
+        $this->assertArrayHasKey($t2, $withDisabled);
+        $this->assertEquals(0, (int) $withDisabled[$t2]->enabled);
+    }
+
+    /**
+     * get_image_filemanager_options exposes the filemanager config array.
+     */
+    public function test_profile_image_filemanager_options(): void {
+        $options = profile_manager::get_image_filemanager_options();
+
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('maxfiles', $options);
+        $this->assertSame(1, $options['maxfiles']);
+    }
 }

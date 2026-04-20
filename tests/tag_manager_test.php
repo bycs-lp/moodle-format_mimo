@@ -343,4 +343,144 @@ final class tag_manager_test extends \advanced_testcase {
         $tags = tag_manager::get_all_tags();
         $this->assertCount(7, $tags);
     }
+
+    /**
+     * Data provider for normalize_hex_color.
+     *
+     * @return array
+     */
+    public static function normalize_hex_color_provider(): array {
+        return [
+            'null input'             => [null, null],
+            'empty string'           => ['', null],
+            'whitespace only'        => ['   ', null],
+            'hash + lowercase hex'   => ['#abcdef', '#abcdef'],
+            'hash + uppercase hex'   => ['#ABCDEF', '#abcdef'],
+            'no hash, 6 hex'         => ['A1B2C3', '#a1b2c3'],
+            'trimmed input'          => ['  #ff0000  ', '#ff0000'],
+            'mixed case'             => ['#AaBbCc', '#aabbcc'],
+            'too short (3 hex)'      => ['#abc', null],
+            'too short (5 hex)'      => ['#abcde', null],
+            'too long (7 hex)'       => ['#abcdef0', null],
+            'invalid character'      => ['#gghhii', null],
+            'non-hex garbage'        => ['red', null],
+        ];
+    }
+
+    /**
+     * Ensure normalize_hex_color handles the full range of inputs correctly.
+     *
+     * @dataProvider normalize_hex_color_provider
+     * @param string|null $input
+     * @param string|null $expected
+     */
+    public function test_normalize_hex_color(?string $input, ?string $expected): void {
+        $this->assertSame($expected, tag_manager::normalize_hex_color($input));
+    }
+
+    /**
+     * Default accent palette should be a non-empty list of hex colours.
+     */
+    public function test_get_default_accent_palette(): void {
+        $palette = tag_manager::get_default_accent_palette();
+
+        $this->assertIsArray($palette);
+        $this->assertNotEmpty($palette);
+        foreach ($palette as $color) {
+            $this->assertMatchesRegularExpression('/^#[0-9a-f]{6}$/', $color);
+        }
+    }
+
+    /**
+     * Filemanager options should define the expected constraints.
+     */
+    public function test_get_image_filemanager_options(): void {
+        $options = tag_manager::get_image_filemanager_options();
+
+        $this->assertIsArray($options);
+        $this->assertArrayHasKey('maxfiles', $options);
+        $this->assertArrayHasKey('accepted_types', $options);
+        $this->assertSame(1, $options['maxfiles']);
+    }
+
+    /**
+     * has_cardimage and has_filterimage should return false for a fresh tag
+     * with no stored files.
+     */
+    public function test_has_image_returns_false_without_files(): void {
+        $tagid = tag_manager::create_tag('Fresh');
+
+        $this->assertFalse(tag_manager::has_cardimage($tagid));
+        $this->assertFalse(tag_manager::has_filterimage($tagid));
+    }
+
+    /**
+     * get_cardimage_url / get_filterimage_url should return null when no image exists.
+     */
+    public function test_get_image_url_returns_null_without_files(): void {
+        $tagid = tag_manager::create_tag('Fresh');
+        $tag = tag_manager::get_tag($tagid);
+
+        $this->assertNull(tag_manager::get_cardimage_url($tag));
+        $this->assertNull(tag_manager::get_filterimage_url($tag));
+    }
+
+    /**
+     * get_tag should return false when the id does not exist.
+     */
+    public function test_get_tag_not_found(): void {
+        $this->assertFalse(tag_manager::get_tag(999999));
+    }
+
+    /**
+     * get_tag_usage_counts returns counts keyed by tag id, and respects sectionid.
+     */
+    public function test_get_tag_usage_counts(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo', 'numsections' => 2]);
+        $tagid = tag_manager::create_tag('Usage', 'u.svg', 'u-small.svg', 'page');
+
+        $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 1]);
+        $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 1]);
+        $page3 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 2]);
+
+        tag_manager::assign_tag_to_cm($page1->cmid, $tagid);
+        tag_manager::assign_tag_to_cm($page2->cmid, $tagid);
+        tag_manager::assign_tag_to_cm($page3->cmid, $tagid);
+
+        // Empty tagids list returns empty array without touching DB.
+        $this->assertSame([], tag_manager::get_tag_usage_counts($course->id, []));
+
+        // Course-wide: 3 assignments.
+        $counts = tag_manager::get_tag_usage_counts($course->id, [$tagid]);
+        $this->assertArrayHasKey($tagid, $counts);
+        $this->assertEquals(3, (int) $counts[$tagid]);
+
+        // Scoped to section 1: 2 assignments.
+        $section1id = (int) $DB->get_field('course_sections', 'id', [
+            'course' => $course->id,
+            'section' => 1,
+        ]);
+        $counts = tag_manager::get_tag_usage_counts($course->id, [$tagid], $section1id);
+        $this->assertEquals(2, (int) $counts[$tagid]);
+    }
+
+    /**
+     * clear_course_tags_cache should drop the cached resolution so the next
+     * lookup rebuilds from the DB.
+     */
+    public function test_clear_course_tags_cache(): void {
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        tag_manager::create_tag('Cached', 'c.svg', 'c-small.svg', 'page');
+
+        // Populate the cache.
+        $first = tag_manager::get_tags_for_course($course->id);
+
+        // Invalidate, then ensure it still returns data consistent with DB.
+        tag_manager::clear_course_tags_cache($course->id);
+        $second = tag_manager::get_tags_for_course($course->id);
+
+        $this->assertEquals(array_keys($first), array_keys($second));
+    }
 }
