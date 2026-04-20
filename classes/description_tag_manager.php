@@ -104,7 +104,13 @@ class description_tag_manager {
         $record->color = $color;
         $record->timemodified = \core\di::get(\core\clock::class)->time();
 
-        return $DB->update_record('format_mimo_desc_tags', $record);
+        $result = $DB->update_record('format_mimo_desc_tags', $record);
+
+        // Activity description cache embeds description-tag name/color via LEFT JOIN,
+        // so renames/recolours must invalidate it (delete_tag() already does this).
+        activity_description_manager::clear_cache();
+
+        return $result;
     }
 
     /**

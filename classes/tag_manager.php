@@ -555,11 +555,12 @@ class tag_manager {
 
         $id = $DB->insert_record('format_mimo_tags', $record);
 
-        // Invalidate all tags cache and cache the new tag.
-        self::init_caches();
-        self::$tagcache->delete('all_tags');
+        // Purge the entire tag cache — per-course course_tags_* entries hold
+        // resolved tag lists that must include this new tag immediately.
+        self::clear_tag_cache();
 
-        // Fetch and cache the created tag to ensure consistency.
+        // Cache the new tag record for subsequent get_tag() calls in this request.
+        self::init_caches();
         $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
         if ($tag) {
             self::$tagcache->set('tag_' . $id, $tag);

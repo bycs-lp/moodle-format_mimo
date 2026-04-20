@@ -51,7 +51,7 @@
   - The `develop` profile overrides first two tags with name overrides: 📖 Read → 📚 Analyze, 🔍 Explore → 🔎 Research.
 - **Section image system** (`classes/section_image_manager.php`)
   - No dedicated table — uses Moodle File API only. File area: `FILEAREA = 'sectionimage'` in **course context** with `course_sections.id` as itemid.
-  - Accepted types: jpg, png, webp, svg.
+  - Accepted types: jpg, png, webp.
   - Key methods: `get_image_url($courseid, $sectionid)`, `save_image($courseid, $sectionid, $draftitemid)`, `delete_image($courseid, $sectionid)`, `has_image($courseid, $sectionid)`, `delete_all_for_course($courseid)`.
   - When a section has an uploaded image, it replaces the miniwall tiles on the overview card.
   - Upload/change UX: Dynamic form modal (`classes/form/section_image_form.php`, extends `dynamic_form`) opened via `amd/src/section_image_modal.js`. Teacher clicks an "Upload image" / "Change image" button on the overview card in editing mode. The filepicker in the modal handles upload, change, and removal.
@@ -90,24 +90,31 @@
   - Activities render as Bootstrap card tiles; each card receives tag metadata (icon URL, accent color, activity type labels).
   - `styles.scss` hosts shared wall styles + profile-specific CSS (`explore`, `develop`, `master`).
 - **Caching** (`db/caches.php`)
-  - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`).
+  - `tagconfigurations`: all tags metadata, keyed per course (`course_tags_{courseid}`). Resolved payloads embed profile overrides and pre-computed image URLs, so any mutation of base tags, profile_tags, or profile-tag image uploads must purge this cache.
   - `activitytagmappings`: cm→tag lookup.
   - `activity_descriptions`: cached activity descriptions with tag data (LEFT JOIN on desc_tags).
-  - Clear via `tag_manager::clear_course_tags_cache($courseid)` or `activity_description_manager::clear_cache()` whenever data changes.
+  - **Cache invariants**:
+    - `tag_manager::create_tag()` / `update_tag()` / `delete_tag()` → full `clear_tag_cache()` (purges all `course_tags_*` so new/changed tags appear everywhere immediately).
+    - `profile_manager::update_profile_tag()` / `delete_profile()` / profile image upload / `promote_profile_to_global()` / `create_imported_profile()` → `clear_tag_cache()`.
+    - `tag_manager::bind/unbind_tag_to_course()` / `unbind_all_tags_from_course()` → per-course `clear_course_tags_cache($courseid)`.
+    - `tag_manager::promote_tag_to_global()` → full `clear_tag_cache()` (visibility changes across all courses).
+    - `description_tag_manager::update_tag()` / `delete_tag()` → `activity_description_manager::clear_cache()` (joined cache holds name+color).
 
 ## Backup & Restore Architecture
 - **Backup** (`backup/moodle2/backup_format_mimo_plugin.class.php`)
   - Course-level: Backs up tags (all fields incl. bgcolor, imgplacement, activitytype3, **scope**), profiles (**incl. scope**), profile_tags. File annotations for all image file areas. Also backs up section images (keyed by section ID in course context).
   - Module-level: Backs up cmtag records (cmid → tagid mapping).
+  - **Scope of export**: Only tags and profiles that are referenced by at least one tagged course module in this course are exported (joined via `format_mimo_cmtags`). Unused tags or enabled-but-unused profile configuration does NOT transfer. A course with no tagged activities exports no tag/profile data.
   - XML tree: `pluginwrapper → mimo_tags → mimo_tag` + `pluginwrapper → mimo_section_images → mimo_section_image`.
 - **Restore** (`backup/moodle2/restore_format_mimo_plugin.class.php`)
-  - **Smart matching algorithm** (three-tier, processed per backup tag in sortorder):
-    1. **Fingerprint match**: composite comparison of `name + bgcolor + activitytype1 + activitytype2 + activitytype3` (NULL-safe) against all unmatched existing tags. Reuses existing tag; no override needed.
-    2. **Positional match**: takes the next unmatched existing tag (by sortorder). Reuses existing tag; full profile override needed.
-    3. **Create new imported tag**: only when backup has MORE tags than existing. Creates with `scope='imported'` + `course_tags` binding to course.
+  - **Smart matching algorithm** (four-tier, processed per backup tag in sortorder):
+    1. **Fingerprint match**: composite comparison of `name + bgcolor + activitytype1 + activitytype2 + activitytype3` (NULL-safe) against all unmatched existing tags. Reuses existing tag; no override needed. Counts as "recognized".
+    2. **Name match**: same `name` as an unmatched existing tag but different properties. Reuses existing tag; the target instance's current values win (trusts admin edits since the backup was taken). Counts as "recognized". `profile_tag` records from backup ARE applied (same conceptual tag).
+    3. **Positional match**: next unmatched existing tag by sortorder. Reuses existing tag; marks `allrecognized=false`. `profile_tag` from backup is SKIPPED to avoid contaminating target profiles.
+    4. **Create new imported tag**: only when backup has MORE tags than existing. Creates with `scope='imported'` + `course_tags` binding to course. Marks `allrecognized=false`. `profile_tag` from backup is SKIPPED.
   - **Imported profile creation** (`after_execute_course()`):
-    - If ALL tags fingerprint-match AND count is equal → no imported profile is created. Zero overhead.
-    - Otherwise (any mismatch or count difference) → creates full imported profile:
+    - If `allrecognized` stays true (ALL tags matched via fingerprint OR name) → no imported profile is created. Zero overhead. Name-match preserves admin-edited target properties.
+    - Otherwise (any positional or new-imported match) → creates full imported profile:
       - Creates profile via `profile_manager::create_imported_profile($coursename)` with scope='imported'.
       - Creates explicit `profile_tag` records for EVERY tag (full override values from backup — name, bgcolor, activity types). Makes profile self-contained.
       - For new imported tags: creates `profile_tag` with `enabled=0` in ALL existing global profiles (prevents implicit-enable leaking into other courses).
@@ -115,7 +122,7 @@
       - Creates `course_tags` bindings for new imported tags.
       - Sets course's `activityprofile` format option to the new profile's name.
     - **Cleanup benefit**: deleting an imported profile = delete its profile_tags. All overrides gone in one step.
-  - **Profile_tag from backup**: applied only for fingerprint-matched tags (safe — same conceptual tag). Skipped for positional/new matches to avoid contaminating target profiles.
+  - **Profile_tag from backup**: applied for fingerprint- AND name-matched tags (same conceptual tag). Skipped for positional/new matches.
   - ID mapping: Sets `format_mimo_tag` mappings.
   - `after_execute_course()`: Restores file areas including section images (uses core `course_section` mapping for ID remapping).
   - `after_restore_course()`: Clears all caches.
@@ -290,7 +297,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for mimo completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
-- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg). Extends `dynamic_form`.
+- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp). Extends `dynamic_form`.
 - `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode.
 - `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.

@@ -43,7 +43,13 @@ if ($ismultisection) {
         // A specific section was requested — show that wall.
         $format->set_sectionnum($displaysection);
         // Remember this wall so the user returns here on their next plain course visit.
-        set_user_preference('format_mimo_lastsection_' . $course->id, $displaysection);
+        // Only store valid, visible sections to avoid persisting stale preferences that
+        // the read path would later have to clean up.
+        $modinfo = get_fast_modinfo($course);
+        $sectioninfo = $modinfo->get_section_info($displaysection);
+        if ($sectioninfo && $format->is_section_visible($sectioninfo)) {
+            set_user_preference('format_mimo_lastsection_' . $course->id, $displaysection);
+        }
     } else {
         // No section param — check if user explicitly requested the overview.
         $showoverview = optional_param('overview', 0, PARAM_INT);
