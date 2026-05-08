@@ -777,7 +777,7 @@ final class completion_defaults_test extends \advanced_testcase {
     public function test_initialize_default_completion_defaults(): void {
         global $DB;
 
-        // setUp() already wiped the table, so this should seed.
+        // The setUp() already wiped the table, so this should seed.
         $this->assertTrue(completion_defaults_manager::initialize_default_completion_defaults());
         $this->assertGreaterThan(0, $DB->count_records('format_mimo_compdefs'));
 

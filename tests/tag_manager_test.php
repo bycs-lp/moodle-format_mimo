@@ -505,8 +505,16 @@ final class tag_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $globalid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
         $importedid = tag_manager::create_tag(
-            'ImportedTag', 'i.svg', 'i-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'ImportedTag',
+            'i.svg',
+            'i-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
 
         // Before binding: no imported tags for the course.
@@ -541,8 +549,16 @@ final class tag_manager_test extends \advanced_testcase {
         $course1 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $course2 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $tagid = tag_manager::create_tag(
-            'ToPromote', 'p.svg', 'p-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'ToPromote',
+            'p.svg',
+            'p-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         tag_manager::bind_tag_to_course($tagid, $course1->id);
         tag_manager::bind_tag_to_course($tagid, $course2->id);
@@ -569,16 +585,40 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Three imported tags with different attachment states.
         $orphan = tag_manager::create_tag(
-            'Orphan', 'o.svg', 'o-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'Orphan',
+            'o.svg',
+            'o-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         $bound = tag_manager::create_tag(
-            'Bound', 'b.svg', 'b-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'Bound',
+            'b.svg',
+            'b-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         $cmattached = tag_manager::create_tag(
-            'Attached', 'a.svg', 'a-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'Attached',
+            'a.svg',
+            'a-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
 
         tag_manager::bind_tag_to_course($bound, $course->id);

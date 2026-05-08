@@ -224,8 +224,13 @@ final class backup_restore_test extends \advanced_testcase {
 
         $tagid = tag_manager::create_tag(
             'Fingerprint Match',
-            null, null, 'page', 'forum', null,
-            '#a1b2c3', 'center',
+            null,
+            null,
+            'page',
+            'forum',
+            null,
+            '#a1b2c3',
+            'center',
         );
 
         $course = $generator->create_course(['format' => 'mimo']);
@@ -274,8 +279,13 @@ final class backup_restore_test extends \advanced_testcase {
         // on the target site. On restore only the name still matches.
         $tagid = tag_manager::create_tag(
             'Name Match',
-            null, null, 'page', null, null,
-            '#111111', 'center',
+            null,
+            null,
+            'page',
+            null,
+            null,
+            '#111111',
+            'center',
         );
 
         $course = $generator->create_course(['format' => 'mimo']);
@@ -297,7 +307,7 @@ final class backup_restore_test extends \advanced_testcase {
             'Name match must reuse the existing tag, not insert a duplicate',
         );
 
-        // The restored cmtag points to the pre-existing tag…
+        // The restored cmtag points to the pre-existing tag.
         $restoredtagid = (int) $DB->get_field_sql(
             "SELECT cmt.tagid
                FROM {format_mimo_cmtags} cmt
@@ -307,7 +317,7 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $this->assertSame($tagid, $restoredtagid);
 
-        // …and the admin's post-backup colour edit is preserved (not overwritten).
+        // ...and the admin's post-backup colour edit is preserved (not overwritten).
         $this->assertSame(
             '#999999',
             $DB->get_field('format_mimo_tags', 'bgcolor', ['id' => $tagid]),

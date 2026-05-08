@@ -473,10 +473,10 @@ final class profile_manager_test extends \advanced_testcase {
         $this->assertArrayHasKey($t1, $enabled);
         $this->assertArrayNotHasKey($t2, $enabled);
 
-        $withDisabled = profile_manager::resolve_tags_for_profile($all, $profileid, false);
-        $this->assertArrayHasKey($t1, $withDisabled);
-        $this->assertArrayHasKey($t2, $withDisabled);
-        $this->assertEquals(0, (int) $withDisabled[$t2]->enabled);
+        $withdisabled = profile_manager::resolve_tags_for_profile($all, $profileid, false);
+        $this->assertArrayHasKey($t1, $withdisabled);
+        $this->assertArrayHasKey($t2, $withdisabled);
+        $this->assertEquals(0, (int) $withdisabled[$t2]->enabled);
     }
 
     /**
@@ -502,12 +502,23 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         $importedprofile = profile_manager::create_profile(
-            'imp_profile', 'Imported Profile', 99, 'imported',
+            'imp_profile',
+            'Imported Profile',
+            99,
+            'imported',
         );
         // Imported tag attached to this profile via a profile_tag row.
         $importedtagid = tag_manager::create_tag(
-            'ImpTag', 'i.svg', 'i-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'ImpTag',
+            'i.svg',
+            'i-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         // Global tag attached to the same profile must not be re-promoted (no-op).
         $globaltagid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');

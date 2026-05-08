@@ -389,14 +389,30 @@ final class observer_test extends \advanced_testcase {
 
         // Tags and profiles with various scopes/attachment states relative to $this->course.
         $boundonlyimportedtag = tag_manager::create_tag(
-            'BoundOnly', 'b.svg', 'b-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'BoundOnly',
+            'b.svg',
+            'b-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         tag_manager::bind_tag_to_course($boundonlyimportedtag, $this->course->id);
 
         $boundandsurvivingimportedtag = tag_manager::create_tag(
-            'AlsoElsewhere', 'e.svg', 'e-s.svg', 'page',
-            null, null, null, 'center', 'normal', 'imported',
+            'AlsoElsewhere',
+            'e.svg',
+            'e-s.svg',
+            'page',
+            null,
+            null,
+            null,
+            'center',
+            'normal',
+            'imported',
         );
         tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $this->course->id);
         tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $survivor->id);
@@ -412,11 +428,17 @@ final class observer_test extends \advanced_testcase {
 
         // Imported profile used exclusively by the doomed course.
         $orphanprofileid = profile_manager::create_profile(
-            'orphan_profile', 'Orphan Profile', 99, 'imported',
+            'orphan_profile',
+            'Orphan Profile',
+            99,
+            'imported',
         );
         // Imported profile used by the survivor — must remain.
         $keptprofileid = profile_manager::create_profile(
-            'kept_profile', 'Kept Profile', 98, 'imported',
+            'kept_profile',
+            'Kept Profile',
+            98,
+            'imported',
         );
         // Directly wire the cfo rows to bypass the format's value-allowlist.
         $DB->set_field_select(
