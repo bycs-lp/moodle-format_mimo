@@ -103,18 +103,19 @@ class cmitem extends cmitem_base {
         $data->cmformat->isdone = $isdone;
 
         // Add completion status - get from cm_info object.
-        // Done activities are excluded from completion tracking on the wall.
-        if (!$isdone) {
-            $completioninfo = new \completion_info($cm->get_course());
-            if ($completioninfo->is_enabled($cm)) {
-                if (!isset($data->cmformat->completion)) {
-                    $data->cmformat->completion = new \stdClass();
-                }
-                $data->cmformat->completion->hascompletion = true;
+        // For done activities in student view, we still compute completion so the
+        // hourglass/overdue icon can be shown greyed out.
+        $completioninfo = new \completion_info($cm->get_course());
+        if ($completioninfo->is_enabled($cm)) {
+            if (!isset($data->cmformat->completion)) {
+                $data->cmformat->completion = new \stdClass();
+            }
+            $data->cmformat->completion->hascompletion = true;
 
-                $coursecontext = \core\context\course::instance($cm->course);
-                if (has_capability('report/progress:view', $coursecontext)) {
-                    // Teacher view: show aggregated completion count.
+            $coursecontext = \core\context\course::instance($cm->course);
+            if (has_capability('report/progress:view', $coursecontext)) {
+                if (!$isdone) {
+                    // Teacher view: show aggregated completion count (only for non-done activities).
                     $counts = completion_helper::get_teacher_completion_counts($cm->course);
                     $totalusers = completion_helper::get_tracked_user_count($cm->course);
                     $data->cmformat->completion->isteacherview = true;
@@ -125,32 +126,36 @@ class cmitem extends cmitem_base {
                         ['course' => $cm->course]
                     ))->out(false);
                 } else {
-                    // Student view: show personal completion state.
-                    $completiondata = $completioninfo->get_data($cm, false);
-                    if ($completiondata) {
-                        $iscomplete = (
-                            $completiondata->completionstate == COMPLETION_COMPLETE ||
-                            $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                        );
-                        $data->cmformat->completion->iscomplete = $iscomplete;
+                    // Teachers on done activities don't need the completion badge
+                    // (they see the done state via the visibility dropdown).
+                    $data->cmformat->completion->hascompletion = false;
+                }
+            } else {
+                // Student view: show personal completion state.
+                $completiondata = $completioninfo->get_data($cm, false);
+                if ($completiondata) {
+                    $iscomplete = (
+                        $completiondata->completionstate == COMPLETION_COMPLETE ||
+                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                    );
+                    $data->cmformat->completion->iscomplete = $iscomplete;
 
-                        // Check if overdue: not complete and a deadline has passed.
-                        // Check completionexpected first, then module-specific due dates from customdata.
-                        if (!$iscomplete) {
-                            $now = time();
-                            $deadline = 0;
-                            if (!empty($cm->completionexpected)) {
-                                $deadline = $cm->completionexpected;
-                            } else {
-                                $customdata = $cm->customdata;
-                                if (is_array($customdata)) {
-                                    // assign: duedate, quiz: timeclose.
-                                    $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
-                                }
+                    // Check if overdue: not complete and a deadline has passed.
+                    // Check completionexpected first, then module-specific due dates from customdata.
+                    if (!$iscomplete) {
+                        $now = time();
+                        $deadline = 0;
+                        if (!empty($cm->completionexpected)) {
+                            $deadline = $cm->completionexpected;
+                        } else {
+                            $customdata = $cm->customdata;
+                            if (is_array($customdata)) {
+                                // assign: duedate, quiz: timeclose.
+                                $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
                             }
-                            if ($deadline > 0 && $deadline < $now) {
-                                $data->cmformat->completion->isoverdue = true;
-                            }
+                        }
+                        if ($deadline > 0 && $deadline < $now) {
+                            $data->cmformat->completion->isoverdue = true;
                         }
                     }
                 }

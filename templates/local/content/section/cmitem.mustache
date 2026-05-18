@@ -29,6 +29,7 @@
     {{#cmformat.tagid}}data-tagid="{{cmformat.tagid}}"{{/cmformat.tagid}}
     {{#cmformat.completion.hascompletion}}data-completed="{{#cmformat.completion.iscomplete}}true{{/cmformat.completion.iscomplete}}{{^cmformat.completion.iscomplete}}false{{/cmformat.completion.iscomplete}}"{{/cmformat.completion.hascompletion}}
     {{#cmformat.isdone}}data-done="true"{{/cmformat.isdone}}
+    {{#cmformat.completion.isoverdue}}data-overdue="true"{{/cmformat.completion.isoverdue}}
     style="list-style: none;{{#cmformat.tagcolor}} --mimo-card-accent: {{cmformat.tagcolor}};{{/cmformat.tagcolor}}"
 >
 {{#cmformat}}
@@ -74,17 +75,9 @@
     
     {{! Completion indicator overlay (top-right) - hidden in editing mode }}
     {{^editing}}
-    {{#isdone}}
-    <div class="mimo-completion-badge">
-        <span class="badge-done" title="{{#str}}done, format_mimo{{/str}}">
-            <i class="fa fa-check-circle"></i>
-        </span>
-    </div>
-    {{/isdone}}
-    {{^isdone}}
     {{#completion}}
     {{#hascompletion}}
-    <div class="mimo-completion-badge">
+    <div class="mimo-completion-badge{{#isdone}} mimo-completion-greyed{{/isdone}}">
         {{#isteacherview}}
         <a href="{{reporturl}}" class="badge-teacher-completion" title="{{#str}}teachercompletiontitle, format_mimo{{/str}}">
             <span class="badge-teacher-completion__count">{{completedcount}}</span>
@@ -113,7 +106,6 @@
     </div>
     {{/hascompletion}}
     {{/completion}}
-    {{/isdone}}
     {{/editing}}
     
     {{! Card body with activity name }}

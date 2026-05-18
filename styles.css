@@ -18,6 +18,13 @@
   --mimo-completion-incomplete: #cbbd93;
 }
 
+.mimo-icon-done {
+  color: #6c757d;
+  background: #dee2e6;
+  border-radius: 50%;
+  padding: 2px;
+}
+
 .visibility-icon-control {
   position: relative;
 }
@@ -159,6 +166,11 @@
 .mimo-activities .activity.mimo-done .mimo-completion-badge .badge-done {
   color: #6c757d;
   font-size: 1.1rem;
+}
+.mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-complete,
+.mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-incomplete,
+.mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-overdue {
+  color: #adb5bd;
 }
 .mimo-activities .activity.mimo-done .mimo-card:has(.visibility-icon-control .show) {
   z-index: 100;

@@ -204,6 +204,19 @@ class section extends section_base {
                     if ($iscomplete) {
                         $completedcount++;
                     } else {
+                        // Skip overdue activities from the incomplete count.
+                        $deadline = 0;
+                        if (!empty($cm->completionexpected)) {
+                            $deadline = $cm->completionexpected;
+                        } else {
+                            $customdata = $cm->customdata;
+                            if (is_array($customdata)) {
+                                $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
+                            }
+                        }
+                        if ($deadline > 0 && $deadline < time()) {
+                            continue;
+                        }
                         $incompletecount++;
                     }
                 }

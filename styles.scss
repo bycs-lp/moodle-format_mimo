@@ -24,9 +24,18 @@
 }
 
 // Icon-only visibility control - global override
+// Done state icon: standard eye with gray background circle to distinguish from active "show".
+.mimo-icon-done {
+    color: #6c757d;
+    background: #dee2e6;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+// Icon-only visibility control - global override
 .visibility-icon-control {
     position: relative;
-    
+
     .dropdown-toggle {
         background: transparent !important;
         border: none !important;
@@ -234,6 +243,14 @@ body:not(.bulkenabled) .mimo-activities {
         .mimo-completion-badge .badge-done {
             color: #6c757d;
             font-size: 1.1rem;
+        }
+
+        .mimo-completion-badge.mimo-completion-greyed {
+            .badge-complete,
+            .badge-incomplete,
+            .badge-overdue {
+                color: #adb5bd;
+            }
         }
 
         // Ensure dropdown menu escapes card stacking context when open

@@ -50,7 +50,7 @@ class visibility extends visibility_base {
      */
     protected function get_icon(string $selected): pix_icon {
         if ($selected === 'done') {
-            return new pix_icon('i/checked', '');
+            return new pix_icon('i/hide', '', 'moodle', ['class' => 'mimo-icon-done']);
         }
         return parent::get_icon($selected);
     }

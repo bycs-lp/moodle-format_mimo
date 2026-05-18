@@ -301,13 +301,18 @@ const applyCombinedFilter = (items) => {
 
         // Check completion filter if active.
         if (filterState.activeCompletion) {
-            const itemCompleted = item.dataset.completed;
-            // Only filter items that have completion tracking.
-            if (itemCompleted !== undefined) {
-                matchesCompletion = (itemCompleted === filterState.activeCompletion);
-            } else {
-                // Items without completion tracking don't match completion filter.
+            // Done and overdue activities are excluded from completion filtering.
+            if (item.dataset.done === 'true' || item.dataset.overdue === 'true') {
                 matchesCompletion = false;
+            } else {
+                const itemCompleted = item.dataset.completed;
+                // Only filter items that have completion tracking.
+                if (itemCompleted !== undefined) {
+                    matchesCompletion = (itemCompleted === filterState.activeCompletion);
+                } else {
+                    // Items without completion tracking don't match completion filter.
+                    matchesCompletion = false;
+                }
             }
         }
 
@@ -382,6 +387,14 @@ const updateCompletionCounts = (statusRegion, items) => {
     items.forEach((item) => {
         // Skip hidden items when a tag filter is active.
         if (filterState.activeTag && item.hidden) {
+            return;
+        }
+        // Skip done activities — they don't count toward completion.
+        if (item.dataset.done === 'true') {
+            return;
+        }
+        // Skip overdue activities — they don't count toward "to do".
+        if (item.dataset.overdue === 'true') {
             return;
         }
         // Only consider items with completion tracking.
