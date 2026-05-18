@@ -128,10 +128,30 @@ class cmitem extends cmitem_base {
                     // Student view: show personal completion state.
                     $completiondata = $completioninfo->get_data($cm, false);
                     if ($completiondata) {
-                        $data->cmformat->completion->iscomplete = (
+                        $iscomplete = (
                             $completiondata->completionstate == COMPLETION_COMPLETE ||
                             $completiondata->completionstate == COMPLETION_COMPLETE_PASS
                         );
+                        $data->cmformat->completion->iscomplete = $iscomplete;
+
+                        // Check if overdue: not complete and a deadline has passed.
+                        // Check completionexpected first, then module-specific due dates from customdata.
+                        if (!$iscomplete) {
+                            $now = time();
+                            $deadline = 0;
+                            if (!empty($cm->completionexpected)) {
+                                $deadline = $cm->completionexpected;
+                            } else {
+                                $customdata = $cm->customdata;
+                                if (is_array($customdata)) {
+                                    // assign: duedate, quiz: timeclose.
+                                    $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
+                                }
+                            }
+                            if ($deadline > 0 && $deadline < $now) {
+                                $data->cmformat->completion->isoverdue = true;
+                            }
+                        }
                     }
                 }
             }

@@ -98,9 +98,16 @@
         </span>
         {{/iscomplete}}
         {{^iscomplete}}
+        {{#isoverdue}}
+        <span class="badge-overdue" title="{{#str}}overdue, format_mimo{{/str}}">
+            <i class="fa fa-times"></i>
+        </span>
+        {{/isoverdue}}
+        {{^isoverdue}}
         <span class="badge-incomplete" title="{{#str}}notcompleted, format_mimo{{/str}}">
             <i class="fa fa-hourglass-half"></i>
         </span>
+        {{/isoverdue}}
         {{/iscomplete}}
         {{/isteacherview}}
     </div>

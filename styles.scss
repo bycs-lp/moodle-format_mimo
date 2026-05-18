@@ -631,6 +631,11 @@ body:not(.bulkenabled) .mimo-activities {
         color: var(--mimo-completion-incomplete);
     }
 
+    .badge-overdue {
+        color: #dc3545;
+        font-size: 24px;
+    }
+
     .badge-teacher-completion {
         display: flex;
         flex-direction: column;

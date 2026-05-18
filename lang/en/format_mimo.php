@@ -187,6 +187,7 @@ $string['notag'] = 'No tag';
 $string['notags'] = 'No tags have been created yet.';
 $string['notcompleted'] = 'Not completed';
 $string['of'] = 'of';
+$string['overdue'] = 'Overdue';
 $string['openallactivities'] = 'Open all activities';
 $string['other'] = 'Other...';
 $string['overviewactivitycount'] = '{$a} activities';

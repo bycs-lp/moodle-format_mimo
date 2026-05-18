@@ -468,6 +468,10 @@
 .mimo-completion-badge .badge-incomplete {
   color: var(--mimo-completion-incomplete);
 }
+.mimo-completion-badge .badge-overdue {
+  color: #dc3545;
+  font-size: 24px;
+}
 .mimo-completion-badge .badge-teacher-completion {
   display: flex;
   flex-direction: column;
