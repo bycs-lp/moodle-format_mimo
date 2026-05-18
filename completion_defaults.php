@@ -155,11 +155,11 @@ foreach ($allmodules->modules as $module) {
     if (isset($mimodefaults[$module->id])) {
         $def = $mimodefaults[$module->id];
         $completionlabels = [
-            COMPLETION_TRACKING_NONE => get_string('completion_none', 'completion'),
-            COMPLETION_TRACKING_MANUAL => get_string('completion_manual', 'completion'),
-            COMPLETION_TRACKING_AUTOMATIC => get_string('completion_automatic', 'completion'),
+            COMPLETION_TRACKING_NONE => get_string('completionstatus_none', 'format_mimo'),
+            COMPLETION_TRACKING_MANUAL => get_string('completionstatus_manual', 'format_mimo'),
+            COMPLETION_TRACKING_AUTOMATIC => get_string('completionstatus_custom', 'format_mimo'),
         ];
-        $statustext = $completionlabels[(int)$def->completion] ?? get_string('completion_none', 'completion');
+        $statustext = $completionlabels[(int)$def->completion] ?? get_string('completionstatus_none', 'format_mimo');
         $row->cells[] = html_writer::tag('span', $statustext, ['class' => 'badge badge-info bg-info']);
     } else {
         $row->cells[] = html_writer::tag(
