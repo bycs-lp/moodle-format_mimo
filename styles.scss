@@ -2763,3 +2763,9 @@ body.single-section-page.format-mimo-multisection-view {
         border-radius: 0.25rem;
     }
 }
+
+/* Hide label and unilabel from the activity chooser in mimo format. */
+body.format-mimo [data-internal="label"],
+body.format-mimo [data-internal="unilabel"] {
+    display: none !important;
+}
