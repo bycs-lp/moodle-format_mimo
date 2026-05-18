@@ -68,67 +68,6 @@ class observer {
             // Clear the pending tag from session.
             unset($SESSION->format_mimo_pending_tag);
         }
-
-        // Apply mimo completion defaults if the module was created with core defaults.
-        self::apply_completion_override($event, $course);
-    }
-
-    /**
-     * Apply mimo completion default overrides to a newly created course module.
-     *
-     * If the module's completion settings match the core Moodle defaults (meaning the
-     * teacher did not customize them), and a mimo-specific override exists
-     * for this module type, silently replace the completion settings.
-     *
-     * @param \core\event\course_module_created $event The event object.
-     * @param \stdClass $course The course record.
-     */
-    protected static function apply_completion_override(\core\event\course_module_created $event, \stdClass $course): void {
-        global $DB;
-
-        $cmid = $event->objectid;
-        $modname = $event->other['modulename'];
-
-        // Get the module type id from modules table.
-        $module = $DB->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
-        if (!$module) {
-            return;
-        }
-
-        // Check if we have a mimo completion override for this module type.
-        $mimodefaults = completion_defaults_manager::get_default($module->id);
-        if (!$mimodefaults) {
-            return;
-        }
-
-        // Get the core defaults for comparison.
-        $coredefaults = \core_completion\manager::get_default_completion($course, $module, true);
-
-        // If the core default is "no tracking" and nothing was set, there's nothing meaningful to compare.
-        // But we should still apply the override if we have one — the teacher got "none" by default
-        // and we want to change it to our settings.
-        if (
-            (int)($coredefaults->completion ?? COMPLETION_TRACKING_NONE) === COMPLETION_TRACKING_NONE
-            && (int)$mimodefaults->completion === COMPLETION_TRACKING_NONE
-        ) {
-            // Both are "none", nothing to override.
-            return;
-        }
-
-        // Get the current course_modules record.
-        $cmrecord = $DB->get_record('course_modules', ['id' => $cmid]);
-        if (!$cmrecord) {
-            return;
-        }
-
-        // Check if the module's completion matches core defaults.
-        // If the teacher customized completion during creation, we leave it alone.
-        if (!completion_defaults_manager::matches_core_defaults($cmrecord, $coredefaults, $modname)) {
-            return;
-        }
-
-        // Apply the mimo override.
-        completion_defaults_manager::apply_defaults($cmrecord, $mimodefaults, $modname);
     }
 
     /**

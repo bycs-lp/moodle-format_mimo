@@ -897,6 +897,80 @@ function format_mimo_coursemodule_edit_post_actions($data, $course) {
 }
 
 /**
+ * Pre-populate mimo completion defaults in the module creation form.
+ *
+ * When a teacher creates a new activity in a mimo course, this callback overrides
+ * the core completion defaults with mimo-specific ones so the teacher sees the
+ * intended defaults in the form before saving.
+ *
+ * @param \moodleform_mod $formwrapper The form wrapper object
+ * @param \MoodleQuickForm $mform The form object
+ * @return void
+ */
+function format_mimo_coursemodule_definition_after_data($formwrapper, $mform): void {
+    $course = $formwrapper->get_course();
+    if ($course->format !== 'mimo') {
+        return;
+    }
+
+    // Only apply to new modules, not when editing existing ones.
+    $current = $formwrapper->get_current();
+    if (!empty($current->instance)) {
+        return;
+    }
+
+    // Get the module type ID.
+    $moduleid = (int)($current->module ?? 0);
+    if (!$moduleid) {
+        return;
+    }
+
+    // Check if we have a mimo completion override for this module type.
+    $mimodefaults = \format_mimo\completion_defaults_manager::get_default($moduleid);
+    if (!$mimodefaults) {
+        return;
+    }
+
+    // Override core completion fields with mimo defaults.
+    // Use setDefault() rather than getElement()->setValue() because radio buttons
+    // require setDefault to properly select the correct option.
+    $completion = (int)$mimodefaults->completion;
+    if ($mform->elementExists('completion')) {
+        $mform->setDefault('completion', $completion);
+    }
+
+    if ($completion === COMPLETION_TRACKING_AUTOMATIC) {
+        if ($mform->elementExists('completionview') && (int)$mimodefaults->completionview) {
+            $mform->setDefault('completionview', 1);
+        }
+        if (!empty($mimodefaults->completionusegrade)) {
+            $modname = $current->modulename ?? '';
+            $supportsgrades = plugin_supports('mod', $modname, FEATURE_GRADE_HAS_GRADE, false);
+            if ($supportsgrades && $mform->elementExists('completionusegrade')) {
+                $mform->setDefault('completionusegrade', 1);
+            }
+            if ((int)$mimodefaults->completionpassgrade && $mform->elementExists('completionpassgrade')) {
+                $mform->setDefault('completionpassgrade', 1);
+            }
+        }
+    }
+
+    // Apply custom rules from the JSON blob.
+    if (!empty($mimodefaults->customrules)) {
+        $customrules = @json_decode($mimodefaults->customrules, true);
+        if (is_array($customrules)) {
+            unset($customrules['modids']);
+            unset($customrules['id']);
+            foreach ($customrules as $key => $value) {
+                if ($mform->elementExists($key)) {
+                    $mform->setDefault($key, $value);
+                }
+            }
+        }
+    }
+}
+
+/**
  * Implements callback for inplace editable (AJAX section name editing).
  *
  * Called by core when an inplace editable with component 'format_mimo' is saved.
