@@ -52,7 +52,7 @@ class section_image_manager {
         'subdirs' => 0,
         'maxfiles' => 1,
         'maxbytes' => 0,
-        'accepted_types' => ['.jpg', '.png', '.webp'],
+        'accepted_types' => ['.jpg', '.png', '.webp', '.svg'],
     ];
 
     /**
