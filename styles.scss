@@ -1244,6 +1244,11 @@ body.format-mimo-theme-colorful {
     }
 }
 
+// Ensure the sticky footer (bulk action bar) is above mimo cards.
+body.format-mimo .stickyfooter {
+    z-index: 1000;
+}
+
 // Activity type chooser modal styling
 .format-mimo-activity-options {
     .mimo-activity-card {

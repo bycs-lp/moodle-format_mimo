@@ -953,6 +953,10 @@ body.format-mimo-theme-colorful .mimo-filter-bar .filter-tag.active {
   display: none !important;
 }
 
+body.format-mimo .stickyfooter {
+  z-index: 1000;
+}
+
 .format-mimo-activity-options .mimo-activity-card {
   display: block;
   text-decoration: none;
