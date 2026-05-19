@@ -513,17 +513,7 @@ class format_mimo extends core_courseformat\base {
             if ($sectionparam !== null) {
                 $course = $this->get_course();
                 $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
-                $btnlabel = get_string('backtooverview', 'format_mimo');
-                $page->add_header_action(
-                    \html_writer::link(
-                        $overviewurl,
-                        '<svg class="mimo-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
-                        ' aria-hidden="true" width="22" height="22">' .
-                        '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>' .
-                        \html_writer::span($btnlabel, 'sr-only'),
-                        ['class' => 'mimo-overview-btn', 'title' => $btnlabel]
-                    )
-                );
+                $this->add_home_button($page, $overviewurl);
             }
         }
 
@@ -554,6 +544,48 @@ class format_mimo extends core_courseformat\base {
                 }
             }
         }
+    }
+
+    /**
+     * Allows course format to execute code on moodle_page::set_cm().
+     *
+     * Adds a "back to home" button to the page header when viewing an activity page.
+     * In multi-section mode, links to the overview. In single-section mode, links to the wall.
+     *
+     * @param moodle_page $page instance of page calling set_cm
+     */
+    public function page_set_cm(moodle_page $page) {
+        $cm = $page->cm;
+        if (!$cm || $cm->sectionnum < 1) {
+            return;
+        }
+        $course = $this->get_course();
+        if ($this->is_multisection_enabled()) {
+            $backurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
+        } else {
+            $backurl = new \moodle_url('/course/view.php', ['id' => $course->id]);
+        }
+        $this->add_home_button($page, $backurl);
+    }
+
+    /**
+     * Add the "back to home" button to the page header.
+     *
+     * @param moodle_page $page The page object
+     * @param \moodle_url $url The URL the button should link to
+     */
+    private function add_home_button(moodle_page $page, \moodle_url $url): void {
+        $btnlabel = get_string('backtooverview', 'format_mimo');
+        $page->add_header_action(
+            \html_writer::link(
+                $url,
+                '<svg class="mimo-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
+                ' aria-hidden="true" width="22" height="22">' .
+                '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>' .
+                \html_writer::span($btnlabel, 'sr-only'),
+                ['class' => 'mimo-overview-btn', 'title' => $btnlabel]
+            )
+        );
     }
 
     /**
