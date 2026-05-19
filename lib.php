@@ -561,11 +561,36 @@ class format_mimo extends core_courseformat\base {
         }
         $course = $this->get_course();
         if ($this->is_multisection_enabled()) {
-            $backurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
+            // Back arrow → returns to the section wall this activity belongs to.
+            $wallurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'section' => $cm->sectionnum]);
+            $this->add_back_button($page, $wallurl);
+            // Home button → returns to the overview.
+            $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
+            $this->add_home_button($page, $overviewurl);
         } else {
             $backurl = new \moodle_url('/course/view.php', ['id' => $course->id]);
+            $this->add_home_button($page, $backurl);
         }
-        $this->add_home_button($page, $backurl);
+    }
+
+    /**
+     * Add a "back to wall" arrow button to the page header.
+     *
+     * @param moodle_page $page The page object
+     * @param \moodle_url $url The URL the button should link to
+     */
+    private function add_back_button(moodle_page $page, \moodle_url $url): void {
+        $btnlabel = get_string('backtowall', 'format_mimo');
+        $page->add_header_action(
+            \html_writer::link(
+                $url,
+                '<svg class="mimo-back-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
+                ' aria-hidden="true" width="24" height="24">' .
+                '<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>' .
+                \html_writer::span($btnlabel, 'sr-only'),
+                ['class' => 'mimo-back-btn', 'title' => $btnlabel]
+            )
+        );
     }
 
     /**

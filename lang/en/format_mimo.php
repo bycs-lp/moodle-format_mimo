@@ -89,6 +89,7 @@ $string['backgrounddesign_primaryschool'] = 'Primary school';
 $string['backgrounddesign_white'] = 'White';
 $string['backgrounddesign_whiteboard'] = 'Whiteboard';
 $string['backtooverview'] = 'Back to overview';
+$string['backtowall'] = 'Back to wall';
 $string['basetagfields'] = 'Base tag fields';
 $string['cachedef_activity_descriptions'] = 'Activity type descriptions cache';
 $string['cachedef_activitytagmappings'] = 'Activity-tag mappings cache';

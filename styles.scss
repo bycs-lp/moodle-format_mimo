@@ -2672,6 +2672,40 @@ body.single-section-page.format-mimo-multisection-view {
     stroke-width: 1px;
 }
 
+.mimo-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--primary, #0073aa);
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+    margin-right: 0.25rem;
+
+    &:hover,
+    &:focus {
+        background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary, #0073aa);
+        outline-offset: 2px;
+    }
+}
+
+.mimo-back-btn__icon {
+    flex-shrink: 0;
+    stroke: #fff;
+    stroke-width: 1px;
+}
+
 /* Compact secondary navigation — three-dot dropdown for students. */
 .format-mimo-compact-secondarynav .secondary-navigation {
     display: none !important;
