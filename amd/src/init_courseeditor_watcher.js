@@ -22,7 +22,7 @@
  * other mimo components (pagination, tag filter) to consume.
  *
  * @module     format_mimo/init_courseeditor_watcher
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import CourseEditorWatcher from 'format_mimo/courseeditor_watcher';

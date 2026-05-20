@@ -19,7 +19,7 @@
  *
  * @package    format_mimo
  * @category   backup
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -18,7 +18,7 @@
  * State actions extension for format_mimo.
  *
  * @package    format_mimo
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -17,7 +17,7 @@
  * Custom event helpers for the wall state reactive.
  *
  * @module     format_mimo/local/wall_state/events
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

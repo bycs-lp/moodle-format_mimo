@@ -18,7 +18,7 @@
  * Unit tests for profile_manager.
  *
  * @package    format_mimo
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,7 @@ namespace format_mimo;
  * Profile manager test case.
  *
  * @package    format_mimo
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo\profile_manager
  */

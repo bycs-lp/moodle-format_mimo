@@ -26,7 +26,6 @@ namespace format_mimo\form;
 
 
 use format_mimo\profile_manager;
-use format_mimo\tag_manager;
 use core_form\dynamic_form;
 use context;
 

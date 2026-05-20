@@ -22,7 +22,7 @@
  * On drop, calls core_courseformat_update_course section_move_after.
  *
  * @module     format_mimo/section_overview_actions
- * @copyright  2025 MBS
+ * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
