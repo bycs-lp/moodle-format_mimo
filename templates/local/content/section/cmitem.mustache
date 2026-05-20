@@ -21,9 +21,6 @@
 
     This template extends the core cmitem template.
 
-    Example wrapper (html):
-    <ul>{{{ content }}}</ul>
-
     Example context (json):
     {
         "id": 3,
@@ -36,8 +33,25 @@
             "tagname": "Tag 1",
             "tagimage": "",
             "tagcolor": "#3366cc",
+            "tagid": 1,
+            "imgplacement": "",
+            "imgsize": "",
+            "modhiddenfromstudents": false,
+            "modstealth": false,
+            "isdone": false,
+            "editing": false,
+            "controlmenu": false,
+            "cmbulk": false,
+            "cmname": {
+                "displayvalue": "Forum example",
+                "url": "#"
+            },
+            "url": "#",
             "completion": {
-                "hascompletion": false
+                "hascompletion": true,
+                "iscomplete": false,
+                "isoverdue": false,
+                "isteacherview": false
             }
         }
     }

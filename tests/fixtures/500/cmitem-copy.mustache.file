@@ -19,9 +19,6 @@
 
     Displays the course module list inside a course section.
 
-    Example wrapper (html):
-    <ul>{{{ content }}}</ul>
-
     Example context (json):
     {
         "cmformat": {

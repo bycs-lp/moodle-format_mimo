@@ -21,9 +21,6 @@
 
     This template extends the core section template.
 
-    Example wrapper (html):
-    <ul>{{{ content }}}</ul>
-
     Example context (json):
     {
         "num": 3,
@@ -31,18 +28,59 @@
         "sectionname": "Section title",
         "header": {
             "name": "Section title",
-            "title": "Section title",
+            "title": "<a href=\"#\">Section title</a>",
             "headinglevel": 3
         },
         "cmlist": {
-            "cms": [],
-            "hascms": false
+            "cms": [
+                {
+                    "cmitem": {
+                        "cmformat": {
+                            "cmname": "<a class=\"aalink\" href=\"#\"><span class=\"instancename\">Forum example</span></a>",
+                            "hasname": "true"
+                        },
+                        "id": 3,
+                        "module": "forum",
+                        "extraclasses": ""
+                    }
+                }
+            ],
+            "hascms": true,
+            "activitycount": 1,
+            "initialpaginationthreshold": 12,
+            "hasinitialnext": false
         },
+        "filterbar": {
+            "hasitems": true,
+            "label": "Filter activities",
+            "styleclass": "",
+            "isediting": false,
+            "emptylabel": "No activities",
+            "tags": [
+                {
+                    "id": 1,
+                    "name": "Tag 1",
+                    "hasactivities": true,
+                    "bgcolor": "#3366cc",
+                    "imageurl": ""
+                }
+            ]
+        },
+        "completionstatus": {
+            "completedcount": 1,
+            "incompletecount": 2,
+            "allcomplete": false,
+            "total": 3
+        },
+        "styleclass": "",
+        "stylevariant": "default",
+        "bgdesignclass": "",
         "ishidden": false,
         "iscurrent": true,
         "sectionreturnnum": 0,
         "contentcollapsed": false,
-        "insertafter": false
+        "insertafter": false,
+        "numsections": 5
     }
 }}
 {{< core_courseformat/local/content/section }}

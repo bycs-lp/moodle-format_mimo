@@ -22,9 +22,6 @@
     Note: This template is a wrapper around the section/content template to allow course formats and theme designers to
     modify parts of the wrapper without having to copy/paste the entire template.
 
-    Example wrapper (html):
-    <ul>{{{ content }}}</ul>
-
     Example context (json):
     {
         "num": 3,
