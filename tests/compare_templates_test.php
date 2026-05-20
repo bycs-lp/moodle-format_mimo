@@ -105,31 +105,31 @@ final class compare_templates_test extends \advanced_testcase {
         $core = $CFG->dirroot . '/course/format/templates/local';
         return [
             'content' => [
-                'copy' => $fixtures . '/content-copy.mustache',
+                'copy' => $fixtures . '/content-copy.mustache.file',
                 'orig' => $core . '/content.mustache',
             ],
             'section' => [
-                'copy' => $fixtures . '/section-copy.mustache',
+                'copy' => $fixtures . '/section-copy.mustache.file',
                 'orig' => $core . '/content/section.mustache',
             ],
             'cm' => [
-                'copy' => $fixtures . '/cm-copy.mustache',
+                'copy' => $fixtures . '/cm-copy.mustache.file',
                 'orig' => $core . '/content/cm.mustache',
             ],
             'cmname' => [
-                'copy' => $fixtures . '/cmname-copy.mustache',
+                'copy' => $fixtures . '/cmname-copy.mustache.file',
                 'orig' => $core . '/content/cm/cmname.mustache',
             ],
             'controlmenu' => [
-                'copy' => $fixtures . '/controlmenu-copy.mustache',
+                'copy' => $fixtures . '/controlmenu-copy.mustache.file',
                 'orig' => $core . '/content/cm/controlmenu.mustache',
             ],
             'cmitem' => [
-                'copy' => $fixtures . '/cmitem-copy.mustache',
+                'copy' => $fixtures . '/cmitem-copy.mustache.file',
                 'orig' => $core . '/content/section/cmitem.mustache',
             ],
             'activitychooserbutton' => [
-                'copy' => $fixtures . '/activitychooserbutton-copy.mustache',
+                'copy' => $fixtures . '/activitychooserbutton-copy.mustache.file',
                 'orig' => $core . '/content/activitychooserbutton.mustache',
             ],
         ];
