@@ -8,7 +8,7 @@
 - **Multi-section mode**: Toggled per-course via `enablemultisection` option. When ON: course index activates, teachers can add/rename/reorder sections, each section displays its own wall with scoped filter bar and completion counts. **Overview landing page**: shows a card grid of all sections (section 0 is always hidden) with activity counts and completion progress; clicking a card navigates to that wall; each wall has a home button ("← Back to overview") in the page header. **Sticky wall**: the last-visited section is remembered per user per course via `set_user_preference`. Returning to the course URL without `?section=` auto-redirects to the remembered wall. The home button passes `?overview=1` which clears the preference and shows the overview. Deep-linking to an activity also stores its section. When OFF (default): classic single-wall behavior with all activities in section 1.
 - **Section 0 is always hidden**: Section 0 exists in the DB (required by Moodle core) but is never rendered or accessible to any user. All walls start at section 1. Activities should never be placed in section 0.
 - **Imported tag/profile scoping**: On cross-instance restore, a dedicated *imported activity profile* is created to override existing tags to match the backup's configuration. New tag records are only created when the backup has MORE tags than the instance. Imported tags/profiles have `scope='imported'` and are course-bound via `course_tags`. Admins see "Imported" badges in the tag management UI and can promote them to global.
-- **Primary touch points**: `lib.php` (format logic + course options), `classes/tag_manager.php` (tag DB + files + cache + imported tag bindings), `classes/profile_manager.php` (profile CRUD + per-tag overrides + imported profile management), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI + promote actions), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (wall CSS), `amd/` (JS helpers).
+- **Primary touch points**: `lib.php` (format logic + course options + module form callbacks), `classes/tag_manager.php` (tag DB + files + cache + imported tag bindings), `classes/profile_manager.php` (profile CRUD + per-tag overrides + imported profile management), `classes/done_manager.php` (done flags for greying out activities), `classes/courseformat/stateactions.php` (custom state actions: done/undone/duplicate with tag copy), `classes/section_image_manager.php` (section overview card images), `tag_management.php` (admin UI + promote actions), `classes/output/**` + `templates/local/**` (rendering), `styles.scss` (wall CSS), `amd/` (JS helpers).
 
 ## Architecture Cheatsheet
 - **Course format base** (`lib.php`)
@@ -28,11 +28,12 @@
   - **Module form callbacks** (legacy `get_plugins_with_function` pattern — no PSR-14 hooks exist for `moodleform_mod`):
     - `format_mimo_coursemodule_standard_elements()` — injects a tag `select` dropdown into every module edit form (only for mimo courses). Pre-selects current tag on edit, or pending session tag on create.
     - `format_mimo_coursemodule_edit_post_actions()` — persists the tag selection via `tag_manager::assign_tag_to_cm()` (upsert) or `remove_cm_tag()` on save. Returns `$data` for callback chaining.
+    - `format_mimo_coursemodule_definition_after_data()` — pre-populates completion form fields with mimo defaults (from `completion_defaults_manager`) for new activities. Only fires for new modules (`!$current->instance`). Uses `$mform->setDefault()` so teachers see intended values but can override.
 - **Tag domain model** (`db/install.xml` + `classes/tag_manager.php`)
   - Table: `*_tags` (name, bgcolor hex, imgplacement center|lower, cardimage, filterimage, activitytype1-3, sortorder, **scope** CHAR(10) DEFAULT 'global' — values: 'global' or 'imported').
   - Table: `*_cmtags` (one tag per `cm`, unique cmid).
   - Table: `*_course_tags` (courseid, tagid, timecreated; unique index on courseid+tagid). Tracks which imported tags are available in which courses.
-  - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_mimo_pluginfile()`.
+  - File areas (`FILEAREA_CARDIMAGE = 'tagcard'`, `FILEAREA_FILTERIMAGE = 'tagfilter'`) in system context; served via `format_mimo_pluginfile()`. Accepted types: `.svg`, `.png`.
   - Key methods: `create_tag($name, ..., $scope = 'global')`, `get_all_tags()`, `get_tags_for_course($courseid)` (returns profile-filtered tags including imported tags bound to the course), `assign_tag_to_cm($cmid, $tagid)`, `get_cm_tag($cmid)`.
   - **Imported tag methods**: `bind_tag_to_course($tagid, $courseid)`, `unbind_tag_from_course($tagid, $courseid)`, `unbind_all_tags_from_course($courseid)`, `promote_tag_to_global($tagid)` (sets scope='global', deletes all bindings), `get_imported_tags_for_course($courseid)`, `cleanup_orphaned_imported_tags()` (deletes imported tags with zero bindings and zero cmtags), `find_tag_by_fingerprint($data, $excludeids)` (NULL-safe composite match on name+bgcolor+activitytype1-3).
   - `get_tags_for_course()` reads the course's `activityprofile` option, fetches imported tags bound to the course via `get_imported_tags_for_course()`, merges them with global tags, then resolves through `profile_manager::resolve_tags_for_profile()`.
@@ -51,7 +52,7 @@
   - The `develop` profile overrides first two tags with name overrides: 📖 Read → 📚 Analyze, 🔍 Explore → 🔎 Research.
 - **Section image system** (`classes/section_image_manager.php`)
   - No dedicated table — uses Moodle File API only. File area: `FILEAREA = 'sectionimage'` in **course context** with `course_sections.id` as itemid.
-  - Accepted types: jpg, png, webp.
+  - Accepted types: jpg, png, webp, svg.
   - Key methods: `get_image_url($courseid, $sectionid)`, `save_image($courseid, $sectionid, $draftitemid)`, `delete_image($courseid, $sectionid)`, `has_image($courseid, $sectionid)`, `delete_all_for_course($courseid)`.
   - When a section has an uploaded image, it replaces the miniwall tiles on the overview card.
   - Upload/change UX: Dynamic form modal (`classes/form/section_image_form.php`, extends `dynamic_form`) opened via `amd/src/section_image_modal.js`. Teacher clicks an "Upload image" / "Change image" button on the overview card in editing mode. The filepicker in the modal handles upload, change, and removal.
@@ -64,14 +65,27 @@
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
 - **Event observers** (`classes/observer.php` + `db/events.php`)
-  - `course_module_created`: Auto-assign pending tag from session (guided creation flow) + apply mimo completion default overrides (see below).
-  - `course_module_deleted`: Delete cmtag record for the deleted module + clear cache.
+  - `course_module_created`: Auto-assign pending tag from session (guided creation flow).
+  - `course_module_deleted`: Delete cmtag record for the deleted module + delete done flag + clear cache.
   - `course_section_deleted`: Delete section overview card image for the deleted section.
-  - `course_deleted`: Delete all orphaned cmtag records + delete all section images for the course + **delete course_tags bindings + cleanup orphaned imported tags + cleanup orphaned imported profiles** + clear caches.
+  - `course_deleted`: Delete all orphaned cmtag records + delete all section images for the course + **delete course_tags bindings + cleanup orphaned imported tags + cleanup orphaned imported profiles** + delete done flags for course + clear caches.
+- **Done system** (`classes/done_manager.php` + `classes/courseformat/stateactions.php`)
+  - Table: `*_cmdone` (cmid unique; timecreated). Flags a course module as "done" — greyed out on wall, excluded from completion progress.
+  - Teachers mark activities as done via the visibility dropdown (Show/Hide/Stealth/**Done**) or bulk edit. Done activities remain visible to students but appear greyed out.
+  - Switching an activity to Show/Hide/Stealth automatically clears its done flag.
+  - Key methods: `is_done($cmid)`, `set_done($cmid)`, `unset_done($cmid)`, `get_done_cmids($courseid)`, `delete_for_cm($cmid)`, `delete_for_course($courseid)`.
+  - Request-level cache (`$donecache`) avoids repeated DB hits — primes entire course on first access.
+  - Custom visibility class (`classes/output/courseformat/content/cm/visibility.php`): extends core visibility dropdown, adds "Done" option with `cm_done`/`cm_undone` state actions, always renders (so teachers can toggle from any state).
+  - Custom state actions (`classes/courseformat/stateactions.php`): extends `core_courseformat\stateactions` with `cm_done()`, `cm_undone()` actions + overrides `cm_show()`/`cm_hide()`/`cm_stealth()` to clear done flag + overrides `cm_duplicate()` to copy tags to clones.
+  - Client-side mutations (`amd/src/mutations.js`): `MimoMutations` class extends `DefaultMutations` with `cmDone`/`cmUndone`/`cmShow`/`cmHide`/`cmStealth` that force-reload cmitems after action (needed because done↔show doesn't change `cm.visible`). Also registers `mimoAvailability` action handler.
+  - **Overdue indicator**: Activities with automatic completion that have a passed `completionexpected` date and are not yet complete show an hourglass icon on the card (student view). Done activities show the icon greyed out.
+- **Bulk edit availability modal** (`classes/output/courseformat/content/bulkedittools.php` + `templates/local/content/cm/availabilitymodal.mustache`)
+  - Overrides core's bulk edit `availability` action with `mimoAvailability` which opens a custom modal including the "Done" radio option alongside Show/Hide/Stealth.
+  - Modal rendered via `mutations.js` `mimoAvailabilityHandler`: gathers bulk selection IDs, renders modal, dispatches chosen mutation on submit or double-click.
 - **Completion defaults override** (`classes/completion_defaults_manager.php` + `completion_defaults.php`)
   - Table: `*_compdefs` (module unique; completion, completionview, completionusegrade, completionpassgrade, completionexpected, customrules JSON).
-  - When a module is created in a mimo course and its completion matches Moodle's core defaults (meaning the teacher did not customize), the observer silently replaces completion with the mimo override.
-  - Comparison logic: checks core fields (completion, completionview, completionpassgrade, completiongradeitemnumber↔completionusegrade) and custom rules on the module instance table.
+  - When a teacher opens the module creation form in a mimo course, the `format_mimo_coursemodule_definition_after_data()` callback pre-populates the form fields with mimo defaults (using `$mform->setDefault()`). Teachers see the intended values and can change them before saving. No post-creation override is applied.
+  - Comparison logic (retained for upgrade/migration scenarios): checks core fields (completion, completionview, completionpassgrade, completiongradeitemnumber↔completionusegrade) and custom rules on the module instance table.
   - Override applies to both `course_modules` (core fields) and the module instance table (custom rules from JSON blob).
   - Admin page (`completion_defaults.php`): lists all module types, allows editing per-type completion defaults using core's `defaultedit_form`.
   - **Default seeding** (`initialize_default_completion_defaults()`): Seeds ~37 activity types on install/upgrade. Four tiers:
@@ -233,11 +247,14 @@ This plugin demonstrates the hybrid approach:
 - **Sticky wall** (`format_mimo_lastsection_{courseid}` user preference): Visiting a wall stores the section number. Returning to the course without `?section=` auto-redirects to the last wall. `?overview=1` clears the preference and shows overview. `extend_course_navigation()` also stores the preference when viewing an activity page (deep link and course index activity clicks). `get_remembered_section()` validates the stored section exists and is visible. `delete_format_data()` cleans up preferences for all users on course deletion.
 - **Multi-section overview** (landing page): Shown when no `?section=` param AND no stored preference (or `?overview=1`). `format.php` does NOT call `set_sectionnum()`. `content.php` detects `get_sectionid() === null` and builds lightweight section card data via `export_overview()`, using `overview.mustache`. This avoids rendering full walls for every section.
 - **Back to overview button**: Home button in page header (SVG icon), rendered by `page_set_course()` via `$page->add_header_action()`. Links to `?overview=1` to clear the stored preference and show the overview.
+- **Activity page navigation** (multi-section): Two header buttons: a back arrow (→ returns to the section wall the activity belongs to via `?section=N`) and a home icon (→ returns to overview via `?overview=1`). Single-section: only the home button (→ course URL). Both rendered in `page_set_course()` via `add_back_button()` / `add_home_button()` helper methods.
 - When toggling multi-section OFF, activities in sections >1 become hidden. There is no auto-migration — only a help text warning.
 - The course index is disabled in single-section mode. Do not re-enable it without also enabling multi-section.
 - Never bypass the profile system — `get_tags_for_course()` filters tags through the course's activity profile. All tags are active by default; profiles can disable individual tags.
 - Every course should have a valid `activityprofile` option — defaults to `'explore'`.
+- Label and unilabel activities are hidden from the activity chooser via CSS (`display: none !important` on `[data-internal="label"]` and `[data-internal="unilabel"]`) since they don't work in the wall format.
 - When touching SVG/file handling, keep files in system context and reuse `tag_manager` / `profile_manager` helpers to avoid orphans.
+- **Done flag lifecycle**: Done flags (`cmdone` table) are cleared when visibility changes (show/hide/stealth) via `stateactions` overrides. The observer also deletes done flags on module deletion and course deletion. Don't add manual cleanup elsewhere.
 - Update caches after any tag/profile change; otherwise wall rendering will show stale logos/colors. Use `clear_course_tags_cache($courseid)` for course-specific cache invalidation.
 - Tags and profiles are **global by default** — shared across all courses; courses reference profiles via the `activityprofile` format option. **Imported** tags/profiles have `scope='imported'` and are course-scoped via `course_tags` bindings.
 - **Imported scope rules**: Imported tags are only visible in courses with explicit `course_tags` bindings. Imported profiles only appear in the course settings dropdown for the course already using them. New imported tags get explicit `profile_tag` with `enabled=0` in ALL global profiles to prevent implicit-enable leaking. Never skip this step when creating imported tags.
@@ -278,14 +295,16 @@ This plugin demonstrates the hybrid approach:
 - Passes both old and new parameters to maintain compatibility
 
 ## Quick File Map
-- `lib.php` – course options (enablemultisection, activityprofile, enablefiltering, backgrounddesign, distractionfree), `is_multisection_enabled()` helper, conditional `get_sectionnum()` / `is_section_visible()` / `uses_course_index()` / `get_view_url()` / `extend_course_navigation()` (also stores section preference on activity pages), `get_remembered_section()` (validates stored preference), read-only tag preview in form, **profile dropdown filters to global + current course's imported profile**, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence), preference cleanup in `delete_format_data()`.
+- `lib.php` – course options (enablemultisection, activityprofile, enablefiltering, backgrounddesign, distractionfree), `is_multisection_enabled()` helper, conditional `get_sectionnum()` / `is_section_visible()` / `uses_course_index()` / `get_view_url()` / `extend_course_navigation()` (also stores section preference on activity pages), `get_remembered_section()` (validates stored preference), read-only tag preview in form, **profile dropdown filters to global + current course's imported profile**, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence + `coursemodule_definition_after_data` completion defaults pre-population), preference cleanup in `delete_format_data()`.
 - `format.php` – entry point; branches on `is_multisection_enabled()`: multi-section stores preference on wall visit, restores preference on plain visit (redirects to `?section=N`), handles `?overview=1` (clears preference, shows overview); single-section ensures section 1 exists and locks to section 1.
 - `classes/tag_manager.php` – tag CRUD, file prep, caching, default palettes, **imported tag binding/unbinding/promotion/cleanup, fingerprint matching**. Key methods: `get_all_tags()`, `get_tags_for_course($courseid)` (profile-filtered + imported tags), `get_tag_usage_counts($courseid, $tagids, $sectionid)` (optional section scoping), `find_tag_by_fingerprint()`, `bind_tag_to_course()`, `promote_tag_to_global()`, `cleanup_orphaned_imported_tags()`.
 - `classes/profile_manager.php` – profile CRUD, per-tag profile overrides (name, bgcolor, activity types, enabled, images), tag resolution, **imported profile creation/promotion/cleanup**, **default profile override seeding** (`initialize_default_profiles()`, `copy_default_profile_image()`, `apply_default_profile_images()`). Key methods: `resolve_tags_for_profile()`, `resolve_tag_for_profile()`, `get_or_create_profile_tag()`, `create_imported_profile()`, `promote_profile_to_global()`, `cleanup_orphaned_imported_profiles()`, `get_global_profiles()`.
 - `classes/description_tag_manager.php` – description tag CRUD for activity type categorization.
 - `classes/activity_description_manager.php` – activity description CRUD with tag assignment, cached with LEFT JOIN.
-- `classes/observer.php` – event handlers: auto-tag on module create, **completion default override on module create**, cleanup on module/course/section delete (including section images, **imported tag/profile bindings and orphan cleanup**).
+- `classes/observer.php` – event handlers: auto-tag on module create, cleanup on module/course/section delete (including section images, done flags, **imported tag/profile bindings and orphan cleanup**).
 - `classes/completion_defaults_manager.php` – CRUD for mimo completion defaults (compdefs table), comparison with core defaults, application to course modules, **default seeding** (`initialize_default_completion_defaults()` — 4-tier defaults for ~37 activity types).
+- `classes/done_manager.php` – CRUD for "done" flags (cmdone table). Request-level cache with course-wide priming. Methods: `is_done()`, `set_done()`, `unset_done()`, `get_done_cmids()`, `delete_for_cm()`, `delete_for_course()`.
+- `classes/courseformat/stateactions.php` – custom state actions: `cm_done`/`cm_undone` (mark/unmark done), overrides `cm_show`/`cm_hide`/`cm_stealth` (clear done flag on visibility change), overrides `cm_duplicate` (copy tags to clones).
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags, **promote actions for imported tags/profiles**.
@@ -297,11 +316,13 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for mimo completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
-- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp). Extends `dynamic_form`.
+- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg). Extends `dynamic_form`.
 - `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode.
 - `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
 - `classes/output/courseformat/content/activitychooserbutton.php` – **Moodle 5.1+ tag chooser button** (extends core class).
+- `classes/output/courseformat/content/bulkedittools.php` – overrides core bulk edit tools to replace `availability` action with `mimoAvailability` (custom modal with Done option).
+- `classes/output/courseformat/content/cm/visibility.php` – overrides core visibility dropdown to add "Done" option (Show/Hide/Stealth/Done). Always visible in mimo format.
 - `classes/output/courseformat/content/cm.php` – course module data provider (backward compatible with 4.x).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates. `content.php` detects overview mode (multi-section + no section selected) and returns lightweight section card data via `export_overview()`, switching to `overview.mustache`; in wall view provides `overviewurl`, `showoverviewlink`, `currentsectionname`. `cmitem.php` resolves tags through profile for card rendering.
 - `templates/tag_management.mustache` – accordion-based tag admin UI, **imported badges (blue `bg-info`) and promote buttons for imported tags/profiles**.
@@ -312,9 +333,16 @@ This plugin demonstrates the hybrid approach:
 - `templates/tagchooserbutton.mustache` – **Legacy Moodle 4.x tag chooser template**.
 - `templates/activitytype_chooser_modal.mustache` – modal body for activity type selection.
 - `templates/activitytype_card.mustache` – activity type card with optional description tag pill.
+- `templates/local/content/cm/availabilitymodal.mustache` – custom availability modal body with Show/Hide/Stealth/Done radio options for bulk edit.
 - `templates/description_tags_list.mustache` – table view for description tags management page.
 - `styles.scss` / `styles.css` – wall styling + profile-specific CSS + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (version-agnostic).
+- `amd/src/mutations.js` – custom course editor mutations: `MimoMutations` class (cmDone, cmUndone, cmShow, cmHide, cmStealth with forced DOM reload) + `mimoAvailabilityHandler` (custom bulk availability modal with Done option).
+- `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state and dispatches legacy DOM events for completion changes (used by tag_filter).
+- `amd/src/init_courseeditor_watcher.js` – initializer for the courseeditor_watcher component.
+- `amd/src/local/wall_state/wall_state.js` – per-section reactive store for wall UI state (filters, pagination, bulk mode, activity order).
+- `amd/src/local/wall_state/mutations.js` – mutations for the wall state reactive (filter changes, pagination, bulk toggle, reorder).
+- `amd/src/local/wall_state/events.js` – custom event types and dispatch helpers for wall state changes.
 - `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags (event capturing phase).
 - `amd/src/tag_filter.js` – client-side tag filtering.
 - `amd/src/activity_pagination.js` – responsive pagination with swipe.
@@ -326,7 +354,7 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/distraction_free.js` – distraction-free mode toggle.
 - `backup/moodle2/backup_format_mimo_plugin.class.php` – backup handler (tags **incl. scope**, profiles **incl. scope**, profile_tags, cmtags, files).
 - `backup/moodle2/restore_format_mimo_plugin.class.php` – restore handler (**three-tier fingerprint/positional/create matching, imported profile creation with full overrides**, ID mapping, format option remapping).
-- `db/install.xml` – **8** tables: tags, cmtags, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**.
+- `db/install.xml` – **9** tables: tags, cmtags, desc_tags, actdesc, profiles, profile_tags, compdefs, **course_tags**, **cmdone**.
 - `db/install.php` – creates default tags and default profiles on install, including per-profile tag overrides (explore images, develop name overrides), default description tags, and default activity descriptions for all activity types.
 - `db/upgrade.php` – migration steps including profile introduction, selectedtags removal, and completion defaults table.
 - `db/events.php` – observer registrations (module created/deleted, course deleted).
@@ -344,6 +372,5 @@ This plugin demonstrates the hybrid approach:
 ## Open Questions / TODO Hooks
 - ~~Teacher-side workflow for assigning/changing tags per activity~~ — **Implemented** via legacy `coursemodule_standard_elements` / `coursemodule_edit_post_actions` callbacks in `lib.php`. Teachers see a tag dropdown in the module edit form.
 - JS filter bar enhancements (persist active filter, animate cards) planned but not shipped.
-- Documentation for recommended SVG sizing still pending.
 
 Keep this document synchronized with functional changes so future AI runs can reason about intent without re-deriving it from the whole codebase.
