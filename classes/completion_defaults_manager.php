@@ -19,9 +19,9 @@ namespace format_mimo;
 /**
  * Manages mimo-specific default completion overrides per module type.
  *
- * When a course module is created in a mimo course and its completion
- * matches the core Moodle defaults, the observer can silently replace the
- * completion settings with overrides stored in the format_mimo_compdefs table.
+ * Mimo completion defaults are stored in the format_mimo_compdefs table and
+ * applied via the coursemodule_definition_after_data form callback, which
+ * pre-populates the module creation form with the configured values.
  *
  * @package    format_mimo
  * @copyright  2025 Tobias Garske
@@ -106,131 +106,7 @@ class completion_defaults_manager {
         $DB->delete_records(self::TABLE, ['module' => $moduleid]);
     }
 
-    /**
-     * Check whether a course module's current completion settings match the core defaults.
-     *
-     * This is used to decide if the observer should override the completion: if the
-     * module was created with unmodified core defaults, the mimo override
-     * should be applied. If the teacher customized completion in the form, we leave it alone.
-     *
-     * @param \stdClass $cmrecord The course_modules record (must include completion fields).
-     * @param \stdClass $coredefaults The flattened result from \core_completion\manager::get_default_completion().
-     * @param string $modname The module name (e.g. 'assign') for checking custom rules.
-     * @return bool True if the module's completion matches core defaults exactly.
-     */
-    public static function matches_core_defaults(\stdClass $cmrecord, \stdClass $coredefaults, string $modname): bool {
-        global $DB;
 
-        // Compare core completion fields.
-        // Note: core defaults has 'completionusegrade' but course_modules has 'completiongradeitemnumber'.
-        $corefields = [
-            'completion' => (int)($coredefaults->completion ?? COMPLETION_TRACKING_NONE),
-            'completionview' => (int)($coredefaults->completionview ?? 0),
-            'completionpassgrade' => (int)($coredefaults->completionpassgrade ?? 0),
-        ];
-
-        if ((int)$cmrecord->completion !== $corefields['completion']) {
-            return false;
-        }
-        if ((int)$cmrecord->completionview !== $corefields['completionview']) {
-            return false;
-        }
-        if ((int)$cmrecord->completionpassgrade !== $corefields['completionpassgrade']) {
-            return false;
-        }
-
-        // Compare grade: coredefaults has 'completionusegrade' (0/1),
-        // course_modules has 'completiongradeitemnumber' (null or 0).
-        $coreusesgrade = !empty($coredefaults->completionusegrade);
-        $cmusesgrade = !is_null($cmrecord->completiongradeitemnumber);
-        if ($coreusesgrade !== $cmusesgrade) {
-            return false;
-        }
-
-        // Compare custom rules if they exist in the core defaults.
-        // The core defaults (flattened) include custom rule keys alongside the standard ones.
-        // We need to read the module instance record and compare.
-        $standardkeys = [
-            'completion', 'completionview', 'completionusegrade',
-            'completionpassgrade', 'completionexpected', 'modids',
-        ];
-        $customrulekeys = [];
-        foreach ((array)$coredefaults as $key => $value) {
-            if (!in_array($key, $standardkeys)) {
-                $customrulekeys[$key] = $value;
-            }
-        }
-
-        if (!empty($customrulekeys) && !empty($cmrecord->instance)) {
-            $modinstance = $DB->get_record($modname, ['id' => $cmrecord->instance]);
-            if ($modinstance) {
-                foreach ($customrulekeys as $key => $expectedvalue) {
-                    if (property_exists($modinstance, $key)) {
-                        if ($modinstance->$key != $expectedvalue) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Apply mimo completion defaults to a course module.
-     *
-     * Updates both the course_modules record (core fields) and the module instance
-     * record (custom rules from the JSON blob).
-     *
-     * @param \stdClass $cmrecord The course_modules record (must include id, instance).
-     * @param \stdClass $mimodefaults The mimo defaults record from the compdefs table.
-     * @param string $modname The module name (e.g. 'assign').
-     */
-    public static function apply_defaults(\stdClass $cmrecord, \stdClass $mimodefaults, string $modname): void {
-        global $DB;
-
-        $now = \core\di::get(\core\clock::class)->time();
-
-        // Update course_modules with core completion fields.
-        $cmdata = new \stdClass();
-        $cmdata->id = $cmrecord->id;
-        $cmdata->completion = (int)$mimodefaults->completion;
-        $cmdata->completionview = (int)$mimodefaults->completionview;
-        $cmdata->completionpassgrade = (int)$mimodefaults->completionpassgrade;
-        $cmdata->completionexpected = (int)$mimodefaults->completionexpected;
-        // Translate completionusegrade to completiongradeitemnumber.
-        $cmdata->completiongradeitemnumber = !empty($mimodefaults->completionusegrade) ? 0 : null;
-        $cmdata->timemodified = $now;
-
-        $DB->update_record('course_modules', $cmdata);
-
-        // Apply custom rules to the module instance table if present.
-        if (!empty($mimodefaults->customrules)) {
-            $customrules = json_decode($mimodefaults->customrules, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                debugging('Invalid JSON in mimo completion custom rules: ' . json_last_error_msg(), DEBUG_DEVELOPER);
-                $customrules = null;
-            }
-            if (is_array($customrules) && !empty($customrules) && !empty($cmrecord->instance)) {
-                // Remove non-module fields that may have been stored in customrules.
-                unset($customrules['modids']);
-                unset($customrules['id']);
-
-                if (!empty($customrules)) {
-                    $moddata = ['id' => $cmrecord->instance, 'timemodified' => $now];
-                    // Only set fields that actually exist on the module instance table.
-                    $columns = $DB->get_columns($modname);
-                    foreach ($customrules as $key => $value) {
-                        if (isset($columns[$key])) {
-                            $moddata[$key] = $value;
-                        }
-                    }
-                    $DB->update_record($modname, (object)$moddata);
-                }
-            }
-        }
-    }
 
     /**
      * Pack form data into the format expected by the compdefs table.
