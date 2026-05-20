@@ -150,7 +150,7 @@ class cmitem extends cmitem_base {
                         } else {
                             $customdata = $cm->customdata;
                             if (is_array($customdata)) {
-                                // assign: duedate, quiz: timeclose.
+                                // Assign: duedate, quiz: timeclose.
                                 $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
                             }
                         }
