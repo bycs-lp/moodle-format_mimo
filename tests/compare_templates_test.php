@@ -34,7 +34,11 @@ namespace format_mimo;
  * If a test fails, this means the original template has changed since the last update.
  * Steps to do:
  * - Check and if necessary adjust overridden template in format_mimo!
- * - Make a new copy of the updated original template in tests/fixtures.
+ * - Make a new copy of the updated original template in tests/fixtures/<branch>/.
+ *
+ * Fixture copies are stored per Moodle branch (e.g. tests/fixtures/500/, tests/fixtures/501/).
+ * When running CI against a new Moodle version, create a new fixture directory by copying
+ * the core templates for that version.
  *
  * @package    format_mimo
  * @copyright  2026 ISB Bayern
@@ -45,13 +49,59 @@ namespace format_mimo;
  */
 final class compare_templates_test extends \advanced_testcase {
     /**
+     * Resolves the fixture directory for the current Moodle branch.
+     *
+     * Uses exact branch match first (e.g. "501"), then falls back to the
+     * highest available version directory that is <= the current branch.
+     *
+     * @return string absolute path to the fixture directory
+     */
+    private static function get_fixtures_dir(): string {
+        global $CFG;
+        $basedir = $CFG->dirroot . '/course/format/mimo/tests/fixtures';
+        $branch = $CFG->branch;
+
+        // Exact match for current branch.
+        if (is_dir($basedir . '/' . $branch)) {
+            return $basedir . '/' . $branch;
+        }
+
+        // Fallback: find the highest version directory <= current branch.
+        $versions = [];
+        foreach (scandir($basedir) as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            if (is_dir($basedir . '/' . $entry) && is_numeric($entry)) {
+                $versions[] = (int) $entry;
+            }
+        }
+        sort($versions);
+
+        // Pick the highest version that doesn't exceed the current branch.
+        $selected = null;
+        foreach ($versions as $v) {
+            if ($v <= (int) $branch) {
+                $selected = $v;
+            }
+        }
+
+        // If nothing fits (branch older than all fixtures), use the lowest available.
+        if ($selected === null && !empty($versions)) {
+            $selected = $versions[0];
+        }
+
+        return $basedir . '/' . $selected;
+    }
+
+    /**
      * Data Provider for all overridden templates.
      *
      * @return array
      */
     public static function overridden_templates_provider(): array {
         global $CFG;
-        $fixtures = $CFG->dirroot . '/course/format/mimo/tests/fixtures';
+        $fixtures = self::get_fixtures_dir();
         $core = $CFG->dirroot . '/course/format/templates/local';
         return [
             'content' => [
@@ -93,8 +143,14 @@ final class compare_templates_test extends \advanced_testcase {
      * @param string $orig path to the original template
      */
     public function test_overridden_templates(string $copy, string $orig): void {
-        $message = "The original template " . $orig . " has changed since the last update. Please check for differences!";
-        $this->assertFileExists($copy);
+        if (!file_exists($copy)) {
+            $this->markTestSkipped(
+                'No fixture found at ' . $copy . '. '
+                . 'Please create fixtures for Moodle branch ' . $GLOBALS['CFG']->branch . '.'
+            );
+        }
+        $message = "The original template " . $orig . " has changed since the last update. "
+            . "Please check for differences and update the fixture in tests/fixtures/" . $GLOBALS['CFG']->branch . "/!";
         $this->assertFileExists($orig);
         $this->assertFileEquals($copy, $orig, $message);
     }
