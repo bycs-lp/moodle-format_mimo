@@ -20,6 +20,30 @@
     Displays a course section as a minimal wall showing all activities.
 
     This template extends the core section template.
+
+    Example wrapper (html):
+    <ul>{{{ content }}}</ul>
+
+    Example context (json):
+    {
+        "num": 3,
+        "id": 35,
+        "sectionname": "Section title",
+        "header": {
+            "name": "Section title",
+            "title": "Section title",
+            "headinglevel": 3
+        },
+        "cmlist": {
+            "cms": [],
+            "hascms": false
+        },
+        "ishidden": false,
+        "iscurrent": true,
+        "sectionreturnnum": 0,
+        "contentcollapsed": false,
+        "insertafter": false
+    }
 }}
 {{< core_courseformat/local/content/section }}
     {{! Override the cmlist block to display activities in a custom wall format. }}

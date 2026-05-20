@@ -19,19 +19,24 @@
 
     Multi-section overview landing page showing all sections as clickable cards.
 
-    Context variables required for this template:
-    * isoverview - bool - Always true for this template
-    * overviewsections - array - Section card data
-    * hassections - bool - Whether there are sections to display
-    * isediting - bool - Whether editing mode is active
-    * bgdesignclass - string - Background design CSS class
-    * styleclass - string - Style variant CSS class
-    * mimoaddsection - object - Add section data (editing mode)
-    * bulkedittools - object - Bulk edit tools data (editing mode)
-
-    Each overviewsection may contain:
-    * hassectionimage - bool - Whether a custom image exists for this section
-    * sectionimageurl - string - URL of the uploaded section image
+    Example context (json):
+    {
+        "isoverview": true,
+        "hassections": true,
+        "isediting": false,
+        "bgdesignclass": "",
+        "styleclass": "",
+        "title": "Course overview",
+        "section0id": 1,
+        "overviewsections": [
+            {
+                "id": 2,
+                "num": 1,
+                "name": "Section 1",
+                "hassectionimage": false
+            }
+        ]
+    }
 }}
 <div class="mimo-overview {{styleclass}}">
     <h2 class="accesshide">{{{title}}}</h2>

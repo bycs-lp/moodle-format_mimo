@@ -18,6 +18,16 @@
     @template format_mimo/local/content/cm/cmname
 
     Custom activity name display for mimo format with stretched link support.
+
+    Example context (json):
+    {
+        "url": "http://example.com/mod/forum/view.php?id=3",
+        "textclasses": "",
+        "modname": "forum",
+        "activityname": {
+            "displayvalue": "Forum example"
+        }
+    }
 }}
 {{#url}}
     {{! Name with inplace editing and stretched link }}

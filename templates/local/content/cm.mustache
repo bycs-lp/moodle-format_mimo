@@ -18,6 +18,16 @@
     @template format_mimo/local/content/cm
 
     Displays a course module with tag chooser button.
+
+    Example context (json):
+    {
+        "editing": false,
+        "hastags": true,
+        "modstealth": false,
+        "modhiddenfromstudents": false,
+        "modinline": false,
+        "activityname": "Forum example"
+    }
 }}
 {{#editing}}
     {{< core_courseformat/local/content/divider}}

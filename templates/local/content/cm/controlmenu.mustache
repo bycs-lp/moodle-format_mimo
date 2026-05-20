@@ -18,6 +18,16 @@
     @template format_mimo/local/content/cm/controlmenu
 
     Displays visibility dropdown directly without three-dots menu wrapper.
+
+    Example context (json):
+    {
+        "hasmenu": true,
+        "visibility": {
+            "isInteractive": true
+        },
+        "settingsurl": "http://example.com/settings",
+        "cmid": 3
+    }
 }}
 {{#hasmenu}}
 <div class="mimo-card-controls d-flex flex-column align-items-center gap-1" style="position: relative; z-index: 100;">

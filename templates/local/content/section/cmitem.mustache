@@ -20,6 +20,27 @@
     Displays a course module item (activity) in the minimal wall format.
 
     This template extends the core cmitem template.
+
+    Example wrapper (html):
+    <ul>{{{ content }}}</ul>
+
+    Example context (json):
+    {
+        "id": 3,
+        "module": "forum",
+        "extraclasses": "",
+        "cmformat": {
+            "cmid": 3,
+            "sectionid": 1,
+            "activityname": "Forum example",
+            "tagname": "Tag 1",
+            "tagimage": "",
+            "tagcolor": "#3366cc",
+            "completion": {
+                "hascompletion": false
+            }
+        }
+    }
 }}
 <li
     class="col-12 col-sm-6 col-md-4 col-lg-3 activity {{module}} modtype_{{module}} {{extraclasses}} {{#cmformat.modhiddenfromstudents}}dimmed{{/cmformat.modhiddenfromstudents}}{{#cmformat.modstealth}}dimmed{{/cmformat.modstealth}}{{#cmformat.isdone}} mimo-done{{/cmformat.isdone}}"
