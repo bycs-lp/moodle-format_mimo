@@ -746,64 +746,6 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026022600, 'format', 'mimo');
     }
 
-    // Step 11: Move all activities from section 1 to section 0 for mimo courses.
-    // The format now uses section 0 as the sole activity container (previously section 1).
-    if ($oldversion < 2026021102) {
-        // Find all courses using mimo format.
-        $courses = $DB->get_records('course', ['format' => 'mimo'], '', 'id');
-
-        foreach ($courses as $course) {
-            // Get section 0 and section 1 records for this course.
-            $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
-            $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
-
-            if (!$section0 || !$section1) {
-                // If either section doesn't exist, skip this course.
-                continue;
-            }
-
-            // Move all course modules from section 1 to section 0.
-            $modulesinsection1 = $DB->get_records('course_modules', ['course' => $course->id, 'section' => $section1->id]);
-            if (!empty($modulesinsection1)) {
-                // Update all modules to point to section 0.
-                $DB->execute(
-                    "UPDATE {course_modules} SET section = :section0id WHERE course = :courseid AND section = :section1id",
-                    ['section0id' => $section0->id, 'courseid' => $course->id, 'section1id' => $section1->id]
-                );
-
-                // Merge the sequence: append section 1's module sequence to section 0's.
-                $seq0 = trim($section0->sequence ?? '', ',');
-                $seq1 = trim($section1->sequence ?? '', ',');
-                $newsequence = '';
-                if ($seq0 !== '' && $seq1 !== '') {
-                    $newsequence = $seq0 . ',' . $seq1;
-                } else if ($seq0 !== '') {
-                    $newsequence = $seq0;
-                } else {
-                    $newsequence = $seq1;
-                }
-                $DB->set_field('course_sections', 'sequence', $newsequence, ['id' => $section0->id]);
-            }
-
-            // Clear section 1's sequence and delete it if it has no summary.
-            $section1 = $DB->get_record('course_sections', ['id' => $section1->id]);
-            if ($section1) {
-                $hassummary = !empty(trim($section1->summary ?? ''));
-                if (!$hassummary) {
-                    $DB->delete_records('course_sections', ['id' => $section1->id]);
-                } else {
-                    // Just clear the sequence if there's a summary we don't want to lose.
-                    $DB->set_field('course_sections', 'sequence', '', ['id' => $section1->id]);
-                }
-            }
-
-            // Rebuild the course cache for this course.
-            rebuild_course_cache($course->id, true);
-        }
-
-        upgrade_plugin_savepoint(true, 2026021102, 'format', 'mimo');
-    }
-
     // Step: Remove selectedtags course format option.
     // Tags are now determined automatically by the course's activity profile.
     if ($oldversion < 2026022601) {
@@ -914,71 +856,6 @@ function xmldb_format_mimo_upgrade($oldversion) {
         );
 
         upgrade_plugin_savepoint(true, 2026030502, 'format', 'mimo');
-    }
-
-    // Move all activities from section 0 to section 1 for mimo courses.
-    // Section 0 is now hidden; section 1 is the default wall in both single-section
-    // and multi-section modes. This reverses the earlier 2026021102 migration.
-    if ($oldversion < 2026031400) {
-        // Find all courses using mimo format.
-        $courses = $DB->get_records('course', ['format' => 'mimo'], '', 'id');
-
-        foreach ($courses as $course) {
-            // Ensure section 1 exists using direct DB insert (course_create_sections_if_missing
-            // calls get_fast_modinfo which is not available during upgrade).
-            if (!$DB->record_exists('course_sections', ['course' => $course->id, 'section' => 1])) {
-                $sectionrecord = new \stdClass();
-                $sectionrecord->course = $course->id;
-                $sectionrecord->section = 1;
-                $sectionrecord->summary = '';
-                $sectionrecord->summaryformat = FORMAT_HTML;
-                $sectionrecord->sequence = '';
-                $sectionrecord->timemodified = time();
-                $DB->insert_record('course_sections', $sectionrecord);
-            }
-
-            // Get section 0 and section 1 records for this course.
-            $section0 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 0]);
-            $section1 = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
-
-            if (!$section0 || !$section1) {
-                continue;
-            }
-
-            // Move all course modules from section 0 to section 1.
-            $modulesinsection0 = $DB->get_records('course_modules', ['course' => $course->id, 'section' => $section0->id]);
-            if (!empty($modulesinsection0)) {
-                // Update all modules to point to section 1.
-                $DB->execute(
-                    "UPDATE {course_modules} SET section = :section1id WHERE course = :courseid AND section = :section0id",
-                    ['section1id' => $section1->id, 'courseid' => $course->id, 'section0id' => $section0->id]
-                );
-
-                // Merge the sequences: prepend section 0's modules to section 1's (preserve order).
-                $seq0 = trim($section0->sequence ?? '', ',');
-                $seq1 = trim($section1->sequence ?? '', ',');
-                if ($seq0 !== '' && $seq1 !== '') {
-                    $newsequence = $seq0 . ',' . $seq1;
-                } else if ($seq0 !== '') {
-                    $newsequence = $seq0;
-                } else {
-                    $newsequence = $seq1;
-                }
-                $DB->set_field('course_sections', 'sequence', $newsequence, ['id' => $section1->id]);
-
-                // Clear section 0's sequence.
-                $DB->set_field('course_sections', 'sequence', '', ['id' => $section0->id]);
-            }
-        }
-
-        // Clear stale user preferences that remember section 0.
-        $DB->delete_records_select(
-            'user_preferences',
-            $DB->sql_like('name', ':namepattern') . ' AND value = :sectionzero',
-            ['namepattern' => 'format_mimo_lastsection_%', 'sectionzero' => '0']
-        );
-
-        upgrade_plugin_savepoint(true, 2026031400, 'format', 'mimo');
     }
 
     // Add scope columns to profiles and tags, and create course_tags binding table.

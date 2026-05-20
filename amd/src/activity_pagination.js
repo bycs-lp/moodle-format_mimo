@@ -148,8 +148,6 @@ export const init = () => {
         return Array.from(container.querySelectorAll('.col-12:not([hidden])'));
     };
 
-
-
     /**
      * Show all activities and disable pagination (for bulk mode).
      *

@@ -411,7 +411,7 @@ final class completion_defaults_test extends \advanced_testcase {
      * @param array $input
      * @param string $suffix
      * @param array|null $expected Subset of fields that must match exactly.
-     * @param array|null $expectedCustom Optional expected decoded custom rules.
+     * @param array|null $expectedcustom Optional expected decoded custom rules.
      */
     public function test_pack_form_data(
         array $input,

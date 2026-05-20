@@ -1,10 +1,12 @@
 {
     "name": "moodle-format_mimo",
     "scripts": {
-      "compile-sass": "sass --no-source-map styles.scss styles.css"
+      "compile-sass": "sass --no-source-map styles.scss styles.css && npx stylelint --fix styles.css"
     },
     "devDependencies": {
-      "sass": "^1.77.2"
+      "sass": "^1.77.2",
+      "stylelint": "^14.16.1",
+      "stylelint-config-standard": "^29.0.0"
     }
   }
   

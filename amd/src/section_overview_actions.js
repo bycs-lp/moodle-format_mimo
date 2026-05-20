@@ -50,7 +50,7 @@ const persistSectionMove = (sectionId, targetSectionId) => {
         },
     }])[0].catch((error) => {
         Notification.exception(error);
-        // window.location.reload();
+        // Window.location.reload();
     });
 };
 
@@ -128,7 +128,7 @@ const setupDeleteActions = (container) => {
                 }
             } catch (error) {
                 Notification.exception(error);
-                // window.location.reload();
+                // Window.location.reload();
             }
         });
 
