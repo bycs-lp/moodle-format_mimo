@@ -34,10 +34,20 @@ import Pending from 'core/pending';
 
 // Note: Activity chooser modules are dynamically imported to support older Moodle versions
 
+// Guard against double initialization. On Moodle 5.0, init() is called from both
+// renderer.php and content.php — without this guard, duplicate click listeners would
+// create multiple modals on a single tag click.
+let initialized = false;
+
 /**
  * Initialize the tag chooser button handlers.
  */
 export const init = () => {
+    if (initialized) {
+        return;
+    }
+    initialized = true;
+
     // Listen for clicks on tag links in the dropdown
     document.addEventListener('click', async(e) => {
         const tagLink = e.target.closest('.format-mimo-tag-link');

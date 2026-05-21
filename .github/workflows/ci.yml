@@ -64,6 +64,9 @@ jobs:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
 
+      - name: Configure Behat timeout
+        run: sed -i '/\/\/ Extra config\./i \$CFG->behat_increasetimeout = 2;' moodle/config.php
+
       - name: PHP Lint
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phplint

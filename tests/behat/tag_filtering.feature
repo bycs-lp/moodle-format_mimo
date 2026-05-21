@@ -78,7 +78,6 @@ Feature: Tag filtering in mimo format
     Given I log in as "student1"
     And I am on "Test Course 1" course homepage
     When I click on "[data-testid='filter-button'][data-tag-name='Discuss']" "css_element"
-    And I wait "1" seconds
     Then "button.mimo-filterbar-button.is-active" "css_element" should exist
     And I should see "Forum 1"
 

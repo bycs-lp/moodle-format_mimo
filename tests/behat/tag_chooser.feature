@@ -52,9 +52,7 @@ Feature: Tag-based activity chooser in mimo format
     And I wait until the page is ready
     And I wait until ".mimo-filterbar" "css_element" exists
     And I wait until "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Reading') and not(@disabled)]" "xpath_element" exists
-    And I wait "1" seconds
     When I click on "[data-testid='filter-button'][data-tag-name='Reading']" "css_element"
-    And I wait "2" seconds
     Then ".mimo-card" "css_element" should be visible
     And I should see "Reading Material 1" in the ".mimo-activities" "css_element"
 
@@ -88,9 +86,7 @@ Feature: Tag-based activity chooser in mimo format
     And I wait until the page is ready
     And I wait until ".mimo-filterbar" "css_element" exists
     And I wait until "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
-    And I wait "1" seconds
     When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
-    And I wait "2" seconds
     Then I should see "Practice Assignment 1" in the ".mimo-activities" "css_element"
     And I turn editing mode off
     And I wait until "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
@@ -107,7 +103,6 @@ Feature: Tag-based activity chooser in mimo format
     And I am on "Test Course 1" course homepage with editing mode off
     And I wait until ".mimo-filterbar" "css_element" exists
     And I wait until ".mimo-activities .mimo-card" "css_element" exists
-    And I wait "2" seconds
     When I click on "[data-testid='filter-button'][data-tag-name='Practice']" "css_element"
     Then I should see "Assignment 1"
     And I should see "Quiz 1"

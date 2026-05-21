@@ -47,9 +47,7 @@ Feature: Bulk duplicate activity visibility in mimo format
     And I wait until ".mimo-activities .mimo-card" "css_element" exists
     And I click on "Bulk actions" "button"
     And I should see "0 selected" in the "sticky-footer" "region"
-    And I wait "1" seconds
     When I click on "Select activity Page 17" "checkbox"
     And I should see "1 selected" in the "sticky-footer" "region"
     And I click on "Duplicate activities" "button" in the "sticky-footer" "region"
-    And I wait "3" seconds
     Then I should see "Page 17 (copy)"
