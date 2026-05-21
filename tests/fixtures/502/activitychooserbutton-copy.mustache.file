@@ -15,7 +15,7 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_course/activitychooserbutton
+    @template core_courseformat/local/content/activitychooserbutton
 
     Displays a add activity or resource button.
 
@@ -26,13 +26,14 @@
         "sectionname": "Section example",
         "modid": 1,
         "activityname": "Activity example",
-        "sectionreturn": 0
+        "sectionreturnnum": 0,
+        "sectionreturnid": 0
     }
 }}
 
 {{! Single button to add a new activity or resource. }}
 {{^hasactionlinks}}
-    {{> core_course/addresourceoractivitybutton }}
+    {{> core_courseformat/local/content/addresourceoractivitybutton }}
 {{/hasactionlinks}}
 
 {{! Dropdown with "add a new activity or resource" item and any other action links. }}
@@ -58,7 +59,7 @@
         {{#pix}} t/add, core {{/pix}}
     </button>
     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}">
-        {{> core_course/addresourceoractivitybutton }}
+        {{> core_courseformat/local/content/addresourceoractivitybutton }}
         {{#actionlinks}}
             {{> core/action_link}}
         {{/actionlinks}}
