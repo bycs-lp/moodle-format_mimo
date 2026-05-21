@@ -24,6 +24,7 @@
 import {BaseComponent} from 'core/reactive';
 import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 import {get_string as getString} from 'core/str';
+import Pending from 'core/pending';
 
 // Animation and timing constants.
 /** Duration in milliseconds for slide and height transition animations. */
@@ -412,6 +413,7 @@ export const init = () => {
             return;
         }
         isAnimating = true;
+        const pending = new Pending('format_mimo/activity_pagination:showPage');
 
         const itemsPerPage = getItemsPerPage();
         const startIndex = currentPage * itemsPerPage;
@@ -440,6 +442,7 @@ export const init = () => {
             container.style.overflow = '';
             isAnimating = false;
             updateNavigationButtons();
+            pending.resolve();
         };
 
         const startHeightTransition = () => {

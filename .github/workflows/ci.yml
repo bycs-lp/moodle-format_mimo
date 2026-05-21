@@ -92,11 +92,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci phpunit --fail-on-warning
 
-      # Behat tests are currently disabled as they are very unstable in CI.
-      # - name: Behat features
-      #   id: behat
-      #   if: ${{ !cancelled() }}
-      #   run: moodle-plugin-ci behat --profile chrome
+      - name: Behat features
+        id: behat
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci behat --profile chrome
 
       - name: Upload Behat Faildump
         if: ${{ failure() && steps.behat.outcome == 'failure' }}

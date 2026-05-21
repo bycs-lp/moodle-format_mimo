@@ -31,6 +31,7 @@ import CourseActions from 'core_courseformat/local/content/actions';
 import Fragment from 'core/fragment';
 import Templates from 'core/templates';
 import Config from 'core/config';
+import Pending from 'core/pending';
 import ModalSaveCancel from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
 import {getString} from 'core/str';
@@ -52,6 +53,7 @@ const reloadCmItem = async(cmId) => {
     if (!cmitem) {
         return;
     }
+    const pending = new Pending('format_mimo/mutations:reloadCmItem:' + cmId);
     const promise = Fragment.loadFragment(
         'core_courseformat',
         'cmitem',
@@ -63,6 +65,7 @@ const reloadCmItem = async(cmId) => {
     );
     promise.then((html, js) => {
         if (!document.contains(cmitem)) {
+            pending.resolve();
             return false;
         }
         Templates.replaceNode(cmitem, html, js);
@@ -83,9 +86,10 @@ const reloadCmItem = async(cmId) => {
                 newEl.dataset.preventDefault = '1';
             }
         }
+        pending.resolve();
         return true;
     }).catch(() => {
-        // Silently ignore errors.
+        pending.resolve();
     });
 };
 

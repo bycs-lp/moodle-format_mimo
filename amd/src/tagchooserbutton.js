@@ -30,6 +30,7 @@ import Ajax from 'core/ajax';
 import {get_string as getString} from 'core/str';
 import Templates from 'core/templates';
 import Modal from 'core/modal';
+import Pending from 'core/pending';
 
 // Note: Activity chooser modules are dynamically imported to support older Moodle versions
 
@@ -45,6 +46,7 @@ export const init = () => {
         }
 
         e.preventDefault();
+        const pending = new Pending('format_mimo/tagchooserbutton:showModal');
 
         const tagId = tagLink.dataset.tagId;
         const tagName = tagLink.dataset.tagName;
@@ -70,6 +72,7 @@ export const init = () => {
             sectionReturnNum,
             sectionReturnId
         );
+        pending.resolve();
     });
 };
 
