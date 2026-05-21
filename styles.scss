@@ -1234,10 +1234,8 @@ body.format-mimo-theme-colorful {
 
     // Bulk select checkbox container.
     .bulkselect {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 4px;
+        background: transparent;
         padding: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
         input[type="checkbox"] {
             width: 20px;
