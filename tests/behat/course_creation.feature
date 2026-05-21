@@ -5,7 +5,8 @@ Feature: Course creation with mimo format
   I need to create courses and configure them
 
   Background:
-    Given the following "users" exist:
+    Given I change window size to "large"
+    And the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
     And the following "format_mimo > profiles" exist:
@@ -28,6 +29,8 @@ Feature: Course creation with mimo format
       | Course full name    | Test Course 1        |
       | Course short name   | TC1                  |
       | Format              | mimo wall  |
+    And I expand all fieldsets
+    And I set the following fields to these values:
       | Show tag filter bar | 1                    |
       | Activity Profile    | Classic              |
     And I press "Save and display"

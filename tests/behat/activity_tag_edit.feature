@@ -5,7 +5,8 @@ Feature: Change activity tag via module edit form
   So that I can recategorize activities on the course wall
 
   Background:
-    Given the following "users" exist:
+    Given I change window size to "large"
+    And the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | One      | teacher1@example.com |
     And the following "format_mimo > tags" exist:
@@ -29,8 +30,7 @@ Feature: Change activity tag via module edit form
     And I am on "Test Course" course homepage with editing mode on
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Page" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     Then the field "Select a tag" matches value "Reading"
 
   Scenario: Teacher changes tag on an existing activity
@@ -38,15 +38,13 @@ Feature: Change activity tag via module edit form
     And I am on "Test Course" course homepage with editing mode on
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Page" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     And I set the field "Select a tag" to "Practice"
     And I press "Save and return to course"
     # Re-open settings and verify the tag was persisted.
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Page" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     Then the field "Select a tag" matches value "Practice"
 
   Scenario: Teacher removes tag from an activity
@@ -54,15 +52,13 @@ Feature: Change activity tag via module edit form
     And I am on "Test Course" course homepage with editing mode on
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Assign" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     And I set the field "Select a tag" to "No tag"
     And I press "Save and return to course"
     # Re-open settings and verify no tag is selected.
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Assign" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     Then the field "Select a tag" matches value "No tag"
 
   Scenario: Tag selector only shows tags selected for the course
@@ -70,8 +66,7 @@ Feature: Change activity tag via module edit form
     And I am on "Test Course" course homepage with editing mode on
     And I wait until ".mimo-card" "css_element" exists
     When I click on ".mimo-icon-btn .fa-cog" "css_element" in the "Test Page" "activity"
-    And I expand all fieldsets
-    And I click on "Activity tag" "link"
+    And I click on "#id_mimo_tagsection .ftoggler a" "css_element"
     Then the "Select a tag" select box should contain "Reading"
     And the "Select a tag" select box should contain "Practice"
     And the "Select a tag" select box should contain "Writing"
