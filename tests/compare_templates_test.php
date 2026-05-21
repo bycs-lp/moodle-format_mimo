@@ -49,24 +49,32 @@ namespace format_mimo;
  */
 final class compare_templates_test extends \advanced_testcase {
     /**
-     * Resolves the fixture directory for the current Moodle branch.
+     * Returns the fixture directory for the current Moodle branch.
      *
-     * Uses exact branch match first (e.g. "501"), then falls back to the
-     * highest available version directory that is <= the current branch.
+     * Always returns the exact branch path. If no matching directory exists,
+     * the test will fail to signal that fixtures must be created.
      *
-     * @return string absolute path to the fixture directory
+     * @return string absolute path to the expected fixture directory
      */
     private static function get_fixtures_dir(): string {
         global $CFG;
+        return $CFG->dirroot . '/course/format/mimo/tests/fixtures/' . $CFG->branch;
+    }
+
+    /**
+     * Returns the fallback fixture file from the highest previous branch.
+     *
+     * Used to compare whether a template has changed when no fixture
+     * directory exists for the current branch.
+     *
+     * @param string $filename the fixture filename (e.g. "content-copy.mustache.file")
+     * @return string|null path to the fallback fixture, or null if none found
+     */
+    private static function get_fallback_fixture(string $filename): ?string {
+        global $CFG;
         $basedir = $CFG->dirroot . '/course/format/mimo/tests/fixtures';
-        $branch = $CFG->branch;
+        $branch = (int) $CFG->branch;
 
-        // Exact match for current branch.
-        if (is_dir($basedir . '/' . $branch)) {
-            return $basedir . '/' . $branch;
-        }
-
-        // Fallback: find the highest version directory <= current branch.
         $versions = [];
         foreach (scandir($basedir) as $entry) {
             if ($entry === '.' || $entry === '..') {
@@ -78,20 +86,20 @@ final class compare_templates_test extends \advanced_testcase {
         }
         sort($versions);
 
-        // Pick the highest version that doesn't exceed the current branch.
+        // Pick the highest version that is strictly less than the current branch.
         $selected = null;
         foreach ($versions as $v) {
-            if ($v <= (int) $branch) {
+            if ($v < $branch) {
                 $selected = $v;
             }
         }
 
-        // If nothing fits (branch older than all fixtures), use the lowest available.
-        if ($selected === null && !empty($versions)) {
-            $selected = $versions[0];
+        if ($selected === null) {
+            return null;
         }
 
-        return $basedir . '/' . $selected;
+        $path = $basedir . '/' . $selected . '/' . $filename;
+        return file_exists($path) ? $path : null;
     }
 
     /**
@@ -143,14 +151,28 @@ final class compare_templates_test extends \advanced_testcase {
      * @param string $orig path to the original template
      */
     public function test_overridden_templates(string $copy, string $orig): void {
+        global $CFG;
         if (!file_exists($copy)) {
-            $this->markTestSkipped(
+            // No fixtures for this branch — compare against previous branch to report changes.
+            $filename = basename($copy);
+            $fallback = self::get_fallback_fixture($filename);
+            $changed = '';
+            if ($fallback && file_exists($orig)) {
+                if (file_get_contents($fallback) !== file_get_contents($orig)) {
+                    $changed = ' NOTE: This template HAS CHANGED compared to the previous branch fixture.';
+                } else {
+                    $changed = ' This template has not changed compared to the previous branch fixture.';
+                }
+            }
+            $this->fail(
                 'No fixture found at ' . $copy . '. '
-                . 'Please create fixtures for Moodle branch ' . $GLOBALS['CFG']->branch . '.'
+                . 'Please create fixtures for Moodle branch ' . $CFG->branch . ': '
+                . 'copy core templates from MOODLE_' . $CFG->branch . '_STABLE into '
+                . 'tests/fixtures/' . $CFG->branch . '/.' . $changed
             );
         }
         $message = "The original template " . $orig . " has changed since the last update. "
-            . "Please check for differences and update the fixture in tests/fixtures/" . $GLOBALS['CFG']->branch . "/!";
+            . "Please check for differences and update the fixture in tests/fixtures/" . $CFG->branch . "/!";
         $this->assertFileExists($orig);
         $this->assertFileEquals($copy, $orig, $message);
     }
