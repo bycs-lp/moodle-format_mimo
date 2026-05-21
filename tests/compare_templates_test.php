@@ -111,7 +111,7 @@ final class compare_templates_test extends \advanced_testcase {
         global $CFG;
         $fixtures = self::get_fixtures_dir();
         $core = $CFG->dirroot . '/course/format/templates/local';
-        return [
+        $datasets = [
             'content' => [
                 'copy' => $fixtures . '/content-copy.mustache.file',
                 'orig' => $core . '/content.mustache',
@@ -136,11 +136,17 @@ final class compare_templates_test extends \advanced_testcase {
                 'copy' => $fixtures . '/cmitem-copy.mustache.file',
                 'orig' => $core . '/content/section/cmitem.mustache',
             ],
-            'activitychooserbutton' => [
+        ];
+
+        // The activitychooserbutton template was moved to core_courseformat in Moodle 5.1 (MDL-86337).
+        if ($CFG->branch >= 501) {
+            $datasets['activitychooserbutton'] = [
                 'copy' => $fixtures . '/activitychooserbutton-copy.mustache.file',
                 'orig' => $core . '/content/activitychooserbutton.mustache',
-            ],
-        ];
+            ];
+        }
+
+        return $datasets;
     }
 
     /**
