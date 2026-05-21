@@ -1,10 +1,9 @@
 {
     "name": "moodle-format_mimo",
     "scripts": {
-      "compile-sass": "sass --no-source-map styles.scss styles.css"
+        "compile-sass": "sass --no-source-map styles.scss styles.css"
     },
     "devDependencies": {
-      "sass": "^1.77.2"
+        "sass": "^1.77.2"
     }
-  }
-  
+}
