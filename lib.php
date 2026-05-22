@@ -292,8 +292,6 @@ class format_mimo extends core_courseformat\base {
      * @return array array of references to the added form elements
      */
     public function create_edit_form_elements(&$mform, $forsection = false) {
-        global $PAGE;
-
         // Let parent handle all standard elements first.
         $elements = parent::create_edit_form_elements($mform, $forsection);
 
@@ -302,70 +300,8 @@ class format_mimo extends core_courseformat\base {
             return $elements;
         }
 
-        // Get all tags (flat list).
-        $alltags = \format_mimo\tag_manager::get_all_tags();
-        if (empty($alltags)) {
-            return $elements;
-        }
-
-        // Get current course data.
-        $course = $this->get_course();
-
-        // Prepare renderer for mustache templates.
-        $output = $PAGE->get_renderer('format_mimo');
-
-        // Get current activity profile for displaying correct images.
-        $currentprofile = $course->activityprofile ?? 'explore';
-
-        // Get all profiles for passing image URLs to template data attributes.
-        $profiles = \format_mimo\profile_manager::get_all_profiles();
-
-        // Build tag preview items with profile data attributes.
-        $tagpreviews = [];
-        foreach ($alltags as $tag) {
-            // Get the image URL for the current profile.
-            $imageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $currentprofile);
-
-            // Collect per-profile image URLs, name overrides, and enabled flags.
-            $profileimages = [];
-            $profilenames = [];
-            $profileenabled = [];
-            foreach ($profiles as $profile) {
-                $profileimageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $profile->name);
-                $profileimages[$profile->name] = $profileimageurl ? $profileimageurl->out(false) : null;
-
-                $pt = \format_mimo\profile_manager::get_profile_tag_for_profile($tag->id, $profile->id);
-                $profilenames[$profile->name] = ($pt && $pt->name !== null) ? $pt->name : $tag->name;
-                $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
-            }
-
-            $tagpreviews[] = [
-                'name' => $tag->name,
-                'imageurl' => $imageurl ? $imageurl->out(false) : null,
-                'tagid' => $tag->id,
-                'profileimages' => json_encode($profileimages),
-                'profilenames' => json_encode($profilenames),
-                'profileenabled' => json_encode($profileenabled),
-            ];
-        }
-
-        // Render the complete tag preview section.
-        $previewhtml = $output->render_from_template('format_mimo/form_tag_preview', [
-            'tags' => $tagpreviews,
-            'label' => get_string('tag_preview_label', 'format_mimo'),
-        ]);
-
-        $elements[] = $mform->addElement(
-            'static',
-            'tag_preview',
-            '',
-            $previewhtml
-        );
-
-        // Initialize JS module for profile-reactive preview.
-        $PAGE->requires->js_call_amd('format_mimo/profile_image_switcher', 'init');
-
-        return $elements;
+        $previewelements = \format_mimo\form\tag_preview_helper::add_form_elements($mform, $this);
+        return array_merge($elements, $previewelements);
     }
 
 
@@ -422,195 +358,33 @@ class format_mimo extends core_courseformat\base {
     public function page_set_course(moodle_page $page) {
         parent::page_set_course($page);
 
-        // Apply distraction-free mode if enabled for this course.
-        // This must run before the has_set_url() guard because activity pages
-        // (mod/*/view.php) often call require_course_login() before set_url(),
-        // triggering page_set_course() before the URL is available.
-        $distractionfree = $this->get_course()->distractionfree ?? false;
-        if ($distractionfree) {
-            // Check if user has overridden the default via user preference.
-            $dfactive = get_user_preferences('format_mimo_df_active', 'true') === 'true';
+        $pagesetup = new \format_mimo\page_setup($this);
 
-            if ($dfactive) {
-                // Add body class for distraction-free mode.
-                // CSS is injected via hook callback in classes/hook_callbacks.php.
-                $page->add_body_class('format-mimo-distraction-free');
-            }
+        // These must run before the has_set_url() guard because activity pages
+        // (mod/*/view.php) often call require_course_login() before set_url().
+        $pagesetup->apply_distraction_free($page);
+        $pagesetup->apply_compact_nav($page);
 
-            // Add toggle button as leftmost header action (before compact nav and home button).
-            $dflabel = get_string('aria_toggle_distractionfree', 'format_mimo');
-            $page->add_header_action(
-                '<button class="mimo-df-btn" type="button"' .
-                ' data-action="toggle-distraction-free"' .
-                ' title="' . s($dflabel) . '">' .
-                '<i class="fa fa-up-right-and-down-left-from-center mimo-df-btn__icon--expand" aria-hidden="true"></i>' .
-                '<i class="fa fa-down-left-and-up-right-to-center mimo-df-btn__icon--collapse" aria-hidden="true"></i>' .
-                '<span class="sr-only">' . s($dflabel) . '</span>' .
-                '</button>'
-            );
-
-            // Initialize JavaScript module for toggle functionality.
-            $page->requires->js_call_amd('format_mimo/distraction_free', 'init');
-        }
-
-        // For non-editing users (students), replace the secondary navigation bar
-        // with a compact three-dot dropdown in the header actions area.
-        // Placed before the home button so it appears to its left.
-        // Also runs before the has_set_url() guard for the same reason as above.
-        $coursecontext = \core\context\course::instance($this->courseid);
-        if (!has_capability('moodle/course:update', $coursecontext)) {
-            $page->add_body_class('format-mimo-compact-secondarynav');
-            $menulabel = get_string('compactnav_menu', 'format_mimo');
-            $dropdownid = 'mimo-compact-nav-' . $this->courseid;
-            $page->add_header_action(
-                '<div class="dropdown mimo-compact-nav">' .
-                '<button class="mimo-compact-nav-btn" type="button"' .
-                ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
-                ' aria-expanded="false" title="' . s($menulabel) . '">' .
-                '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="20" height="20">' .
-                '<circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>' .
-                '</svg>' .
-                '<span class="sr-only">' . s($menulabel) . '</span>' .
-                '</button>' .
-                '<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="' . $dropdownid . '"' .
-                ' data-region="mimo-secondarynav-dropdown"></ul>' .
-                '</div>'
-            );
-            $page->requires->js_call_amd('format_mimo/compact_nav', 'init');
-        }
-
-        // During course creation (e.g. from blocks_add_default_course_blocks),
-        // $PAGE->set_url() has not been called yet. Skip all URL-dependent logic.
+        // During course creation, $PAGE->set_url() has not been called yet.
         if (!$page->has_set_url()) {
             return;
         }
 
-        // Redirect course/section.php visits to course/view.php in multi-section mode
-        // to preserve secondary navigation and keep users on the same page.
-        if ($this->is_multisection_enabled()) {
-            $pageurl = $page->url->get_path();
-            if (strpos($pageurl, '/course/section.php') !== false) {
-                $course = $this->get_course();
-                $sectionnum = $this->get_sectionnum();
-                $params = ['id' => $course->id];
-                if ($sectionnum !== null) {
-                    $params['section'] = $sectionnum;
-                }
-                redirect(new moodle_url('/course/view.php', $params));
-            }
-        }
-
-        // In multi-section mode (learner view), add a body class so CSS can hide
-        // the page-level section heading on course/section.php pages.
-        if ($this->is_multisection_enabled() && !$page->user_is_editing()) {
-            $page->add_body_class('format-mimo-multisection-view');
-        }
-
-        // In multi-section mode, add a "back to overview" button to the page header
-        // when viewing a specific section wall (not the overview page).
-        if ($this->is_multisection_enabled()) {
-            $sectionparam = optional_param('section', null, PARAM_INT);
-            if ($sectionparam !== null) {
-                $course = $this->get_course();
-                $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
-                $this->add_home_button($page, $overviewurl);
-            }
-        }
-
-        // Redirect logic that must happen BEFORE output starts.
-        // (format.php is included after $OUTPUT->header(), so redirect() would fail there.)
-        $pageurl = $page->url->get_path();
-        if (strpos($pageurl, '/course/view.php') !== false) {
-            $course = $this->get_course();
-            if ($this->is_multisection_enabled()) {
-                $sectionparam = optional_param('section', null, PARAM_INT);
-                $overviewparam = optional_param('overview', 0, PARAM_INT);
-                if ($sectionparam === null && !$overviewparam) {
-                    // No section requested and not explicitly showing overview — redirect to last-visited wall.
-                    $rememberedsection = $this->get_remembered_section();
-                    if ($rememberedsection !== null) {
-                        redirect(new \moodle_url('/course/view.php', [
-                            'id' => $course->id,
-                            'section' => $rememberedsection,
-                        ]));
-                    }
-                }
-            } else {
-                // Single-section mode: redirect any section URL that is not section 1 to plain course view.
-                // Section 0 is hidden; only section 1 is the wall.
-                $sectionparam = optional_param('section', null, PARAM_INT);
-                if ($sectionparam !== null && $sectionparam != 1) {
-                    redirect(new \moodle_url('/course/view.php', ['id' => $course->id]));
-                }
-            }
-        }
+        $pagesetup->handle_redirects($page);
+        $pagesetup->apply_multisection_classes($page);
+        $pagesetup->apply_multisection_overview_button($page);
     }
 
     /**
      * Allows course format to execute code on moodle_page::set_cm().
      *
-     * Adds a "back to home" button to the page header when viewing an activity page.
-     * In multi-section mode, links to the overview. In single-section mode, links to the wall.
+     * Adds navigation buttons to the page header when viewing an activity page.
      *
      * @param moodle_page $page instance of page calling set_cm
      */
     public function page_set_cm(moodle_page $page) {
-        $cm = $page->cm;
-        if (!$cm || $cm->sectionnum < 1) {
-            return;
-        }
-        $course = $this->get_course();
-        if ($this->is_multisection_enabled()) {
-            // Back arrow → returns to the section wall this activity belongs to.
-            $wallurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'section' => $cm->sectionnum]);
-            $this->add_back_button($page, $wallurl);
-            // Home button → returns to the overview.
-            $overviewurl = new \moodle_url('/course/view.php', ['id' => $course->id, 'overview' => 1]);
-            $this->add_home_button($page, $overviewurl);
-        } else {
-            $backurl = new \moodle_url('/course/view.php', ['id' => $course->id]);
-            $this->add_home_button($page, $backurl);
-        }
-    }
-
-    /**
-     * Add a "back to wall" arrow button to the page header.
-     *
-     * @param moodle_page $page The page object
-     * @param \moodle_url $url The URL the button should link to
-     */
-    private function add_back_button(moodle_page $page, \moodle_url $url): void {
-        $btnlabel = get_string('backtowall', 'format_mimo');
-        $page->add_header_action(
-            \html_writer::link(
-                $url,
-                '<svg class="mimo-back-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
-                ' aria-hidden="true" width="24" height="24">' .
-                '<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>' .
-                \html_writer::span($btnlabel, 'sr-only'),
-                ['class' => 'mimo-back-btn', 'title' => $btnlabel]
-            )
-        );
-    }
-
-    /**
-     * Add the "back to home" button to the page header.
-     *
-     * @param moodle_page $page The page object
-     * @param \moodle_url $url The URL the button should link to
-     */
-    private function add_home_button(moodle_page $page, \moodle_url $url): void {
-        $btnlabel = get_string('backtooverview', 'format_mimo');
-        $page->add_header_action(
-            \html_writer::link(
-                $url,
-                '<svg class="mimo-overview-btn__icon" viewBox="0 0 24 24" fill="currentColor"' .
-                ' aria-hidden="true" width="22" height="22">' .
-                '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>' .
-                \html_writer::span($btnlabel, 'sr-only'),
-                ['class' => 'mimo-overview-btn', 'title' => $btnlabel]
-            )
-        );
+        $pagesetup = new \format_mimo\page_setup($this);
+        $pagesetup->apply_activity_navigation($page);
     }
 
     /**
