@@ -583,10 +583,8 @@ class format_mimo extends core_courseformat\base {
 /**
  * Serve files from the mimo course format.
  *
- * Supports the tag card/filter image file areas stored in the system context.
- *
- * @param stdClass $course Course object (unused for system-context files)
- * @param stdClass $cm Course module (unused)
+ * @param stdClass $course Course object
+ * @param stdClass $cm Course module
  * @param context $context Context the file belongs to
  * @param string $filearea File area name
  * @param array $args Remaining file path arguments
@@ -594,217 +592,45 @@ class format_mimo extends core_courseformat\base {
  * @param array $options Additional options passed to send_stored_file
  * @return void|false
  */
-function format_mimo_pluginfile(
-    $course,
-    $cm,
-    $context,
-    $filearea,
-    $args,
-    $forcedownload,
-    array $options = []
-) {
-    require_login();
-
-    // Section images use course context; tag/profile images use system context.
-    if ($filearea === \format_mimo\section_image_manager::FILEAREA) {
-        if ($context->contextlevel !== CONTEXT_COURSE) {
-            return false;
-        }
-        require_login($course, true);
-    } else if ($context->contextlevel !== CONTEXT_SYSTEM) {
-        return false;
-    }
-
-    $allowedareas = [
-        \format_mimo\tag_manager::FILEAREA_CARDIMAGE,
-        \format_mimo\tag_manager::FILEAREA_FILTERIMAGE,
-        \format_mimo\profile_manager::FILEAREA_PROFILE_CARDIMAGE,
-        \format_mimo\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
-        \format_mimo\section_image_manager::FILEAREA,
-    ];
-    if (!in_array($filearea, $allowedareas, true)) {
-        return false;
-    }
-
-    if (count($args) < 2) {
-        return false;
-    }
-
-    $itemid = (int)array_shift($args);
-    $filename = array_pop($args);
-    $filepath = '/';
-    if (!empty($args)) {
-        $filepath .= implode('/', $args) . '/';
-    }
-
-    $fs = get_file_storage();
-    $file = $fs->get_file($context->id, 'format_mimo', $filearea, $itemid, $filepath, $filename);
-    if (!$file) {
-        return false;
-    }
-
-    send_stored_file($file, 0, 0, $forcedownload, $options);
+function format_mimo_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    return \format_mimo\callbacks::pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options);
 }
 
 /**
  * Adds a tag selector to the module edit form for courses using the mimo format.
- *
- * This callback is invoked by Moodle core for every module form. It adds a dropdown
- * that lets teachers assign or change the tag on an activity.
  *
  * @param \moodleform_mod $formwrapper The module form wrapper
  * @param \MoodleQuickForm $mform The form object
  * @return void
  */
 function format_mimo_coursemodule_standard_elements($formwrapper, $mform): void {
-    global $SESSION;
-
-    $course = $formwrapper->get_course();
-    if ($course->format !== 'mimo') {
-        return;
-    }
-
-    $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
-    if (empty($tags)) {
-        return;
-    }
-
-    // Build options: 0 = no tag, then each available tag.
-    $options = [0 => get_string('notag', 'format_mimo')];
-    foreach ($tags as $tag) {
-        $options[$tag->id] = $tag->name;
-    }
-
-    $mform->addElement('header', 'mimo_tagsection', get_string('activitytag', 'format_mimo'));
-    $mform->addElement('select', 'mimo_cmtag', get_string('selecttag', 'format_mimo'), $options);
-    $mform->addHelpButton('mimo_cmtag', 'selecttaghelp', 'format_mimo');
-
-    // Determine default value.
-    $defaulttagid = 0;
-    $cm = $formwrapper->get_coursemodule();
-    if ($cm) {
-        // Editing existing module — load current tag assignment.
-        $currenttag = \format_mimo\tag_manager::get_cm_tag($cm->id);
-        if ($currenttag) {
-            $defaulttagid = $currenttag->id;
-        }
-    } else if (!empty($SESSION->format_mimo_pending_tag)) {
-        // Creating new module — pre-select tag from chooser flow.
-        $defaulttagid = (int)$SESSION->format_mimo_pending_tag;
-    }
-
-    $mform->setDefault('mimo_cmtag', $defaulttagid);
+    \format_mimo\callbacks::coursemodule_standard_elements($formwrapper, $mform);
 }
 
 /**
  * Saves/updates the tag assignment after a module form is submitted.
  *
- * This callback is invoked by Moodle core after a module is created or updated.
- * It reads the tag selection from the form and assigns or removes the tag.
- *
  * @param \stdClass $data The form submission data (includes $data->coursemodule)
  * @param \stdClass $course The course object
- * @return \stdClass The (possibly modified) data object — must be returned for chaining
+ * @return \stdClass The (possibly modified) data object
  */
 function format_mimo_coursemodule_edit_post_actions($data, $course) {
-    if ($course->format !== 'mimo') {
-        return $data;
-    }
-
-    if (!isset($data->mimo_cmtag)) {
-        return $data;
-    }
-
-    $cmid = $data->coursemodule;
-    $tagid = (int)$data->mimo_cmtag;
-
-    if ($tagid > 0) {
-        \format_mimo\tag_manager::assign_tag_to_cm($cmid, $tagid);
-    } else {
-        \format_mimo\tag_manager::remove_cm_tag($cmid);
-    }
-
-    return $data;
+    return \format_mimo\callbacks::coursemodule_edit_post_actions($data, $course);
 }
 
 /**
  * Pre-populate mimo completion defaults in the module creation form.
- *
- * When a teacher creates a new activity in a mimo course, this callback overrides
- * the core completion defaults with mimo-specific ones so the teacher sees the
- * intended defaults in the form before saving.
  *
  * @param \moodleform_mod $formwrapper The form wrapper object
  * @param \MoodleQuickForm $mform The form object
  * @return void
  */
 function format_mimo_coursemodule_definition_after_data($formwrapper, $mform): void {
-    $course = $formwrapper->get_course();
-    if ($course->format !== 'mimo') {
-        return;
-    }
-
-    // Only apply to new modules, not when editing existing ones.
-    $current = $formwrapper->get_current();
-    if (!empty($current->instance)) {
-        return;
-    }
-
-    // Get the module type ID.
-    $moduleid = (int)($current->module ?? 0);
-    if (!$moduleid) {
-        return;
-    }
-
-    // Check if we have a mimo completion override for this module type.
-    $mimodefaults = \format_mimo\completion_defaults_manager::get_default($moduleid);
-    if (!$mimodefaults) {
-        return;
-    }
-
-    // Override core completion fields with mimo defaults.
-    // Use setDefault() rather than getElement()->setValue() because radio buttons
-    // require setDefault to properly select the correct option.
-    $completion = (int)$mimodefaults->completion;
-    if ($mform->elementExists('completion')) {
-        $mform->setDefault('completion', $completion);
-    }
-
-    if ($completion === COMPLETION_TRACKING_AUTOMATIC) {
-        if ($mform->elementExists('completionview') && (int)$mimodefaults->completionview) {
-            $mform->setDefault('completionview', 1);
-        }
-        if (!empty($mimodefaults->completionusegrade)) {
-            $modname = $current->modulename ?? '';
-            $supportsgrades = plugin_supports('mod', $modname, FEATURE_GRADE_HAS_GRADE, false);
-            if ($supportsgrades && $mform->elementExists('completionusegrade')) {
-                $mform->setDefault('completionusegrade', 1);
-            }
-            if ((int)$mimodefaults->completionpassgrade && $mform->elementExists('completionpassgrade')) {
-                $mform->setDefault('completionpassgrade', 1);
-            }
-        }
-    }
-
-    // Apply custom rules from the JSON blob.
-    if (!empty($mimodefaults->customrules)) {
-        $customrules = @json_decode($mimodefaults->customrules, true);
-        if (is_array($customrules)) {
-            unset($customrules['modids']);
-            unset($customrules['id']);
-            foreach ($customrules as $key => $value) {
-                if ($mform->elementExists($key)) {
-                    $mform->setDefault($key, $value);
-                }
-            }
-        }
-    }
+    \format_mimo\callbacks::coursemodule_definition_after_data($formwrapper, $mform);
 }
 
 /**
  * Implements callback for inplace editable (AJAX section name editing).
- *
- * Called by core when an inplace editable with component 'format_mimo' is saved.
  *
  * @param string $itemtype The type of item being edited (sectionname or sectionnamenl)
  * @param int $itemid The section id
@@ -812,21 +638,7 @@ function format_mimo_coursemodule_definition_after_data($formwrapper, $mform): v
  * @return \core\output\inplace_editable
  */
 function format_mimo_inplace_editable($itemtype, $itemid, $newvalue) {
-    global $DB, $CFG;
-    require_once($CFG->dirroot . '/course/lib.php');
-
-    if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
-        $section = $DB->get_record_sql(
-            'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
-            [$itemid, 'mimo'],
-            MUST_EXIST
-        );
-        return course_get_format($section->course)->inplace_editable_update_section_name(
-            $section,
-            $itemtype,
-            $newvalue
-        );
-    }
+    return \format_mimo\callbacks::inplace_editable($itemtype, $itemid, $newvalue);
 }
 
 /**
