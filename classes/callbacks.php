@@ -27,7 +27,6 @@ namespace format_mimo;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class callbacks {
-
     /**
      * Serve files from the mimo course format.
      *
@@ -245,8 +244,11 @@ class callbacks {
 
         if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
             $section = $DB->get_record_sql(
-                'SELECT s.* FROM {course_sections} s JOIN {course} c ON s.course = c.id WHERE s.id = ? AND c.format = ?',
-                [$itemid, 'mimo'],
+                'SELECT s.*
+                   FROM {course_sections} s
+                   JOIN {course} c ON s.course = c.id
+                  WHERE s.id = :sectionid AND c.format = :format',
+                ['sectionid' => $itemid, 'format' => 'mimo'],
                 MUST_EXIST
             );
             return course_get_format($section->course)->inplace_editable_update_section_name(

@@ -143,7 +143,7 @@ class cmitem extends cmitem_base {
                     // Check if overdue: not complete and a deadline has passed.
                     // Check completionexpected first, then module-specific due dates from customdata.
                     if (!$iscomplete) {
-                        $now = time();
+                        $now = \core\di::get(\core\clock::class)->time();
                         $deadline = 0;
                         if (!empty($cm->completionexpected)) {
                             $deadline = $cm->completionexpected;

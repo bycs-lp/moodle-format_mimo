@@ -214,7 +214,8 @@ class section extends section_base {
                                 $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
                             }
                         }
-                        if ($deadline > 0 && $deadline < time()) {
+                        $now = \core\di::get(\core\clock::class)->time();
+                        if ($deadline > 0 && $deadline < $now) {
                             continue;
                         }
                         $incompletecount++;
