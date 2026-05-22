@@ -22,6 +22,7 @@
  */
 
 import ModalForm from 'core_form/modalform';
+import {get_string as getString} from 'core/str';
 
 /**
  * Initialize the profile management modal form handlers.
@@ -65,8 +66,8 @@ const showProfileForm = (profileId, returnFocusElement) => {
         },
         modalConfig: {
             title: profileId
-                ? M.util.get_string('editprofile', 'format_mimo')
-                : M.util.get_string('createprofile', 'format_mimo'),
+                ? getString('editprofile', 'format_mimo')
+                : getString('createprofile', 'format_mimo'),
         },
         returnFocus: returnFocusElement,
     });

@@ -151,8 +151,10 @@ class SectionOverviewBulk extends BaseComponent {
  * Initialise section overview bulk selection.
  *
  * Retries if the course editor reactive is not yet available (MDL-87236).
+ *
+ * @param {number} retries Current retry count (internal, do not pass manually)
  */
-export const init = () => {
+export const init = (retries = 0) => {
     const reactive = getCurrentCourseEditor();
     const grid = document.querySelector('[data-region="mimo-overview-grid"]');
 
@@ -180,6 +182,8 @@ export const init = () => {
         return;
     }
 
-    // Retry if the reactive is not ready yet.
-    setTimeout(() => init(), 50);
+    // Retry if the reactive is not ready yet (max ~5s).
+    if (retries < 100) {
+        setTimeout(() => init(retries + 1), 50);
+    }
 };

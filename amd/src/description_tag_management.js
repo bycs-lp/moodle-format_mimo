@@ -79,8 +79,8 @@ const showTagForm = (tagId) => {
         formClass: 'format_mimo\\form\\description_tag_form',
         args: {id: tagId},
         modalConfig: {
-            title: tagId ? M.util.get_string('editdesctag', 'format_mimo') :
-                           M.util.get_string('createdesctag', 'format_mimo'),
+            title: tagId ? getString('editdesctag', 'format_mimo') :
+                           getString('createdesctag', 'format_mimo'),
         },
         returnFocus: tagId ? document.querySelector(`[data-action="edit-tag"][data-id="${tagId}"]`) :
                              document.querySelector('[data-action="create-tag"]'),

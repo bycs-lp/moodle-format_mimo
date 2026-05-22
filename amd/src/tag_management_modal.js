@@ -22,6 +22,7 @@
  */
 
 import ModalForm from 'core_form/modalform';
+import {get_string as getString} from 'core/str';
 
 /**
  * Initialize the tag management modal form handlers.
@@ -80,8 +81,8 @@ const showTagForm = (tagId, returnFocusElement) => {
         },
         modalConfig: {
             title: tagId
-                ? M.util.get_string('edittag', 'format_mimo')
-                : M.util.get_string('createtag', 'format_mimo'),
+                ? getString('edittag', 'format_mimo')
+                : getString('createtag', 'format_mimo'),
         },
         returnFocus: returnFocusElement,
     });
