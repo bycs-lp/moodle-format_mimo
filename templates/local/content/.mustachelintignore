@@ -1,1 +1,4 @@
+# Uses {{< parent }} template inheritance, {{$ block }} overrides, and mustache
+# variables inside style attributes (--mimo-filter-accent: {{bgcolor}}),
+# all of which trigger false linter positives.
 section.mustache

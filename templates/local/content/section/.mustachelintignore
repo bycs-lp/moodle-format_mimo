@@ -1,1 +1,3 @@
+# Uses {{$ block }} override syntax and mustache variables inside style attributes
+# (--mimo-card-accent: {{cmformat.tagcolor}}), both trigger false linter positives.
 cmitem.mustache
