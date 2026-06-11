@@ -283,25 +283,6 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
-     * Data provider for default tag names.
-     *
-     * @return array
-     */
-    public static function default_tag_names_provider(): array {
-        return [
-            ['Reading'],
-            ['Writing'],
-            ['Watch'],
-            ['Listen'],
-            ['Discover'],
-            ['Calculations'],
-            ['Teamwork'],
-            ['Show'],
-            ['Practice'],
-        ];
-    }
-
-    /**
      * Test initializing default tags.
      */
     public function test_initialize_default_tags(): void {
@@ -313,21 +294,26 @@ final class tag_manager_test extends \advanced_testcase {
 
         tag_manager::initialize_default_tags();
 
-        // Verify 7 default tags were created.
+        // Verify 12 default tags were created.
         $tags = tag_manager::get_all_tags();
-        $this->assertCount(7, $tags);
+        $this->assertCount(12, $tags);
 
         // Verify the full set of default tag names in one strict comparison.
         $tagnames = array_column($tags, 'name');
         sort($tagnames);
         $expected = [
-            get_string('tag_create', 'format_mimo'),
-            get_string('tag_discover', 'format_mimo'),
-            get_string('tag_practice_base', 'format_mimo'),
-            get_string('tag_reading', 'format_mimo'),
-            get_string('tag_show', 'format_mimo'),
-            get_string('tag_teamwork', 'format_mimo'),
-            get_string('tag_writing', 'format_mimo'),
+            get_string('tag_base_apply', 'format_mimo'),
+            get_string('tag_base_compose', 'format_mimo'),
+            get_string('tag_base_cooperate', 'format_mimo'),
+            get_string('tag_base_inform', 'format_mimo'),
+            get_string('tag_base_listen', 'format_mimo'),
+            get_string('tag_base_practise', 'format_mimo'),
+            get_string('tag_base_present', 'format_mimo'),
+            get_string('tag_base_produce', 'format_mimo'),
+            get_string('tag_base_project', 'format_mimo'),
+            get_string('tag_base_receive', 'format_mimo'),
+            get_string('tag_base_research', 'format_mimo'),
+            get_string('tag_base_test', 'format_mimo'),
         ];
         sort($expected);
         $this->assertSame($expected, $tagnames);
@@ -347,9 +333,9 @@ final class tag_manager_test extends \advanced_testcase {
         tag_manager::initialize_default_tags();
         tag_manager::initialize_default_tags();
 
-        // Should still only have 7 tags.
+        // Should still only have 12 tags.
         $tags = tag_manager::get_all_tags();
-        $this->assertCount(7, $tags);
+        $this->assertCount(12, $tags);
     }
 
     /**

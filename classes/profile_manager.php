@@ -889,79 +889,134 @@ class profile_manager {
      */
     public static function initialize_default_profiles(): void {
         $defaults = [
-            ['name' => 'explore', 'displayname' => get_string('profile_explore', 'format_mimo'), 'sortorder' => 0],
-            ['name' => 'develop', 'displayname' => get_string('profile_develop', 'format_mimo'), 'sortorder' => 1],
-            ['name' => 'master', 'displayname' => get_string('profile_master', 'format_mimo'), 'sortorder' => 2],
+            ['name' => 'primaryschool',
+                'displayname' => get_string('profile_primaryschool', 'format_mimo'), 'sortorder' => 0],
+            ['name' => 'secondaryschool',
+                'displayname' => get_string('profile_secondaryschool', 'format_mimo'), 'sortorder' => 1],
+            ['name' => 'foreignlanguage',
+                'displayname' => get_string('profile_foreignlanguage', 'format_mimo'), 'sortorder' => 2],
         ];
 
-        $profileids = [];
         foreach ($defaults as $profile) {
             if (!self::get_profile_by_name($profile['name'])) {
-                $profileids[$profile['name']] = self::create_profile(
+                $profileid = self::create_profile(
                     $profile['name'],
                     $profile['displayname'],
                     $profile['sortorder']
                 );
+                self::apply_default_profile_tag_overrides($profile['name'], $profileid);
             }
         }
+    }
 
-        // Per-profile tag overrides, keyed by profile name → tag index → override fields.
-        // Supports: name, bgcolor, activitytype1-3, imgplacement, imgsize, cardimage, filterimage.
-        // Image fields trigger file copy from pix/tags/ into the profile file area.
-        $profileoverrides = [
-            'explore' => [
-                0 => ['cardimage' => 'read_explore.png', 'filterimage' => 'read_explore.png'],
-                1 => ['cardimage' => 'explore_explore.png', 'filterimage' => 'explore_explore.png'],
-                2 => ['cardimage' => 'write_explore.png', 'filterimage' => 'write_explore.png'],
-                3 => ['cardimage' => 'share_explore.png', 'filterimage' => 'share_explore.png'],
-                4 => ['cardimage' => 'train_explore.png', 'filterimage' => 'train_explore.png'],
-                5 => ['cardimage' => 'teamwork_explore.png', 'filterimage' => 'teamwork_explore.png'],
-                6 => ['cardimage' => 'design_explore.png', 'filterimage' => 'design_explore.png'],
+    /**
+     * Get the default per-profile tag overrides.
+     *
+     * Keyed by profile name → default tag definition index (see
+     * {@see tag_manager::get_default_tag_definitions()}) → override fields.
+     * Supports: name, bgcolor, activitytype1-3, enabled, imgplacement, imgsize,
+     * cardimage, filterimage.  Image fields trigger a file copy from pix/tags/
+     * into the profile file area.
+     *
+     * @return array
+     */
+    private static function get_default_profile_tag_overrides(): array {
+        return [
+            'primaryschool' => [
+                0 => ['name' => get_string('tag_reading', 'format_mimo')],
+                1 => ['name' => get_string('tag_writing', 'format_mimo')],
+                2 => ['name' => get_string('tag_calculate', 'format_mimo')],
+                3 => ['name' => get_string('tag_play', 'format_mimo')],
+                4 => ['name' => get_string('tag_inform', 'format_mimo')],
+                5 => ['name' => get_string('tag_show', 'format_mimo'), 'activitytype3' => 'hvp'],
+                6 => ['name' => get_string('tag_design', 'format_mimo')],
+                7 => ['name' => get_string('tag_investigate', 'format_mimo')],
+                8 => ['name' => get_string('tag_listen', 'format_mimo')],
+                9 => ['name' => get_string('tag_partnerwork', 'format_mimo')],
+                10 => ['name' => get_string('tag_groupproject', 'format_mimo')],
+                11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
             ],
-            'develop' => [
-                0 => ['name' => get_string('tag_analyze', 'format_mimo')],
-                1 => ['name' => get_string('tag_research', 'format_mimo')],
+            'secondaryschool' => [
+                0 => ['name' => get_string('tag_inform', 'format_mimo')],
+                1 => ['name' => get_string('tag_compose', 'format_mimo')],
+                2 => ['name' => get_string('tag_model', 'format_mimo')],
+                3 => ['name' => get_string('tag_practise', 'format_mimo')],
+                4 => ['name' => get_string('tag_receive', 'format_mimo')],
+                5 => ['name' => get_string('tag_present', 'format_mimo'), 'activitytype3' => 'hvp'],
+                6 => ['name' => get_string('tag_produce', 'format_mimo')],
+                7 => ['name' => get_string('tag_research', 'format_mimo')],
+                8 => ['enabled' => 0],
+                9 => ['name' => get_string('tag_cooperate', 'format_mimo')],
+                10 => ['name' => get_string('tag_projectwork', 'format_mimo')],
+                11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
+            ],
+            'foreignlanguage' => [
+                0 => ['name' => get_string('tag_reading', 'format_mimo')],
+                1 => ['name' => get_string('tag_compose', 'format_mimo')],
+                2 => ['name' => get_string('tag_speak', 'format_mimo'),
+                    'activitytype1' => 'assign', 'activitytype2' => 'forum'],
+                3 => ['name' => get_string('tag_translate', 'format_mimo'),
+                    'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => 'quiz'],
+                4 => ['name' => get_string('tag_vocabulary', 'format_mimo'),
+                    'activitytype1' => 'hvp', 'activitytype2' => 'wiki'],
+                5 => ['name' => get_string('tag_grammar', 'format_mimo'),
+                    'activitytype1' => 'page', 'activitytype2' => 'glossary'],
+                6 => ['name' => get_string('tag_produce', 'format_mimo')],
+                7 => ['name' => get_string('tag_research', 'format_mimo')],
+                8 => ['name' => get_string('tag_hearing', 'format_mimo')],
+                9 => ['name' => get_string('tag_cooperate', 'format_mimo')],
+                10 => ['name' => get_string('tag_projectwork', 'format_mimo')],
+                11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
             ],
         ];
+    }
 
-        // Apply overrides for newly created profiles.
-        $alltags = null;
-        $taglist = null;
-        foreach ($profileoverrides as $profilename => $tagoverrides) {
-            if (empty($profileids[$profilename])) {
+    /**
+     * Apply the default tag overrides for one profile.
+     *
+     * Tags are resolved by the names of the default tag definitions, so this
+     * works during installation as well as during upgrades.  Missing tags are
+     * skipped silently.
+     *
+     * @param string $profilename Profile name (e.g., 'primaryschool')
+     * @param int $profileid Profile ID
+     */
+    public static function apply_default_profile_tag_overrides(string $profilename, int $profileid): void {
+        $tagoverrides = self::get_default_profile_tag_overrides()[$profilename] ?? [];
+        if (empty($tagoverrides)) {
+            return;
+        }
+
+        $definitions = tag_manager::get_default_tag_definitions();
+
+        foreach ($tagoverrides as $tagindex => $overrides) {
+            if (!isset($definitions[$tagindex])) {
                 continue;
             }
-            $pid = $profileids[$profilename];
+            $tag = tag_manager::find_tag_by_name($definitions[$tagindex]['name']);
+            if (!$tag) {
+                continue;
+            }
+            $pt = self::get_or_create_profile_tag($tag->id, $profileid);
 
-            // Lazy-load tag list (only needed when overrides exist).
-            if ($taglist === null) {
-                $alltags = tag_manager::get_all_tags();
-                $taglist = array_values($alltags);
+            // Separate image fields from non-image fields.
+            $imagefields = [];
+            $datafields = [];
+            foreach ($overrides as $field => $value) {
+                if ($field === 'cardimage' || $field === 'filterimage') {
+                    $imagefields[$field] = $value;
+                } else {
+                    $datafields[$field] = $value;
+                }
             }
 
-            foreach ($tagoverrides as $tagindex => $overrides) {
-                if (!isset($taglist[$tagindex])) {
-                    continue;
-                }
-                $pt = self::get_or_create_profile_tag($taglist[$tagindex]->id, $pid);
+            // Apply non-image overrides (name, bgcolor, activity types, etc.).
+            if (!empty($datafields)) {
+                self::update_profile_tag($pt->id, $datafields);
+            }
 
-                // Separate image fields from non-image fields.
-                $imagefields = [];
-                $datafields = [];
-                foreach ($overrides as $field => $value) {
-                    if ($field === 'cardimage' || $field === 'filterimage') {
-                        $imagefields[$field] = $value;
-                    } else {
-                        $datafields[$field] = $value;
-                    }
-                }
-
-                // Apply non-image overrides (name, bgcolor, activity types, etc.).
-                if (!empty($datafields)) {
-                    self::update_profile_tag($pt->id, $datafields);
-                }
-
-                // Copy image files from pix/tags/ and update DB fields.
+            // Copy image files from pix/tags/ and update DB fields.
+            if (!empty($imagefields)) {
                 self::apply_default_profile_images($pt->id, $imagefields);
             }
         }

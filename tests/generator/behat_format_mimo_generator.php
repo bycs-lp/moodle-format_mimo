@@ -261,7 +261,7 @@ class behat_format_mimo_generator extends behat_generator_base {
             'id' => $course->id,
             'enablefiltering' => $data['enablefiltering'],
             'enablemultisection' => $data['enablemultisection'] ?? 0,
-            'activityprofile' => $data['activityprofile'] ?? 'explore',
+            'activityprofile' => $data['activityprofile'] ?? 'primaryschool',
             'backgrounddesign' => $data['backgrounddesign'] ?? $data['wallcolor'] ?? 'primary-school',
         ];
         course_get_format($course->id)->update_course_format_options($formatoptions);
@@ -302,7 +302,7 @@ class behat_format_mimo_generator extends behat_generator_base {
 
         $data['enablefiltering'] = $this->resolve_boolean_flag($data['enablefiltering'] ?? 1);
         $data['enablemultisection'] = $this->resolve_boolean_flag($data['enablemultisection'] ?? 0);
-        $data['activityprofile'] = $data['activityprofile'] ?? 'explore';
+        $data['activityprofile'] = $data['activityprofile'] ?? 'primaryschool';
         $data['numsections'] = (int) ($data['numsections'] ?? 1);
 
         return $data;

@@ -28,7 +28,7 @@
 function xmldb_format_mimo_install() {
     // Initialize default tags.
     \format_mimo\tag_manager::initialize_default_tags();
-    // Initialize default activity profiles (explore, develop, master).
+    // Initialize default activity profiles (primaryschool, secondaryschool, foreignlanguage).
     \format_mimo\profile_manager::initialize_default_profiles();
     // Initialize default description tags.
     \format_mimo\description_tag_manager::initialize_default_description_tags();

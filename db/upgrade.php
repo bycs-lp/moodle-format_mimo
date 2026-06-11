@@ -924,5 +924,103 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026041700, 'format', 'mimo');
     }
 
+    // Replace the explore/develop/master default profiles with the school-type
+    // profiles (primaryschool, secondaryschool, foreignlanguage) and migrate the
+    // default base tags to the new neutral '(Basis)' tag set from tags.csv.
+    if ($oldversion < 2026061100) {
+        // Step 1: Rename the old default profiles, preserving course assignments
+        // (update_profile cascades the name change to course_format_options).
+        $renames = [
+            'explore' => 'primaryschool',
+            'develop' => 'secondaryschool',
+            'master' => 'foreignlanguage',
+        ];
+        foreach ($renames as $oldname => $newname) {
+            $profile = $DB->get_record('format_mimo_profiles', ['name' => $oldname]);
+            if ($profile && !$DB->record_exists('format_mimo_profiles', ['name' => $newname])) {
+                \format_mimo\profile_manager::update_profile($profile->id, [
+                    'name' => $newname,
+                    'displayname' => get_string('profile_' . $newname, 'format_mimo'),
+                ]);
+            }
+        }
+
+        // Step 2: Wipe the old per-profile overrides (explore images, develop
+        // names) of the renamed profiles - they no longer match the new tag set.
+        $fs = get_file_storage();
+        $syscontextid = \core\context\system::instance()->id;
+        foreach ($renames as $newname) {
+            $profile = $DB->get_record('format_mimo_profiles', ['name' => $newname]);
+            if (!$profile) {
+                continue;
+            }
+            $profiletags = $DB->get_records('format_mimo_profile_tags', ['profileid' => $profile->id]);
+            foreach ($profiletags as $pt) {
+                $fs->delete_area_files($syscontextid, 'format_mimo', 'profiletagcard', $pt->id);
+                $fs->delete_area_files($syscontextid, 'format_mimo', 'profiletagfilter', $pt->id);
+            }
+            $DB->delete_records('format_mimo_profile_tags', ['profileid' => $profile->id]);
+        }
+
+        // Step 3: Migrate the old default base tags in place (preserving tag IDs
+        // and activity assignments). Old names are matched in both install languages.
+        $definitions = \format_mimo\tag_manager::get_default_tag_definitions();
+        $oldnamemap = [
+            0 => ['Lesen', 'Reading'],
+            1 => ['Schreiben', 'Writing'],
+            3 => ['Üben', 'Practice'],
+            5 => ['Zeigen', 'Show'],
+            6 => ['🎨 Erstellen', '🎨 Create'],
+            7 => ['Entdecken', 'Discover'],
+            9 => ['Teamarbeit', 'Teamwork'],
+        ];
+        $matchedids = [];
+        $matched = [];
+        foreach ($oldnamemap as $index => $oldnames) {
+            foreach ($oldnames as $oldname) {
+                $tag = \format_mimo\tag_manager::find_tag_by_name($oldname, $matchedids);
+                if ($tag) {
+                    $def = $definitions[$index];
+                    $tag->name = $def['name'];
+                    $tag->activitytype1 = $def['activitytype1'];
+                    $tag->activitytype2 = $def['activitytype2'];
+                    $tag->activitytype3 = $def['activitytype3'];
+                    $tag->sortorder = $index;
+                    $tag->timemodified = time();
+                    $DB->update_record('format_mimo_tags', $tag);
+                    $matchedids[] = $tag->id;
+                    $matched[$index] = $tag->id;
+                    break;
+                }
+            }
+        }
+
+        // Step 4: Create the new base tags that have no old counterpart.
+        foreach ($definitions as $index => $def) {
+            if (isset($matched[$index])) {
+                continue;
+            }
+            if (\format_mimo\tag_manager::find_tag_by_name($def['name'])) {
+                continue;
+            }
+            $tagid = \format_mimo\tag_manager::create_tag_from_default($def);
+            $DB->set_field('format_mimo_tags', 'sortorder', $index, ['id' => $tagid]);
+        }
+
+        // Step 5: Re-apply the default per-profile overrides (names, activity
+        // types, disabled tags) for the new school-type profiles.
+        \format_mimo\tag_manager::clear_tag_cache();
+        \format_mimo\profile_manager::clear_request_caches();
+        foreach ($renames as $newname) {
+            $profile = $DB->get_record('format_mimo_profiles', ['name' => $newname]);
+            if ($profile) {
+                \format_mimo\profile_manager::apply_default_profile_tag_overrides($newname, $profile->id);
+            }
+        }
+        \format_mimo\tag_manager::clear_tag_cache();
+
+        upgrade_plugin_savepoint(true, 2026061100, 'format', 'mimo');
+    }
+
     return true;
 }

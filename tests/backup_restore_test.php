@@ -190,7 +190,7 @@ final class backup_restore_test extends \advanced_testcase {
         // Create a course with a specific activity profile.
         $course = $generator->create_course([
             'format' => 'mimo',
-            'activityprofile' => 'explore',
+            'activityprofile' => 'secondaryschool',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
@@ -206,7 +206,7 @@ final class backup_restore_test extends \advanced_testcase {
             'format' => 'mimo',
             'name' => 'activityprofile',
         ]);
-        $this->assertEquals('explore', $restoredprofile);
+        $this->assertEquals('secondaryschool', $restoredprofile);
     }
 
     /**

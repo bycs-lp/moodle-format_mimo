@@ -219,7 +219,7 @@ final class format_mimo_test extends \advanced_testcase {
 
         $before = (array) $format->get_format_options();
         $this->assertSame(0, (int) ($before['enablemultisection'] ?? 0));
-        $this->assertSame('explore', $before['activityprofile'] ?? '');
+        $this->assertSame('primaryschool', $before['activityprofile'] ?? '');
 
         $changed = $format->update_course_format_options(
             ['enablemultisection' => 1, 'activityprofile' => 'alternate'],

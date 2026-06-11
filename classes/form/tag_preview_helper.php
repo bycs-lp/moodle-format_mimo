@@ -55,7 +55,7 @@ class tag_preview_helper {
         $output = $PAGE->get_renderer('format_mimo');
 
         // Get current activity profile for displaying correct images.
-        $currentprofile = $course->activityprofile ?? 'explore';
+        $currentprofile = $course->activityprofile ?? 'primaryschool';
 
         // Get all profiles for passing image URLs to template data attributes.
         $profiles = \format_mimo\profile_manager::get_all_profiles();

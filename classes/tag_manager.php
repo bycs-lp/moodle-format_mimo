@@ -459,14 +459,14 @@ class tag_manager {
             'name' => 'activityprofile',
         ]);
         if (empty($profilename)) {
-            $profilename = 'explore';
+            $profilename = 'primaryschool';
         }
 
         // Resolve profile ID.
         $profile = profile_manager::get_profile_by_name($profilename);
         if (!$profile) {
-            // Fallback to explore if profile doesn't exist.
-            $profile = profile_manager::get_profile_by_name('explore');
+            // Fallback to primaryschool if profile doesn't exist.
+            $profile = profile_manager::get_profile_by_name('primaryschool');
         }
 
         if (!$profile) {
@@ -972,6 +972,91 @@ class tag_manager {
     }
 
     /**
+     * Get the default base tag definitions.
+     *
+     * The array index doubles as the default sort order and is referenced by
+     * {@see profile_manager::apply_default_profile_tag_overrides()}.
+     *
+     * @return array List of tag definitions (name, images, activity types, bgcolor)
+     */
+    public static function get_default_tag_definitions(): array {
+        return [
+            0 => ['name' => get_string('tag_base_inform', 'format_mimo'),
+                'cardimage' => 'read_base.svg', 'filterimage' => 'read_base.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#7fc3d8'],
+            1 => ['name' => get_string('tag_base_compose', 'format_mimo'),
+                'cardimage' => 'write_base.svg', 'filterimage' => 'write_base.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'forum', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
+            2 => ['name' => get_string('tag_base_apply', 'format_mimo'),
+                'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
+                'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
+                'bgcolor' => '#8ccb90'],
+            3 => ['name' => get_string('tag_base_practise', 'format_mimo'),
+                'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
+                'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
+                'bgcolor' => '#facc15'],
+            4 => ['name' => get_string('tag_base_receive', 'format_mimo'),
+                'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
+                'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
+                'bgcolor' => '#7fc3d8'],
+            5 => ['name' => get_string('tag_base_present', 'format_mimo'),
+                'cardimage' => 'share_base.svg', 'filterimage' => 'share_base.svg',
+                'activitytype1' => 'forum', 'activitytype2' => 'board', 'activitytype3' => null,
+                'bgcolor' => '#de5a72'],
+            6 => ['name' => get_string('tag_base_produce', 'format_mimo'),
+                'cardimage' => 'create_base.png', 'filterimage' => 'create_base.png',
+                'activitytype1' => 'assign', 'activitytype2' => 'forum', 'activitytype3' => null,
+                'bgcolor' => '#facc15'],
+            7 => ['name' => get_string('tag_base_research', 'format_mimo'),
+                'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
+                'activitytype1' => 'page', 'activitytype2' => 'url', 'activitytype3' => null,
+                'bgcolor' => '#7fc3d8'],
+            8 => ['name' => get_string('tag_base_listen', 'format_mimo'),
+                'cardimage' => null, 'filterimage' => null,
+                'activitytype1' => 'page', 'activitytype2' => 'resource', 'activitytype3' => 'hvp',
+                'bgcolor' => '#8ccb90'],
+            9 => ['name' => get_string('tag_base_cooperate', 'format_mimo'),
+                'cardimage' => 'collaborate_base.svg', 'filterimage' => 'collaborate_base.svg',
+                'activitytype1' => 'board', 'activitytype2' => 'forum', 'activitytype3' => 'wiki',
+                'bgcolor' => '#de5a72'],
+            10 => ['name' => get_string('tag_base_project', 'format_mimo'),
+                'cardimage' => 'collaborate_base.svg', 'filterimage' => 'collaborate_base.svg',
+                'activitytype1' => 'kanban', 'activitytype2' => null, 'activitytype3' => null,
+                'bgcolor' => '#8ccb90'],
+            11 => ['name' => get_string('tag_base_test', 'format_mimo'),
+                'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
+                'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
+                'bgcolor' => '#facc15'],
+        ];
+    }
+
+    /**
+     * Create a base tag from a default definition, including bundled images.
+     *
+     * @param array $tag Definition from {@see get_default_tag_definitions()}
+     * @return int ID of the created tag
+     */
+    public static function create_tag_from_default(array $tag): int {
+        $tagid = self::create_tag(
+            $tag['name'],
+            $tag['cardimage'],
+            $tag['filterimage'],
+            $tag['activitytype1'],
+            $tag['activitytype2'],
+            $tag['activitytype3'],
+            $tag['bgcolor'],
+            'center'
+        );
+
+        self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
+        self::copy_default_image($tagid, $tag['filterimage'], self::FILEAREA_FILTERIMAGE);
+
+        return $tagid;
+    }
+
+    /**
      * Initialize default tags for a new installation.
      *
      * @return bool Success
@@ -984,52 +1069,8 @@ class tag_manager {
             return true; // Already initialized.
         }
 
-        // Create default tags.
-        $defaulttags = [
-            ['name' => get_string('tag_reading', 'format_mimo'),
-                'cardimage' => 'read_base.svg', 'filterimage' => 'read_base.svg',
-                'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => null,
-                'bgcolor' => '#7fc3d8'],
-            ['name' => get_string('tag_discover', 'format_mimo'),
-                'cardimage' => 'explore_base.svg', 'filterimage' => 'explore_base.svg',
-                'activitytype1' => 'page', 'activitytype2' => 'forum', 'activitytype3' => 'glossary',
-                'bgcolor' => '#facc15'],
-            ['name' => get_string('tag_writing', 'format_mimo'),
-                'cardimage' => 'write_base.svg', 'filterimage' => 'write_base.svg',
-                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
-                'bgcolor' => '#de5a72'],
-            ['name' => get_string('tag_show', 'format_mimo'),
-                'cardimage' => 'share_base.svg', 'filterimage' => 'share_base.svg',
-                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
-                'bgcolor' => '#de5a72'],
-            ['name' => get_string('tag_practice_base', 'format_mimo'),
-                'cardimage' => 'practice_base.svg', 'filterimage' => 'practice_base.svg',
-                'activitytype1' => 'assign', 'activitytype2' => 'quiz', 'activitytype3' => null,
-                'bgcolor' => '#8ccb90'],
-            ['name' => get_string('tag_teamwork', 'format_mimo'),
-                'cardimage' => 'collaborate_base.svg', 'filterimage' => 'collaborate_base.svg',
-                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
-                'bgcolor' => '#de5a72'],
-            ['name' => get_string('tag_create', 'format_mimo'),
-                'cardimage' => 'create_base.png', 'filterimage' => 'create_base.png',
-                'activitytype1' => 'forum', 'activitytype2' => 'assign', 'activitytype3' => null,
-                'bgcolor' => '#de5a72'],
-        ];
-
-        foreach ($defaulttags as $tag) {
-            $tagid = self::create_tag(
-                $tag['name'],
-                $tag['cardimage'],
-                $tag['filterimage'],
-                $tag['activitytype1'],
-                $tag['activitytype2'],
-                $tag['activitytype3'],
-                $tag['bgcolor'],
-                'center'
-            );
-
-            self::copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
-            self::copy_default_image($tagid, $tag['filterimage'], self::FILEAREA_FILTERIMAGE);
+        foreach (self::get_default_tag_definitions() as $tag) {
+            self::create_tag_from_default($tag);
         }
 
         return true;

@@ -54,12 +54,12 @@ class content extends content_base {
         $data = parent::export_for_template($output);
 
         // Get the course format options.
-        $activityprofile = $course->activityprofile ?? 'explore';
+        $activityprofile = $course->activityprofile ?? 'primaryschool';
 
-        // Validate profile exists in database, fallback to explore if not.
+        // Validate profile exists in database, fallback to primaryschool if not.
         $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
         if (!$profile) {
-            $activityprofile = 'explore';
+            $activityprofile = 'primaryschool';
         }
 
         $data->stylevariant = $activityprofile;
@@ -101,12 +101,12 @@ class content extends content_base {
         $course = $format->get_course();
 
         $bgdesign = $course->backgrounddesign ?? 'primary-school';
-        $activityprofile = $course->activityprofile ?? 'explore';
+        $activityprofile = $course->activityprofile ?? 'primaryschool';
 
         // Validate profile.
         $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
         if (!$profile) {
-            $activityprofile = 'explore';
+            $activityprofile = 'primaryschool';
         }
 
         $modinfo = get_fast_modinfo($course);
