@@ -25,6 +25,7 @@
 namespace format_mimo\external;
 
 use core_external\external_api;
+use format_mimo\profile_manager;
 use format_mimo\tag_manager;
 
 /**
@@ -37,6 +38,27 @@ use format_mimo\tag_manager;
  */
 final class get_tags_test extends \advanced_testcase {
     /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        // Reset static cache state left behind by other test classes in the same
+        // process. Tag and profile ids are reused between tests (sequences are
+        // reset), so stale entries would apply overrides from a previous test.
+        tag_manager::reset_caches();
+        profile_manager::clear_request_caches();
+    }
+
+    /**
+     * Clean up after each test.
+     */
+    protected function tearDown(): void {
+        tag_manager::reset_caches();
+        profile_manager::clear_request_caches();
+        parent::tearDown();
+    }
+
+    /**
      * Returned list should match the resolved tags for the course and conform to the
      * declared return structure.
      */
@@ -46,9 +68,15 @@ final class get_tags_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        // Clear any preseeded tags for a deterministic assertion.
+        // Clear any preseeded tags for a deterministic assertion. The profile
+        // overrides must go too: newly created tags may reuse the ids of the
+        // deleted preseeded tags (sequence behaviour after a delete differs
+        // between DB engines), and orphaned format_mimo_profile_tags rows would
+        // then apply stale name overrides to them.
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $DB->delete_records('format_mimo_profile_tags');
+        tag_manager::reset_caches();
+        profile_manager::clear_request_caches();
 
         tag_manager::create_tag('Alpha', 'a.svg', 'a-small.svg', 'page');
         tag_manager::create_tag('Bravo', 'b.svg', 'b-small.svg', 'quiz');

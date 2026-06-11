@@ -187,10 +187,22 @@ class behat_format_mimo_generator extends behat_generator_base {
     /**
      * Preprocess tag data before creating.
      *
+     * Removes the preseeded default base tags so that scenarios defining their
+     * own tags get a deterministic tag universe. The profile overrides rename
+     * the defaults (e.g. "Inform (Base)" is displayed as "Reading" in the
+     * primaryschool profile), which collides with common scenario tag names in
+     * the tag chooser dropdown and the filter bar.
+     *
      * @param array $data
      * @return array
      */
     protected function preprocess_tag($data) {
+        foreach (\format_mimo\tag_manager::get_default_tag_definitions() as $definition) {
+            $tag = \format_mimo\tag_manager::find_tag_by_name($definition['name']);
+            if ($tag) {
+                \format_mimo\tag_manager::delete_tag($tag->id);
+            }
+        }
         return $data;
     }
 
