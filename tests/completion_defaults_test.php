@@ -449,12 +449,12 @@ final class completion_defaults_test extends \advanced_testcase {
         $this->assertFalse(completion_defaults_manager::initialize_default_completion_defaults());
         $this->assertSame($firstcount, $DB->count_records('format_mimo_compdefs'));
 
-        // Spot-check an entry: 'assign' should be automatic + use grade + have customrules.
+        // Spot-check an entry: 'assign' should be automatic + have customrules.
         $assignid = $this->get_module_id('assign');
         $assign = completion_defaults_manager::get_default($assignid);
         $this->assertNotNull($assign);
         $this->assertEquals(COMPLETION_TRACKING_AUTOMATIC, (int) $assign->completion);
-        $this->assertEquals(1, (int) $assign->completionusegrade);
+        $this->assertEquals(0, (int) $assign->completionusegrade);
         $this->assertNotNull($assign->customrules);
         $this->assertSame(['completionsubmit' => 1], json_decode($assign->customrules, true));
     }

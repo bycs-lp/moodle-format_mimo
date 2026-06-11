@@ -42,6 +42,16 @@ class done_manager {
     private static array $donecache = [];
 
     /**
+     * Request-level cache of cmid => courseid resolutions.
+     *
+     * Only successful (non-zero) lookups are stored, so a cm created later
+     * in the same request is still resolvable.
+     *
+     * @var array<int, int>
+     */
+    private static array $cmcourse = [];
+
+    /**
      * Reset the request-level cache.
      *
      * Intended for unit tests; the DB is rolled back between tests but
@@ -49,6 +59,7 @@ class done_manager {
      */
     public static function reset_cache(): void {
         self::$donecache = [];
+        self::$cmcourse = [];
     }
 
     /**
@@ -76,15 +87,22 @@ class done_manager {
     /**
      * Resolve the course id for a given cm id.
      *
-     * Uses the core modinfo request cache when available (populated during
-     * course rendering), falls back to a single {course_modules} query.
+     * Results are request-cached so repeated lookups for the same cm
+     * (e.g. several render helpers per activity card) cost one query at most.
      *
      * @param int $cmid Course module ID.
      * @return int Course ID, or 0 if the cm does not exist.
      */
     private static function get_courseid_for_cm(int $cmid): int {
         global $DB;
-        return (int) $DB->get_field('course_modules', 'course', ['id' => $cmid]);
+        if (isset(self::$cmcourse[$cmid])) {
+            return self::$cmcourse[$cmid];
+        }
+        $courseid = (int) $DB->get_field('course_modules', 'course', ['id' => $cmid]);
+        if ($courseid !== 0) {
+            self::$cmcourse[$cmid] = $courseid;
+        }
+        return $courseid;
     }
 
     /**
@@ -95,12 +113,18 @@ class done_manager {
      * the same course are served from memory.
      *
      * @param int $cmid Course module ID.
+     * @param int|null $courseid Course ID if the caller already knows it,
+     *                           avoiding a cmid lookup entirely.
      * @return bool
      */
-    public static function is_done(int $cmid): bool {
-        $courseid = self::get_courseid_for_cm($cmid);
-        if ($courseid === 0) {
-            return false;
+    public static function is_done(int $cmid, ?int $courseid = null): bool {
+        if ($courseid !== null && $courseid > 0) {
+            self::$cmcourse[$cmid] = $courseid;
+        } else {
+            $courseid = self::get_courseid_for_cm($cmid);
+            if ($courseid === 0) {
+                return false;
+            }
         }
         self::prime_course($courseid);
         return isset(self::$donecache[$courseid][$cmid]);
@@ -159,6 +183,7 @@ class done_manager {
         global $DB;
         $courseid = self::get_courseid_for_cm($cmid);
         $DB->delete_records(self::TABLE, ['cmid' => $cmid]);
+        unset(self::$cmcourse[$cmid]);
         if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
             unset(self::$donecache[$courseid][$cmid]);
         }

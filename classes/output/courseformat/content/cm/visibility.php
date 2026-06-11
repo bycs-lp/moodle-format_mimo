@@ -61,7 +61,7 @@ class visibility extends visibility_base {
      * @return string
      */
     protected function get_selected_choice_value(): string {
-        if ($this->mod->visible && done_manager::is_done($this->mod->id)) {
+        if ($this->mod->visible && done_manager::is_done($this->mod->id, (int) $this->mod->course)) {
             return 'done';
         }
         return parent::get_selected_choice_value();
@@ -79,7 +79,7 @@ class visibility extends visibility_base {
         choicelist $choice,
     ): \stdClass {
         // Handle done state badge text.
-        if ($this->mod->visible && done_manager::is_done($this->mod->id)) {
+        if ($this->mod->visible && done_manager::is_done($this->mod->id, (int) $this->mod->course)) {
             $badgetext = $output->visually_hidden_text(get_string('availability'));
             $badgetext .= get_string('availability_done', 'format_mimo');
             $icon = $this->get_icon('done');
@@ -108,7 +108,7 @@ class visibility extends visibility_base {
         $choice = parent::create_choice_list();
 
         $format = $this->format;
-        $isdone = done_manager::is_done($this->mod->id);
+        $isdone = done_manager::is_done($this->mod->id, (int) $this->mod->course);
 
         // Add "Done" option — marks activity as done (greyed out, excluded from completion).
         $nonajaxurl = $format->get_update_url(
@@ -142,7 +142,7 @@ class visibility extends visibility_base {
      */
     public function build_static_data(\renderer_base $output): ?\stdClass {
         // Handle done state for non-editor view.
-        if ($this->mod->visible && done_manager::is_done($this->mod->id)) {
+        if ($this->mod->visible && done_manager::is_done($this->mod->id, (int) $this->mod->course)) {
             return (object) [
                 'isInteractive' => false,
                 'moddone' => true,

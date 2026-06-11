@@ -99,7 +99,7 @@ class cmitem extends cmitem_base {
         }
 
         // Check if this activity is flagged as done.
-        $isdone = done_manager::is_done($cmid);
+        $isdone = done_manager::is_done($cmid, (int) $mod->course);
         $data->cmformat->isdone = $isdone;
 
         // Add completion status - get from cm_info object.
