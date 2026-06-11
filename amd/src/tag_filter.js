@@ -931,17 +931,29 @@ export const init = () => {
     registerFireworkListener();
 
     // Initialize filter bars (which also handle their associated completion status regions).
+    // Guard each element against double-initialization: the template {{#js}} block runs
+    // once per section render, including re-renders of surviving DOM nodes.
     document
         .querySelectorAll('[data-region="mimo-filterbar"]')
-        .forEach((bar) => initFilterBar(bar));
+        .forEach((bar) => {
+            if (bar.dataset.mimoFilterInit) {
+                return;
+            }
+            bar.dataset.mimoFilterInit = '1';
+            initFilterBar(bar);
+        });
 
     // Initialize standalone completion status regions (when filtering is disabled).
     document
         .querySelectorAll('[data-region="completion-status"]')
         .forEach((statusRegion) => {
+            if (statusRegion.dataset.mimoFilterInit) {
+                return;
+            }
             // Skip if already initialized by a filter bar.
             const parent = statusRegion.parentElement;
             if (!parent || !parent.querySelector('[data-region="mimo-filterbar"]')) {
+                statusRegion.dataset.mimoFilterInit = '1';
                 initCompletionStatusOnly(statusRegion);
             }
         });

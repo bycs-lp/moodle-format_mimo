@@ -70,6 +70,12 @@ class assign_tag extends external_api {
         self::validate_context($context);
         require_capability('moodle/course:manageactivities', $context);
 
+        // Verify the tag exists and is available in this course.
+        $coursetags = tag_manager::get_tags_for_course($cm->course);
+        if (!isset($coursetags[$params['tagid']])) {
+            throw new \invalid_parameter_exception('Invalid tag id for this course.');
+        }
+
         // Assign the tag.
         $success = tag_manager::assign_tag_to_cm($params['cmid'], $params['tagid']);
 

@@ -45,9 +45,11 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
         $profile = profile_manager::get_profile($profileid);
         if ($profile) {
             // Prevent deletion if profile is in use by any course.
+            // The value column is TEXT; direct equality breaks on Oracle/MSSQL.
+            $valcompare = $DB->sql_compare_text('value', 255);
             $inuse = $DB->record_exists_select(
                 'course_format_options',
-                "format = 'mimo' AND name = 'activityprofile' AND value = :name",
+                "format = 'mimo' AND name = 'activityprofile' AND $valcompare = :name",
                 ['name' => $profile->name]
             );
             if ($inuse) {

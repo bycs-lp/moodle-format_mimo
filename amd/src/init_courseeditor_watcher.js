@@ -47,6 +47,12 @@ export const init = () => {
         return null;
     }
 
+    // Guard against double-initialization on repeated template {{#js}} runs.
+    if (element.dataset.mimoEditorWatcherInit) {
+        return null;
+    }
+    element.dataset.mimoEditorWatcherInit = '1';
+
     // Find the section container to obtain the wall state.
     const sectionElement = element.closest('.section-item') || element.closest('[data-sectionid]') || element;
 

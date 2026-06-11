@@ -82,6 +82,13 @@ class callbacks {
             return false;
         }
 
+        // Force download for SVG files so embedded scripts never execute in the
+        // site origin when the file URL is opened directly. Browsers ignore the
+        // disposition for <img> loads, so card/filter images render unaffected.
+        if ($file->get_mimetype() === 'image/svg+xml') {
+            $forcedownload = true;
+        }
+
         send_stored_file($file, 0, 0, $forcedownload, $options);
     }
 
@@ -152,7 +159,11 @@ class callbacks {
         $tagid = (int)$data->mimo_cmtag;
 
         if ($tagid > 0) {
-            tag_manager::assign_tag_to_cm($cmid, $tagid);
+            // Only assign tags that are actually available in this course.
+            $coursetags = tag_manager::get_tags_for_course($course->id);
+            if (isset($coursetags[$tagid])) {
+                tag_manager::assign_tag_to_cm($cmid, $tagid);
+            }
         } else {
             tag_manager::remove_cm_tag($cmid);
         }

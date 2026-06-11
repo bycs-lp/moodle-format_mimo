@@ -228,12 +228,17 @@ class stateactions extends core_stateactions {
             ['moodle/course:activityvisibility']
         );
 
+        $modinfo = get_fast_modinfo($course);
         foreach ($ids as $cmid) {
             // Ensure the activity is visible (shown) when marking as done.
             set_coursemodule_visible($cmid, true, 1, false);
+            $cm = $modinfo->get_cm($cmid);
+            \core\event\course_module_updated::create_from_cm($cm)->trigger();
             done_manager::set_done($cmid);
         }
 
+        // Purge the per-cm caches so the partial rebuild picks up the visibility change.
+        \course_modinfo::purge_course_modules_cache($course->id, $ids);
         rebuild_course_cache($course->id, false, true);
         $this->cm_state($updates, $course, $ids);
     }

@@ -412,17 +412,22 @@ function xmldb_format_mimo_upgrade($oldversion) {
         }
 
         // Step 2: Create a "Default" tagset and assign all existing tags to it.
+        // Re-runnable: reuse an existing "Default" tagset (unique name index)
+        // in case a previous upgrade run failed after this insert.
         $now = time();
         $defaulttagsetid = null;
 
         if ($DB->record_exists('format_mimo_tags', [])) {
-            $defaulttagset = new stdClass();
-            $defaulttagset->name = 'Default';
-            $defaulttagset->description = 'Auto-created tagset for existing tags.';
-            $defaulttagset->sortorder = 0;
-            $defaulttagset->timecreated = $now;
-            $defaulttagset->timemodified = $now;
-            $defaulttagsetid = $DB->insert_record('format_mimo_tagsets', $defaulttagset);
+            $defaulttagsetid = $DB->get_field('format_mimo_tagsets', 'id', ['name' => 'Default']);
+            if (!$defaulttagsetid) {
+                $defaulttagset = new stdClass();
+                $defaulttagset->name = 'Default';
+                $defaulttagset->description = 'Auto-created tagset for existing tags.';
+                $defaulttagset->sortorder = 0;
+                $defaulttagset->timecreated = $now;
+                $defaulttagset->timemodified = $now;
+                $defaulttagsetid = $DB->insert_record('format_mimo_tagsets', $defaulttagset);
+            }
         }
 
         // Step 3: Add tagsetid column to tags table (nullable first for migration).

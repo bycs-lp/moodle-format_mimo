@@ -135,6 +135,9 @@ class completion_defaults_manager {
             $data = $stripped;
         }
 
+        global $CFG;
+        require_once($CFG->libdir . '/completionlib.php');
+
         $corefields = [
             'completion' => COMPLETION_DISABLED,
             'completionview' => COMPLETION_VIEW_NOT_REQUIRED,
@@ -187,7 +190,9 @@ class completion_defaults_manager {
      * @return bool True if defaults were created, false if table already had records.
      */
     public static function initialize_default_completion_defaults(): bool {
-        global $DB;
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . '/completionlib.php');
 
         // Guard: don't overwrite existing customizations.
         if ($DB->record_exists(self::TABLE, [])) {

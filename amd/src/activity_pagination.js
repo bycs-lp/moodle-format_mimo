@@ -117,6 +117,13 @@ export const init = () => {
         return;
     }
 
+    // Guard against double-initialization: the template {{#js}} block runs once
+    // per section render, which would stack duplicate listeners and closures.
+    if (container.dataset.mimoPaginationInit) {
+        return;
+    }
+    container.dataset.mimoPaginationInit = '1';
+
     const allActivityCards = Array.from(container.querySelectorAll('.col-12'));
     if (allActivityCards.length === 0) {
         return;

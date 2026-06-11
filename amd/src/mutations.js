@@ -104,10 +104,13 @@ class MimoMutations extends DefaultMutations {
     cmDone = async function(stateManager, cmIds) {
         const course = stateManager.get('course');
         this.cmLock(stateManager, cmIds, true);
-        const updates = await this._callEditWebservice('cm_done', course.id, cmIds);
-        this.bulkReset(stateManager);
-        stateManager.processUpdates(updates);
-        this.cmLock(stateManager, cmIds, false);
+        try {
+            const updates = await this._callEditWebservice('cm_done', course.id, cmIds);
+            this.bulkReset(stateManager);
+            stateManager.processUpdates(updates);
+        } finally {
+            this.cmLock(stateManager, cmIds, false);
+        }
         // Reload each cmitem from the server so the visibility dropdown icon updates.
         cmIds.forEach(id => reloadCmItem(id));
     };
@@ -121,10 +124,13 @@ class MimoMutations extends DefaultMutations {
     cmUndone = async function(stateManager, cmIds) {
         const course = stateManager.get('course');
         this.cmLock(stateManager, cmIds, true);
-        const updates = await this._callEditWebservice('cm_undone', course.id, cmIds);
-        this.bulkReset(stateManager);
-        stateManager.processUpdates(updates);
-        this.cmLock(stateManager, cmIds, false);
+        try {
+            const updates = await this._callEditWebservice('cm_undone', course.id, cmIds);
+            this.bulkReset(stateManager);
+            stateManager.processUpdates(updates);
+        } finally {
+            this.cmLock(stateManager, cmIds, false);
+        }
         // Reload each cmitem from the server so the visibility dropdown icon updates.
         cmIds.forEach(id => reloadCmItem(id));
     };

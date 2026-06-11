@@ -88,7 +88,8 @@ const setupDeleteActions = (container) => {
         e.stopPropagation();
 
         const sectionId = parseInt(btn.dataset.sectionId, 10);
-        const sectionName = btn.dataset.sectionName || '';
+        const sectionName = (btn.dataset.sectionName || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         const activityCount = parseInt(btn.dataset.activityCount, 10) || 0;
 
         // Choose confirmation message based on whether the section has activities.

@@ -101,7 +101,9 @@ class completion_helper {
      * @return array<int, int> Map of coursemoduleid => completed user count.
      */
     public static function get_teacher_completion_counts(int $courseid): array {
-        global $DB;
+        global $CFG, $DB;
+
+        require_once($CFG->libdir . '/completionlib.php');
 
         if (array_key_exists($courseid, self::$completioncounts)) {
             return self::$completioncounts[$courseid];

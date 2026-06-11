@@ -257,11 +257,20 @@ export const init = () => {
     const wallState = getWallState(sectionElement);
 
     // Create a CardDnd component for each card column.
+    // Guard each column so a re-run of the template {{#js}} block does not
+    // attach a second DragDrop (which would fire duplicate cm_move calls).
     container.querySelectorAll('.col-12').forEach((col) => {
+        if (col.dataset.mimoDndInit) {
+            return;
+        }
         if (col.querySelector('.mimo-card')) {
+            col.dataset.mimoDndInit = '1';
             new CardDnd({element: col, reactive: wallState});
         }
     });
 
-    setupPaginationDragHover();
+    if (!container.dataset.mimoDndHoverInit) {
+        container.dataset.mimoDndHoverInit = '1';
+        setupPaginationDragHover();
+    }
 };

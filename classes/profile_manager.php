@@ -180,11 +180,13 @@ class profile_manager {
         if (isset($data['name'])) {
             $oldprofile = self::get_profile($id);
             if ($oldprofile && $oldprofile->name !== $data['name']) {
+                // The value column is TEXT; direct equality breaks on Oracle/MSSQL.
+                $valcompare = $DB->sql_compare_text('value', 255);
                 $DB->set_field_select(
                     'course_format_options',
                     'value',
                     $data['name'],
-                    "format = 'mimo' AND name = 'activityprofile' AND value = :oldname",
+                    "format = 'mimo' AND name = 'activityprofile' AND $valcompare = :oldname",
                     ['oldname' => $oldprofile->name]
                 );
                 // Clear tag cache for all affected courses.
@@ -851,8 +853,9 @@ class profile_manager {
 
         // The course_format_options.value column is a text column on most DB engines
         // and cannot be compared directly; use sql_compare_text() for portability.
-        $valcompare = $DB->sql_compare_text('cfo.value');
-        $namecompare = $DB->sql_compare_text('p.name');
+        // Explicit length: default (32) is shorter than possible profile names.
+        $valcompare = $DB->sql_compare_text('cfo.value', 255);
+        $namecompare = $DB->sql_compare_text('p.name', 255);
         $sql = "SELECT p.id
                   FROM {" . self::TABLE_PROFILES . "} p
                  WHERE p.scope = :scope

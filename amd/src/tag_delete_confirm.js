@@ -58,7 +58,8 @@ const registerEventListeners = () => {
  */
 const handleDeleteTag = async(button) => {
     try {
-        const tagName = button.dataset.tagName;
+        const tagName = (button.dataset.tagName || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         const deleteUrl = button.href;
 
         const modal = await ModalDeleteCancel.create({

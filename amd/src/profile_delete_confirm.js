@@ -57,7 +57,8 @@ const registerEventListeners = () => {
  */
 const handleDeleteProfile = async(button) => {
     try {
-        const profileName = button.dataset.profileName;
+        const profileName = (button.dataset.profileName || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         const deleteUrl = button.href;
 
         const modal = await ModalDeleteCancel.create({
