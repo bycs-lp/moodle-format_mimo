@@ -283,6 +283,91 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
+     * Mapping cache writes must be targeted: mutating one cm's tag must not
+     * evict other cms' cached mappings (regression test for site-wide purge).
+     */
+    public function test_mapping_cache_is_targeted(): void {
+        $course = $this->getDataGenerator()->create_course();
+        $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+
+        $tag1id = tag_manager::create_tag('Tag One');
+        $tag2id = tag_manager::create_tag('Tag Two');
+
+        tag_manager::assign_tag_to_cm($page1->cmid, $tag1id);
+        tag_manager::assign_tag_to_cm($page2->cmid, $tag2id);
+
+        // Prime the cache for both cms.
+        tag_manager::get_cm_tag($page1->cmid);
+        tag_manager::get_cm_tag($page2->cmid);
+
+        // Mutating cm1 must keep cm2's cached entry intact.
+        $cache = \cache::make('format_mimo', 'activitytagmappings');
+        tag_manager::assign_tag_to_cm($page1->cmid, $tag2id);
+        $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
+
+        // Write-through: cm1's entry reflects the new tag without a DB roundtrip.
+        $this->assertEquals($tag2id, $cache->get('cm_' . $page1->cmid));
+        $this->assertEquals($tag2id, tag_manager::get_cm_tag($page1->cmid)->id);
+
+        // Removing cm1's tag writes the sentinel and keeps cm2 cached.
+        tag_manager::remove_cm_tag($page1->cmid);
+        $this->assertSame(0, $cache->get('cm_' . $page1->cmid));
+        $this->assertFalse(tag_manager::get_cm_tag($page1->cmid));
+        $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
+        $this->assertEquals($tag2id, tag_manager::get_cm_tag($page2->cmid)->id);
+    }
+
+    /**
+     * Deleting a tag must evict the mappings of cms that used it,
+     * while unrelated cms stay cached.
+     */
+    public function test_delete_tag_evicts_only_affected_mappings(): void {
+        $course = $this->getDataGenerator()->create_course();
+        $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+
+        $doomedid = tag_manager::create_tag('Doomed');
+        $survivorid = tag_manager::create_tag('Survivor');
+
+        tag_manager::assign_tag_to_cm($page1->cmid, $doomedid);
+        tag_manager::assign_tag_to_cm($page2->cmid, $survivorid);
+
+        // Prime both entries.
+        tag_manager::get_cm_tag($page1->cmid);
+        tag_manager::get_cm_tag($page2->cmid);
+
+        tag_manager::delete_tag($doomedid);
+
+        $cache = \cache::make('format_mimo', 'activitytagmappings');
+        // Affected mapping evicted, fresh lookup reports untagged.
+        $this->assertFalse($cache->get('cm_' . $page1->cmid));
+        $this->assertFalse(tag_manager::get_cm_tag($page1->cmid));
+        // Unrelated mapping survives.
+        $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
+        $this->assertEquals($survivorid, tag_manager::get_cm_tag($page2->cmid)->id);
+    }
+
+    /**
+     * evict_cm_mapping() drops a single cached entry.
+     */
+    public function test_evict_cm_mapping(): void {
+        $course = $this->getDataGenerator()->create_course();
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $tagid = tag_manager::create_tag('Reading');
+
+        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        tag_manager::get_cm_tag($page->cmid);
+
+        tag_manager::evict_cm_mapping($page->cmid);
+
+        $cache = \cache::make('format_mimo', 'activitytagmappings');
+        $this->assertFalse($cache->get('cm_' . $page->cmid));
+        // A fresh lookup re-primes from the DB.
+        $this->assertEquals($tagid, tag_manager::get_cm_tag($page->cmid)->id);
+    }
+
+    /**
      * Test initializing default tags.
      */
     public function test_initialize_default_tags(): void {

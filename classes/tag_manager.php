@@ -631,6 +631,9 @@ class tag_manager {
     public static function delete_tag(int $id): bool {
         global $DB;
 
+        // Collect affected cm mappings before deleting them, for targeted cache eviction.
+        $cmids = $DB->get_fieldset_select('format_mimo_cmtags', 'cmid', 'tagid = :tagid', ['tagid' => $id]);
+
         // Delete all mappings for this tag.
         $DB->delete_records('format_mimo_cmtags', ['tagid' => $id]);
 
@@ -650,7 +653,14 @@ class tag_manager {
 
         // Purge entire tag cache — course_tags_* entries reference this tag.
         self::clear_tag_cache();
-        self::clear_mapping_cache();
+        // Evict only the mappings that referenced this tag.
+        if (!empty($cmids)) {
+            self::init_caches();
+            self::$mappingcache->delete_many(array_map(
+                static fn($cmid) => 'cm_' . $cmid,
+                $cmids
+            ));
+        }
 
         return $result;
     }
@@ -681,7 +691,12 @@ class tag_manager {
             $result = !empty($result);
         }
 
-        self::clear_mapping_cache();
+        // Write-through: update only this cm's cache entry instead of purging
+        // the whole site-wide mapping cache.
+        if ($result) {
+            self::init_caches();
+            self::$mappingcache->set('cm_' . $cmid, $tagid);
+        }
         return $result;
     }
 
@@ -761,9 +776,26 @@ class tag_manager {
         global $DB;
 
         $result = $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
-        self::clear_mapping_cache();
+        // Write the "untagged" sentinel for this cm only (see get_cm_tag()),
+        // leaving the rest of the site-wide mapping cache intact.
+        self::init_caches();
+        self::$mappingcache->set('cm_' . $cmid, 0);
 
         return $result;
+    }
+
+    /**
+     * Evict a single cm's entry from the mapping cache.
+     *
+     * Used when a course module is deleted: the row cleanup happens in the
+     * observer, this just drops the (now stale) cache entry.
+     *
+     * @param int $cmid Course module ID
+     * @return void
+     */
+    public static function evict_cm_mapping(int $cmid): void {
+        self::init_caches();
+        self::$mappingcache->delete('cm_' . $cmid);
     }
 
     /**

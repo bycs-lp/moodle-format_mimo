@@ -81,7 +81,7 @@ class observer {
         $cmid = $event->objectid;
         $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
         done_manager::delete_for_cm($cmid);
-        tag_manager::clear_mapping_cache();
+        tag_manager::evict_cm_mapping($cmid);
     }
 
     /**
