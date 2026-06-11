@@ -197,28 +197,18 @@ class completion_defaults_manager {
         // Tier A: Automatic + custom rule + require grade.
         // Tier B: Automatic + require grade only (no custom rules available).
         // Tier C: Automatic + custom rule, no grade.
-        // Tier D: Manual self-completion.
+        // Tier D: Automatic + view only.
+        // Tier E: Manual self-completion.
         $defaults = [
             // Tier A: Custom rule + grade.
             'assign' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'completionusegrade' => 1,
                 'customrules' => ['completionsubmit' => 1],
-            ],
-            'quiz' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'completionusegrade' => 1,
-                'customrules' => ['completionminattempts' => 1],
             ],
             'lesson' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'completionusegrade' => 1,
                 'customrules' => ['completionendreached' => 1],
-            ],
-            'scorm' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'completionusegrade' => 1,
-                'customrules' => ['completionstatusrequired' => 6],
             ],
 
             // Tier B: Grade only.
@@ -230,12 +220,23 @@ class completion_defaults_manager {
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'completionusegrade' => 1,
             ],
-            'workshop' => [
+            'game' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'completionusegrade' => 1,
             ],
 
             // Tier C: Custom rule, no grade.
+            'quiz' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => [
+                    'completionminattemptsenabled' => 1,
+                    'completionminattempts' => 1,
+                ],
+            ],
+            'scorm' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionstatusrequired' => 4],
+            ],
             'choice' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'customrules' => ['completionsubmit' => 1],
@@ -244,41 +245,21 @@ class completion_defaults_manager {
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'customrules' => ['completionsubmit' => 1],
             ],
+            'individualfeedback' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'customrules' => ['completionsubmit' => 1],
+            ],
             'forum' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'customrules' => ['completionposts' => 1],
             ],
-            'glossary' => [
+            'journal' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completionentries' => 1],
-            ],
-            'data' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completionentries' => 1],
-            ],
-            'board' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completionnotes' => 1],
-            ],
-            'kanban' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completioncreate' => 1],
-            ],
-            'checklist' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completionpercent' => 100],
-            ],
-            'ratingallocate' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completionvote' => 1],
+                'customrules' => ['completion_create_entry' => 1],
             ],
             'mootyper' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
                 'customrules' => ['completionexercise' => 1],
-            ],
-            'subcourse' => [
-                'completion' => COMPLETION_TRACKING_AUTOMATIC,
-                'customrules' => ['completioncourse' => 1],
             ],
             'bigbluebuttonbn' => [
                 'completion' => COMPLETION_TRACKING_AUTOMATIC,
@@ -289,24 +270,32 @@ class completion_defaults_manager {
                 'customrules' => ['completiontype' => 2],
             ],
 
-            // Tier D: Manual self-completion.
+            // Tier D: View only.
+            'hvp' => [
+                'completion' => COMPLETION_TRACKING_AUTOMATIC,
+                'completionview' => COMPLETION_VIEW_REQUIRED,
+            ],
+
+            // Tier E: Manual self-completion.
             'page' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'book' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'resource' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'url' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'imscp' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'folder' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'label' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'unilabel' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'wiki' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'hvp' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'journal' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'board' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'checklist' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'data' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'glossary' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'kanban' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'ratingallocate' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'subcourse' => ['completion' => COMPLETION_TRACKING_MANUAL],
+            'workshop' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'moodleoverflow' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'lightboxgallery' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'individualfeedback' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'aichat' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'mootimeter' => ['completion' => COMPLETION_TRACKING_MANUAL],
-            'game' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'geogebra' => ['completion' => COMPLETION_TRACKING_MANUAL],
             'qbank' => ['completion' => COMPLETION_TRACKING_MANUAL],
         ];

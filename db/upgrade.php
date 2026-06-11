@@ -1022,5 +1022,16 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026061100, 'format', 'mimo');
     }
 
+    // Re-seed the mimo completion defaults with the revised tier assignments
+    // (June 2026 review): several activities moved to manual self-completion,
+    // quiz/scorm no longer require a grade, and hvp/journal/individualfeedback/
+    // game switched to automatic completion. Existing records are replaced.
+    if ($oldversion < 2026061102) {
+        $DB->delete_records('format_mimo_compdefs', []);
+        \format_mimo\completion_defaults_manager::initialize_default_completion_defaults();
+
+        upgrade_plugin_savepoint(true, 2026061102, 'format', 'mimo');
+    }
+
     return true;
 }

@@ -186,8 +186,12 @@ class callbacks {
         }
 
         // Check if we have a mimo completion override for this module type.
+        // Without an override, fall back to manual self-completion.
         $mimodefaults = completion_defaults_manager::get_default($moduleid);
         if (!$mimodefaults) {
+            if ($mform->elementExists('completion')) {
+                $mform->setDefault('completion', COMPLETION_TRACKING_MANUAL);
+            }
             return;
         }
 
@@ -222,9 +226,11 @@ class callbacks {
                 unset($customrules['modids']);
                 unset($customrules['id']);
                 foreach ($customrules as $key => $value) {
-                    if ($mform->elementExists($key)) {
-                        $mform->setDefault($key, $value);
-                    }
+                    // Do not require elementExists(): rule elements nested in a
+                    // group (e.g. quiz completionminattemptsgroup) are not
+                    // registered at top level, but setDefault() still reaches
+                    // them by element name and is harmless otherwise.
+                    $mform->setDefault($key, $value);
                 }
             }
         }
