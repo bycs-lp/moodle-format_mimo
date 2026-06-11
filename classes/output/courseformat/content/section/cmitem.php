@@ -114,22 +114,17 @@ class cmitem extends cmitem_base {
 
             $coursecontext = \core\context\course::instance($cm->course);
             if (has_capability('report/progress:view', $coursecontext)) {
-                if (!$isdone) {
-                    // Teacher view: show aggregated completion count (only for non-done activities).
-                    $counts = completion_helper::get_teacher_completion_counts($cm->course);
-                    $totalusers = completion_helper::get_tracked_user_count($cm->course);
-                    $data->cmformat->completion->isteacherview = true;
-                    $data->cmformat->completion->completedcount = $counts[$cmid] ?? 0;
-                    $data->cmformat->completion->trackedtotal = $totalusers;
-                    $data->cmformat->completion->reporturl = (new \moodle_url(
-                        '/report/progress/index.php',
-                        ['course' => $cm->course]
-                    ))->out(false);
-                } else {
-                    // Teachers on done activities don't need the completion badge
-                    // (they see the done state via the visibility dropdown).
-                    $data->cmformat->completion->hascompletion = false;
-                }
+                // Teacher view: show aggregated completion count with progress report link,
+                // also for done activities.
+                $counts = completion_helper::get_teacher_completion_counts($cm->course);
+                $totalusers = completion_helper::get_tracked_user_count($cm->course);
+                $data->cmformat->completion->isteacherview = true;
+                $data->cmformat->completion->completedcount = $counts[$cmid] ?? 0;
+                $data->cmformat->completion->trackedtotal = $totalusers;
+                $data->cmformat->completion->reporturl = (new \moodle_url(
+                    '/report/progress/index.php',
+                    ['course' => $cm->course]
+                ))->out(false);
             } else {
                 // Student view: show personal completion state.
                 $completiondata = $completioninfo->get_data($cm, false);
