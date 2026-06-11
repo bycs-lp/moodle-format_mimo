@@ -799,6 +799,48 @@ class tag_manager {
     }
 
     /**
+     * Batch-prime the cm→tag mapping cache for a set of course modules.
+     *
+     * Loads all mappings missing from the cache in a single query instead of
+     * one query per cm in {@see self::get_cm_tag()}. Untagged cms are cached
+     * with the sentinel value 0 so they don't trigger DB lookups either.
+     *
+     * Intended to be called once per render with all cmids about to be shown.
+     *
+     * @param int[] $cmids Course module IDs
+     * @return void
+     */
+    public static function prime_cm_mappings(array $cmids): void {
+        global $DB;
+
+        if (empty($cmids)) {
+            return;
+        }
+        self::init_caches();
+
+        // Determine which cmids are not cached yet.
+        $keys = array_map(static fn($cmid) => 'cm_' . $cmid, $cmids);
+        $cached = self::$mappingcache->get_many($keys);
+        $missing = [];
+        foreach ($cmids as $cmid) {
+            if ($cached['cm_' . $cmid] === false) {
+                $missing[] = (int) $cmid;
+            }
+        }
+        if (empty($missing)) {
+            return;
+        }
+
+        // Load all missing mappings in one query; default to the sentinel 0.
+        $values = array_fill_keys(array_map(static fn($cmid) => 'cm_' . $cmid, $missing), 0);
+        $mappings = $DB->get_records_list('format_mimo_cmtags', 'cmid', $missing, '', 'cmid, tagid');
+        foreach ($mappings as $mapping) {
+            $values['cm_' . $mapping->cmid] = (int) $mapping->tagid;
+        }
+        self::$mappingcache->set_many($values);
+    }
+
+    /**
      * Clear tag configuration cache.
      *
      * @return void

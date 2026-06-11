@@ -368,6 +368,43 @@ final class tag_manager_test extends \advanced_testcase {
     }
 
     /**
+     * prime_cm_mappings() batch-loads tagged and untagged cms into the cache.
+     */
+    public function test_prime_cm_mappings(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course();
+        $tagged = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $untagged = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+
+        $tagid = tag_manager::create_tag('Reading');
+        tag_manager::assign_tag_to_cm($tagged->cmid, $tagid);
+
+        // Start from a cold cache.
+        tag_manager::clear_mapping_cache();
+
+        tag_manager::prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
+
+        // Both entries are now cached: real tagid and the untagged sentinel.
+        $cache = \cache::make('format_mimo', 'activitytagmappings');
+        $this->assertEquals($tagid, $cache->get('cm_' . $tagged->cmid));
+        $this->assertSame(0, $cache->get('cm_' . $untagged->cmid));
+
+        // Lookups resolve without further DB reads: delete the rows behind the
+        // cache's back and verify the cached values are still served.
+        $DB->delete_records('format_mimo_cmtags', ['cmid' => $tagged->cmid]);
+        $this->assertEquals($tagid, tag_manager::get_cm_tag($tagged->cmid)->id);
+        $this->assertFalse(tag_manager::get_cm_tag($untagged->cmid));
+
+        // Re-priming must not overwrite existing entries (only loads misses).
+        tag_manager::prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
+        $this->assertEquals($tagid, $cache->get('cm_' . $tagged->cmid));
+
+        // Empty input is a no-op.
+        tag_manager::prime_cm_mappings([]);
+    }
+
+    /**
      * Test initializing default tags.
      */
     public function test_initialize_default_tags(): void {

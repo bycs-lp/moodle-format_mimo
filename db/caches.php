@@ -37,7 +37,9 @@ $definitions = [
         'simplekeys' => true,
         'simpledata' => true,
         'staticacceleration' => true,
-        'staticaccelerationsize' => 100,
+        // Must comfortably exceed the activity count of a large wall; entries
+        // are tiny ints, and an undersized LRU thrashes mid-render.
+        'staticaccelerationsize' => 500,
     ],
     'activity_descriptions' => [
         'mode' => cache_store::MODE_APPLICATION,

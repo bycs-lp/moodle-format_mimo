@@ -51,6 +51,11 @@ class content extends content_base {
             return $this->export_overview($output);
         }
 
+        // Batch-prime the cm→tag mapping cache so per-card get_cm_tag() calls
+        // are cache hits even on a cold cache (avoids one query per activity).
+        $modinfo = get_fast_modinfo($course);
+        \format_mimo\tag_manager::prime_cm_mappings(array_keys($modinfo->cms));
+
         $data = parent::export_for_template($output);
 
         // Get the course format options.
@@ -140,7 +145,11 @@ class content extends content_base {
         $defaultcolour = '#d0d0d0';
 
         // Pre-fetch done cmids for the course to exclude from completion tracking.
-        $donecmids = \format_mimo\done_manager::get_done_cmids($course->id);
+        // Flipped to a set for O(1) lookups in the per-cm loop below.
+        $donecmids = array_fill_keys(\format_mimo\done_manager::get_done_cmids($course->id), true);
+
+        // Batch-prime the cm→tag mapping cache for the mini-tile loop below.
+        \format_mimo\tag_manager::prime_cm_mappings(array_keys($modinfo->cms));
 
         // Pre-fetch section overview images for the whole course in one file-storage lookup.
         $sectionimageurls = \format_mimo\section_image_manager::get_image_urls_for_course($course->id);
@@ -186,7 +195,7 @@ class content extends content_base {
                     $minitiles[] = $tile;
 
                     // Skip done activities from completion tracking.
-                    if (in_array((int) $cmid, $donecmids, true)) {
+                    if (isset($donecmids[(int) $cmid])) {
                         continue;
                     }
 
