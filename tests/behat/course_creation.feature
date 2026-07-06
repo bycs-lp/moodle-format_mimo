@@ -1,6 +1,6 @@
 @format @format_mimo @javascript
 Feature: Course creation with mimo format
-  In order to use the mimo wall format
+  In order to use the mimo format
   As a teacher
   I need to create courses and configure them
 
@@ -28,7 +28,7 @@ Feature: Course creation with mimo format
     And I set the following fields to these values:
       | Course full name    | Test Course 1        |
       | Course short name   | TC1                  |
-      | Format              | mimo wall  |
+      | Format              | mimo  |
     And I expand all fieldsets
     And I set the following fields to these values:
       | Show tag filter bar | 1                    |
@@ -45,7 +45,7 @@ Feature: Course creation with mimo format
     And I set the following fields to these values:
       | Course full name  | Test Course 2       |
       | Course short name | TC2                 |
-      | Format            | mimo wall |
+      | Format            | mimo |
     When I press "Save and display"
     Then I should see "Test Course 2"
 

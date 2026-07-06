@@ -101,7 +101,7 @@ Feature: Activity profile management in mimo format
     When I set the following fields to these values:
       | Course full name  | Test Course         |
       | Course short name | TC1                 |
-      | Format            | mimo wall |
+      | Format            | mimo |
     And I expand all fieldsets
     Then the "Activity Profile" select box should contain "New Variant"
     And the "Activity Profile" select box should contain "Another Variant"
