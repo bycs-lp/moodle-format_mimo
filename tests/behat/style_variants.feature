@@ -25,7 +25,7 @@ Feature: Activity profile variants in mimo format
     When I set the following fields to these values:
       | Course full name  | Test Course 1       |
       | Course short name | TC1                 |
-      | Format            | mimo wall |
+      | Format            | mimo                |
     And I expand all fieldsets
     And I set the field "Activity Profile" to "Classic"
     And I press "Save and display"
@@ -85,7 +85,7 @@ Feature: Activity profile variants in mimo format
     When I set the following fields to these values:
       | Course full name  | Test Course 5       |
       | Course short name | TC5                 |
-      | Format            | mimo wall |
+      | Format            | mimo                |
     And I expand all fieldsets
     And I set the field "Activity Profile" to "Classic"
     And I set the field "Background design" to "Darkmode"
