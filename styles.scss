@@ -200,8 +200,16 @@ body:not(.bulkenabled) .mimo-activities {
 
 // Tag chooser dropdown styling
 .course-content .section-item .format-mimo-tagchooser {
+    &:has(.dropdown-menu.show) {
+        position: relative;
+        // Needed so the dropdown is not hidden below the topbar.
+        z-index: 1110;
+    }
+
     ul.dropdown-menu {
         list-style: none;
+        // Needed so the dropdown is not hidden below the topbar.
+        z-index: 1120;
     }
 }
 
@@ -264,9 +272,15 @@ body:not(.bulkenabled) .mimo-activities {
         border: none !important; // Remove any default borders
     }
 
-    // Lift the activity item above siblings when its visibility dropdown is open.
-    li.activity:has(.visibility-icon-control .show) {
-        z-index: 100;
+    // Lift the activity item above siblings when control/tag dropdowns are open.
+    li.activity:has(.visibility-icon-control .show),
+    li.activity:has(.format-mimo-tagchooser .dropdown-menu.show) {
+        z-index: 1100;
+    }
+
+    // Prevent clipping when a tag chooser dropdown is open.
+    &:has(.format-mimo-tagchooser .dropdown-menu.show) {
+        overflow: visible !important;
     }
 }
 
