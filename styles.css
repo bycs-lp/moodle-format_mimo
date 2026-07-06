@@ -149,6 +149,10 @@
 .course-content .section-item .format-mimo-tagchooser ul.dropdown-menu {
   list-style: none;
   z-index: 1120;
+  min-height: 10rem !important;
+  max-height: 20rem !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
 }
 
 .mimo-activities-wrapper {

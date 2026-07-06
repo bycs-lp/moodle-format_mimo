@@ -210,6 +210,10 @@ body:not(.bulkenabled) .mimo-activities {
         list-style: none;
         // Needed so the dropdown is not hidden below the topbar.
         z-index: 1120;
+        min-height: 10rem !important;
+        max-height: 20rem !important;
+        overflow-y: auto !important;
+        overflow-x: hidden;
     }
 }
 
