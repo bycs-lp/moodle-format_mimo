@@ -16,9 +16,11 @@
 /**
  * Tag chooser button handler for format_mimo.
  *
- * Handles tag selection in the activity chooser dropdown. Supports both:
- * - Moodle 5.1+ with data-section-id attributes (MDL-86337)
- * - Moodle 5.0 and earlier with data-sectionnum attributes
+ * Handles tag selection in the activity chooser dropdown.
+ *
+ * Note: the legacy tagchooserbutton.mustache template (used via cm.mustache)
+ * only emits data-sectionnum attributes, so section number handling is kept
+ * alongside the data-section-id attributes until cm.mustache is reworked.
  *
  * @module     format_mimo/tagchooserbutton
  * @copyright  2025 Tobias Garske
@@ -31,12 +33,12 @@ import {get_string as getString} from 'core/str';
 import Templates from 'core/templates';
 import Modal from 'core/modal';
 import Pending from 'core/pending';
+import * as Repository from 'core_courseformat/local/activitychooser/repository';
+import * as ChooserDialogue from 'core_courseformat/local/activitychooser/dialogue';
 
-// Note: Activity chooser modules are dynamically imported to support older Moodle versions
-
-// Guard against double initialization. On Moodle 5.0, init() is called from both
-// renderer.php and content.php — without this guard, duplicate click listeners would
-// create multiple modals on a single tag click.
+// Guard against double initialization: init() may be requested from multiple
+// exporters on a single page — without this guard, duplicate click listeners
+// would create multiple modals on a single tag click.
 let initialized = false;
 
 /**
@@ -95,10 +97,10 @@ export const init = () => {
  * @param {string} activityType2 Second activity type (or null)
  * @param {string} activityType3 Third activity type (or null)
  * @param {string} sectionNum Section number
- * @param {string} sectionId Section ID (Moodle 5.1+)
+ * @param {string} sectionId Section ID (empty when rendered by the legacy template)
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
- * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
+ * @param {string} sectionReturnId Section return ID (optional)
  */
 const showActivityTypeModal = async(
     tagId,
@@ -296,14 +298,11 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
 /**
  * Open the standard Moodle activity chooser.
  *
- * Supports both Moodle 5.1+ (with core_courseformat modules) and 5.0 (with core_course modules).
- * For Moodle 5.0, triggers a click on the hidden button to let core handle the chooser.
- *
  * @param {string} sectionNum Section number
- * @param {string} sectionId Section ID (Moodle 5.1+)
+ * @param {string} sectionId Section ID (empty when rendered by the legacy template)
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
- * @param {string} sectionReturnId Section return ID (Moodle 5.1+, optional)
+ * @param {string} sectionReturnId Section return ID (optional)
  * @param {string} tagId The tag ID to assign (stored for later)
  */
 const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId) => {
@@ -314,17 +313,12 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
             args: {tagid: parseInt(tagId, 10), courseid: M.cfg.courseId},
         }])[0];
 
-        // Dynamically import activity chooser modules (available in Moodle 5.1+)
-        const Repository = await import('core_courseformat/local/activitychooser/repository');
-        const ChooserDialogue = await import('core_courseformat/local/activitychooser/dialogue');
-
         // Open the core activity chooser modal
         const courseId = M.cfg.courseId;
         const footerDataPromise = Repository.getModalFooterData(courseId, sectionNum);
 
         let modulesDataPromise;
         if (sectionId && sectionId !== '') {
-            // Moodle 5.1+ with section ID
             modulesDataPromise = Repository.getSectionModulesData(
                 courseId,
                 sectionId,
@@ -332,7 +326,7 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
                 beforeMod
             );
         } else {
-            // Moodle 5.0 and earlier with section number
+            // Legacy template only provides the section number.
             modulesDataPromise = Repository.getModulesData(
                 courseId,
                 sectionNum,
@@ -343,78 +337,6 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
 
         ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {
-        // Moodle 5.0: Use core_course modules instead
-        try {
-            const Repository = await import('core_course/local/activitychooser/repository');
-            const ChooserDialogue = await import('core_course/local/activitychooser/dialogue');
-
-            const courseId = M.cfg.courseId;
-            const footerDataPromise = Repository.fetchFooterData(courseId, sectionNum);
-            const modulesDataPromise = Repository.activityModules(courseId, sectionNum);
-
-            const footerData = await footerDataPromise;
-            const modulesData = await modulesDataPromise;
-
-            // Build module data with section info
-            const builtModuleData = modulesData.content_items.map(module => {
-                let link = module.link + '&section=' + sectionNum + '&beforemod=' + (beforeMod || 0);
-                if (sectionReturnNum) {
-                    link += '&sr=' + sectionReturnNum;
-                }
-                return {...module, link: link};
-            });
-
-            // Build template context - simplified version without tab modes
-            const templateContext = {
-                'default': builtModuleData,
-                showAll: true,
-                activities: [],
-                showActivities: false,
-                activitiesFirst: false,
-                resources: [],
-                showResources: false,
-                favourites: [],
-                recommended: [],
-                recommendedFirst: false,
-                recommendedBeginning: false,
-                favouritesFirst: false,
-                fallback: true,
-            };
-
-            // Create modal promise
-            const Templates = await import('core/templates');
-            const {get_string: getString} = await import('core/str');
-
-            let bodyPromiseResolver;
-            const bodyPromise = new Promise(resolve => {
-                bodyPromiseResolver = resolve;
-            });
-
-            const modalPromise = Modal.create({
-                body: bodyPromise,
-                title: await getString('addresourceoractivity'),
-                footer: footerData.customfootertemplate,
-                large: true,
-                scrollable: false,
-                templateContext: {
-                    classes: 'modchooser'
-                },
-                show: true,
-            });
-
-            // Render and resolve body BEFORE calling displayChooser
-            const renderedBody = await Templates.render('core_course/activitychooser', templateContext);
-            bodyPromiseResolver(renderedBody);
-
-            // Now display the chooser - it will find the rendered elements
-            ChooserDialogue.displayChooser(
-                modalPromise,
-                builtModuleData,
-                null, // Favourite manager function
-                footerData
-            );
-        } catch (legacyError) {
-            Notification.exception(legacyError);
-        }
+        Notification.exception(error);
     }
 };

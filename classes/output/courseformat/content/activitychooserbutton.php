@@ -29,10 +29,9 @@ use renderer_base;
 use stdClass;
 
 /**
- * Activity chooser button with tag support for Moodle 5.1+.
+ * Activity chooser button with tag support.
  *
- * This class extends the core activitychooserbutton introduced in Moodle 5.1 (MDL-86337).
- * For Moodle 5.0 and earlier, the cm.php class handles tag data injection.
+ * Extends the core activitychooserbutton (introduced in MDL-86337).
  *
  * @package    format_mimo
  * @copyright  2025 Tobias Garske

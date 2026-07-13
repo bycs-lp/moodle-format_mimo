@@ -35,52 +35,6 @@ use core_courseformat\output\section_renderer;
  */
 class renderer extends section_renderer {
     /**
-     * Renders the add cm control for a section.
-     *
-     * @param object $course The course object
-     * @param int $section The section number
-     * @param int|null $sectionreturn The section return number
-     * @param array $displayoptions Display options
-     * @return string HTML to output
-     */
-    public function course_section_add_cm_control($course, $section, $sectionreturn = null, $displayoptions = []) {
-        // Check to see if user can add menus.
-        if (
-            !has_capability('moodle/course:manageactivities', \core\context\course::instance($course->id))
-                || !$this->page->user_is_editing()
-        ) {
-            return '';
-        }
-
-        // Get tags selected for this course.
-        $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
-
-        // If we have tags selected, use our tag chooser button.
-        if (!empty($tags)) {
-            $data = [
-                'tags' => array_values($tags),
-                'sectionnum' => $section,
-                'sectionreturn' => $sectionreturn,
-                'uniqid' => uniqid(),
-            ];
-
-            // Load the JS for our tag chooser.
-            $this->page->requires->js_call_amd('format_mimo/tagchooserbutton', 'init');
-
-            return $this->render_from_template(
-                'core_courseformat/local/content/divider',
-                [
-                    'content' => $this->render_from_template('format_mimo/tagchooserbutton', $data),
-                    'extraclasses' => 'always-visible my-3',
-                ]
-            );
-        }
-
-        // Fall back to default implementation.
-        return parent::course_section_add_cm_control($course, $section, $sectionreturn, $displayoptions);
-    }
-
-    /**
      * Generate the section title, wraps it in an inplace editable for editing.
      *
      * @param \section_info|\stdClass $section The course_section entry from DB
