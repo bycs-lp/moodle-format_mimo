@@ -22,7 +22,6 @@
     Example context (json):
     {
         "editing": false,
-        "hastags": true,
         "modstealth": false,
         "modhiddenfromstudents": false,
         "modinline": false,
@@ -32,16 +31,7 @@
 {{#editing}}
     {{< core_courseformat/local/content/divider}}
         {{$content}}
-            {{#hastags}}
-                {{#activitychooserbutton}}
-                    {{> format_mimo/tagchooserbutton }}
-                {{/activitychooserbutton}}
-            {{/hastags}}
-            {{^hastags}}
-                {{#activitychooserbutton}}
-                    {{> core_course/activitychooserbutton}}
-                {{/activitychooserbutton}}
-            {{/hastags}}
+            {{#activitychooserbutton}}{{> format_mimo/local/content/activitychooserbutton}}{{/activitychooserbutton}}
         {{/content}}
     {{/ core_courseformat/local/content/divider}}
 {{/editing}}

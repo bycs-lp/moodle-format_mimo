@@ -18,10 +18,6 @@
  *
  * Handles tag selection in the activity chooser dropdown.
  *
- * Note: the legacy tagchooserbutton.mustache template (used via cm.mustache)
- * only emits data-sectionnum attributes, so section number handling is kept
- * alongside the data-section-id attributes until cm.mustache is reworked.
- *
  * @module     format_mimo/tagchooserbutton
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -97,7 +93,7 @@ export const init = () => {
  * @param {string} activityType2 Second activity type (or null)
  * @param {string} activityType3 Third activity type (or null)
  * @param {string} sectionNum Section number
- * @param {string} sectionId Section ID (empty when rendered by the legacy template)
+ * @param {string} sectionId Section ID
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
  * @param {string} sectionReturnId Section return ID (optional)
@@ -299,7 +295,7 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
  * Open the standard Moodle activity chooser.
  *
  * @param {string} sectionNum Section number
- * @param {string} sectionId Section ID (empty when rendered by the legacy template)
+ * @param {string} sectionId Section ID
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
  * @param {string} sectionReturnId Section return ID (optional)
@@ -316,24 +312,12 @@ const openActivityChooser = async(sectionNum, sectionId, beforeMod, sectionRetur
         // Open the core activity chooser modal
         const courseId = M.cfg.courseId;
         const footerDataPromise = Repository.getModalFooterData(courseId, sectionNum);
-
-        let modulesDataPromise;
-        if (sectionId && sectionId !== '') {
-            modulesDataPromise = Repository.getSectionModulesData(
-                courseId,
-                sectionId,
-                sectionReturnNum,
-                beforeMod
-            );
-        } else {
-            // Legacy template only provides the section number.
-            modulesDataPromise = Repository.getModulesData(
-                courseId,
-                sectionNum,
-                sectionReturnNum,
-                beforeMod
-            );
-        }
+        const modulesDataPromise = Repository.getSectionModulesData(
+            courseId,
+            sectionId,
+            sectionReturnNum,
+            beforeMod
+        );
 
         ChooserDialogue.displayActivityChooserModal(footerDataPromise, modulesDataPromise);
     } catch (error) {

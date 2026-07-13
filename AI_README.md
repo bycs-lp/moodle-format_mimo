@@ -162,8 +162,7 @@
   - This workflow ensures mandatory tagging and guides teachers toward recommended activity combinations.
   - **Version Support:** Minimum supported Moodle version is **5.2** (`$plugin->requires = 2026042000`).
     - Uses `format_mimo\output\courseformat\content\activitychooserbutton` class that extends the `core_courseformat\output\local\content\activitychooserbutton` base class (introduced in MDL-86337).
-    - `cm.php` keeps a defensive `$CFG->branch` check as a pattern for future branch divergence.
-    - JavaScript handles both `data-section-id` and legacy `data-sectionnum` attributes because the legacy `tagchooserbutton.mustache` template is still included via the format's `cm.mustache` (pending rework).
+    - The button renders via `templates/local/content/activitychooserbutton.mustache` in both places: the per-cm divider (included as a partial by the format's `cm.mustache`) and the section-level add button (via `section_renderer::add_cm_controls()`, which honors `get_template_name()`).
 4. **Learner view**
    - **Single-section mode**: Wall shows all activities from section 1 in a responsive grid.
    - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. In editing mode: teachers can upload/change section images, delete sections (confirmation modal with activity count warning), and reorder sections via drag-and-drop (whole card is drag surface, interactive elements take priority via `draggable="false"`). Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
@@ -263,7 +262,7 @@ This plugin demonstrates the hybrid approach:
 - Observer cleanup: `course_module_deleted` and `course_deleted` handle orphan cmtag records + imported tag/profile cleanup. Don't add manual cleanup in other code paths.
 - `tag_delete_confirm.js` uses event capturing (`addEventListener('click', handler, true)`) to intercept before `stopPropagation` on accordion buttons. Maintain this pattern.
 - Keep AI-facing docs (this file + README) updated when adding new options or data flows to minimize forgotten invariants.
-- **Version Compatibility**: Minimum supported Moodle version is **5.2** (branch 502). CI runs against `MOODLE_502_STABLE` and `main`. The activity chooser integration builds on core_courseformat's activitychooserbutton (MDL-86337). `cm.php` retains a `$CFG->branch` check as a defensive pattern for future branch divergence.
+- **Version Compatibility**: Minimum supported Moodle version is **5.2** (branch 502). CI runs against `MOODLE_502_STABLE` and `main`. The activity chooser integration builds on core_courseformat's activitychooserbutton (MDL-86337).
 - **Linter warnings**: Expect false positives for dynamic class loading, missing namespaces in legacy code, and global variable usage—these are intentional Moodle patterns, not bugs.
 - **Section heading comments**: Use C-style block comments for visual section separators inside classes and test files. Moodle's inline comment sniffs (`InvalidEndChar`, `NotCapital`) only apply to `//` comments, so block comments pass cleanly. Preferred style:
   ```php
@@ -275,13 +274,13 @@ This plugin demonstrates the hybrid approach:
 
 ## Version Compatibility Details
 
-- **Minimum Moodle version: 5.2** (`$plugin->requires = 2026042000`). Support for 5.0/5.1 was dropped; legacy fallbacks (core_course activity chooser modules, renderer `course_section_add_cm_control` override) have been removed.
+- **Minimum Moodle version: 5.2** (`$plugin->requires = 2026042000`). Support for 5.0/5.1 was dropped; legacy fallbacks (core_course activity chooser modules, renderer `course_section_add_cm_control` override, `tagchooserbutton.mustache`, cm.php tag-injection override) have been removed.
 - Activity chooser uses `format_mimo\output\courseformat\content\activitychooserbutton` class
 - Extends `core_courseformat\output\local\content\activitychooserbutton` (MDL-86337)
-- Uses template: `format_mimo/local/content/activitychooserbutton.mustache`
-- Data attributes: `data-section-id`, `data-sectionreturnid` (alongside legacy attributes)
+- Uses template: `format_mimo/local/content/activitychooserbutton.mustache` — handles both the tag dropdown (`hastags`) and the plain core button fallback (`^hastags`)
+- Data attributes: `data-section-id`, `data-sectionreturnid` (alongside `data-sectionnum` for the footer/modedit URL)
 - Hook support: Compatible with `\core_course\hook\before_activitychooserbutton_exported`
-- **Pending cleanup**: the format's `cm.mustache` still includes the legacy `format_mimo/tagchooserbutton.mustache` template (emits only `data-sectionnum`), so `tagchooserbutton.js` keeps the section-number fallback (deprecated `Repository.getModulesData`) until that template block is reworked to the core partial.
+- Rendering paths: per-cm divider via `{{#activitychooserbutton}}` partial include in the format's `cm.mustache`; section-level button via core `section_renderer::add_cm_controls()` which calls `$output->render()` and therefore honors the class's `get_template_name()`.
 
 ## Quick File Map
 - `lib.php` – course options (enablemultisection, activityprofile, enablefiltering, backgrounddesign, distractionfree), `is_multisection_enabled()` helper, conditional `get_sectionnum()` / `is_section_visible()` / `uses_course_index()` / `get_view_url()` / `extend_course_navigation()` (also stores section preference on activity pages), `get_remembered_section()` (validates stored preference), read-only tag preview in form, **profile dropdown filters to global + current course's imported profile**, pluginfile hook, **module form callbacks** (`coursemodule_standard_elements` tag dropdown + `coursemodule_edit_post_actions` tag persistence + `coursemodule_definition_after_data` completion defaults pre-population), preference cleanup in `delete_format_data()`.
@@ -312,20 +311,19 @@ This plugin demonstrates the hybrid approach:
 - `classes/output/courseformat/content/activitychooserbutton.php` – tag chooser button (extends core_courseformat class, MDL-86337).
 - `classes/output/courseformat/content/bulkedittools.php` – overrides core bulk edit tools to replace `availability` action with `mimoAvailability` (custom modal with Done option).
 - `classes/output/courseformat/content/cm/visibility.php` – overrides core visibility dropdown to add "Done" option (Show/Hide/Stealth/Done). Always visible in mimo format.
-- `classes/output/courseformat/content/cm.php` – course module data provider (keeps a defensive `$CFG->branch` check for future branch divergence).
+- `classes/output/courseformat/content/cm.php` – course module data provider (only overrides `get_template_name()`; tag data comes from the activitychooserbutton class).
 - `classes/output/courseformat/{content,section,cmitem}.php` – data providers for templates. `content.php` detects overview mode (multi-section + no section selected) and returns lightweight section card data via `export_overview()`, switching to `overview.mustache`; in wall view provides `overviewurl`, `showoverviewlink`, `currentsectionname`. `cmitem.php` resolves tags through profile for card rendering.
 - `templates/tag_management.mustache` – accordion-based tag admin UI, **imported badges (blue `bg-info`) and promote buttons for imported tags/profiles**.
 - `templates/form_tag_preview.mustache` – read-only tag preview for course settings form (shows active tags for selected profile).
-- `templates/local/content/activitychooserbutton.mustache` – tag chooser template (used by the activitychooserbutton output class).
+- `templates/local/content/activitychooserbutton.mustache` – tag chooser template (used by the activitychooserbutton output class; includes the plain core button fallback when no tags are configured).
 - `templates/local/overview.mustache` – **Multi-section overview landing page** with section card grid, activity counts, and completion progress.
-- `templates/local/content/cm.mustache` – course module template (uses core or custom chooser button).
-- `templates/tagchooserbutton.mustache` – **legacy tag chooser template** — still included via the format's `cm.mustache` (pending rework to the core partial, after which it can be deleted).
+- `templates/local/content/cm.mustache` – course module template (renders the chooser button via the `format_mimo/local/content/activitychooserbutton` partial).
 - `templates/activitytype_chooser_modal.mustache` – modal body for activity type selection.
 - `templates/activitytype_card.mustache` – activity type card with optional description tag pill.
 - `templates/local/content/cm/availabilitymodal.mustache` – custom availability modal body with Show/Hide/Stealth/Done radio options for bulk edit.
 - `templates/description_tags_list.mustache` – table view for description tags management page.
 - `styles.scss` / `styles.css` – wall styling + profile-specific CSS + activity card styles + description tag pill styling.
-- `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching (handles both `data-section-id` and legacy `data-sectionnum` attributes until cm.mustache is reworked).
+- `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching.
 - `amd/src/mutations.js` – custom course editor mutations: `MimoMutations` class (cmDone, cmUndone, cmShow, cmHide, cmStealth with forced DOM reload) + `mimoAvailabilityHandler` (custom bulk availability modal with Done option).
 - `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state and dispatches legacy DOM events for completion changes (used by tag_filter).
 - `amd/src/init_courseeditor_watcher.js` – initializer for the courseeditor_watcher component.
