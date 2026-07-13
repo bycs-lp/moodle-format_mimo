@@ -23,7 +23,7 @@
 
 import ModalForm from 'core_form/modalform';
 import Notification from 'core/notification';
-import ModalFactory from 'core/modal_factory';
+import SaveCancelModal from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
 import {get_string as getString} from 'core/str';
 
@@ -119,8 +119,7 @@ const showDeleteConfirmation = async(tagId, tagName, usageCount) => {
         bodyText += '<br><br>' + warningStr;
     }
 
-    const modal = await ModalFactory.create({
-        type: ModalFactory.types.SAVE_CANCEL,
+    const modal = await SaveCancelModal.create({
         title: titleStr,
         body: bodyText,
     });
