@@ -1446,12 +1446,11 @@ body.format-mimo {
         margin-top: 0;
     }
     .course-content .divider {
+        margin-top: 2rem !important;
+
         .divider-content,
         .divider-content:hover {
             background: none;
-        }
-        .btn.add-content {
-            transform: scale(1.5);
         }
     }    
 }

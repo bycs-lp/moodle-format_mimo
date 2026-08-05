@@ -1129,12 +1129,12 @@ body.format-mimo .section .activity:first-child {
   padding-top: 0.25rem;
   margin-top: 0;
 }
+body.format-mimo .course-content .divider {
+  margin-top: 2rem !important;
+}
 body.format-mimo .course-content .divider .divider-content,
 body.format-mimo .course-content .divider .divider-content:hover {
   background: none;
-}
-body.format-mimo .course-content .divider .btn.add-content {
-  transform: scale(1.5);
 }
 
 /* Header actions: arrange side by side instead of stacked. */

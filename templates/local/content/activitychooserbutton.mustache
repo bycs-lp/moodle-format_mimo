@@ -43,7 +43,7 @@
 {{! Tag chooser with dropdown (for formats with tags configured) }}
 {{#hastags}}
 <div class="dropdown format-mimo-tagchooser">
-    <button class="btn add-content d-flex justify-content-center align-items-center p-1 icon-no-margin"
+    <button class="btn add-content d-flex justify-content-center align-items-center icon-no-margin"
             type="button"
             id="tagChooserButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}"
             data-bs-toggle="dropdown"
@@ -64,7 +64,7 @@
             tabindex="0"
             title="{{#str}}addcontent, core{{/str}}"
     >
-        {{#pix}} t/add, core {{/pix}}
+        <span class="me-2">{{#pix}} t/add, core {{/pix}}</span>{{#str}}addcontent, core{{/str}}
     </button>
     <ul class="dropdown-menu" aria-labelledby="tagChooserButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}">
         {{#tags}}
@@ -97,7 +97,7 @@
     {{/hasactionlinks}}
     {{#hasactionlinks}}
     <div class="dropdown">
-        <button class="btn add-content d-flex justify-content-center align-items-center p-1 icon-no-margin"
+        <button class="btn add-content d-flex justify-content-center align-items-center icon-no-margin"
                 type="button"
                 id="dropdownMenuButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}"
                 data-bs-toggle="dropdown"
@@ -114,7 +114,7 @@
                 tabindex="0"
                 title="{{#str}}addcontent, core{{/str}}"
         >
-            {{#pix}} t/add, core {{/pix}}
+            <span class="me-2">{{#pix}} t/add, core {{/pix}}</span>{{#str}}addcontent, core{{/str}}
         </button>
         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton-{{#modid}}{{modid}}{{/modid}}{{^modid}}{{uniqid}}{{/modid}}">
             {{> core_courseformat/local/content/addresourceoractivitybutton }}
