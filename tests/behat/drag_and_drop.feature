@@ -52,3 +52,13 @@ Feature: Drag and drop activity reordering in mimo format
     # Verify the activity cards container exists
     Then ".mimo-activities" "css_element" should exist
     And I wait until "[data-for='cmitem']" "css_element" exists
+
+  @javascript
+  Scenario: Edge dropzones are rendered but hidden until a drag starts
+    Given I log in as "teacher1"
+    When I am on "Test Course 1" course homepage with editing mode on
+    And I wait until ".mimo-card" "css_element" exists
+    Then "[data-region='edge-dropzone'][data-position='start']" "css_element" should exist in the ".mimo-activities" "css_element"
+    And "[data-region='edge-dropzone'][data-position='end']" "css_element" should exist in the ".mimo-activities" "css_element"
+    And "[data-region='edge-dropzone'][data-position='start']" "css_element" should not be visible
+    And "[data-region='edge-dropzone'][data-position='end']" "css_element" should not be visible

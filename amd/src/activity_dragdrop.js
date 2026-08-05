@@ -175,6 +175,85 @@ class CardDnd extends BaseComponent {
 }
 
 /**
+ * Drop-only component for the edge dropzones (first/last position).
+ *
+ * Not draggable itself (no getDraggableData). Accepts mimo_card drags and
+ * moves the dropped card to the very first or very last position of the
+ * section. Visibility is CSS-driven: shown while a drag is active.
+ *
+ * @extends BaseComponent
+ */
+class EdgeDropzone extends BaseComponent {
+
+    /**
+     * Component setup.
+     *
+     * @param {object} descriptor BaseComponent descriptor
+     */
+    create(descriptor) {
+        this.element = descriptor.element;
+        this.reactive = descriptor.reactive;
+        // Override DragDrop CSS class to match existing styles.
+        this.classes = {DRAGOVER: 'drag-over'};
+        /** @type {string} 'start' or 'end' */
+        this.position = this.element.dataset.position;
+    }
+
+    /**
+     * Create the DragDrop delegate once state is ready.
+     */
+    stateReady() {
+        this.dragdrop = new DragDrop(this);
+    }
+
+    /**
+     * Validate whether this zone accepts the dragged data.
+     * Rejects no-op drops when the card is already at this edge.
+     *
+     * @param {object} dropdata The dragged element's data
+     * @returns {boolean}
+     */
+    validateDropData(dropdata) {
+        if (dropdata?.type !== 'mimo_card') {
+            return false;
+        }
+        const cols = Array.from(this.element.parentNode.querySelectorAll('.col-12'));
+        const index = cols.indexOf(dropdata.col);
+        if (index === -1) {
+            return false;
+        }
+        return this.position === 'start' ? index > 0 : index < cols.length - 1;
+    }
+
+    /**
+     * Move the dropped card to the first or last position.
+     *
+     * @param {object} dropdata The dragged element's data
+     */
+    drop(dropdata) {
+        const container = this.element.parentNode;
+        let moveTargetCmid = null;
+        if (this.position === 'start') {
+            // Insert before the current first card (cm_move insert-before semantics).
+            const firstCard = container.querySelector('.col-12 .mimo-card');
+            moveTargetCmid = firstCard ? parseInt(firstCard.dataset.cmid, 10) : null;
+            this.element.after(dropdata.col);
+        } else {
+            // No targetcmid: cm_move appends to the end of the section.
+            this.element.before(dropdata.col);
+        }
+
+        // Update wall state with new activity order.
+        const items = container.querySelectorAll('li[data-id]');
+        const orderedIds = Array.from(items, (item) => Number(item.dataset.id));
+        this.reactive.dispatch('reorderActivities', orderedIds);
+
+        // Persist to server.
+        persistMove(dropdata.cmid, moveTargetCmid, dropdata.sectionid);
+    }
+}
+
+/**
  * Setup pagination button hover for automatic page navigation while dragging.
  *
  * When a user hovers on a pagination button for 1 second during a drag
@@ -266,6 +345,14 @@ export const init = () => {
         if (col.querySelector('.mimo-card')) {
             col.dataset.mimoDndInit = '1';
             new CardDnd({element: col, reactive: wallState});
+        }
+    });
+
+    // Edge dropzones for moving a card directly to the first/last position.
+    container.querySelectorAll('[data-region="edge-dropzone"]').forEach((zone) => {
+        if (!zone.dataset.mimoDndInit) {
+            zone.dataset.mimoDndInit = '1';
+            new EdgeDropzone({element: zone, reactive: wallState});
         }
     });
 

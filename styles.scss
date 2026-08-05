@@ -640,6 +640,36 @@ body:not(.bulkenabled) .mimo-activities {
     }
 }
 
+// Edge dropzones: drop targets for moving a card directly to the first/last
+// position. Hidden unless a drag is active.
+.mimo-edge-dropzone {
+    display: none;
+    width: 100%;
+
+    .mimo-edge-dropzone-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 3rem;
+        border: 2px dashed rgba(0, 123, 255, 0.5);
+        border-radius: 0.75rem;
+        background: rgba(0, 123, 255, 0.05);
+        color: #007bff;
+        font-weight: 600;
+        // Let drag events hit the <li> directly to avoid enter/leave flicker.
+        pointer-events: none;
+    }
+
+    &.drag-over .mimo-edge-dropzone-inner {
+        border-style: solid;
+        background: rgba(0, 123, 255, 0.15);
+    }
+}
+
+body.editing.dragging .mimo-edge-dropzone {
+    display: block;
+}
+
 // Completion badge overlay.
 .mimo-completion-badge {
     position: absolute;
