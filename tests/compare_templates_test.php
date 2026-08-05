@@ -37,8 +37,10 @@ namespace format_mimo;
  * - Make a new copy of the updated original template in tests/fixtures/<branch>/.
  *
  * Fixture copies are stored per Moodle branch (e.g. tests/fixtures/500/, tests/fixtures/501/).
- * When running CI against a new Moodle version, create a new fixture directory by copying
- * the core templates for that version.
+ * If no fixture directory exists for the current branch (e.g. running against main),
+ * the test falls back to the highest previous branch fixture: it passes while the core
+ * template is unchanged and only fails once it diverges. Create a new fixture directory
+ * for a branch only when a template has actually changed on that branch.
  *
  * @package    format_mimo
  * @copyright  2026 ISB Bayern
@@ -158,28 +160,28 @@ final class compare_templates_test extends \advanced_testcase {
      */
     public function test_overridden_templates(string $copy, string $orig): void {
         global $CFG;
+        $this->assertFileExists($orig);
         if (!file_exists($copy)) {
-            // No fixtures for this branch — compare against previous branch to report changes.
-            $filename = basename($copy);
-            $fallback = self::get_fallback_fixture($filename);
-            $changed = '';
-            if ($fallback && file_exists($orig)) {
-                if (file_get_contents($fallback) !== file_get_contents($orig)) {
-                    $changed = ' NOTE: This template HAS CHANGED compared to the previous branch fixture.';
-                } else {
-                    $changed = ' This template has not changed compared to the previous branch fixture.';
-                }
+            // No fixtures for this branch yet (e.g. running against main).
+            // Fall back to the highest previous branch fixture: pass while the core
+            // template is unchanged, fail as soon as it diverges.
+            $fallback = self::get_fallback_fixture(basename($copy));
+            if ($fallback === null) {
+                $this->fail(
+                    'No fixture found at ' . $copy . ' and no previous branch fixture available. '
+                    . 'Please create fixtures for Moodle branch ' . $CFG->branch . ' in tests/fixtures/'
+                    . $CFG->branch . '/.'
+                );
             }
-            $this->fail(
-                'No fixture found at ' . $copy . '. '
-                . 'Please create fixtures for Moodle branch ' . $CFG->branch . ': '
-                . 'copy core templates from MOODLE_' . $CFG->branch . '_STABLE into '
-                . 'tests/fixtures/' . $CFG->branch . '/.' . $changed
-            );
+            $message = "The original template " . $orig . " has changed on branch " . $CFG->branch
+                . " compared to the previous branch fixture " . $fallback . ". "
+                . "Please check and if necessary adjust the overridden template in format_mimo, "
+                . "then create fixtures in tests/fixtures/" . $CFG->branch . "/!";
+            $this->assertFileEquals($fallback, $orig, $message);
+            return;
         }
         $message = "The original template " . $orig . " has changed since the last update. "
             . "Please check for differences and update the fixture in tests/fixtures/" . $CFG->branch . "/!";
-        $this->assertFileExists($orig);
         $this->assertFileEquals($copy, $orig, $message);
     }
 }
