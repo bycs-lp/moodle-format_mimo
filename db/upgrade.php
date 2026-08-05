@@ -1038,5 +1038,14 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026061102, 'format', 'mimo');
     }
 
+    // Darken the default Input description tag yellow (#FFF176) — too bright
+    // for the white pill text. Only touches records still on the old default.
+    if ($oldversion < 2026080500) {
+        $DB->set_field('format_mimo_desc_tags', 'color', '#F9A825', ['color' => '#FFF176']);
+        \format_mimo\activity_description_manager::clear_cache();
+
+        upgrade_plugin_savepoint(true, 2026080500, 'format', 'mimo');
+    }
+
     return true;
 }

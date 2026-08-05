@@ -60,7 +60,7 @@
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
   - Description tags provide visual categorization pills on activity type cards in chooser modal.
-  - Default description tags (created on install): 🟡 📥 Input (#FFF176), 🟢 🔁 Practice (#81C784), 🟣 📤 Share (#CE93D8), 🔵 🧠 Think (#64B5F6).
+  - Default description tags (created on install): 🟡 📥 Input (#F9A825), 🟢 🔁 Practice (#81C784), 🟣 📤 Share (#CE93D8), 🔵 🧠 Think (#64B5F6).
   - **Default activity descriptions** (created on install via `activity_description_manager::initialize_default_activity_descriptions()`): 37 activity types get short student-facing descriptions (`actdesc_{modname}` lang strings, EN + DE) and are assigned to one of the 4 description tags: Input (page, book, resource, url, imscp, scorm, lesson, hvp, h5pactivity, lti, learningmap, unilabel, subcourse), Practice (quiz, game, mootyper, geogebra, qbank), Share (forum, assign, glossary, wiki, board, journal, moodleoverflow, lightboxgallery, data), Think (choice, feedback, workshop, ratingallocate, bigbluebuttonbn, individualfeedback, kanban, aichat, mootimeter, checklist). Only creates for installed modules; skips missing lang strings.
   - Activity descriptions cached with LEFT JOIN to include tag data (name, color) for performance.
   - Admin pages: `description_tags.php` (manage tags), `activity_descriptions.php` (assign tags to activity types).
