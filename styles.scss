@@ -2488,11 +2488,19 @@ body.single-section-page.format-mimo-multisection-view {
     > .bulkselect:not(.d-none) ~ .mimo-overview-card__visibility {
         padding-left: 28px;
     }
+
+    // Without the card's aspect-ratio, flex: 1 1 0 has no bounded space to grow
+    // into, so the image blows up to its natural size. Pin it to the same
+    // height used in the non-editing view.
+    .mimo-overview-card__sectionimage-wrap {
+        flex: 0 0 135px;
+    }
 }
 
+// flex: 0 0 auto keeps the title/summary at natural height so it never
+// collapses to zero and renders hidden behind the miniwall/image below.
 .mimo-overview-card__body {
-    flex: 1;
-    min-height: 0;
+    flex: 0 0 auto;
 }
 
 .mimo-overview-card__name {
@@ -2557,7 +2565,7 @@ body.single-section-page.format-mimo-multisection-view {
     border-radius: 0.6rem;
     overflow: hidden;
     flex: 1 1 0;
-    min-height: 0;
+    min-height: 135px;
 }
 
 .mimo-overview-card__sectionimage {
@@ -2566,18 +2574,24 @@ body.single-section-page.format-mimo-multisection-view {
     display: block;
     border-radius: 0.6rem;
 
-    &--cover {
+    &--cover-top {
         object-fit: cover;
+        object-position: top;
+    }
+
+    &--cover-center {
+        object-fit: cover;
+        object-position: center;
+    }
+
+    &--cover-bottom {
+        object-fit: cover;
+        object-position: bottom;
     }
 
     &--contain {
         object-fit: contain;
     }
-}
-
-/* When a section image is present, shrink the body so the image dominates. */
-.mimo-overview-card:has(.mimo-overview-card__sectionimage-wrap) .mimo-overview-card__body {
-    flex: 0 0 auto;
 }
 
 /* Image action buttons in editing mode. */

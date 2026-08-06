@@ -285,7 +285,9 @@ class content extends content_base {
                 $sectioncard->hassectionimage = true;
                 // Read object-fit preference for this section.
                 $opts = $format->get_format_options($sectioninfo);
-                $fit = $opts['sectionimagefit'] ?? 'cover';
+                $fit = \format_mimo\section_image_manager::normalize_fit(
+                    $opts['sectionimagefit'] ?? \format_mimo\section_image_manager::DEFAULT_FIT
+                );
                 $sectioncard->sectionimagefitclass = 'mimo-overview-card__sectionimage--' . $fit;
             } else {
                 $sectioncard->hassectionimage = false;

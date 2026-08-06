@@ -62,7 +62,9 @@ class section_image_form extends dynamic_form {
 
         $fitoptions = [
             'contain' => get_string('sectionimagefit_contain', 'format_mimo'),
-            'cover' => get_string('sectionimagefit_cover', 'format_mimo'),
+            'cover-top' => get_string('sectionimagefit_covertop', 'format_mimo'),
+            'cover-center' => get_string('sectionimagefit_covercenter', 'format_mimo'),
+            'cover-bottom' => get_string('sectionimagefit_coverbottom', 'format_mimo'),
         ];
         $mform->addElement(
             'select',
@@ -70,7 +72,7 @@ class section_image_form extends dynamic_form {
             get_string('sectionimagefit', 'format_mimo'),
             $fitoptions
         );
-        $mform->setDefault('sectionimagefit', 'contain');
+        $mform->setDefault('sectionimagefit', section_image_manager::DEFAULT_FIT);
     }
 
     /**
@@ -116,10 +118,10 @@ class section_image_form extends dynamic_form {
                 break;
             }
         }
-        $fitoption = 'contain';
+        $fitoption = section_image_manager::DEFAULT_FIT;
         if ($sectioninfo) {
             $opts = $format->get_format_options($sectioninfo);
-            $fitoption = $opts['sectionimagefit'] ?? 'cover';
+            $fitoption = section_image_manager::normalize_fit($opts['sectionimagefit'] ?? section_image_manager::DEFAULT_FIT);
         }
 
         $this->set_data([

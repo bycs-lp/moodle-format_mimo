@@ -95,7 +95,7 @@ final class format_mimo_test extends \advanced_testcase {
         $options = $format->section_format_options();
         $this->assertArrayHasKey('sectionimagefit', $options);
         $this->assertSame('contain', $options['sectionimagefit']['default']);
-        $this->assertSame(PARAM_ALPHA, $options['sectionimagefit']['type']);
+        $this->assertSame(PARAM_ALPHANUMEXT, $options['sectionimagefit']['type']);
     }
 
     /**

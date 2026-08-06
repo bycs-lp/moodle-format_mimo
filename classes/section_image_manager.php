@@ -55,6 +55,12 @@ class section_image_manager {
         'accepted_types' => ['.jpg', '.png', '.webp', '.svg'],
     ];
 
+    /** Default image fit option. */
+    public const DEFAULT_FIT = 'contain';
+
+    /** Valid values for the sectionimagefit section format option. */
+    public const VALID_FITS = ['contain', 'cover-top', 'cover-center', 'cover-bottom'];
+
     /**
      * Get the filemanager options for section image uploads.
      *
@@ -62,6 +68,23 @@ class section_image_manager {
      */
     public static function get_filemanager_options(): array {
         return self::FILEMANAGER_OPTIONS;
+    }
+
+    /**
+     * Normalize a stored sectionimagefit value.
+     *
+     * Maps the legacy single 'cover' value (from before top/center/bottom
+     * variants existed) to 'cover-center' and falls back to the default
+     * for anything unrecognised.
+     *
+     * @param string $fit Raw stored fit value
+     * @return string Normalized fit value, one of VALID_FITS
+     */
+    public static function normalize_fit(string $fit): string {
+        if ($fit === 'cover') {
+            return 'cover-center';
+        }
+        return in_array($fit, self::VALID_FITS, true) ? $fit : self::DEFAULT_FIT;
     }
 
     /**
