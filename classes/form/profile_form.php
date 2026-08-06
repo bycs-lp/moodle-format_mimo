@@ -109,7 +109,7 @@ class profile_form extends dynamic_form {
         $formdata = ['profileid' => $profileid];
 
         if ($profileid) {
-            $profile = profile_manager::get_profile($profileid);
+            $profile = \core\di::get(profile_manager::class)->get_profile($profileid);
             if ($profile) {
                 $formdata['profileid'] = $profile->id;
                 $formdata['name'] = $profile->name;
@@ -129,9 +129,10 @@ class profile_form extends dynamic_form {
     public function process_dynamic_submission() {
         $data = $this->get_data();
 
+        $profilemanager = \core\di::get(profile_manager::class);
         if (!empty($data->profileid)) {
             // Update existing profile.
-            profile_manager::update_profile(
+            $profilemanager->update_profile(
                 $data->profileid,
                 [
                     'name' => $data->name,
@@ -142,7 +143,7 @@ class profile_form extends dynamic_form {
             $profileid = $data->profileid;
         } else {
             // Create new profile.
-            $profileid = profile_manager::create_profile(
+            $profileid = $profilemanager->create_profile(
                 $data->name,
                 $data->displayname,
                 $data->sortorder

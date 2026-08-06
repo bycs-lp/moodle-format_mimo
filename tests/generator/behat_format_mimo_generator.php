@@ -197,10 +197,11 @@ class behat_format_mimo_generator extends behat_generator_base {
      * @return array
      */
     protected function preprocess_tag($data) {
-        foreach (\format_mimo\tag_manager::get_default_tag_definitions() as $definition) {
-            $tag = \format_mimo\tag_manager::find_tag_by_name($definition['name']);
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        foreach ($tagmanager->get_default_tag_definitions() as $definition) {
+            $tag = $tagmanager->find_tag_by_name($definition['name']);
             if ($tag) {
-                \format_mimo\tag_manager::delete_tag($tag->id);
+                $tagmanager->delete_tag($tag->id);
             }
         }
         return $data;

@@ -33,6 +33,12 @@ namespace format_mimo;
  * @covers     \format_mimo\profile_manager
  */
 final class profile_manager_test extends \advanced_testcase {
+    /** @var profile_manager Profile manager instance. */
+    private profile_manager $profilemanager;
+
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
     /**
      * Set up before each test.
      */
@@ -40,19 +46,21 @@ final class profile_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        $this->profilemanager = \core\di::get(profile_manager::class);
+        $this->tagmanager = \core\di::get(tag_manager::class);
     }
 
     /**
      * Test creating a profile.
      */
     public function test_create_profile(): void {
-        $id = profile_manager::create_profile('teststyle', 'Test Style', 1);
+        $id = $this->profilemanager->create_profile('teststyle', 'Test Style', 1);
 
         $this->assertNotEmpty($id);
         $this->assertIsInt($id);
 
         // Verify the profile was created.
-        $profile = profile_manager::get_profile($id);
+        $profile = $this->profilemanager->get_profile($id);
         $this->assertNotNull($profile);
         $this->assertEquals('teststyle', $profile->name);
         $this->assertEquals('Test Style', $profile->displayname);
@@ -69,11 +77,11 @@ final class profile_manager_test extends \advanced_testcase {
         $DB->delete_records('format_mimo_profiles');
 
         // Create multiple profiles.
-        profile_manager::create_profile('style1', 'Style One', 1);
-        profile_manager::create_profile('style2', 'Style Two', 2);
-        profile_manager::create_profile('style3', 'Style Three', 3);
+        $this->profilemanager->create_profile('style1', 'Style One', 1);
+        $this->profilemanager->create_profile('style2', 'Style Two', 2);
+        $this->profilemanager->create_profile('style3', 'Style Three', 3);
 
-        $profiles = profile_manager::get_all_profiles();
+        $profiles = $this->profilemanager->get_all_profiles();
 
         $this->assertCount(3, $profiles);
 
@@ -86,9 +94,9 @@ final class profile_manager_test extends \advanced_testcase {
      * Test getting a profile by name.
      */
     public function test_get_profile_by_name(): void {
-        profile_manager::create_profile('mystyle', 'My Style', 1);
+        $this->profilemanager->create_profile('mystyle', 'My Style', 1);
 
-        $profile = profile_manager::get_profile_by_name('mystyle');
+        $profile = $this->profilemanager->get_profile_by_name('mystyle');
 
         $this->assertNotNull($profile);
         $this->assertEquals('mystyle', $profile->name);
@@ -99,7 +107,7 @@ final class profile_manager_test extends \advanced_testcase {
      * Test getting a non-existent profile by name returns null.
      */
     public function test_get_profile_by_name_not_found(): void {
-        $profile = profile_manager::get_profile_by_name('nonexistent');
+        $profile = $this->profilemanager->get_profile_by_name('nonexistent');
 
         $this->assertNull($profile);
     }
@@ -108,14 +116,14 @@ final class profile_manager_test extends \advanced_testcase {
      * Test updating a profile.
      */
     public function test_update_profile(): void {
-        $id = profile_manager::create_profile('original', 'Original Name', 1);
+        $id = $this->profilemanager->create_profile('original', 'Original Name', 1);
 
-        profile_manager::update_profile($id, [
+        $this->profilemanager->update_profile($id, [
             'displayname' => 'Updated Name',
             'sortorder' => 5,
         ]);
 
-        $profile = profile_manager::get_profile($id);
+        $profile = $this->profilemanager->get_profile($id);
         $this->assertEquals('original', $profile->name); // Name unchanged.
         $this->assertEquals('Updated Name', $profile->displayname);
         $this->assertEquals(5, $profile->sortorder);
@@ -125,16 +133,16 @@ final class profile_manager_test extends \advanced_testcase {
      * Test deleting a profile.
      */
     public function test_delete_profile(): void {
-        $id = profile_manager::create_profile('todelete', 'To Delete', 1);
+        $id = $this->profilemanager->create_profile('todelete', 'To Delete', 1);
 
         // Verify it exists.
-        $this->assertNotNull(profile_manager::get_profile($id));
+        $this->assertNotNull($this->profilemanager->get_profile($id));
 
         // Delete it.
-        profile_manager::delete_profile($id);
+        $this->profilemanager->delete_profile($id);
 
         // Verify it's gone.
-        $this->assertNull(profile_manager::get_profile($id));
+        $this->assertNull($this->profilemanager->get_profile($id));
     }
 
     /**
@@ -144,18 +152,18 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         // Create a profile and a tag.
-        $profileid = profile_manager::create_profile('cascade', 'Cascade Test', 1);
-        $tagid = tag_manager::create_tag('Test Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('cascade', 'Cascade Test', 1);
+        $tagid = $this->tagmanager->create_tag('Test Tag', null, null, 'page');
 
         // Create a profile tag record for this profile.
-        $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
         $this->assertNotEmpty($profiletag->id);
 
         // Verify the profile tag exists.
         $this->assertTrue($DB->record_exists('format_mimo_profile_tags', ['id' => $profiletag->id]));
 
         // Delete the profile.
-        profile_manager::delete_profile($profileid);
+        $this->profilemanager->delete_profile($profileid);
 
         // Verify the profile tag was also deleted.
         $this->assertFalse($DB->record_exists('format_mimo_profile_tags', ['id' => $profiletag->id]));
@@ -165,10 +173,10 @@ final class profile_manager_test extends \advanced_testcase {
      * Test get_or_create_profile_tag creates new record when none exists.
      */
     public function test_get_or_create_profile_tag_creates(): void {
-        $profileid = profile_manager::create_profile('imgtest', 'Image Test', 1);
-        $tagid = tag_manager::create_tag('Img Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('imgtest', 'Image Test', 1);
+        $tagid = $this->tagmanager->create_tag('Img Tag', null, null, 'page');
 
-        $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
 
         $this->assertNotEmpty($profiletag->id);
         $this->assertEquals($tagid, $profiletag->tagid);
@@ -179,14 +187,14 @@ final class profile_manager_test extends \advanced_testcase {
      * Test get_or_create_profile_tag returns existing record.
      */
     public function test_get_or_create_profile_tag_returns_existing(): void {
-        $profileid = profile_manager::create_profile('existing', 'Existing Test', 1);
-        $tagid = tag_manager::create_tag('Existing Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('existing', 'Existing Test', 1);
+        $tagid = $this->tagmanager->create_tag('Existing Tag', null, null, 'page');
 
         // Create first time.
-        $profiletag1 = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag1 = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
 
         // Get again - should return same record.
-        $profiletag2 = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag2 = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
 
         $this->assertEquals($profiletag1->id, $profiletag2->id);
     }
@@ -195,10 +203,10 @@ final class profile_manager_test extends \advanced_testcase {
      * Test get_cardimage_url_by_name returns null when no image exists.
      */
     public function test_get_cardimage_url_by_name_no_image(): void {
-        profile_manager::create_profile('noimg', 'No Image', 1);
-        $tagid = tag_manager::create_tag('No Img Tag', null, null, 'page');
+        $this->profilemanager->create_profile('noimg', 'No Image', 1);
+        $tagid = $this->tagmanager->create_tag('No Img Tag', null, null, 'page');
 
-        $url = profile_manager::get_cardimage_url_by_name($tagid, 'noimg');
+        $url = $this->profilemanager->get_cardimage_url_by_name($tagid, 'noimg');
 
         $this->assertNull($url);
     }
@@ -207,10 +215,10 @@ final class profile_manager_test extends \advanced_testcase {
      * Test profile name uniqueness is enforced.
      */
     public function test_profile_name_uniqueness(): void {
-        profile_manager::create_profile('unique', 'Unique Style', 1);
+        $this->profilemanager->create_profile('unique', 'Unique Style', 1);
 
         $this->expectException(\dml_write_exception::class);
-        profile_manager::create_profile('unique', 'Duplicate Name', 2);
+        $this->profilemanager->create_profile('unique', 'Duplicate Name', 2);
     }
 
     /**
@@ -223,11 +231,11 @@ final class profile_manager_test extends \advanced_testcase {
         $DB->delete_records('format_mimo_profiles');
 
         // Create in non-sequential order.
-        profile_manager::create_profile('third', 'Third', 30);
-        profile_manager::create_profile('first', 'First', 10);
-        profile_manager::create_profile('second', 'Second', 20);
+        $this->profilemanager->create_profile('third', 'Third', 30);
+        $this->profilemanager->create_profile('first', 'First', 10);
+        $this->profilemanager->create_profile('second', 'Second', 20);
 
-        $profiles = profile_manager::get_all_profiles();
+        $profiles = $this->profilemanager->get_all_profiles();
         $names = array_column($profiles, 'name');
 
         $this->assertEquals(['first', 'second', 'third'], $names);
@@ -241,11 +249,11 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         // Create profile and tag.
-        $profileid = profile_manager::create_profile('fallback', 'Fallback Test', 1);
-        $tagid = tag_manager::create_tag('Fallback Tag', 'base.svg', 'base-s.svg', 'page');
+        $profileid = $this->profilemanager->create_profile('fallback', 'Fallback Test', 1);
+        $tagid = $this->tagmanager->create_tag('Fallback Tag', 'base.svg', 'base-s.svg', 'page');
 
         // Create the profile_tag record and store an actual file in the profile card area.
-        $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
         $filename = 'profilecard.svg';
         get_file_storage()->create_file_from_string(
             [
@@ -261,10 +269,10 @@ final class profile_manager_test extends \advanced_testcase {
         $DB->set_field('format_mimo_profile_tags', 'cardimage', $filename, ['id' => $profiletag->id]);
 
         // Invalidate caches so the request-level URL cache is not hit.
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
-        $tag = tag_manager::get_tag($tagid);
-        $url = tag_manager::get_cardimage_url($tag, 'fallback');
+        $tag = $this->tagmanager->get_tag($tagid);
+        $url = $this->tagmanager->get_cardimage_url($tag, 'fallback');
 
         $this->assertNotNull($url, 'Profile-specific card image must resolve to a URL');
         $this->assertStringContainsString($filename, $url->out());
@@ -278,13 +286,13 @@ final class profile_manager_test extends \advanced_testcase {
      * get_profile should return the record when found and null otherwise.
      */
     public function test_get_profile_found_and_not_found(): void {
-        $id = profile_manager::create_profile('lookup', 'Lookup', 1);
+        $id = $this->profilemanager->create_profile('lookup', 'Lookup', 1);
 
-        $profile = profile_manager::get_profile($id);
+        $profile = $this->profilemanager->get_profile($id);
         $this->assertNotNull($profile);
         $this->assertEquals('lookup', $profile->name);
 
-        $this->assertNull(profile_manager::get_profile(999999));
+        $this->assertNull($this->profilemanager->get_profile(999999));
     }
 
     /**
@@ -293,14 +301,14 @@ final class profile_manager_test extends \advanced_testcase {
     public function test_update_profile_renames_course_format_options(): void {
         global $DB;
 
-        $id = profile_manager::create_profile('rename_me', 'Rename Me', 1);
+        $id = $this->profilemanager->create_profile('rename_me', 'Rename Me', 1);
 
         $course = $this->getDataGenerator()->create_course([
             'format' => 'mimo',
             'activityprofile' => 'rename_me',
         ]);
 
-        profile_manager::update_profile($id, ['name' => 'renamed']);
+        $this->profilemanager->update_profile($id, ['name' => 'renamed']);
 
         $value = $DB->get_field('course_format_options', 'value', [
             'courseid' => $course->id,
@@ -318,10 +326,10 @@ final class profile_manager_test extends \advanced_testcase {
 
         $DB->delete_records('format_mimo_profiles');
 
-        profile_manager::create_profile('opt1', 'Option One', 1);
-        profile_manager::create_profile('opt2', 'Option Two', 2);
+        $this->profilemanager->create_profile('opt1', 'Option One', 1);
+        $this->profilemanager->create_profile('opt2', 'Option Two', 2);
 
-        $options = profile_manager::get_profile_options();
+        $options = $this->profilemanager->get_profile_options();
 
         $this->assertSame(['opt1' => 'Option One', 'opt2' => 'Option Two'], $options);
     }
@@ -330,23 +338,23 @@ final class profile_manager_test extends \advanced_testcase {
      * get_profile_tag should return null for an unknown id.
      */
     public function test_get_profile_tag_not_found(): void {
-        $this->assertNull(profile_manager::get_profile_tag(999999));
+        $this->assertNull($this->profilemanager->get_profile_tag(999999));
     }
 
     /**
      * get_profile_tags_for_tag should only return records for the matching tag.
      */
     public function test_get_profile_tags_for_tag(): void {
-        $profile1 = profile_manager::create_profile('p1', 'P1', 1);
-        $profile2 = profile_manager::create_profile('p2', 'P2', 2);
-        $tag1 = tag_manager::create_tag('T1');
-        $tag2 = tag_manager::create_tag('T2');
+        $profile1 = $this->profilemanager->create_profile('p1', 'P1', 1);
+        $profile2 = $this->profilemanager->create_profile('p2', 'P2', 2);
+        $tag1 = $this->tagmanager->create_tag('T1');
+        $tag2 = $this->tagmanager->create_tag('T2');
 
-        profile_manager::get_or_create_profile_tag($tag1, $profile1);
-        profile_manager::get_or_create_profile_tag($tag1, $profile2);
-        profile_manager::get_or_create_profile_tag($tag2, $profile1);
+        $this->profilemanager->get_or_create_profile_tag($tag1, $profile1);
+        $this->profilemanager->get_or_create_profile_tag($tag1, $profile2);
+        $this->profilemanager->get_or_create_profile_tag($tag2, $profile1);
 
-        $records = profile_manager::get_profile_tags_for_tag($tag1);
+        $records = $this->profilemanager->get_profile_tags_for_tag($tag1);
 
         $this->assertCount(2, $records);
         foreach ($records as $record) {
@@ -358,15 +366,15 @@ final class profile_manager_test extends \advanced_testcase {
      * get_profile_tag_for_profile should return the record when present, null otherwise.
      */
     public function test_get_profile_tag_for_profile(): void {
-        $profileid = profile_manager::create_profile('ptforprofile', 'PT For Profile', 1);
-        $tagid = tag_manager::create_tag('PT Tag');
+        $profileid = $this->profilemanager->create_profile('ptforprofile', 'PT For Profile', 1);
+        $tagid = $this->tagmanager->create_tag('PT Tag');
 
         // Initially no override record exists.
-        $this->assertNull(profile_manager::get_profile_tag_for_profile($tagid, $profileid));
+        $this->assertNull($this->profilemanager->get_profile_tag_for_profile($tagid, $profileid));
 
-        profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
 
-        $record = profile_manager::get_profile_tag_for_profile($tagid, $profileid);
+        $record = $this->profilemanager->get_profile_tag_for_profile($tagid, $profileid);
         $this->assertNotNull($record);
         $this->assertEquals($tagid, (int) $record->tagid);
         $this->assertEquals($profileid, (int) $record->profileid);
@@ -376,11 +384,11 @@ final class profile_manager_test extends \advanced_testcase {
      * update_profile_tag should normalize bgcolor and persist allowed fields only.
      */
     public function test_update_profile_tag_normalises_bgcolor(): void {
-        $profileid = profile_manager::create_profile('ptupdate', 'PT Update', 1);
-        $tagid = tag_manager::create_tag('PT Update Tag');
-        $pt = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profileid = $this->profilemanager->create_profile('ptupdate', 'PT Update', 1);
+        $tagid = $this->tagmanager->create_tag('PT Update Tag');
+        $pt = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
 
-        $result = profile_manager::update_profile_tag($pt->id, [
+        $result = $this->profilemanager->update_profile_tag($pt->id, [
             'name' => 'Override Name',
             'bgcolor' => 'A1B2C3',
             'enabled' => 0,
@@ -388,7 +396,7 @@ final class profile_manager_test extends \advanced_testcase {
         ]);
         $this->assertTrue($result);
 
-        $updated = profile_manager::get_profile_tag($pt->id);
+        $updated = $this->profilemanager->get_profile_tag($pt->id);
         $this->assertEquals('Override Name', $updated->name);
         $this->assertEquals('#a1b2c3', $updated->bgcolor);
         $this->assertEquals(0, (int) $updated->enabled);
@@ -399,30 +407,30 @@ final class profile_manager_test extends \advanced_testcase {
      * delete_profile_tags_for_tag should remove all override records for the given tag only.
      */
     public function test_delete_profile_tags_for_tag(): void {
-        $profile1 = profile_manager::create_profile('d1', 'D1', 1);
-        $profile2 = profile_manager::create_profile('d2', 'D2', 2);
-        $tag1 = tag_manager::create_tag('Delete Me');
-        $tag2 = tag_manager::create_tag('Keep Me');
+        $profile1 = $this->profilemanager->create_profile('d1', 'D1', 1);
+        $profile2 = $this->profilemanager->create_profile('d2', 'D2', 2);
+        $tag1 = $this->tagmanager->create_tag('Delete Me');
+        $tag2 = $this->tagmanager->create_tag('Keep Me');
 
-        profile_manager::get_or_create_profile_tag($tag1, $profile1);
-        profile_manager::get_or_create_profile_tag($tag1, $profile2);
-        profile_manager::get_or_create_profile_tag($tag2, $profile1);
+        $this->profilemanager->get_or_create_profile_tag($tag1, $profile1);
+        $this->profilemanager->get_or_create_profile_tag($tag1, $profile2);
+        $this->profilemanager->get_or_create_profile_tag($tag2, $profile1);
 
-        profile_manager::delete_profile_tags_for_tag($tag1);
+        $this->profilemanager->delete_profile_tags_for_tag($tag1);
 
-        $this->assertEmpty(profile_manager::get_profile_tags_for_tag($tag1));
-        $this->assertCount(1, profile_manager::get_profile_tags_for_tag($tag2));
+        $this->assertEmpty($this->profilemanager->get_profile_tags_for_tag($tag1));
+        $this->assertCount(1, $this->profilemanager->get_profile_tags_for_tag($tag2));
     }
 
     /**
      * resolve_tag_for_profile without an override returns the base tag with enabled=1.
      */
     public function test_resolve_tag_for_profile_no_override(): void {
-        $profileid = profile_manager::create_profile('resolve1', 'Resolve 1', 1);
-        $tagid = tag_manager::create_tag('Base', null, null, null, null, null, '#111111');
-        $tag = tag_manager::get_tag($tagid);
+        $profileid = $this->profilemanager->create_profile('resolve1', 'Resolve 1', 1);
+        $tagid = $this->tagmanager->create_tag('Base', null, null, null, null, null, '#111111');
+        $tag = $this->tagmanager->get_tag($tagid);
 
-        $resolved = profile_manager::resolve_tag_for_profile($tag, $profileid);
+        $resolved = $this->profilemanager->resolve_tag_for_profile($tag, $profileid);
 
         $this->assertEquals('Base', $resolved->name);
         $this->assertEquals('#111111', $resolved->bgcolor);
@@ -433,18 +441,18 @@ final class profile_manager_test extends \advanced_testcase {
      * resolve_tag_for_profile applies non-null overrides and enabled flag.
      */
     public function test_resolve_tag_for_profile_with_override(): void {
-        $profileid = profile_manager::create_profile('resolve2', 'Resolve 2', 1);
-        $tagid = tag_manager::create_tag('BaseName', null, null, null, null, null, '#111111');
-        $tag = tag_manager::get_tag($tagid);
+        $profileid = $this->profilemanager->create_profile('resolve2', 'Resolve 2', 1);
+        $tagid = $this->tagmanager->create_tag('BaseName', null, null, null, null, null, '#111111');
+        $tag = $this->tagmanager->get_tag($tagid);
 
-        $pt = profile_manager::get_or_create_profile_tag($tagid, $profileid);
-        profile_manager::update_profile_tag($pt->id, [
+        $pt = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
+        $this->profilemanager->update_profile_tag($pt->id, [
             'name' => 'Overridden',
             'bgcolor' => '#222222',
             'enabled' => 0,
         ]);
 
-        $resolved = profile_manager::resolve_tag_for_profile($tag, $profileid);
+        $resolved = $this->profilemanager->resolve_tag_for_profile($tag, $profileid);
 
         $this->assertEquals('Overridden', $resolved->name);
         $this->assertEquals('#222222', $resolved->bgcolor);
@@ -458,22 +466,22 @@ final class profile_manager_test extends \advanced_testcase {
         global $DB;
 
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
-        $profileid = profile_manager::create_profile('resolveall', 'Resolve All', 1);
-        $t1 = tag_manager::create_tag('Enabled One');
-        $t2 = tag_manager::create_tag('Disabled One');
+        $profileid = $this->profilemanager->create_profile('resolveall', 'Resolve All', 1);
+        $t1 = $this->tagmanager->create_tag('Enabled One');
+        $t2 = $this->tagmanager->create_tag('Disabled One');
 
-        $pt = profile_manager::get_or_create_profile_tag($t2, $profileid);
-        profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+        $pt = $this->profilemanager->get_or_create_profile_tag($t2, $profileid);
+        $this->profilemanager->update_profile_tag($pt->id, ['enabled' => 0]);
 
-        $all = tag_manager::get_all_tags();
+        $all = $this->tagmanager->get_all_tags();
 
-        $enabled = profile_manager::resolve_tags_for_profile($all, $profileid, true);
+        $enabled = $this->profilemanager->resolve_tags_for_profile($all, $profileid, true);
         $this->assertArrayHasKey($t1, $enabled);
         $this->assertArrayNotHasKey($t2, $enabled);
 
-        $withdisabled = profile_manager::resolve_tags_for_profile($all, $profileid, false);
+        $withdisabled = $this->profilemanager->resolve_tags_for_profile($all, $profileid, false);
         $this->assertArrayHasKey($t1, $withdisabled);
         $this->assertArrayHasKey($t2, $withdisabled);
         $this->assertEquals(0, (int) $withdisabled[$t2]->enabled);
@@ -483,7 +491,7 @@ final class profile_manager_test extends \advanced_testcase {
      * get_image_filemanager_options exposes the filemanager config array.
      */
     public function test_profile_image_filemanager_options(): void {
-        $options = profile_manager::get_image_filemanager_options();
+        $options = $this->profilemanager->get_image_filemanager_options();
 
         $this->assertIsArray($options);
         $this->assertArrayHasKey('maxfiles', $options);
@@ -501,14 +509,14 @@ final class profile_manager_test extends \advanced_testcase {
     public function test_promote_profile_to_global_cascades_to_imported_tags(): void {
         global $DB;
 
-        $importedprofile = profile_manager::create_profile(
+        $importedprofile = $this->profilemanager->create_profile(
             'imp_profile',
             'Imported Profile',
             99,
             'imported',
         );
         // Imported tag attached to this profile via a profile_tag row.
-        $importedtagid = tag_manager::create_tag(
+        $importedtagid = $this->tagmanager->create_tag(
             'ImpTag',
             'i.svg',
             'i-s.svg',
@@ -521,11 +529,11 @@ final class profile_manager_test extends \advanced_testcase {
             'imported',
         );
         // Global tag attached to the same profile must not be re-promoted (no-op).
-        $globaltagid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
-        profile_manager::get_or_create_profile_tag($importedtagid, $importedprofile);
-        profile_manager::get_or_create_profile_tag($globaltagid, $importedprofile);
+        $globaltagid = $this->tagmanager->create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
+        $this->profilemanager->get_or_create_profile_tag($importedtagid, $importedprofile);
+        $this->profilemanager->get_or_create_profile_tag($globaltagid, $importedprofile);
 
-        profile_manager::promote_profile_to_global($importedprofile);
+        $this->profilemanager->promote_profile_to_global($importedprofile);
 
         $this->assertSame(
             'global',
@@ -550,9 +558,9 @@ final class profile_manager_test extends \advanced_testcase {
     public function test_cleanup_orphaned_imported_profiles(): void {
         global $DB;
 
-        $orphanid = profile_manager::create_profile('imp_orphan', 'Orphan', 99, 'imported');
-        $usedid = profile_manager::create_profile('imp_used', 'Used', 98, 'imported');
-        $globalunused = profile_manager::create_profile('glob_unused', 'GlobalUnused', 97, 'global');
+        $orphanid = $this->profilemanager->create_profile('imp_orphan', 'Orphan', 99, 'imported');
+        $usedid = $this->profilemanager->create_profile('imp_used', 'Used', 98, 'imported');
+        $globalunused = $this->profilemanager->create_profile('glob_unused', 'GlobalUnused', 97, 'global');
 
         // Hook $usedid into a course by directly inserting its activityprofile
         // option row. This bypasses the format's value-allowlist, which does not
@@ -566,7 +574,7 @@ final class profile_manager_test extends \advanced_testcase {
             ['courseid' => $course->id],
         );
 
-        profile_manager::cleanup_orphaned_imported_profiles();
+        $this->profilemanager->cleanup_orphaned_imported_profiles();
 
         $this->assertFalse(
             $DB->record_exists('format_mimo_profiles', ['id' => $orphanid]),

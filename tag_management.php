@@ -46,9 +46,11 @@ $PAGE->set_title(get_string('tagmanagement', 'format_mimo'));
 $PAGE->set_heading(get_string('tagmanagement', 'format_mimo'));
 
 // Handle delete tag.
+$tagmanager = \core\di::get(tag_manager::class);
+$profilemanager = \core\di::get(profile_manager::class);
 if ($action === 'deletetag' && confirm_sesskey()) {
     if ($tagid) {
-        tag_manager::delete_tag($tagid);
+        $tagmanager->delete_tag($tagid);
         redirect(
             $PAGE->url,
             get_string('deletetag', 'format_mimo'),
@@ -61,7 +63,7 @@ if ($action === 'deletetag' && confirm_sesskey()) {
 // Handle promote tag to global.
 if ($action === 'promotetag' && confirm_sesskey()) {
     if ($tagid) {
-        tag_manager::promote_tag_to_global($tagid);
+        $tagmanager->promote_tag_to_global($tagid);
         redirect(
             $PAGE->url,
             get_string('promotetoglobal_success', 'format_mimo'),
@@ -75,7 +77,7 @@ if ($action === 'promotetag' && confirm_sesskey()) {
 $promoteid = optional_param('promoteid', 0, PARAM_INT);
 if ($action === 'promoteprofile' && confirm_sesskey()) {
     if ($promoteid) {
-        profile_manager::promote_profile_to_global($promoteid);
+        $profilemanager->promote_profile_to_global($promoteid);
         redirect(
             $PAGE->url,
             get_string('promotetoglobal_success', 'format_mimo'),
@@ -93,13 +95,13 @@ echo $OUTPUT->heading(get_string('tagmanagement', 'format_mimo'));
 $PAGE->requires->js_call_amd('format_mimo/tag_delete_confirm', 'init');
 
 // Build template context with flat tag list.
-$tags = tag_manager::get_all_tags();
-$allprofiles = profile_manager::get_all_profiles();
+$tags = $tagmanager->get_all_tags();
+$allprofiles = $profilemanager->get_all_profiles();
 
 // Determine the active profile for initial render.
 $activeprofileid = 0;
 if ($profilename !== '') {
-    $activeprofileobj = profile_manager::get_profile_by_name($profilename);
+    $activeprofileobj = $profilemanager->get_profile_by_name($profilename);
     if ($activeprofileobj) {
         $activeprofileid = (int) $activeprofileobj->id;
     }
@@ -139,11 +141,11 @@ foreach ($tags as $tag) {
     $tagdata = [];
 
     // Default view = base values.
-    $cardimgurl = tag_manager::get_cardimage_url($tag);
+    $cardimgurl = $tagmanager->get_cardimage_url($tag);
     $tagdata[''] = [
         'name' => format_string($tag->name),
         'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : '',
-        'bgcolor' => tag_manager::get_tag_accent_color($tag),
+        'bgcolor' => $tagmanager->get_tag_accent_color($tag),
         'activitytype1' => $tag->activitytype1 ?: '-',
         'activitytype2' => $tag->activitytype2 ?: '-',
         'activitytype3' => $tag->activitytype3 ?: '-',
@@ -152,12 +154,12 @@ foreach ($tags as $tag) {
 
     // Per-profile resolved views.
     foreach ($allprofiles as $profile) {
-        $resolved = profile_manager::resolve_tag_for_profile($tag, $profile->id);
-        $profileimgurl = tag_manager::get_cardimage_url($tag, $profile->name);
+        $resolved = $profilemanager->resolve_tag_for_profile($tag, $profile->id);
+        $profileimgurl = $tagmanager->get_cardimage_url($tag, $profile->name);
         $tagdata[$profile->name] = [
             'name' => format_string($resolved->name),
             'cardimageurl' => $profileimgurl ? $profileimgurl->out(false) : '',
-            'bgcolor' => tag_manager::get_tag_accent_color($resolved),
+            'bgcolor' => $tagmanager->get_tag_accent_color($resolved),
             'activitytype1' => $resolved->activitytype1 ?: '-',
             'activitytype2' => $resolved->activitytype2 ?: '-',
             'activitytype3' => $resolved->activitytype3 ?: '-',

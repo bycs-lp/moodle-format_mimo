@@ -54,7 +54,8 @@ class content extends content_base {
         // Batch-prime the cm→tag mapping cache so per-card get_cm_tag() calls
         // are cache hits even on a cold cache (avoids one query per activity).
         $modinfo = get_fast_modinfo($course);
-        \format_mimo\tag_manager::prime_cm_mappings(array_keys($modinfo->cms));
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $tagmanager->prime_cm_mappings(array_keys($modinfo->cms));
 
         $data = parent::export_for_template($output);
 
@@ -62,7 +63,7 @@ class content extends content_base {
         $activityprofile = $course->activityprofile ?? 'primaryschool';
 
         // Validate profile exists in database, fallback to primaryschool if not.
-        $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
+        $profile = \core\di::get(\format_mimo\profile_manager::class)->get_profile_by_name($activityprofile);
         if (!$profile) {
             $activityprofile = 'primaryschool';
         }
@@ -75,7 +76,7 @@ class content extends content_base {
         $data->bgdesignclass = 'mimo-bgdesign-' . $bgdesign;
 
         // Initialize the tag chooser button JavaScript if editing is on and course has selected tags.
-        $tags = \format_mimo\tag_manager::get_tags_for_course($course->id);
+        $tags = $tagmanager->get_tags_for_course($course->id);
         if ($PAGE->user_is_editing() && !empty($tags)) {
             $PAGE->requires->js_call_amd('format_mimo/tagchooserbutton', 'init');
 
@@ -109,7 +110,7 @@ class content extends content_base {
         $activityprofile = $course->activityprofile ?? 'primaryschool';
 
         // Validate profile.
-        $profile = \format_mimo\profile_manager::get_profile_by_name($activityprofile);
+        $profile = \core\di::get(\format_mimo\profile_manager::class)->get_profile_by_name($activityprofile);
         if (!$profile) {
             $activityprofile = 'primaryschool';
         }
@@ -125,18 +126,20 @@ class content extends content_base {
         $teachercounts = [];
         $trackedusercount = 0;
         if ($isteacherview && $completionenabled) {
-            $teachercounts = \format_mimo\completion_helper::get_teacher_completion_counts($course->id);
-            $trackedusercount = \format_mimo\completion_helper::get_tracked_user_count($course->id);
+            $completionhelper = \core\di::get(\format_mimo\completion_helper::class);
+            $teachercounts = $completionhelper->get_teacher_completion_counts($course->id);
+            $trackedusercount = $completionhelper->get_tracked_user_count($course->id);
         }
 
         // Pre-fetch course tags for mini-wall tile colours and images.
-        $coursetags = \format_mimo\tag_manager::get_tags_for_course($course->id);
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $coursetags = $tagmanager->get_tags_for_course($course->id);
         // Build tagid → accent colour and card image URL maps for quick lookup.
         // Image URLs are pre-computed and MUC-cached inside get_tags_for_course().
         $tagcolours = [];
         $tagimages = [];
         foreach ($coursetags as $tag) {
-            $tagcolours[$tag->id] = \format_mimo\tag_manager::get_tag_accent_color($tag);
+            $tagcolours[$tag->id] = $tagmanager->get_tag_accent_color($tag);
             if (!empty($tag->cached_cardimage_url)) {
                 $tagimages[$tag->id] = $tag->cached_cardimage_url;
             }
@@ -146,13 +149,13 @@ class content extends content_base {
 
         // Pre-fetch done cmids for the course to exclude from completion tracking.
         // Flipped to a set for O(1) lookups in the per-cm loop below.
-        $donecmids = array_fill_keys(\format_mimo\done_manager::get_done_cmids($course->id), true);
+        $donecmids = array_fill_keys(\core\di::get(\format_mimo\done_manager::class)->get_done_cmids($course->id), true);
 
         // Batch-prime the cm→tag mapping cache for the mini-tile loop below.
-        \format_mimo\tag_manager::prime_cm_mappings(array_keys($modinfo->cms));
+        $tagmanager->prime_cm_mappings(array_keys($modinfo->cms));
 
         // Pre-fetch section overview images for the whole course in one file-storage lookup.
-        $sectionimageurls = \format_mimo\section_image_manager::get_image_urls_for_course($course->id);
+        $sectionimageurls = \core\di::get(\format_mimo\section_image_manager::class)->get_image_urls_for_course($course->id);
 
         $sections = [];
         foreach ($modinfo->get_section_info_all() as $sectioninfo) {
@@ -182,7 +185,7 @@ class content extends content_base {
                     $activitycount++;
 
                     // Determine tile colour and image from tag assignment.
-                    $cmtag = \format_mimo\tag_manager::get_cm_tag($cmid);
+                    $cmtag = $tagmanager->get_cm_tag($cmid);
                     $colour = $defaultcolour;
                     $tile = ['color' => $colour];
                     if ($cmtag && isset($tagcolours[$cmtag->id])) {
@@ -285,7 +288,7 @@ class content extends content_base {
                 $sectioncard->hassectionimage = true;
                 // Read object-fit preference for this section.
                 $opts = $format->get_format_options($sectioninfo);
-                $fit = \format_mimo\section_image_manager::normalize_fit(
+                $fit = \core\di::get(\format_mimo\section_image_manager::class)->normalize_fit(
                     $opts['sectionimagefit'] ?? \format_mimo\section_image_manager::DEFAULT_FIT
                 );
                 $sectioncard->sectionimagefitclass = 'mimo-overview-card__sectionimage--' . $fit;

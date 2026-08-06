@@ -54,7 +54,7 @@ class tag_form extends dynamic_form {
 
         if ($selectedprofileid) {
             // Profile override mode: show only profile-specific fields.
-            $profile = profile_manager::get_profile($selectedprofileid);
+            $profile = \core\di::get(profile_manager::class)->get_profile($selectedprofileid);
             if ($profile) {
                 $this->add_profile_section($mform, $profile, $activitytypes, $tagid);
             }
@@ -160,7 +160,8 @@ class tag_form extends dynamic_form {
             $mform->setType('imgsize', PARAM_TEXT);
 
             // Background color.
-            $defaultcolor = tag_manager::get_default_accent_palette()[0] ?? '#dcecff';
+            $tagmanager = \core\di::get(tag_manager::class);
+            $defaultcolor = $tagmanager->get_default_accent_palette()[0] ?? '#dcecff';
             $mform->addElement(
                 'text',
                 'bgcolor',
@@ -177,7 +178,7 @@ class tag_form extends dynamic_form {
                 'cardimagefile',
                 get_string('cardimage', 'format_mimo'),
                 null,
-                tag_manager::get_image_filemanager_options()
+                $tagmanager->get_image_filemanager_options()
             );
             $mform->addHelpButton('cardimagefile', 'cardimage', 'format_mimo');
 
@@ -187,7 +188,7 @@ class tag_form extends dynamic_form {
                 'filterimagefile',
                 get_string('filterimage', 'format_mimo'),
                 null,
-                tag_manager::get_image_filemanager_options()
+                $tagmanager->get_image_filemanager_options()
             );
             $mform->addHelpButton('filterimagefile', 'filterimage', 'format_mimo');
         }
@@ -304,12 +305,13 @@ class tag_form extends dynamic_form {
         $mform->setType('profile_imgsize_' . $profile->id, PARAM_TEXT);
 
         // Card image for this profile.
+        $profilemanager = \core\di::get(profile_manager::class);
         $mform->addElement(
             'filemanager',
             'cardimage_profile_' . $profile->id,
             get_string('cardimage_for_profile', 'format_mimo', $profile->displayname),
             null,
-            profile_manager::get_image_filemanager_options()
+            $profilemanager->get_image_filemanager_options()
         );
         $mform->addHelpButton('cardimage_profile_' . $profile->id, 'cardimage', 'format_mimo');
 
@@ -319,13 +321,13 @@ class tag_form extends dynamic_form {
             'filterimage_profile_' . $profile->id,
             get_string('filterimage_for_profile', 'format_mimo', $profile->displayname),
             null,
-            profile_manager::get_image_filemanager_options()
+            $profilemanager->get_image_filemanager_options()
         );
         $mform->addHelpButton('filterimage_profile_' . $profile->id, 'filterimage', 'format_mimo');
 
         // Load existing override data if editing.
         if ($tagid) {
-            $pt = profile_manager::get_profile_tag_for_profile($tagid, $profile->id);
+            $pt = $profilemanager->get_profile_tag_for_profile($tagid, $profile->id);
             if ($pt) {
                 $mform->setDefault('profile_enabled_' . $profile->id, (int) $pt->enabled);
                 if ($pt->name !== null) {
@@ -424,7 +426,7 @@ class tag_form extends dynamic_form {
                     $basehasimage = true;
                 }
             }
-            if (!$basehasimage && $tagid && tag_manager::has_cardimage($tagid)) {
+            if (!$basehasimage && $tagid && \core\di::get(tag_manager::class)->has_cardimage($tagid)) {
                 $basehasimage = true;
             }
 
@@ -440,7 +442,8 @@ class tag_form extends dynamic_form {
                         break;
                     }
                     if ($tagid) {
-                        $profiletag = profile_manager::get_profile_tag_for_profile($tagid, (int)$profileid);
+                        $profiletag = \core\di::get(profile_manager::class)
+                            ->get_profile_tag_for_profile($tagid, (int)$profileid);
                         if ($profiletag && !empty($profiletag->cardimage)) {
                             $hasimage = true;
                             break;
@@ -486,7 +489,8 @@ class tag_form extends dynamic_form {
         $formdata['profileids'] = $selectedprofileid ? (string) $selectedprofileid : '';
 
         if ($tagid) {
-            $tag = tag_manager::get_tag($tagid);
+            $tagmanager = \core\di::get(tag_manager::class);
+            $tag = $tagmanager->get_tag($tagid);
             if ($tag) {
                 if (!$selectedprofileid) {
                     // Base mode: load all base tag fields.
@@ -497,16 +501,17 @@ class tag_form extends dynamic_form {
 
             if (!$selectedprofileid) {
                 // Base image drafts.
-                $formdata['cardimagefile'] = tag_manager::prepare_cardimage_draft($tagid);
-                $formdata['filterimagefile'] = tag_manager::prepare_filterimage_draft($tagid);
+                $formdata['cardimagefile'] = $tagmanager->prepare_cardimage_draft($tagid);
+                $formdata['filterimagefile'] = $tagmanager->prepare_filterimage_draft($tagid);
             }
 
             // Profile-specific image drafts.
             if ($selectedprofileid) {
+                $profilemanager = \core\di::get(profile_manager::class);
                 $formdata['cardimage_profile_' . $selectedprofileid] =
-                    profile_manager::prepare_cardimage_draft($tagid, $selectedprofileid);
+                    $profilemanager->prepare_cardimage_draft($tagid, $selectedprofileid);
                 $formdata['filterimage_profile_' . $selectedprofileid] =
-                    profile_manager::prepare_filterimage_draft($tagid, $selectedprofileid);
+                    $profilemanager->prepare_filterimage_draft($tagid, $selectedprofileid);
             }
         } else if (!$selectedprofileid) {
             // New tag (base mode only) - prepare empty draft areas.
@@ -529,8 +534,9 @@ class tag_form extends dynamic_form {
 
         if (empty($savedprofileids)) {
             // Base tag mode: update or create the base tag.
+            $tagmanager = \core\di::get(tag_manager::class);
             if (!empty($data->tagid)) {
-                tag_manager::update_tag(
+                $tagmanager->update_tag(
                     $data->tagid,
                     [
                         'name' => $data->name,
@@ -544,7 +550,7 @@ class tag_form extends dynamic_form {
                 );
                 $currenttagid = $data->tagid;
             } else {
-                $currenttagid = tag_manager::create_tag(
+                $currenttagid = $tagmanager->create_tag(
                     $data->name,
                     null,
                     null,
@@ -559,10 +565,10 @@ class tag_form extends dynamic_form {
 
             // Save base images.
             if (isset($data->cardimagefile)) {
-                tag_manager::save_cardimage_from_draft($currenttagid, (int)$data->cardimagefile);
+                $tagmanager->save_cardimage_from_draft($currenttagid, (int)$data->cardimagefile);
             }
             if (isset($data->filterimagefile)) {
-                tag_manager::save_filterimage_from_draft($currenttagid, (int)$data->filterimagefile);
+                $tagmanager->save_filterimage_from_draft($currenttagid, (int)$data->filterimagefile);
             }
         } else {
             // Profile override mode: tag must already exist.
@@ -570,15 +576,16 @@ class tag_form extends dynamic_form {
         }
 
         // Save profile-specific images and overrides (only for the displayed profile).
+        $profilemanager = \core\di::get(profile_manager::class);
         foreach ($savedprofileids as $profileid) {
             $cardfield = 'cardimage_profile_' . $profileid;
             $filterfield = 'filterimage_profile_' . $profileid;
 
             if (isset($data->$cardfield)) {
-                profile_manager::save_cardimage_from_draft($currenttagid, (int)$profileid, (int)$data->$cardfield);
+                $profilemanager->save_cardimage_from_draft($currenttagid, (int)$profileid, (int)$data->$cardfield);
             }
             if (isset($data->$filterfield)) {
-                profile_manager::save_filterimage_from_draft($currenttagid, (int)$profileid, (int)$data->$filterfield);
+                $profilemanager->save_filterimage_from_draft($currenttagid, (int)$profileid, (int)$data->$filterfield);
             }
         }
 
@@ -608,8 +615,8 @@ class tag_form extends dynamic_form {
             }
 
             if (!empty($overrides)) {
-                $pt = profile_manager::get_or_create_profile_tag($currenttagid, (int)$profileid);
-                profile_manager::update_profile_tag($pt->id, $overrides);
+                $pt = $profilemanager->get_or_create_profile_tag($currenttagid, (int)$profileid);
+                $profilemanager->update_profile_tag($pt->id, $overrides);
             }
         }
 

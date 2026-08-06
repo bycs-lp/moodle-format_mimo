@@ -75,17 +75,18 @@ class cmitem extends cmitem_base {
         $data->cmformat->sectionid = $cm->sectionid;
 
         // Get tag information for this activity.
-        $basetag = tag_manager::get_cm_tag($cmid);
+        $tagmanager = \core\di::get(tag_manager::class);
+        $basetag = $tagmanager->get_cm_tag($cmid);
 
         if ($basetag) {
             // Use the fully resolved tag from the course cache (profile overrides + image URLs
             // already applied and MUC-cached), falling back to the base tag.
-            $coursetags = tag_manager::get_tags_for_course($mod->course);
+            $coursetags = $tagmanager->get_tags_for_course($mod->course);
             $tag = $coursetags[$basetag->id] ?? $basetag;
 
             $data->cmformat->tagname = format_string($tag->name, true, ['context' => \core\context\course::instance($cm->course)]);
             $data->cmformat->tagid = $tag->id;
-            $data->cmformat->tagcolor = tag_manager::get_tag_accent_color($tag);
+            $data->cmformat->tagcolor = $tagmanager->get_tag_accent_color($tag);
             $data->cmformat->imgplacement = $tag->imgplacement ?? 'center';
             $data->cmformat->imgsize = $tag->imgsize ?? 'normal';
 
@@ -99,7 +100,7 @@ class cmitem extends cmitem_base {
         }
 
         // Check if this activity is flagged as done.
-        $isdone = done_manager::is_done($cmid, (int) $mod->course);
+        $isdone = \core\di::get(done_manager::class)->is_done($cmid, (int) $mod->course);
         $data->cmformat->isdone = $isdone;
 
         // Add completion status - get from cm_info object.
@@ -116,8 +117,9 @@ class cmitem extends cmitem_base {
             if (has_capability('report/progress:view', $coursecontext)) {
                 // Teacher view: show aggregated completion count with progress report link,
                 // also for done activities.
-                $counts = completion_helper::get_teacher_completion_counts($cm->course);
-                $totalusers = completion_helper::get_tracked_user_count($cm->course);
+                $completionhelper = \core\di::get(completion_helper::class);
+                $counts = $completionhelper->get_teacher_completion_counts($cm->course);
+                $totalusers = $completionhelper->get_tracked_user_count($cm->course);
                 $data->cmformat->completion->isteacherview = true;
                 $data->cmformat->completion->completedcount = $counts[$cmid] ?? 0;
                 $data->cmformat->completion->trackedtotal = $totalusers;

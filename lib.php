@@ -221,7 +221,8 @@ class format_mimo extends core_courseformat\base {
             // Load activity profiles dynamically from database.
             // Show all global profiles + the current course's imported profile (if assigned).
             $profileoptions = [];
-            $profiles = \format_mimo\profile_manager::get_global_profiles();
+            $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+            $profiles = $profilemanager->get_global_profiles();
             foreach ($profiles as $profile) {
                 $profileoptions[$profile->name] = $profile->displayname;
             }
@@ -230,7 +231,7 @@ class format_mimo extends core_courseformat\base {
             if ($course) {
                 $currentprofilename = $course->activityprofile ?? '';
                 if ($currentprofilename !== '' && !isset($profileoptions[$currentprofilename])) {
-                    $currentprofile = \format_mimo\profile_manager::get_profile_by_name($currentprofilename);
+                    $currentprofile = $profilemanager->get_profile_by_name($currentprofilename);
                     if ($currentprofile) {
                         $profileoptions[$currentprofile->name] = $currentprofile->displayname;
                     }
@@ -330,7 +331,7 @@ class format_mimo extends core_courseformat\base {
         // Clear course tags cache if the activity profile changed.
         $newprofile = $data['activityprofile'] ?? null;
         if ($result && $newprofile !== null && $newprofile !== $oldprofile) {
-            \format_mimo\tag_manager::clear_course_tags_cache($this->courseid);
+            \core\di::get(\format_mimo\tag_manager::class)->clear_course_tags_cache($this->courseid);
         }
 
         return $result;
@@ -568,8 +569,9 @@ class format_mimo extends core_courseformat\base {
             "NOT EXISTS (SELECT 1 FROM {course_modules} cm WHERE cm.id = {format_mimo_cmdone}.cmid)"
         );
 
-        \format_mimo\tag_manager::clear_mapping_cache();
-        \format_mimo\tag_manager::clear_course_tags_cache($courseid);
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $tagmanager->clear_mapping_cache();
+        $tagmanager->clear_course_tags_cache($courseid);
     }
 }
 

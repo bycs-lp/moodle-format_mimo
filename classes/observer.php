@@ -57,12 +57,13 @@ class observer {
             $cmid = $event->objectid;
 
             // Validate that the tag exists and is selected for this course.
-            $coursetags = tag_manager::get_tags_for_course($courseid);
-            $tag = tag_manager::get_tag($tagid);
+            $tagmanager = \core\di::get(tag_manager::class);
+            $coursetags = $tagmanager->get_tags_for_course($courseid);
+            $tag = $tagmanager->get_tag($tagid);
 
             if ($tag && isset($coursetags[$tag->id])) {
                 // Assign the tag to the newly created course module.
-                tag_manager::assign_tag_to_cm($cmid, $tagid);
+                $tagmanager->assign_tag_to_cm($cmid, $tagid);
             }
 
             // Clear the pending tag from session.
@@ -80,8 +81,8 @@ class observer {
 
         $cmid = $event->objectid;
         $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
-        done_manager::delete_for_cm($cmid);
-        tag_manager::evict_cm_mapping($cmid);
+        \core\di::get(done_manager::class)->delete_for_cm($cmid);
+        \core\di::get(tag_manager::class)->evict_cm_mapping($cmid);
     }
 
     /**
@@ -92,7 +93,7 @@ class observer {
     public static function course_section_deleted(\core\event\course_section_deleted $event) {
         $courseid = $event->courseid;
         $sectionid = $event->objectid;
-        section_image_manager::delete_image($courseid, $sectionid);
+        \core\di::get(section_image_manager::class)->delete_image($courseid, $sectionid);
     }
 
     /**
@@ -111,26 +112,27 @@ class observer {
         // core at this point, so swallow missing-context errors — the files are
         // then cleaned up by core's context deletion anyway.
         try {
-            section_image_manager::delete_all_for_course($courseid);
+            \core\di::get(section_image_manager::class)->delete_all_for_course($courseid);
         } catch (\dml_missing_record_exception $e) {
             // Context already deleted: nothing to do.
             unset($e);
         }
 
         // Delete done flags for this course's modules.
-        done_manager::delete_for_course($courseid);
+        \core\di::get(done_manager::class)->delete_for_course($courseid);
 
         // Note: cmtags are already cleaned up per-module by the course_module_deleted observer.
         // No additional cmtags cleanup needed here — course_modules are already gone at this point.
 
         // Delete course_tags bindings for this course.
-        tag_manager::unbind_all_tags_from_course($courseid);
+        $tagmanager = \core\di::get(tag_manager::class);
+        $tagmanager->unbind_all_tags_from_course($courseid);
 
         // Clean up orphaned imported tags (no bindings and no cmtags left).
-        tag_manager::cleanup_orphaned_imported_tags();
+        $tagmanager->cleanup_orphaned_imported_tags();
 
         // Clean up orphaned imported profiles (not referenced by any course).
-        profile_manager::cleanup_orphaned_imported_profiles();
+        \core\di::get(profile_manager::class)->cleanup_orphaned_imported_profiles();
 
         // Delete remembered-section preferences for all users.
         $DB->delete_records_select(
@@ -139,7 +141,7 @@ class observer {
             ['prefname' => 'format_mimo_lastsection_' . $courseid]
         );
 
-        tag_manager::clear_tag_cache();
-        tag_manager::clear_mapping_cache();
+        $tagmanager->clear_tag_cache();
+        $tagmanager->clear_mapping_cache();
     }
 }

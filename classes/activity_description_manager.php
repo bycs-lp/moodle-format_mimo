@@ -37,17 +37,31 @@ class activity_description_manager {
     const CACHE_KEY = 'activity_descriptions';
 
     /**
+     * Constructor with DI-injected dependencies.
+     *
+     * Obtain the shared instance via \core\di::get(activity_description_manager::class).
+     *
+     * @param \moodle_database $db Database instance.
+     * @param \core\clock $clock Clock instance.
+     */
+    public function __construct(
+        /** @var \moodle_database Database instance. */
+        private readonly \moodle_database $db,
+        /** @var \core\clock Clock instance. */
+        private readonly \core\clock $clock,
+    ) {
+    }
+
+    /**
      * Get all activity descriptions with tag information.
      *
      * @return array Array of stdClass objects with activitytype, description, and tag properties
      */
-    public static function get_all_descriptions(): array {
+    public function get_all_descriptions(): array {
         $cache = \cache::make('format_mimo', 'activity_descriptions');
         $descriptions = $cache->get(self::CACHE_KEY);
 
         if ($descriptions === false) {
-            global $DB;
-
             // Fetch descriptions with tag data via LEFT JOIN.
             $sql = "SELECT ad.id, ad.activitytype, ad.description, ad.desctagid,
                            ad.timecreated, ad.timemodified,
@@ -56,7 +70,7 @@ class activity_description_manager {
                  LEFT JOIN {format_mimo_desc_tags} dt ON ad.desctagid = dt.id
                   ORDER BY ad.activitytype ASC";
 
-            $descriptions = $DB->get_records_sql($sql);
+            $descriptions = $this->db->get_records_sql($sql);
             $cache->set(self::CACHE_KEY, $descriptions);
         }
 
@@ -69,8 +83,8 @@ class activity_description_manager {
      * @param string $activitytype The activity module name (e.g., 'assign', 'quiz')
      * @return string|null The description or null if not found
      */
-    public static function get_description(string $activitytype): ?string {
-        $descriptions = self::get_all_descriptions();
+    public function get_description(string $activitytype): ?string {
+        $descriptions = $this->get_all_descriptions();
 
         foreach ($descriptions as $desc) {
             if ($desc->activitytype === $activitytype) {
@@ -87,8 +101,8 @@ class activity_description_manager {
      * @param string $activitytype The activity module name (e.g., 'assign', 'quiz')
      * @return \stdClass|null Object with description, tagname, tagcolor or null if not found
      */
-    public static function get_description_with_tag(string $activitytype): ?\stdClass {
-        $descriptions = self::get_all_descriptions();
+    public function get_description_with_tag(string $activitytype): ?\stdClass {
+        $descriptions = $this->get_all_descriptions();
 
         foreach ($descriptions as $desc) {
             if ($desc->activitytype === $activitytype) {
@@ -112,17 +126,15 @@ class activity_description_manager {
      * @param int|null $desctagid The tag ID (optional)
      * @return bool Success status
      */
-    public static function save_description(string $activitytype, string $description, ?int $desctagid = null): bool {
-        global $DB;
-
-        $time = \core\di::get(\core\clock::class)->time();
-        $record = $DB->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
+    public function save_description(string $activitytype, string $description, ?int $desctagid = null): bool {
+        $time = $this->clock->time();
+        $record = $this->db->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($record) {
             $record->description = $description;
             $record->desctagid = $desctagid;
             $record->timemodified = $time;
-            $result = $DB->update_record('format_mimo_actdesc', $record);
+            $result = $this->db->update_record('format_mimo_actdesc', $record);
         } else {
             $record = new \stdClass();
             $record->activitytype = $activitytype;
@@ -130,11 +142,11 @@ class activity_description_manager {
             $record->desctagid = $desctagid;
             $record->timecreated = $time;
             $record->timemodified = $time;
-            $result = $DB->insert_record('format_mimo_actdesc', $record);
+            $result = $this->db->insert_record('format_mimo_actdesc', $record);
         }
 
         if ($result) {
-            self::clear_cache();
+            $this->clear_cache();
         }
 
         return (bool)$result;
@@ -146,12 +158,11 @@ class activity_description_manager {
      * @param string $activitytype The activity module name
      * @return bool Success status
      */
-    public static function delete_description(string $activitytype): bool {
-        global $DB;
-        $result = $DB->delete_records('format_mimo_actdesc', ['activitytype' => $activitytype]);
+    public function delete_description(string $activitytype): bool {
+        $result = $this->db->delete_records('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($result) {
-            self::clear_cache();
+            $this->clear_cache();
         }
 
         return $result;
@@ -162,7 +173,7 @@ class activity_description_manager {
      *
      * @return void
      */
-    public static function clear_cache(): void {
+    public function clear_cache(): void {
         $cache = \cache::make('format_mimo', 'activity_descriptions');
         $cache->delete(self::CACHE_KEY);
     }
@@ -172,7 +183,7 @@ class activity_description_manager {
      *
      * @return array Array of activity types with name and displayname
      */
-    public static function get_available_activity_types(): array {
+    public function get_available_activity_types(): array {
         $modules = [];
         $mods = \core_component::get_plugin_list('mod');
 
@@ -215,16 +226,14 @@ class activity_description_manager {
      *
      * @return bool Success
      */
-    public static function initialize_default_activity_descriptions(): bool {
-        global $DB;
-
+    public function initialize_default_activity_descriptions(): bool {
         // Check if any descriptions already exist.
-        if ($DB->record_exists('format_mimo_actdesc', [])) {
+        if ($this->db->record_exists('format_mimo_actdesc', [])) {
             return true;
         }
 
         // Get all description tags keyed by their display name.
-        $desctags = description_tag_manager::get_all_tags();
+        $desctags = \core\di::get(description_tag_manager::class)->get_all_tags();
         $tagbyname = [];
         foreach ($desctags as $tag) {
             $tagbyname[$tag->name] = $tag->id;
@@ -282,7 +291,7 @@ class activity_description_manager {
         ];
 
         // Only create descriptions for modules that are actually installed.
-        $availabletypes = self::get_available_activity_types();
+        $availabletypes = $this->get_available_activity_types();
 
         foreach ($availabletypes as $type) {
             $modname = $type['name'];
@@ -296,7 +305,7 @@ class activity_description_manager {
             $description = get_string($stringid, 'format_mimo');
             $desctagid = $tagmap[$modname] ?? null;
 
-            self::save_description($modname, $description, $desctagid);
+            $this->save_description($modname, $description, $desctagid);
         }
 
         return true;

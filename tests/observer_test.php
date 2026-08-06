@@ -44,6 +44,9 @@ final class observer_test extends \advanced_testcase {
     /** @var int Test tag ID */
     private $tagid;
 
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
     /**
      * Set up before each test.
      */
@@ -51,10 +54,10 @@ final class observer_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        tag_manager::reset_caches();
+        $this->tagmanager = \core\di::get(tag_manager::class);
 
         // Create a tag.
-        $this->tagid = tag_manager::create_tag(
+        $this->tagid = $this->tagmanager->create_tag(
             'Test Tag',
             'test.svg',
             'test-small.svg',
@@ -72,10 +75,6 @@ final class observer_test extends \advanced_testcase {
      */
     protected function tearDown(): void {
         global $SESSION;
-
-        // Reset static cache references to avoid stale instances after
-        // \phpunit_util::reset_all_data() resets the cache factory.
-        tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
         unset($SESSION->format_mimo_pending_tag);
@@ -96,7 +95,7 @@ final class observer_test extends \advanced_testcase {
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
 
         // Verify the tag was assigned to the module.
-        $assignedtag = tag_manager::get_cm_tag($module->cmid);
+        $assignedtag = $this->tagmanager->get_cm_tag($module->cmid);
 
         $this->assertNotFalse($assignedtag, 'Tag should be assigned to the module');
         $this->assertEquals($this->tagid, $assignedtag->id, 'Assigned tag ID should match');
@@ -149,7 +148,7 @@ final class observer_test extends \advanced_testcase {
         global $SESSION;
 
         // Create a tag.
-        $tagid = tag_manager::create_tag('Test Tag', 'test.svg', 'test-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('Test Tag', 'test.svg', 'test-small.svg', 'page');
 
         // Create a course with specified format.
         $courseoptions = ['format' => $format];
@@ -166,7 +165,7 @@ final class observer_test extends \advanced_testcase {
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
 
         // Verify no tag was assigned.
-        $assignedtag = tag_manager::get_cm_tag($module->cmid);
+        $assignedtag = $this->tagmanager->get_cm_tag($module->cmid);
         $this->assertFalse($assignedtag, $message);
 
         // Check session state.
@@ -190,7 +189,7 @@ final class observer_test extends \advanced_testcase {
         $module1 = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
 
         // Verify tag was assigned.
-        $assignedtag1 = tag_manager::get_cm_tag($module1->cmid);
+        $assignedtag1 = $this->tagmanager->get_cm_tag($module1->cmid);
         $this->assertNotFalse($assignedtag1, 'Tag should be assigned to first module');
 
         // Verify session was cleared.
@@ -204,7 +203,7 @@ final class observer_test extends \advanced_testcase {
         $module2 = $this->getDataGenerator()->create_module('quiz', ['course' => $this->course->id]);
 
         // Verify no tag was assigned to second module.
-        $assignedtag2 = tag_manager::get_cm_tag($module2->cmid);
+        $assignedtag2 = $this->tagmanager->get_cm_tag($module2->cmid);
         $this->assertFalse($assignedtag2, 'Second module should not have a tag');
     }
 
@@ -218,7 +217,7 @@ final class observer_test extends \advanced_testcase {
             'invalid_tag_id' => [
                 'setup' => function ($course, $SESSION) {
                     // Create a tag.
-                    tag_manager::create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
+                    \core\di::get(tag_manager::class)->create_tag('Valid Tag', 'test.svg', 'test-small.svg', 'page');
 
                     // Set pending tag to non-existent tag ID.
                     $SESSION->format_mimo_pending_tag = 99999;
@@ -228,13 +227,15 @@ final class observer_test extends \advanced_testcase {
             'tag_disabled_in_profile' => [
                 'setup' => function ($course, $SESSION) {
                     // Create two tags.
-                    $tagid1 = tag_manager::create_tag('Tag 1', 'test1.svg', 'test1-small.svg', 'page');
-                    $tagid2 = tag_manager::create_tag('Tag 2', 'test2.svg', 'test2-small.svg', 'url');
+                    $tagmanager = \core\di::get(tag_manager::class);
+                    $profilemanager = \core\di::get(profile_manager::class);
+                    $tagid1 = $tagmanager->create_tag('Tag 1', 'test1.svg', 'test1-small.svg', 'page');
+                    $tagid2 = $tagmanager->create_tag('Tag 2', 'test2.svg', 'test2-small.svg', 'url');
 
                     // Create a profile and disable tag 2.
-                    $profileid = profile_manager::create_profile('testprofile', 'Test Profile');
-                    $pt = profile_manager::get_or_create_profile_tag($tagid2, $profileid);
-                    profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+                    $profileid = $profilemanager->create_profile('testprofile', 'Test Profile');
+                    $pt = $profilemanager->get_or_create_profile_tag($tagid2, $profileid);
+                    $profilemanager->update_profile_tag($pt->id, ['enabled' => 0]);
 
                     // Set course to use this profile.
                     $format = course_get_format($course->id);
@@ -268,7 +269,7 @@ final class observer_test extends \advanced_testcase {
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $course->id]);
 
         // Verify no tag was assigned.
-        $assignedtag = tag_manager::get_cm_tag($module->cmid);
+        $assignedtag = $this->tagmanager->get_cm_tag($module->cmid);
         $this->assertFalse($assignedtag, $message);
 
         // Session should be cleared.
@@ -283,10 +284,10 @@ final class observer_test extends \advanced_testcase {
 
         // Create a module and assign a tag.
         $module = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
-        tag_manager::assign_tag_to_cm($module->cmid, $this->tagid);
+        $this->tagmanager->assign_tag_to_cm($module->cmid, $this->tagid);
 
         // Verify the cmtag exists.
-        $cmtag = tag_manager::get_cm_tag($module->cmid);
+        $cmtag = $this->tagmanager->get_cm_tag($module->cmid);
         $this->assertNotFalse($cmtag, 'cmtag should exist before deletion');
 
         // Delete the module (this fires course_module_deleted event).
@@ -306,18 +307,18 @@ final class observer_test extends \advanced_testcase {
         // Create a second course to prove we don't wipe all cmtags.
         $course2 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $module2 = $this->getDataGenerator()->create_module('page', ['course' => $course2->id]);
-        tag_manager::assign_tag_to_cm($module2->cmid, $this->tagid);
+        $this->tagmanager->assign_tag_to_cm($module2->cmid, $this->tagid);
 
         // Create modules in the course that will be deleted.
         $module1a = $this->getDataGenerator()->create_module('assign', ['course' => $this->course->id]);
         $module1b = $this->getDataGenerator()->create_module('quiz', ['course' => $this->course->id]);
-        tag_manager::assign_tag_to_cm($module1a->cmid, $this->tagid);
-        tag_manager::assign_tag_to_cm($module1b->cmid, $this->tagid);
+        $this->tagmanager->assign_tag_to_cm($module1a->cmid, $this->tagid);
+        $this->tagmanager->assign_tag_to_cm($module1b->cmid, $this->tagid);
 
         // Verify cmtags exist.
-        $this->assertNotFalse(tag_manager::get_cm_tag($module1a->cmid));
-        $this->assertNotFalse(tag_manager::get_cm_tag($module1b->cmid));
-        $this->assertNotFalse(tag_manager::get_cm_tag($module2->cmid));
+        $this->assertNotFalse($this->tagmanager->get_cm_tag($module1a->cmid));
+        $this->assertNotFalse($this->tagmanager->get_cm_tag($module1b->cmid));
+        $this->assertNotFalse($this->tagmanager->get_cm_tag($module2->cmid));
 
         // Delete the first course (this fires course_deleted event).
         delete_course($this->course, false);
@@ -380,13 +381,13 @@ final class observer_test extends \advanced_testcase {
             'fake-image-bytes'
         );
 
-        $this->assertTrue(section_image_manager::has_image($course->id, $sectionid));
+        $this->assertTrue(\core\di::get(section_image_manager::class)->has_image($course->id, $sectionid));
 
         // Delete the section (fires course_section_deleted).
         $sectioninfo = get_fast_modinfo($course->id)->get_section_info(1);
         course_delete_section($course->id, $sectioninfo, false, true);
 
-        $this->assertFalse(section_image_manager::has_image($course->id, $sectionid));
+        $this->assertFalse(\core\di::get(section_image_manager::class)->has_image($course->id, $sectionid));
     }
 
     /**
@@ -401,10 +402,10 @@ final class observer_test extends \advanced_testcase {
         // Second course acts as a control: nothing attached to it must be touched.
         $survivor = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $survivormodule = $this->getDataGenerator()->create_module('page', ['course' => $survivor->id]);
-        done_manager::set_done($survivormodule->cmid);
+        \core\di::get(done_manager::class)->set_done($survivormodule->cmid);
 
         // Tags and profiles with various scopes/attachment states relative to $this->course.
-        $boundonlyimportedtag = tag_manager::create_tag(
+        $boundonlyimportedtag = $this->tagmanager->create_tag(
             'BoundOnly',
             'b.svg',
             'b-s.svg',
@@ -416,9 +417,9 @@ final class observer_test extends \advanced_testcase {
             'normal',
             'imported',
         );
-        tag_manager::bind_tag_to_course($boundonlyimportedtag, $this->course->id);
+        $this->tagmanager->bind_tag_to_course($boundonlyimportedtag, $this->course->id);
 
-        $boundandsurvivingimportedtag = tag_manager::create_tag(
+        $boundandsurvivingimportedtag = $this->tagmanager->create_tag(
             'AlsoElsewhere',
             'e.svg',
             'e-s.svg',
@@ -430,8 +431,8 @@ final class observer_test extends \advanced_testcase {
             'normal',
             'imported',
         );
-        tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $this->course->id);
-        tag_manager::bind_tag_to_course($boundandsurvivingimportedtag, $survivor->id);
+        $this->tagmanager->bind_tag_to_course($boundandsurvivingimportedtag, $this->course->id);
+        $this->tagmanager->bind_tag_to_course($boundandsurvivingimportedtag, $survivor->id);
 
         $globaltag = $this->tagid; // Created in setUp().
 
@@ -439,18 +440,18 @@ final class observer_test extends \advanced_testcase {
         $doomedmodule = $this->getDataGenerator()->create_module('page', [
             'course' => $this->course->id,
         ]);
-        tag_manager::assign_tag_to_cm($doomedmodule->cmid, $globaltag);
-        done_manager::set_done($doomedmodule->cmid);
+        $this->tagmanager->assign_tag_to_cm($doomedmodule->cmid, $globaltag);
+        \core\di::get(done_manager::class)->set_done($doomedmodule->cmid);
 
         // Imported profile used exclusively by the doomed course.
-        $orphanprofileid = profile_manager::create_profile(
+        $orphanprofileid = \core\di::get(profile_manager::class)->create_profile(
             'orphan_profile',
             'Orphan Profile',
             99,
             'imported',
         );
         // Imported profile used by the survivor — must remain.
-        $keptprofileid = profile_manager::create_profile(
+        $keptprofileid = \core\di::get(profile_manager::class)->create_profile(
             'kept_profile',
             'Kept Profile',
             98,

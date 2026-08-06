@@ -54,7 +54,7 @@ final class store_pending_tag_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $tagid = tag_manager::create_tag('Pending', 'p.svg', 'p-small.svg', 'page');
+        $tagid = \core\di::get(tag_manager::class)->create_tag('Pending', 'p.svg', 'p-small.svg', 'page');
 
         $result = store_pending_tag::execute($tagid, $course->id);
 
@@ -69,7 +69,7 @@ final class store_pending_tag_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $tagid = tag_manager::create_tag('Pending', 'p.svg', 'p-small.svg', 'page');
+        $tagid = \core\di::get(tag_manager::class)->create_tag('Pending', 'p.svg', 'p-small.svg', 'page');
 
         $student = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');

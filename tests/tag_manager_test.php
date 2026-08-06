@@ -33,6 +33,12 @@ namespace format_mimo;
  * @covers     \format_mimo\tag_manager
  */
 final class tag_manager_test extends \advanced_testcase {
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
+    /** @var profile_manager Profile manager instance. */
+    private profile_manager $profilemanager;
+
     /**
      * Set up before each test.
      */
@@ -40,7 +46,8 @@ final class tag_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        tag_manager::reset_caches();
+        $this->tagmanager = \core\di::get(tag_manager::class);
+        $this->profilemanager = \core\di::get(profile_manager::class);
     }
 
     /**
@@ -48,10 +55,6 @@ final class tag_manager_test extends \advanced_testcase {
      */
     protected function tearDown(): void {
         global $SESSION;
-
-        // Reset static cache references to avoid stale instances after
-        // \phpunit_util::reset_all_data() resets the cache factory.
-        tag_manager::reset_caches();
 
         // Ensure session is clean for next test.
         unset($SESSION->format_mimo_pending_tag);
@@ -74,7 +77,7 @@ final class tag_manager_test extends \advanced_testcase {
             ? (int) $maxbefore + 1
             : 0;
 
-        $id = tag_manager::create_tag(
+        $id = $this->tagmanager->create_tag(
             'Reading',
             'reading.svg',
             'reading-small.svg',
@@ -86,7 +89,7 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertIsInt($id);
 
         // Verify the tag was created.
-        $tag = tag_manager::get_tag($id);
+        $tag = $this->tagmanager->get_tag($id);
         $this->assertNotFalse($tag);
         $this->assertEquals('Reading', $tag->name);
         $this->assertEquals('reading.svg', $tag->cardimage);
@@ -101,8 +104,8 @@ final class tag_manager_test extends \advanced_testcase {
      * Ensure custom colours are normalised when creating a tag.
      */
     public function test_create_tag_with_bgcolor(): void {
-        $id = tag_manager::create_tag('Colourful', null, null, null, null, null, 'a1b2c3');
-        $tag = tag_manager::get_tag($id);
+        $id = $this->tagmanager->create_tag('Colourful', null, null, null, null, null, 'a1b2c3');
+        $tag = $this->tagmanager->get_tag($id);
 
         $this->assertEquals('#a1b2c3', $tag->bgcolor);
     }
@@ -115,14 +118,14 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Clear any existing tags from install.
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
         // Create multiple tags.
-        tag_manager::create_tag('Tag 1', 'tag1.svg', 'tag1-small.svg', 'page');
-        tag_manager::create_tag('Tag 2', 'tag2.svg', 'tag2-small.svg', 'quiz');
-        tag_manager::create_tag('Tag 3', 'tag3.svg', 'tag3-small.svg', 'forum');
+        $this->tagmanager->create_tag('Tag 1', 'tag1.svg', 'tag1-small.svg', 'page');
+        $this->tagmanager->create_tag('Tag 2', 'tag2.svg', 'tag2-small.svg', 'quiz');
+        $this->tagmanager->create_tag('Tag 3', 'tag3.svg', 'tag3-small.svg', 'forum');
 
-        $tags = tag_manager::get_all_tags();
+        $tags = $this->tagmanager->get_all_tags();
 
         $this->assertCount(3, $tags);
     }
@@ -135,24 +138,24 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Clear any existing tags.
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
         // Create tags.
-        $tag1id = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
-        $tag2id = tag_manager::create_tag('Video', 'video.svg', 'video-small.svg', 'url');
-        $tag3id = tag_manager::create_tag('Quiz', 'quiz.svg', 'quiz-small.svg', 'quiz');
+        $tag1id = $this->tagmanager->create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tag2id = $this->tagmanager->create_tag('Video', 'video.svg', 'video-small.svg', 'url');
+        $tag3id = $this->tagmanager->create_tag('Quiz', 'quiz.svg', 'quiz-small.svg', 'quiz');
 
         // Ensure an 'explore' profile exists.
-        $profile = profile_manager::get_profile_by_name('explore');
+        $profile = $this->profilemanager->get_profile_by_name('explore');
         if (!$profile) {
-            $profileid = profile_manager::create_profile('explore', 'Explore Level');
+            $profileid = $this->profilemanager->create_profile('explore', 'Explore Level');
         } else {
             $profileid = $profile->id;
         }
 
         // Disable 'Quiz' tag for the explore profile.
-        $pt = profile_manager::get_or_create_profile_tag($tag3id, $profileid);
-        profile_manager::update_profile_tag($pt->id, ['enabled' => 0]);
+        $pt = $this->profilemanager->get_or_create_profile_tag($tag3id, $profileid);
+        $this->profilemanager->update_profile_tag($pt->id, ['enabled' => 0]);
 
         // Create a course with the explore activity profile.
         $course = $this->getDataGenerator()->create_course([
@@ -161,7 +164,7 @@ final class tag_manager_test extends \advanced_testcase {
         ]);
 
         // Get tags for course — should return only enabled tags.
-        $tags = tag_manager::get_tags_for_course($course->id);
+        $tags = $this->tagmanager->get_tags_for_course($course->id);
 
         $this->assertCount(2, $tags);
         $tagnames = array_column($tags, 'name');
@@ -174,10 +177,10 @@ final class tag_manager_test extends \advanced_testcase {
      * Test updating a tag.
      */
     public function test_update_tag(): void {
-        $id = tag_manager::create_tag('Original', 'orig.svg', 'orig-small.svg', 'page');
+        $id = $this->tagmanager->create_tag('Original', 'orig.svg', 'orig-small.svg', 'page');
 
         // Update the tag.
-        $result = tag_manager::update_tag($id, [
+        $result = $this->tagmanager->update_tag($id, [
             'name' => 'Updated',
             'cardimage' => 'updated.svg',
             'filterimage' => 'updated-small.svg',
@@ -190,7 +193,7 @@ final class tag_manager_test extends \advanced_testcase {
         $this->assertTrue($result);
 
         // Verify the update.
-        $tag = tag_manager::get_tag($id);
+        $tag = $this->tagmanager->get_tag($id);
         $this->assertEquals('Updated', $tag->name);
         $this->assertEquals('updated.svg', $tag->cardimage);
         $this->assertEquals('updated-small.svg', $tag->filterimage);
@@ -204,36 +207,36 @@ final class tag_manager_test extends \advanced_testcase {
      * The accent resolver should prefer stored colours.
      */
     public function test_get_tag_accent_color_prefers_custom_colour(): void {
-        $id = tag_manager::create_tag('Colourful', null, null, null, null, null, '#445566');
-        $tag = tag_manager::get_tag($id);
+        $id = $this->tagmanager->create_tag('Colourful', null, null, null, null, null, '#445566');
+        $tag = $this->tagmanager->get_tag($id);
 
-        $this->assertSame('#445566', tag_manager::get_tag_accent_color($tag));
+        $this->assertSame('#445566', $this->tagmanager->get_tag_accent_color($tag));
     }
 
     /**
      * The accent resolver should fall back to the starters palette.
      */
     public function test_get_tag_accent_color_fallback_uses_palette(): void {
-        $id = tag_manager::create_tag('Default Colour');
-        $tag = tag_manager::get_tag($id);
+        $id = $this->tagmanager->create_tag('Default Colour');
+        $tag = $this->tagmanager->get_tag($id);
 
-        $palette = tag_manager::get_default_accent_palette();
-        $this->assertContains(tag_manager::get_tag_accent_color($tag), $palette);
+        $palette = $this->tagmanager->get_default_accent_palette();
+        $this->assertContains($this->tagmanager->get_tag_accent_color($tag), $palette);
     }
 
     /**
      * Test deleting a tag.
      */
     public function test_delete_tag(): void {
-        $id = tag_manager::create_tag('To Delete', 'test.svg', 'test-small.svg', 'page');
+        $id = $this->tagmanager->create_tag('To Delete', 'test.svg', 'test-small.svg', 'page');
 
         // Delete the tag.
-        $result = tag_manager::delete_tag($id);
+        $result = $this->tagmanager->delete_tag($id);
 
         $this->assertTrue($result);
 
         // Verify tag is deleted.
-        $tag = tag_manager::get_tag($id);
+        $tag = $this->tagmanager->get_tag($id);
         $this->assertFalse($tag);
     }
 
@@ -246,15 +249,15 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Create tag.
-        $tagid = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
 
         // Assign tag to module.
-        $result = tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $result = $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         $this->assertTrue($result);
 
         // Verify assignment.
-        $tag = tag_manager::get_cm_tag($page->cmid);
+        $tag = $this->tagmanager->get_cm_tag($page->cmid);
         $this->assertNotFalse($tag);
         $this->assertEquals($tagid, $tag->id);
         $this->assertEquals('Reading', $tag->name);
@@ -269,16 +272,16 @@ final class tag_manager_test extends \advanced_testcase {
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Create tag.
-        $tagid = tag_manager::create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('Reading', 'reading.svg', 'reading-small.svg', 'page');
 
         // Assign and then unassign.
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
-        $result = tag_manager::unassign_tag_from_cm($page->cmid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+        $result = $this->tagmanager->unassign_tag_from_cm($page->cmid);
 
         $this->assertTrue($result);
 
         // Verify unassignment.
-        $tag = tag_manager::get_cm_tag($page->cmid);
+        $tag = $this->tagmanager->get_cm_tag($page->cmid);
         $this->assertFalse($tag);
     }
 
@@ -291,31 +294,31 @@ final class tag_manager_test extends \advanced_testcase {
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        $tag1id = tag_manager::create_tag('Tag One');
-        $tag2id = tag_manager::create_tag('Tag Two');
+        $tag1id = $this->tagmanager->create_tag('Tag One');
+        $tag2id = $this->tagmanager->create_tag('Tag Two');
 
-        tag_manager::assign_tag_to_cm($page1->cmid, $tag1id);
-        tag_manager::assign_tag_to_cm($page2->cmid, $tag2id);
+        $this->tagmanager->assign_tag_to_cm($page1->cmid, $tag1id);
+        $this->tagmanager->assign_tag_to_cm($page2->cmid, $tag2id);
 
         // Prime the cache for both cms.
-        tag_manager::get_cm_tag($page1->cmid);
-        tag_manager::get_cm_tag($page2->cmid);
+        $this->tagmanager->get_cm_tag($page1->cmid);
+        $this->tagmanager->get_cm_tag($page2->cmid);
 
         // Mutating cm1 must keep cm2's cached entry intact.
         $cache = \cache::make('format_mimo', 'activitytagmappings');
-        tag_manager::assign_tag_to_cm($page1->cmid, $tag2id);
+        $this->tagmanager->assign_tag_to_cm($page1->cmid, $tag2id);
         $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
 
         // Write-through: cm1's entry reflects the new tag without a DB roundtrip.
         $this->assertEquals($tag2id, $cache->get('cm_' . $page1->cmid));
-        $this->assertEquals($tag2id, tag_manager::get_cm_tag($page1->cmid)->id);
+        $this->assertEquals($tag2id, $this->tagmanager->get_cm_tag($page1->cmid)->id);
 
         // Removing cm1's tag writes the sentinel and keeps cm2 cached.
-        tag_manager::remove_cm_tag($page1->cmid);
+        $this->tagmanager->remove_cm_tag($page1->cmid);
         $this->assertSame(0, $cache->get('cm_' . $page1->cmid));
-        $this->assertFalse(tag_manager::get_cm_tag($page1->cmid));
+        $this->assertFalse($this->tagmanager->get_cm_tag($page1->cmid));
         $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
-        $this->assertEquals($tag2id, tag_manager::get_cm_tag($page2->cmid)->id);
+        $this->assertEquals($tag2id, $this->tagmanager->get_cm_tag($page2->cmid)->id);
     }
 
     /**
@@ -327,25 +330,25 @@ final class tag_manager_test extends \advanced_testcase {
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        $doomedid = tag_manager::create_tag('Doomed');
-        $survivorid = tag_manager::create_tag('Survivor');
+        $doomedid = $this->tagmanager->create_tag('Doomed');
+        $survivorid = $this->tagmanager->create_tag('Survivor');
 
-        tag_manager::assign_tag_to_cm($page1->cmid, $doomedid);
-        tag_manager::assign_tag_to_cm($page2->cmid, $survivorid);
+        $this->tagmanager->assign_tag_to_cm($page1->cmid, $doomedid);
+        $this->tagmanager->assign_tag_to_cm($page2->cmid, $survivorid);
 
         // Prime both entries.
-        tag_manager::get_cm_tag($page1->cmid);
-        tag_manager::get_cm_tag($page2->cmid);
+        $this->tagmanager->get_cm_tag($page1->cmid);
+        $this->tagmanager->get_cm_tag($page2->cmid);
 
-        tag_manager::delete_tag($doomedid);
+        $this->tagmanager->delete_tag($doomedid);
 
         $cache = \cache::make('format_mimo', 'activitytagmappings');
         // Affected mapping evicted, fresh lookup reports untagged.
         $this->assertFalse($cache->get('cm_' . $page1->cmid));
-        $this->assertFalse(tag_manager::get_cm_tag($page1->cmid));
+        $this->assertFalse($this->tagmanager->get_cm_tag($page1->cmid));
         // Unrelated mapping survives.
         $this->assertNotFalse($cache->get('cm_' . $page2->cmid));
-        $this->assertEquals($survivorid, tag_manager::get_cm_tag($page2->cmid)->id);
+        $this->assertEquals($survivorid, $this->tagmanager->get_cm_tag($page2->cmid)->id);
     }
 
     /**
@@ -354,17 +357,17 @@ final class tag_manager_test extends \advanced_testcase {
     public function test_evict_cm_mapping(): void {
         $course = $this->getDataGenerator()->create_course();
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
-        $tagid = tag_manager::create_tag('Reading');
+        $tagid = $this->tagmanager->create_tag('Reading');
 
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
-        tag_manager::get_cm_tag($page->cmid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->get_cm_tag($page->cmid);
 
-        tag_manager::evict_cm_mapping($page->cmid);
+        $this->tagmanager->evict_cm_mapping($page->cmid);
 
         $cache = \cache::make('format_mimo', 'activitytagmappings');
         $this->assertFalse($cache->get('cm_' . $page->cmid));
         // A fresh lookup re-primes from the DB.
-        $this->assertEquals($tagid, tag_manager::get_cm_tag($page->cmid)->id);
+        $this->assertEquals($tagid, $this->tagmanager->get_cm_tag($page->cmid)->id);
     }
 
     /**
@@ -377,13 +380,13 @@ final class tag_manager_test extends \advanced_testcase {
         $tagged = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $untagged = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        $tagid = tag_manager::create_tag('Reading');
-        tag_manager::assign_tag_to_cm($tagged->cmid, $tagid);
+        $tagid = $this->tagmanager->create_tag('Reading');
+        $this->tagmanager->assign_tag_to_cm($tagged->cmid, $tagid);
 
         // Start from a cold cache.
-        tag_manager::clear_mapping_cache();
+        $this->tagmanager->clear_mapping_cache();
 
-        tag_manager::prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
+        $this->tagmanager->prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
 
         // Both entries are now cached: real tagid and the untagged sentinel.
         $cache = \cache::make('format_mimo', 'activitytagmappings');
@@ -393,15 +396,15 @@ final class tag_manager_test extends \advanced_testcase {
         // Lookups resolve without further DB reads: delete the rows behind the
         // cache's back and verify the cached values are still served.
         $DB->delete_records('format_mimo_cmtags', ['cmid' => $tagged->cmid]);
-        $this->assertEquals($tagid, tag_manager::get_cm_tag($tagged->cmid)->id);
-        $this->assertFalse(tag_manager::get_cm_tag($untagged->cmid));
+        $this->assertEquals($tagid, $this->tagmanager->get_cm_tag($tagged->cmid)->id);
+        $this->assertFalse($this->tagmanager->get_cm_tag($untagged->cmid));
 
         // Re-priming must not overwrite existing entries (only loads misses).
-        tag_manager::prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
+        $this->tagmanager->prime_cm_mappings([$tagged->cmid, $untagged->cmid]);
         $this->assertEquals($tagid, $cache->get('cm_' . $tagged->cmid));
 
         // Empty input is a no-op.
-        tag_manager::prime_cm_mappings([]);
+        $this->tagmanager->prime_cm_mappings([]);
     }
 
     /**
@@ -412,12 +415,12 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Clear any existing tags from install.
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
-        tag_manager::initialize_default_tags();
+        $this->tagmanager->initialize_default_tags();
 
         // Verify 12 default tags were created.
-        $tags = tag_manager::get_all_tags();
+        $tags = $this->tagmanager->get_all_tags();
         $this->assertCount(12, $tags);
 
         // Verify the full set of default tag names in one strict comparison.
@@ -449,14 +452,14 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Clear any existing tags from install.
         $DB->delete_records('format_mimo_tags');
-        tag_manager::clear_tag_cache();
+        $this->tagmanager->clear_tag_cache();
 
         // Call twice.
-        tag_manager::initialize_default_tags();
-        tag_manager::initialize_default_tags();
+        $this->tagmanager->initialize_default_tags();
+        $this->tagmanager->initialize_default_tags();
 
         // Should still only have 12 tags.
-        $tags = tag_manager::get_all_tags();
+        $tags = $this->tagmanager->get_all_tags();
         $this->assertCount(12, $tags);
     }
 
@@ -491,14 +494,14 @@ final class tag_manager_test extends \advanced_testcase {
      * @param string|null $expected
      */
     public function test_normalize_hex_color(?string $input, ?string $expected): void {
-        $this->assertSame($expected, tag_manager::normalize_hex_color($input));
+        $this->assertSame($expected, $this->tagmanager->normalize_hex_color($input));
     }
 
     /**
      * Default accent palette should be a non-empty list of hex colours.
      */
     public function test_get_default_accent_palette(): void {
-        $palette = tag_manager::get_default_accent_palette();
+        $palette = $this->tagmanager->get_default_accent_palette();
 
         $this->assertIsArray($palette);
         $this->assertNotEmpty($palette);
@@ -511,7 +514,7 @@ final class tag_manager_test extends \advanced_testcase {
      * Filemanager options should define the expected constraints.
      */
     public function test_get_image_filemanager_options(): void {
-        $options = tag_manager::get_image_filemanager_options();
+        $options = $this->tagmanager->get_image_filemanager_options();
 
         $this->assertIsArray($options);
         $this->assertArrayHasKey('maxfiles', $options);
@@ -524,28 +527,28 @@ final class tag_manager_test extends \advanced_testcase {
      * with no stored files.
      */
     public function test_has_image_returns_false_without_files(): void {
-        $tagid = tag_manager::create_tag('Fresh');
+        $tagid = $this->tagmanager->create_tag('Fresh');
 
-        $this->assertFalse(tag_manager::has_cardimage($tagid));
-        $this->assertFalse(tag_manager::has_filterimage($tagid));
+        $this->assertFalse($this->tagmanager->has_cardimage($tagid));
+        $this->assertFalse($this->tagmanager->has_filterimage($tagid));
     }
 
     /**
      * get_cardimage_url / get_filterimage_url should return null when no image exists.
      */
     public function test_get_image_url_returns_null_without_files(): void {
-        $tagid = tag_manager::create_tag('Fresh');
-        $tag = tag_manager::get_tag($tagid);
+        $tagid = $this->tagmanager->create_tag('Fresh');
+        $tag = $this->tagmanager->get_tag($tagid);
 
-        $this->assertNull(tag_manager::get_cardimage_url($tag));
-        $this->assertNull(tag_manager::get_filterimage_url($tag));
+        $this->assertNull($this->tagmanager->get_cardimage_url($tag));
+        $this->assertNull($this->tagmanager->get_filterimage_url($tag));
     }
 
     /**
      * get_tag should return false when the id does not exist.
      */
     public function test_get_tag_not_found(): void {
-        $this->assertFalse(tag_manager::get_tag(999999));
+        $this->assertFalse($this->tagmanager->get_tag(999999));
     }
 
     /**
@@ -555,21 +558,21 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo', 'numsections' => 2]);
-        $tagid = tag_manager::create_tag('Usage', 'u.svg', 'u-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('Usage', 'u.svg', 'u-small.svg', 'page');
 
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 1]);
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 1]);
         $page3 = $this->getDataGenerator()->create_module('page', ['course' => $course->id, 'section' => 2]);
 
-        tag_manager::assign_tag_to_cm($page1->cmid, $tagid);
-        tag_manager::assign_tag_to_cm($page2->cmid, $tagid);
-        tag_manager::assign_tag_to_cm($page3->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page1->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page2->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page3->cmid, $tagid);
 
         // Empty tagids list returns empty array without touching DB.
-        $this->assertSame([], tag_manager::get_tag_usage_counts($course->id, []));
+        $this->assertSame([], $this->tagmanager->get_tag_usage_counts($course->id, []));
 
         // Course-wide: 3 assignments.
-        $counts = tag_manager::get_tag_usage_counts($course->id, [$tagid]);
+        $counts = $this->tagmanager->get_tag_usage_counts($course->id, [$tagid]);
         $this->assertArrayHasKey($tagid, $counts);
         $this->assertEquals(3, (int) $counts[$tagid]);
 
@@ -578,7 +581,7 @@ final class tag_manager_test extends \advanced_testcase {
             'course' => $course->id,
             'section' => 1,
         ]);
-        $counts = tag_manager::get_tag_usage_counts($course->id, [$tagid], $section1id);
+        $counts = $this->tagmanager->get_tag_usage_counts($course->id, [$tagid], $section1id);
         $this->assertEquals(2, (int) $counts[$tagid]);
     }
 
@@ -588,14 +591,14 @@ final class tag_manager_test extends \advanced_testcase {
      */
     public function test_clear_course_tags_cache(): void {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        tag_manager::create_tag('Cached', 'c.svg', 'c-small.svg', 'page');
+        $this->tagmanager->create_tag('Cached', 'c.svg', 'c-small.svg', 'page');
 
         // Populate the cache.
-        $first = tag_manager::get_tags_for_course($course->id);
+        $first = $this->tagmanager->get_tags_for_course($course->id);
 
         // Invalidate, then ensure it still returns data consistent with DB.
-        tag_manager::clear_course_tags_cache($course->id);
-        $second = tag_manager::get_tags_for_course($course->id);
+        $this->tagmanager->clear_course_tags_cache($course->id);
+        $second = $this->tagmanager->get_tags_for_course($course->id);
 
         $this->assertEquals(array_keys($first), array_keys($second));
     }
@@ -611,8 +614,8 @@ final class tag_manager_test extends \advanced_testcase {
         global $DB;
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $globalid = tag_manager::create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
-        $importedid = tag_manager::create_tag(
+        $globalid = $this->tagmanager->create_tag('GlobalTag', 'g.svg', 'g-s.svg', 'page');
+        $importedid = $this->tagmanager->create_tag(
             'ImportedTag',
             'i.svg',
             'i-s.svg',
@@ -626,12 +629,12 @@ final class tag_manager_test extends \advanced_testcase {
         );
 
         // Before binding: no imported tags for the course.
-        $this->assertSame([], tag_manager::get_imported_tags_for_course($course->id));
+        $this->assertSame([], $this->tagmanager->get_imported_tags_for_course($course->id));
 
-        tag_manager::bind_tag_to_course($importedid, $course->id);
+        $this->tagmanager->bind_tag_to_course($importedid, $course->id);
 
         // Duplicate binding is a no-op (no exception, no second row).
-        tag_manager::bind_tag_to_course($importedid, $course->id);
+        $this->tagmanager->bind_tag_to_course($importedid, $course->id);
         $this->assertSame(
             1,
             $DB->count_records('format_mimo_course_tags', [
@@ -640,12 +643,12 @@ final class tag_manager_test extends \advanced_testcase {
             ]),
         );
 
-        $bound = tag_manager::get_imported_tags_for_course($course->id);
+        $bound = $this->tagmanager->get_imported_tags_for_course($course->id);
         $this->assertArrayHasKey($importedid, $bound);
         $this->assertArrayNotHasKey($globalid, $bound, 'Global tags must not appear in the imported bucket');
 
-        tag_manager::unbind_tag_from_course($importedid, $course->id);
-        $this->assertSame([], tag_manager::get_imported_tags_for_course($course->id));
+        $this->tagmanager->unbind_tag_from_course($importedid, $course->id);
+        $this->assertSame([], $this->tagmanager->get_imported_tags_for_course($course->id));
     }
 
     /**
@@ -656,7 +659,7 @@ final class tag_manager_test extends \advanced_testcase {
 
         $course1 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $course2 = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $tagid = tag_manager::create_tag(
+        $tagid = $this->tagmanager->create_tag(
             'ToPromote',
             'p.svg',
             'p-s.svg',
@@ -668,11 +671,11 @@ final class tag_manager_test extends \advanced_testcase {
             'normal',
             'imported',
         );
-        tag_manager::bind_tag_to_course($tagid, $course1->id);
-        tag_manager::bind_tag_to_course($tagid, $course2->id);
+        $this->tagmanager->bind_tag_to_course($tagid, $course1->id);
+        $this->tagmanager->bind_tag_to_course($tagid, $course2->id);
         $this->assertSame(2, $DB->count_records('format_mimo_course_tags', ['tagid' => $tagid]));
 
-        tag_manager::promote_tag_to_global($tagid);
+        $this->tagmanager->promote_tag_to_global($tagid);
 
         $this->assertSame(
             'global',
@@ -692,7 +695,7 @@ final class tag_manager_test extends \advanced_testcase {
         $module = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Three imported tags with different attachment states.
-        $orphan = tag_manager::create_tag(
+        $orphan = $this->tagmanager->create_tag(
             'Orphan',
             'o.svg',
             'o-s.svg',
@@ -704,7 +707,7 @@ final class tag_manager_test extends \advanced_testcase {
             'normal',
             'imported',
         );
-        $bound = tag_manager::create_tag(
+        $bound = $this->tagmanager->create_tag(
             'Bound',
             'b.svg',
             'b-s.svg',
@@ -716,7 +719,7 @@ final class tag_manager_test extends \advanced_testcase {
             'normal',
             'imported',
         );
-        $cmattached = tag_manager::create_tag(
+        $cmattached = $this->tagmanager->create_tag(
             'Attached',
             'a.svg',
             'a-s.svg',
@@ -729,13 +732,13 @@ final class tag_manager_test extends \advanced_testcase {
             'imported',
         );
 
-        tag_manager::bind_tag_to_course($bound, $course->id);
-        tag_manager::assign_tag_to_cm($module->cmid, $cmattached);
+        $this->tagmanager->bind_tag_to_course($bound, $course->id);
+        $this->tagmanager->assign_tag_to_cm($module->cmid, $cmattached);
 
         // Also a global tag with no attachments — must never be collected.
-        $globalunused = tag_manager::create_tag('GlobalUnused', 'gu.svg', 'gu-s.svg', 'page');
+        $globalunused = $this->tagmanager->create_tag('GlobalUnused', 'gu.svg', 'gu-s.svg', 'page');
 
-        tag_manager::cleanup_orphaned_imported_tags();
+        $this->tagmanager->cleanup_orphaned_imported_tags();
 
         $this->assertFalse(
             $DB->record_exists('format_mimo_tags', ['id' => $orphan]),
@@ -758,9 +761,9 @@ final class tag_manager_test extends \advanced_testcase {
      * (NULL-safe), and honours the excludeids filter.
      */
     public function test_find_tag_by_fingerprint(): void {
-        $id1 = tag_manager::create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'page', 'forum', null, '#abcdef');
+        $id1 = $this->tagmanager->create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'page', 'forum', null, '#abcdef');
         // A differently-configured tag with the same name must not match.
-        $id2 = tag_manager::create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'quiz', null, null, '#123456');
+        $id2 = $this->tagmanager->create_tag('Fingerprinted', 'f.svg', 'f-s.svg', 'quiz', null, null, '#123456');
 
         $probe = (object) [
             'name' => 'Fingerprinted',
@@ -770,17 +773,17 @@ final class tag_manager_test extends \advanced_testcase {
             'activitytype3' => null,
         ];
 
-        $hit = tag_manager::find_tag_by_fingerprint($probe);
+        $hit = $this->tagmanager->find_tag_by_fingerprint($probe);
         $this->assertNotNull($hit);
         $this->assertSame($id1, (int) $hit->id);
 
         // Excluding the only match returns null.
-        $this->assertNull(tag_manager::find_tag_by_fingerprint($probe, [$id1]));
+        $this->assertNull($this->tagmanager->find_tag_by_fingerprint($probe, [$id1]));
 
         // Differing colour prevents matching.
         $noncolor = clone $probe;
         $noncolor->bgcolor = '#000000';
-        $this->assertNull(tag_manager::find_tag_by_fingerprint($noncolor));
+        $this->assertNull($this->tagmanager->find_tag_by_fingerprint($noncolor));
 
         // Sanity: the second tag with same name but different fingerprint is not returned.
         $this->assertNotSame($id2, (int) $hit->id);
@@ -790,16 +793,16 @@ final class tag_manager_test extends \advanced_testcase {
      * find_tag_by_name is a lenient fallback that ignores colour / activity types.
      */
     public function test_find_tag_by_name(): void {
-        $id = tag_manager::create_tag('OnlyName', 'n.svg', 'n-s.svg', 'page');
+        $id = $this->tagmanager->create_tag('OnlyName', 'n.svg', 'n-s.svg', 'page');
 
-        $hit = tag_manager::find_tag_by_name('OnlyName');
+        $hit = $this->tagmanager->find_tag_by_name('OnlyName');
         $this->assertNotNull($hit);
         $this->assertSame($id, (int) $hit->id);
 
         // Name-mismatch returns null.
-        $this->assertNull(tag_manager::find_tag_by_name('Nope'));
+        $this->assertNull($this->tagmanager->find_tag_by_name('Nope'));
 
         // Exclusion works.
-        $this->assertNull(tag_manager::find_tag_by_name('OnlyName', [$id]));
+        $this->assertNull($this->tagmanager->find_tag_by_name('OnlyName', [$id]));
     }
 }

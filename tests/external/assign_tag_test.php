@@ -35,6 +35,17 @@ use format_mimo\tag_manager;
  * @covers     \format_mimo\external\assign_tag
  */
 final class assign_tag_test extends \advanced_testcase {
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
+    /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->tagmanager = \core\di::get(tag_manager::class);
+    }
+
     /**
      * Admin can assign a tag to a course module.
      */
@@ -44,7 +55,7 @@ final class assign_tag_test extends \advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
-        $tagid = tag_manager::create_tag('External', 'e.svg', 'e-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('External', 'e.svg', 'e-small.svg', 'page');
 
         $result = assign_tag::execute($page->cmid, $tagid);
 
@@ -52,7 +63,7 @@ final class assign_tag_test extends \advanced_testcase {
         $this->assertArrayHasKey('success', $result);
         $this->assertTrue($result['success']);
 
-        $assigned = tag_manager::get_cm_tag($page->cmid);
+        $assigned = $this->tagmanager->get_cm_tag($page->cmid);
         $this->assertNotFalse($assigned);
         $this->assertEquals($tagid, $assigned->id);
     }
@@ -65,7 +76,7 @@ final class assign_tag_test extends \advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
-        $tagid = tag_manager::create_tag('External', 'e.svg', 'e-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('External', 'e.svg', 'e-small.svg', 'page');
 
         $student = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
@@ -82,7 +93,7 @@ final class assign_tag_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        $tagid = tag_manager::create_tag('External', 'e.svg', 'e-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('External', 'e.svg', 'e-small.svg', 'page');
 
         $this->expectException(\dml_exception::class);
         assign_tag::execute(999999, $tagid);

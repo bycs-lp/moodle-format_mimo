@@ -127,13 +127,14 @@ class stateactions extends core_stateactions {
         }
 
         // Read the existing assignment once and short-circuit if the source had no tag.
-        $tag = tag_manager::get_cm_tag($sourcecmid);
+        $tagmanager = \core\di::get(tag_manager::class);
+        $tag = $tagmanager->get_cm_tag($sourcecmid);
         if (!$tag || empty($tag->id)) {
             return;
         }
 
         // Persist the mapping for the duplicate; tag_manager abstracts cache updates.
-        tag_manager::assign_tag_to_cm($duplicatedcmid, (int)$tag->id);
+        $tagmanager->assign_tag_to_cm($duplicatedcmid, (int)$tag->id);
     }
 
     /**
@@ -154,8 +155,9 @@ class stateactions extends core_stateactions {
     ): void {
         parent::cm_show($updates, $course, $ids, $targetsectionid, $targetcmid);
         // Clear done flag only after parent has validated capabilities and applied the visibility change.
+        $donemanager = \core\di::get(done_manager::class);
         foreach ($ids as $cmid) {
-            done_manager::unset_done($cmid);
+            $donemanager->unset_done($cmid);
         }
     }
 
@@ -177,8 +179,9 @@ class stateactions extends core_stateactions {
     ): void {
         parent::cm_hide($updates, $course, $ids, $targetsectionid, $targetcmid);
         // Clear done flag only after parent has validated capabilities and applied the visibility change.
+        $donemanager = \core\di::get(done_manager::class);
         foreach ($ids as $cmid) {
-            done_manager::unset_done($cmid);
+            $donemanager->unset_done($cmid);
         }
     }
 
@@ -200,8 +203,9 @@ class stateactions extends core_stateactions {
     ): void {
         parent::cm_stealth($updates, $course, $ids, $targetsectionid, $targetcmid);
         // Clear done flag only after parent has validated capabilities and applied the visibility change.
+        $donemanager = \core\di::get(done_manager::class);
         foreach ($ids as $cmid) {
-            done_manager::unset_done($cmid);
+            $donemanager->unset_done($cmid);
         }
     }
 
@@ -229,12 +233,13 @@ class stateactions extends core_stateactions {
         );
 
         $modinfo = get_fast_modinfo($course);
+        $donemanager = \core\di::get(done_manager::class);
         foreach ($ids as $cmid) {
             // Ensure the activity is visible (shown) when marking as done.
             set_coursemodule_visible($cmid, true, 1, false);
             $cm = $modinfo->get_cm($cmid);
             \core\event\course_module_updated::create_from_cm($cm)->trigger();
-            done_manager::set_done($cmid);
+            $donemanager->set_done($cmid);
         }
 
         // Purge the per-cm caches so the partial rebuild picks up the visibility change.
@@ -266,8 +271,9 @@ class stateactions extends core_stateactions {
             ['moodle/course:activityvisibility']
         );
 
+        $donemanager = \core\di::get(done_manager::class);
         foreach ($ids as $cmid) {
-            done_manager::unset_done($cmid);
+            $donemanager->unset_done($cmid);
         }
 
         rebuild_course_cache($course->id, false, true);

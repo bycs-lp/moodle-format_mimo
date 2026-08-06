@@ -50,6 +50,17 @@ namespace format_mimo;
  * @covers     ::format_mimo_pluginfile
  */
 final class format_mimo_test extends \advanced_testcase {
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
+    /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->tagmanager = \core\di::get(tag_manager::class);
+    }
+
     /**
      * Create a mimo course and return its format instance.
      *
@@ -215,7 +226,7 @@ final class format_mimo_test extends \advanced_testcase {
 
         [$course, $format] = $this->create_course_and_format();
 
-        profile_manager::create_profile('alternate', 'Alternate profile');
+        \core\di::get(profile_manager::class)->create_profile('alternate', 'Alternate profile');
 
         $before = (array) $format->get_format_options();
         $this->assertSame(0, (int) ($before['enablemultisection'] ?? 0));
@@ -269,8 +280,8 @@ final class format_mimo_test extends \advanced_testcase {
 
         [$course, $format] = $this->create_course_and_format();
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
-        $tagid = tag_manager::create_tag('Cleanup', 'c.svg', 'c-small.svg', 'page');
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $tagid = $this->tagmanager->create_tag('Cleanup', 'c.svg', 'c-small.svg', 'page');
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         // Simulate core's deletion order: remove the course_modules first so cmtag becomes orphaned.
         $DB->delete_records('course_modules', ['course' => $course->id]);
@@ -289,32 +300,32 @@ final class format_mimo_test extends \advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
-        $tagid = tag_manager::create_tag('Edit', 'e.svg', 'e-small.svg', 'page');
+        $tagid = $this->tagmanager->create_tag('Edit', 'e.svg', 'e-small.svg', 'page');
 
         // Non-mimo courses are a no-op.
         $topics = $this->getDataGenerator()->create_course(['format' => 'topics']);
         $data = (object) ['coursemodule' => $page->cmid, 'mimo_cmtag' => $tagid];
         $returned = format_mimo_coursemodule_edit_post_actions($data, $topics);
         $this->assertSame($data, $returned);
-        $this->assertFalse(tag_manager::get_cm_tag($page->cmid));
+        $this->assertFalse($this->tagmanager->get_cm_tag($page->cmid));
 
         // Mimo course: assigning a tag.
         $data = (object) ['coursemodule' => $page->cmid, 'mimo_cmtag' => $tagid];
         format_mimo_coursemodule_edit_post_actions($data, $course);
-        $assigned = tag_manager::get_cm_tag($page->cmid);
+        $assigned = $this->tagmanager->get_cm_tag($page->cmid);
         $this->assertNotFalse($assigned);
         $this->assertEquals($tagid, $assigned->id);
 
         // Mimo course: mimo_cmtag = 0 removes the assignment.
         $data = (object) ['coursemodule' => $page->cmid, 'mimo_cmtag' => 0];
         format_mimo_coursemodule_edit_post_actions($data, $course);
-        $this->assertFalse(tag_manager::get_cm_tag($page->cmid));
+        $this->assertFalse($this->tagmanager->get_cm_tag($page->cmid));
 
         // Missing mimo_cmtag key is a no-op.
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
         $data = (object) ['coursemodule' => $page->cmid];
         format_mimo_coursemodule_edit_post_actions($data, $course);
-        $assigned = tag_manager::get_cm_tag($page->cmid);
+        $assigned = $this->tagmanager->get_cm_tag($page->cmid);
         $this->assertEquals($tagid, $assigned->id);
     }
 

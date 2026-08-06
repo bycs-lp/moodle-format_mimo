@@ -40,9 +40,10 @@ $PAGE->set_title(get_string('profilemanagement', 'format_mimo'));
 $PAGE->set_heading(get_string('profilemanagement', 'format_mimo'));
 
 // Handle delete action.
+$profilemanager = \core\di::get(profile_manager::class);
 if ($action === 'deleteprofile' && confirm_sesskey()) {
     if ($profileid) {
-        $profile = profile_manager::get_profile($profileid);
+        $profile = $profilemanager->get_profile($profileid);
         if ($profile) {
             // Prevent deletion if profile is in use by any course.
             // The value column is TEXT; direct equality breaks on Oracle/MSSQL.
@@ -61,7 +62,7 @@ if ($action === 'deleteprofile' && confirm_sesskey()) {
                 );
             }
 
-            profile_manager::delete_profile($profileid);
+            $profilemanager->delete_profile($profileid);
             redirect(
                 $PAGE->url,
                 get_string('profiledeleted', 'format_mimo'),
@@ -84,7 +85,7 @@ $PAGE->requires->js_call_amd('format_mimo/profile_delete_confirm', 'init');
 $PAGE->requires->js_call_amd('format_mimo/profile_management_modal', 'init');
 
 // Get all profiles.
-$profiles = profile_manager::get_all_profiles();
+$profiles = $profilemanager->get_all_profiles();
 
 $templatecontext = [
     'createprofiletext' => get_string('createprofile', 'format_mimo'),

@@ -36,7 +36,7 @@ class done_manager {
      *
      * @var array<int, array<int, true>>
      */
-    private static array $donecache = [];
+    private array $donecache = [];
 
     /**
      * Request-level cache of cmid => courseid resolutions.
@@ -46,17 +46,22 @@ class done_manager {
      *
      * @var array<int, int>
      */
-    private static array $cmcourse = [];
+    private array $cmcourse = [];
 
     /**
-     * Reset the request-level cache.
+     * Constructor with DI-injected dependencies.
      *
-     * Intended for unit tests; the DB is rolled back between tests but
-     * static properties survive.
+     * Obtain the shared instance via \core\di::get(done_manager::class).
+     *
+     * @param \moodle_database $db Database instance.
+     * @param \core\clock $clock Clock instance.
      */
-    public static function reset_cache(): void {
-        self::$donecache = [];
-        self::$cmcourse = [];
+    public function __construct(
+        /** @var \moodle_database Database instance. */
+        private readonly \moodle_database $db,
+        /** @var \core\clock Clock instance. */
+        private readonly \core\clock $clock,
+    ) {
     }
 
     /**
@@ -64,21 +69,20 @@ class done_manager {
      *
      * @param int $courseid Course ID.
      */
-    private static function prime_course(int $courseid): void {
-        global $DB;
-        if (isset(self::$donecache[$courseid])) {
+    private function prime_course(int $courseid): void {
+        if (isset($this->donecache[$courseid])) {
             return;
         }
         $sql = "SELECT d.cmid
                   FROM {format_mimo_cmdone} d
                   JOIN {course_modules} cm ON cm.id = d.cmid
                  WHERE cm.course = :courseid";
-        $records = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        $records = $this->db->get_records_sql($sql, ['courseid' => $courseid]);
         $map = [];
         foreach ($records as $record) {
             $map[(int) $record->cmid] = true;
         }
-        self::$donecache[$courseid] = $map;
+        $this->donecache[$courseid] = $map;
     }
 
     /**
@@ -90,14 +94,13 @@ class done_manager {
      * @param int $cmid Course module ID.
      * @return int Course ID, or 0 if the cm does not exist.
      */
-    private static function get_courseid_for_cm(int $cmid): int {
-        global $DB;
-        if (isset(self::$cmcourse[$cmid])) {
-            return self::$cmcourse[$cmid];
+    private function get_courseid_for_cm(int $cmid): int {
+        if (isset($this->cmcourse[$cmid])) {
+            return $this->cmcourse[$cmid];
         }
-        $courseid = (int) $DB->get_field('course_modules', 'course', ['id' => $cmid]);
+        $courseid = (int) $this->db->get_field('course_modules', 'course', ['id' => $cmid]);
         if ($courseid !== 0) {
-            self::$cmcourse[$cmid] = $courseid;
+            $this->cmcourse[$cmid] = $courseid;
         }
         return $courseid;
     }
@@ -114,17 +117,17 @@ class done_manager {
      *                           avoiding a cmid lookup entirely.
      * @return bool
      */
-    public static function is_done(int $cmid, ?int $courseid = null): bool {
+    public function is_done(int $cmid, ?int $courseid = null): bool {
         if ($courseid !== null && $courseid > 0) {
-            self::$cmcourse[$cmid] = $courseid;
+            $this->cmcourse[$cmid] = $courseid;
         } else {
-            $courseid = self::get_courseid_for_cm($cmid);
+            $courseid = $this->get_courseid_for_cm($cmid);
             if ($courseid === 0) {
                 return false;
             }
         }
-        self::prime_course($courseid);
-        return isset(self::$donecache[$courseid][$cmid]);
+        $this->prime_course($courseid);
+        return isset($this->donecache[$courseid][$cmid]);
     }
 
     /**
@@ -132,16 +135,15 @@ class done_manager {
      *
      * @param int $cmid Course module ID.
      */
-    public static function set_done(int $cmid): void {
-        global $DB;
-        if (!self::is_done($cmid)) {
-            $DB->insert_record('format_mimo_cmdone', (object) [
+    public function set_done(int $cmid): void {
+        if (!$this->is_done($cmid)) {
+            $this->db->insert_record('format_mimo_cmdone', (object) [
                 'cmid' => $cmid,
-                'timecreated' => \core\di::get(\core\clock::class)->time(),
+                'timecreated' => $this->clock->time(),
             ]);
-            $courseid = self::get_courseid_for_cm($cmid);
-            if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
-                self::$donecache[$courseid][$cmid] = true;
+            $courseid = $this->get_courseid_for_cm($cmid);
+            if ($courseid !== 0 && isset($this->donecache[$courseid])) {
+                $this->donecache[$courseid][$cmid] = true;
             }
         }
     }
@@ -151,12 +153,11 @@ class done_manager {
      *
      * @param int $cmid Course module ID.
      */
-    public static function unset_done(int $cmid): void {
-        global $DB;
-        $DB->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
-        $courseid = self::get_courseid_for_cm($cmid);
-        if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
-            unset(self::$donecache[$courseid][$cmid]);
+    public function unset_done(int $cmid): void {
+        $this->db->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
+        $courseid = $this->get_courseid_for_cm($cmid);
+        if ($courseid !== 0 && isset($this->donecache[$courseid])) {
+            unset($this->donecache[$courseid][$cmid]);
         }
     }
 
@@ -166,9 +167,9 @@ class done_manager {
      * @param int $courseid Course ID.
      * @return int[] Array of cmids that are flagged done.
      */
-    public static function get_done_cmids(int $courseid): array {
-        self::prime_course($courseid);
-        return array_keys(self::$donecache[$courseid]);
+    public function get_done_cmids(int $courseid): array {
+        $this->prime_course($courseid);
+        return array_keys($this->donecache[$courseid]);
     }
 
     /**
@@ -176,13 +177,12 @@ class done_manager {
      *
      * @param int $cmid Course module ID.
      */
-    public static function delete_for_cm(int $cmid): void {
-        global $DB;
-        $courseid = self::get_courseid_for_cm($cmid);
-        $DB->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
-        unset(self::$cmcourse[$cmid]);
-        if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
-            unset(self::$donecache[$courseid][$cmid]);
+    public function delete_for_cm(int $cmid): void {
+        $courseid = $this->get_courseid_for_cm($cmid);
+        $this->db->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
+        unset($this->cmcourse[$cmid]);
+        if ($courseid !== 0 && isset($this->donecache[$courseid])) {
+            unset($this->donecache[$courseid][$cmid]);
         }
     }
 
@@ -191,11 +191,10 @@ class done_manager {
      *
      * @param int $courseid Course ID.
      */
-    public static function delete_for_course(int $courseid): void {
-        global $DB;
+    public function delete_for_course(int $courseid): void {
         $sql = "DELETE FROM {format_mimo_cmdone}
                  WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
-        $DB->execute($sql, ['courseid' => $courseid]);
-        unset(self::$donecache[$courseid]);
+        $this->db->execute($sql, ['courseid' => $courseid]);
+        unset($this->donecache[$courseid]);
     }
 }

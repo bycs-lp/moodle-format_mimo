@@ -107,7 +107,8 @@ class callbacks {
             return;
         }
 
-        $tags = tag_manager::get_tags_for_course($course->id);
+        $tagmanager = \core\di::get(tag_manager::class);
+        $tags = $tagmanager->get_tags_for_course($course->id);
         if (empty($tags)) {
             return;
         }
@@ -127,7 +128,7 @@ class callbacks {
         $cm = $formwrapper->get_coursemodule();
         if ($cm) {
             // Editing existing module — load current tag assignment.
-            $currenttag = tag_manager::get_cm_tag($cm->id);
+            $currenttag = $tagmanager->get_cm_tag($cm->id);
             if ($currenttag) {
                 $defaulttagid = $currenttag->id;
             }
@@ -158,14 +159,15 @@ class callbacks {
         $cmid = $data->coursemodule;
         $tagid = (int)$data->mimo_cmtag;
 
+        $tagmanager = \core\di::get(tag_manager::class);
         if ($tagid > 0) {
             // Only assign tags that are actually available in this course.
-            $coursetags = tag_manager::get_tags_for_course($course->id);
+            $coursetags = $tagmanager->get_tags_for_course($course->id);
             if (isset($coursetags[$tagid])) {
-                tag_manager::assign_tag_to_cm($cmid, $tagid);
+                $tagmanager->assign_tag_to_cm($cmid, $tagid);
             }
         } else {
-            tag_manager::remove_cm_tag($cmid);
+            $tagmanager->remove_cm_tag($cmid);
         }
 
         return $data;
@@ -198,7 +200,7 @@ class callbacks {
 
         // Check if we have a mimo completion override for this module type.
         // Without an override, fall back to manual self-completion.
-        $mimodefaults = completion_defaults_manager::get_default($moduleid);
+        $mimodefaults = \core\di::get(completion_defaults_manager::class)->get_default($moduleid);
         if (!$mimodefaults) {
             if ($mform->elementExists('completion')) {
                 $mform->setDefault('completion', COMPLETION_TRACKING_MANUAL);

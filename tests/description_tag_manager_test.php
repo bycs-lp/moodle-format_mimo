@@ -34,6 +34,21 @@ namespace format_mimo;
  * @covers     \format_mimo\description_tag_manager
  */
 final class description_tag_manager_test extends \advanced_testcase {
+    /** @var description_tag_manager Manager instance under test. */
+    private description_tag_manager $desctagmanager;
+
+    /** @var activity_description_manager Activity description manager instance. */
+    private activity_description_manager $descriptionmanager;
+
+    /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->desctagmanager = \core\di::get(description_tag_manager::class);
+        $this->descriptionmanager = \core\di::get(activity_description_manager::class);
+    }
+
     /**
      * Test creating a description tag.
      */
@@ -41,7 +56,7 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
 
         $this->assertNotEmpty($tagid);
         $this->assertTrue($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
@@ -62,11 +77,11 @@ final class description_tag_manager_test extends \advanced_testcase {
         $DB->delete_records('format_mimo_desc_tags');
 
         // Create some tags.
-        description_tag_manager::create_tag('Tag 1', '#FF5733');
-        description_tag_manager::create_tag('Tag 2', '#33FF57');
-        description_tag_manager::create_tag('Tag 3', '#3357FF');
+        $this->desctagmanager->create_tag('Tag 1', '#FF5733');
+        $this->desctagmanager->create_tag('Tag 2', '#33FF57');
+        $this->desctagmanager->create_tag('Tag 3', '#3357FF');
 
-        $tags = description_tag_manager::get_all_tags();
+        $tags = $this->desctagmanager->get_all_tags();
 
         $this->assertCount(3, $tags);
         $tagnames = array_column(array_values($tags), 'name');
@@ -81,9 +96,9 @@ final class description_tag_manager_test extends \advanced_testcase {
     public function test_get_tag(): void {
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
 
-        $tag = description_tag_manager::get_tag($tagid);
+        $tag = $this->desctagmanager->get_tag($tagid);
 
         $this->assertNotEmpty($tag);
         $this->assertEquals('Test Tag', $tag->name);
@@ -97,9 +112,9 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Original Name', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Original Name', '#FF5733');
 
-        $result = description_tag_manager::update_tag($tagid, 'Updated Name', '#33FF57');
+        $result = $this->desctagmanager->update_tag($tagid, 'Updated Name', '#33FF57');
 
         $this->assertTrue($result);
 
@@ -115,10 +130,10 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
         $this->assertTrue($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
 
-        $result = description_tag_manager::delete_tag($tagid);
+        $result = $this->desctagmanager->delete_tag($tagid);
 
         $this->assertTrue($result);
         $this->assertFalse($DB->record_exists('format_mimo_desc_tags', ['id' => $tagid]));
@@ -132,15 +147,15 @@ final class description_tag_manager_test extends \advanced_testcase {
         $this->resetAfterTest(true);
 
         // Create tag and activity description.
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
-        activity_description_manager::save_description('assign', 'Test description', $tagid);
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
+        $this->descriptionmanager->save_description('assign', 'Test description', $tagid);
 
         // Verify tag is in use.
-        $count = description_tag_manager::count_descriptions_with_tag($tagid);
+        $count = $this->desctagmanager->count_descriptions_with_tag($tagid);
         $this->assertEquals(1, $count);
 
         // Delete tag.
-        description_tag_manager::delete_tag($tagid);
+        $this->desctagmanager->delete_tag($tagid);
 
         // Verify tag reference was removed from activity description.
         $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
@@ -154,17 +169,17 @@ final class description_tag_manager_test extends \advanced_testcase {
     public function test_count_descriptions_with_tag(): void {
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
 
         // Initially no descriptions use this tag.
-        $count = description_tag_manager::count_descriptions_with_tag($tagid);
+        $count = $this->desctagmanager->count_descriptions_with_tag($tagid);
         $this->assertEquals(0, $count);
 
         // Add some descriptions with this tag.
-        activity_description_manager::save_description('assign', 'Assignment description', $tagid);
-        activity_description_manager::save_description('quiz', 'Quiz description', $tagid);
+        $this->descriptionmanager->save_description('assign', 'Assignment description', $tagid);
+        $this->descriptionmanager->save_description('quiz', 'Quiz description', $tagid);
 
-        $count = description_tag_manager::count_descriptions_with_tag($tagid);
+        $count = $this->desctagmanager->count_descriptions_with_tag($tagid);
         $this->assertEquals(2, $count);
     }
 
@@ -174,10 +189,10 @@ final class description_tag_manager_test extends \advanced_testcase {
     public function test_get_tags_for_select(): void {
         $this->resetAfterTest(true);
 
-        description_tag_manager::create_tag('Tag A', '#FF5733');
-        description_tag_manager::create_tag('Tag B', '#33FF57');
+        $this->desctagmanager->create_tag('Tag A', '#FF5733');
+        $this->desctagmanager->create_tag('Tag B', '#33FF57');
 
-        $options = description_tag_manager::get_tags_for_select();
+        $options = $this->desctagmanager->get_tags_for_select();
 
         $this->assertArrayHasKey(0, $options);
         $this->assertEquals('No tag', $options[0]);
@@ -189,16 +204,16 @@ final class description_tag_manager_test extends \advanced_testcase {
      * Test color validation.
      */
     public function test_is_valid_color(): void {
-        $this->assertTrue(description_tag_manager::is_valid_color('#FF5733'));
-        $this->assertTrue(description_tag_manager::is_valid_color('#123456'));
-        $this->assertTrue(description_tag_manager::is_valid_color('#abcdef'));
-        $this->assertTrue(description_tag_manager::is_valid_color('#ABCDEF'));
+        $this->assertTrue($this->desctagmanager->is_valid_color('#FF5733'));
+        $this->assertTrue($this->desctagmanager->is_valid_color('#123456'));
+        $this->assertTrue($this->desctagmanager->is_valid_color('#abcdef'));
+        $this->assertTrue($this->desctagmanager->is_valid_color('#ABCDEF'));
 
-        $this->assertFalse(description_tag_manager::is_valid_color('#FF573'));  // Too short.
-        $this->assertFalse(description_tag_manager::is_valid_color('#FF57333')); // Too long.
-        $this->assertFalse(description_tag_manager::is_valid_color('FF5733'));   // Missing #.
-        $this->assertFalse(description_tag_manager::is_valid_color('#GGGGGG'));  // Invalid chars.
-        $this->assertFalse(description_tag_manager::is_valid_color(''));         // Empty.
+        $this->assertFalse($this->desctagmanager->is_valid_color('#FF573'));  // Too short.
+        $this->assertFalse($this->desctagmanager->is_valid_color('#FF57333')); // Too long.
+        $this->assertFalse($this->desctagmanager->is_valid_color('FF5733'));   // Missing #.
+        $this->assertFalse($this->desctagmanager->is_valid_color('#GGGGGG'));  // Invalid chars.
+        $this->assertFalse($this->desctagmanager->is_valid_color(''));         // Empty.
     }
 
     /**
@@ -208,9 +223,9 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Assessment', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Assessment', '#FF5733');
 
-        $result = activity_description_manager::save_description('quiz', 'This is a quiz', $tagid);
+        $result = $this->descriptionmanager->save_description('quiz', 'This is a quiz', $tagid);
 
         $this->assertTrue($result);
 
@@ -227,17 +242,17 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tag1id = description_tag_manager::create_tag('Tag 1', '#FF5733');
-        $tag2id = description_tag_manager::create_tag('Tag 2', '#33FF57');
+        $tag1id = $this->desctagmanager->create_tag('Tag 1', '#FF5733');
+        $tag2id = $this->desctagmanager->create_tag('Tag 2', '#33FF57');
 
         // Save with tag 1.
-        activity_description_manager::save_description('assign', 'Assignment description', $tag1id);
+        $this->descriptionmanager->save_description('assign', 'Assignment description', $tag1id);
 
         $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
         $this->assertEquals($tag1id, $desc->desctagid);
 
         // Update to tag 2.
-        activity_description_manager::save_description('assign', 'Assignment description', $tag2id);
+        $this->descriptionmanager->save_description('assign', 'Assignment description', $tag2id);
 
         $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'assign']);
         $this->assertEquals($tag2id, $desc->desctagid);
@@ -250,16 +265,16 @@ final class description_tag_manager_test extends \advanced_testcase {
         global $DB;
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
 
         // Save with tag.
-        activity_description_manager::save_description('forum', 'Forum description', $tagid);
+        $this->descriptionmanager->save_description('forum', 'Forum description', $tagid);
 
         $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'forum']);
         $this->assertEquals($tagid, $desc->desctagid);
 
         // Update with null tag.
-        activity_description_manager::save_description('forum', 'Forum description', null);
+        $this->descriptionmanager->save_description('forum', 'Forum description', null);
 
         $desc = $DB->get_record('format_mimo_actdesc', ['activitytype' => 'forum']);
         $this->assertNull($desc->desctagid);
@@ -271,11 +286,11 @@ final class description_tag_manager_test extends \advanced_testcase {
     public function test_get_all_descriptions_includes_tag(): void {
         $this->resetAfterTest(true);
 
-        $tagid = description_tag_manager::create_tag('Test Tag', '#FF5733');
-        activity_description_manager::save_description('assign', 'Assignment description', $tagid);
-        activity_description_manager::save_description('quiz', 'Quiz description', null);
+        $tagid = $this->desctagmanager->create_tag('Test Tag', '#FF5733');
+        $this->descriptionmanager->save_description('assign', 'Assignment description', $tagid);
+        $this->descriptionmanager->save_description('quiz', 'Quiz description', null);
 
-        $descriptions = activity_description_manager::get_all_descriptions();
+        $descriptions = $this->descriptionmanager->get_all_descriptions();
 
         $this->assertNotEmpty($descriptions);
 

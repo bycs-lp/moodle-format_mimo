@@ -57,7 +57,7 @@ class section_image_form extends dynamic_form {
             'sectionimagefile',
             get_string('sectionimage', 'format_mimo'),
             null,
-            section_image_manager::get_filemanager_options()
+            \core\di::get(section_image_manager::class)->get_filemanager_options()
         );
 
         $fitoptions = [
@@ -106,7 +106,7 @@ class section_image_form extends dynamic_form {
             throw new \moodle_exception('sectionnotexist', 'error');
         }
 
-        $draftitemid = section_image_manager::prepare_draft($courseid, $sectionid);
+        $draftitemid = \core\di::get(section_image_manager::class)->prepare_draft($courseid, $sectionid);
 
         // Read current fit option from section format options.
         $format = course_get_format($courseid);
@@ -121,7 +121,8 @@ class section_image_form extends dynamic_form {
         $fitoption = section_image_manager::DEFAULT_FIT;
         if ($sectioninfo) {
             $opts = $format->get_format_options($sectioninfo);
-            $fitoption = section_image_manager::normalize_fit($opts['sectionimagefit'] ?? section_image_manager::DEFAULT_FIT);
+            $fitoption = \core\di::get(section_image_manager::class)
+                ->normalize_fit($opts['sectionimagefit'] ?? section_image_manager::DEFAULT_FIT);
         }
 
         $this->set_data([
@@ -147,11 +148,12 @@ class section_image_form extends dynamic_form {
         }
 
         if (!empty($data->deleteimage)) {
-            section_image_manager::delete_image((int) $data->courseid, (int) $data->sectionid);
+            \core\di::get(section_image_manager::class)->delete_image((int) $data->courseid, (int) $data->sectionid);
             return ['result' => true];
         }
 
-        section_image_manager::save_image((int) $data->courseid, (int) $data->sectionid, (int) $data->sectionimagefile);
+        \core\di::get(section_image_manager::class)
+            ->save_image((int) $data->courseid, (int) $data->sectionid, (int) $data->sectionimagefile);
 
         // Save fit option as a section format option.
         $format = course_get_format((int) $data->courseid);

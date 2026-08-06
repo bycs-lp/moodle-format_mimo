@@ -64,7 +64,7 @@ class get_tags extends external_api {
         $context = \core\context\course::instance($params['courseid']);
         self::validate_context($context);
 
-        $tags = tag_manager::get_tags_for_course($params['courseid']);
+        $tags = \core\di::get(tag_manager::class)->get_tags_for_course($params['courseid']);
 
         $result = [];
         foreach ($tags as $tag) {

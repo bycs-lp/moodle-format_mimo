@@ -73,7 +73,7 @@ class description_tag_form extends dynamic_form {
 
         // Validate color format.
         if (!empty($data['color'])) {
-            if (!description_tag_manager::is_valid_color($data['color'])) {
+            if (!\core\di::get(description_tag_manager::class)->is_valid_color($data['color'])) {
                 $errors['color'] = get_string('invalidcolor', 'format_mimo');
             }
         }
@@ -104,7 +104,7 @@ class description_tag_form extends dynamic_form {
         $id = $this->optional_param('id', 0, PARAM_INT);
 
         if ($id) {
-            $tag = description_tag_manager::get_tag($id);
+            $tag = \core\di::get(description_tag_manager::class)->get_tag($id);
             if ($tag) {
                 $this->set_data($tag);
             }
@@ -121,11 +121,11 @@ class description_tag_form extends dynamic_form {
 
         if (!empty($data->id)) {
             // Update existing tag.
-            description_tag_manager::update_tag($data->id, $data->name, $data->color);
+            \core\di::get(description_tag_manager::class)->update_tag($data->id, $data->name, $data->color);
             $message = get_string('desctagsaved', 'format_mimo');
         } else {
             // Create new tag.
-            description_tag_manager::create_tag($data->name, $data->color);
+            \core\di::get(description_tag_manager::class)->create_tag($data->name, $data->color);
             $message = get_string('desctagcreated', 'format_mimo');
         }
 

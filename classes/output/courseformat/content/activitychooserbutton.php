@@ -55,7 +55,7 @@ class activitychooserbutton extends activitychooserbutton_base {
 
         if ($PAGE->user_is_editing()) {
             // Get tags selected for this course.
-            $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
+            $tags = \core\di::get(\format_mimo\tag_manager::class)->get_tags_for_course($courseid);
 
             // Add tag data to context.
             $data->tags = array_values($tags);
@@ -82,7 +82,7 @@ class activitychooserbutton extends activitychooserbutton_base {
         $courseid = $this->section->course;
 
         if ($PAGE->user_is_editing()) {
-            $tags = \format_mimo\tag_manager::get_tags_for_course($courseid);
+            $tags = \core\di::get(\format_mimo\tag_manager::class)->get_tags_for_course($courseid);
 
             if (!empty($tags)) {
                 // Use our custom template with tag chooser.

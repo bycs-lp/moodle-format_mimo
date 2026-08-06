@@ -36,6 +36,21 @@ final class backup_restore_test extends \advanced_testcase {
     /** @var array<string> list of temp backup ids to clean up */
     private array $backupdirs = [];
 
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
+    /** @var profile_manager Profile manager instance. */
+    private profile_manager $profilemanager;
+
+    /**
+     * Set up before each test.
+     */
+    protected function setUp(): void {
+        parent::setUp();
+        $this->tagmanager = \core\di::get(tag_manager::class);
+        $this->profilemanager = \core\di::get(profile_manager::class);
+    }
+
     /**
      * Ensure backups containing tags restore the mappings correctly.
      */
@@ -46,7 +61,7 @@ final class backup_restore_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $tagid = tag_manager::create_tag('Backup Tag');
+        $tagid = $this->tagmanager->create_tag('Backup Tag');
 
         // Create course.
         $course = $generator->create_course([
@@ -54,7 +69,7 @@ final class backup_restore_test extends \advanced_testcase {
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
 
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         $backupid = 'mimo_backup_' . random_string(6);
         $this->backup_course_to_tempdir((int)$course->id, $backupid);
@@ -84,7 +99,7 @@ final class backup_restore_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $tagid = tag_manager::create_tag(
+        $tagid = $this->tagmanager->create_tag(
             'Colored Tag',
             null, // Cardimage.
             null, // Filterimage.
@@ -99,7 +114,7 @@ final class backup_restore_test extends \advanced_testcase {
             'format' => 'mimo',
         ]);
         $quiz = $generator->create_module('quiz', ['course' => $course->id]);
-        tag_manager::assign_tag_to_cm($quiz->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($quiz->cmid, $tagid);
 
         $backupid = 'mimo_fields_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
@@ -134,13 +149,13 @@ final class backup_restore_test extends \advanced_testcase {
         $generator = $this->getDataGenerator();
 
         // Create a profile.
-        $profileid = profile_manager::create_profile('teststyle', 'Test Style');
+        $profileid = $this->profilemanager->create_profile('teststyle', 'Test Style');
 
         // Create a tag.
-        $tagid = tag_manager::create_tag('Profile Tag');
+        $tagid = $this->tagmanager->create_tag('Profile Tag');
 
         // Create a profile_tag entry linking the tag to the profile.
-        $profiletag = profile_manager::get_or_create_profile_tag($tagid, $profileid);
+        $profiletag = $this->profilemanager->get_or_create_profile_tag($tagid, $profileid);
         $this->assertNotEmpty($profiletag->id, 'Profile tag record should be created');
 
         // Create the course and assign the tag.
@@ -148,7 +163,7 @@ final class backup_restore_test extends \advanced_testcase {
             'format' => 'mimo',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
         $backupid = 'mimo_profile_' . random_string(6);
@@ -156,7 +171,7 @@ final class backup_restore_test extends \advanced_testcase {
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'Restored profile test');
 
         // Verify the profile exists (reused by name or recreated).
-        $profile = profile_manager::get_profile_by_name('teststyle');
+        $profile = $this->profilemanager->get_profile_by_name('teststyle');
         $this->assertNotNull($profile, 'Profile should exist after restore');
         $this->assertEquals('Test Style', $profile->displayname);
 
@@ -171,7 +186,7 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $this->assertNotFalse($restoredtag, 'Tag should be restored');
 
-        $restoredprofiletag = profile_manager::get_profile_tag_for_profile($restoredtag->id, $profile->id);
+        $restoredprofiletag = $this->profilemanager->get_profile_tag_for_profile($restoredtag->id, $profile->id);
         $this->assertNotNull($restoredprofiletag, 'Profile tag should exist after restore');
     }
 
@@ -185,7 +200,7 @@ final class backup_restore_test extends \advanced_testcase {
         $this->setAdminUser();
 
         $generator = $this->getDataGenerator();
-        $tagid = tag_manager::create_tag('Profile Tag');
+        $tagid = $this->tagmanager->create_tag('Profile Tag');
 
         // Create a course with a specific activity profile.
         $course = $generator->create_course([
@@ -193,7 +208,7 @@ final class backup_restore_test extends \advanced_testcase {
             'activityprofile' => 'secondaryschool',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         // Backup and restore.
         $backupid = 'mimo_profopt_' . random_string(6);
@@ -222,7 +237,7 @@ final class backup_restore_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
 
-        $tagid = tag_manager::create_tag(
+        $tagid = $this->tagmanager->create_tag(
             'Fingerprint Match',
             null,
             null,
@@ -235,7 +250,7 @@ final class backup_restore_test extends \advanced_testcase {
 
         $course = $generator->create_course(['format' => 'mimo']);
         $page = $generator->create_module('page', ['course' => $course->id]);
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         $before = $DB->count_records('format_mimo_tags', ['name' => 'Fingerprint Match']);
         $this->assertSame(1, $before);
@@ -277,7 +292,7 @@ final class backup_restore_test extends \advanced_testcase {
 
         // Create the tag with the ORIGINAL colour, back up, then change the colour
         // on the target site. On restore only the name still matches.
-        $tagid = tag_manager::create_tag(
+        $tagid = $this->tagmanager->create_tag(
             'Name Match',
             null,
             null,
@@ -290,13 +305,13 @@ final class backup_restore_test extends \advanced_testcase {
 
         $course = $generator->create_course(['format' => 'mimo']);
         $page = $generator->create_module('page', ['course' => $course->id]);
-        tag_manager::assign_tag_to_cm($page->cmid, $tagid);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         $backupid = 'mimo_nm_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
 
         // Admin changes the tag colour after the backup was made.
-        tag_manager::update_tag($tagid, ['bgcolor' => '#999999']);
+        $this->tagmanager->update_tag($tagid, ['bgcolor' => '#999999']);
 
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'NM restored');
 
@@ -371,11 +386,11 @@ final class backup_restore_test extends \advanced_testcase {
             'section' => 2,
         ]);
         $this->assertTrue(
-            section_image_manager::has_image($restoredcourseid, $newsectionid),
+            \core\di::get(section_image_manager::class)->has_image($restoredcourseid, $newsectionid),
             'Section image must be restored for the mapped section'
         );
 
-        $url = section_image_manager::get_image_url($restoredcourseid, $newsectionid);
+        $url = \core\di::get(section_image_manager::class)->get_image_url($restoredcourseid, $newsectionid);
         $this->assertNotNull($url);
         $this->assertStringContainsString('wall.png', $url->out(false));
     }

@@ -66,7 +66,7 @@ class section_image_manager {
      *
      * @return array
      */
-    public static function get_filemanager_options(): array {
+    public function get_filemanager_options(): array {
         return self::FILEMANAGER_OPTIONS;
     }
 
@@ -80,7 +80,7 @@ class section_image_manager {
      * @param string $fit Raw stored fit value
      * @return string Normalized fit value, one of VALID_FITS
      */
-    public static function normalize_fit(string $fit): string {
+    public function normalize_fit(string $fit): string {
         if ($fit === 'cover') {
             return 'cover-center';
         }
@@ -94,7 +94,7 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      * @return int Draft item ID populated with existing file (if any)
      */
-    public static function prepare_draft(int $courseid, int $sectionid): int {
+    public function prepare_draft(int $courseid, int $sectionid): int {
         $context = \core\context\course::instance($courseid);
         $draftitemid = file_get_submitted_draft_itemid('sectionimagefile');
         file_prepare_draft_area(
@@ -115,7 +115,7 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      * @param int $draftitemid Draft area identifier
      */
-    public static function save_image(int $courseid, int $sectionid, int $draftitemid): void {
+    public function save_image(int $courseid, int $sectionid, int $draftitemid): void {
         $context = \core\context\course::instance($courseid);
         file_save_draft_area_files(
             $draftitemid,
@@ -134,8 +134,8 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      * @return bool
      */
-    public static function has_image(int $courseid, int $sectionid): bool {
-        return (bool) self::get_stored_file($courseid, $sectionid);
+    public function has_image(int $courseid, int $sectionid): bool {
+        return (bool) $this->get_stored_file($courseid, $sectionid);
     }
 
     /**
@@ -145,8 +145,8 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      * @return moodle_url|null URL or null if no image exists
      */
-    public static function get_image_url(int $courseid, int $sectionid): ?moodle_url {
-        $file = self::get_stored_file($courseid, $sectionid);
+    public function get_image_url(int $courseid, int $sectionid): ?moodle_url {
+        $file = $this->get_stored_file($courseid, $sectionid);
         if (!$file) {
             return null;
         }
@@ -170,7 +170,7 @@ class section_image_manager {
      * @param int $courseid Course ID
      * @return array<int, moodle_url> Map of sectionid => URL.
      */
-    public static function get_image_urls_for_course(int $courseid): array {
+    public function get_image_urls_for_course(int $courseid): array {
         $context = \core\context\course::instance($courseid);
         $files = get_file_storage()->get_area_files(
             $context->id,
@@ -204,7 +204,7 @@ class section_image_manager {
      * @param int $courseid Course ID
      * @param int $sectionid Section ID (course_sections.id)
      */
-    public static function delete_image(int $courseid, int $sectionid): void {
+    public function delete_image(int $courseid, int $sectionid): void {
         $context = \core\context\course::instance($courseid);
         $fs = get_file_storage();
         $fs->delete_area_files($context->id, self::COMPONENT, self::FILEAREA, $sectionid);
@@ -217,7 +217,7 @@ class section_image_manager {
      *
      * @param int $courseid Course ID
      */
-    public static function delete_all_for_course(int $courseid): void {
+    public function delete_all_for_course(int $courseid): void {
         $context = \core\context\course::instance($courseid);
         $fs = get_file_storage();
         $fs->delete_area_files($context->id, self::COMPONENT, self::FILEAREA);
@@ -230,7 +230,7 @@ class section_image_manager {
      * @param int $sectionid Section ID (course_sections.id)
      * @return \stored_file|null
      */
-    private static function get_stored_file(int $courseid, int $sectionid): ?\stored_file {
+    private function get_stored_file(int $courseid, int $sectionid): ?\stored_file {
         $context = \core\context\course::instance($courseid);
         $files = get_file_storage()->get_area_files(
             $context->id,

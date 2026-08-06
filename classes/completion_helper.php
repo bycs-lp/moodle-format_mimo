@@ -34,20 +34,22 @@ namespace format_mimo;
  */
 class completion_helper {
     /** @var array<int, array<int, int>> Cached completion counts keyed by courseid => [cmid => count]. */
-    private static array $completioncounts = [];
+    private array $completioncounts = [];
 
     /** @var array<int, int[]> Cached tracked user IDs keyed by courseid. */
-    private static array $trackeduserids = [];
+    private array $trackeduserids = [];
 
     /**
-     * Reset all internal caches.
+     * Constructor with DI-injected dependencies.
      *
-     * This is intended for unit testing where the database is rolled back
-     * between tests but static properties survive.
+     * Obtain the shared instance via \core\di::get(completion_helper::class).
+     *
+     * @param \moodle_database $db Database instance.
      */
-    public static function reset_caches(): void {
-        self::$completioncounts = [];
-        self::$trackeduserids = [];
+    public function __construct(
+        /** @var \moodle_database Database instance. */
+        private readonly \moodle_database $db,
+    ) {
     }
 
     /**
@@ -66,9 +68,9 @@ class completion_helper {
      * @param int $courseid Course ID.
      * @return int[] List of user IDs.
      */
-    private static function get_tracked_userids(int $courseid): array {
-        if (isset(self::$trackeduserids[$courseid])) {
-            return self::$trackeduserids[$courseid];
+    private function get_tracked_userids(int $courseid): array {
+        if (isset($this->trackeduserids[$courseid])) {
+            return $this->trackeduserids[$courseid];
         }
 
         $context = \core\context\course::instance($courseid);
@@ -83,8 +85,8 @@ class completion_helper {
             true
         );
 
-        self::$trackeduserids[$courseid] = array_map('intval', array_keys($users));
-        return self::$trackeduserids[$courseid];
+        $this->trackeduserids[$courseid] = array_map('intval', array_keys($users));
+        return $this->trackeduserids[$courseid];
     }
 
     /**
@@ -100,13 +102,13 @@ class completion_helper {
      * @param int $courseid Course ID.
      * @return array<int, int> Map of coursemoduleid => completed user count.
      */
-    public static function get_teacher_completion_counts(int $courseid): array {
-        global $CFG, $DB;
+    public function get_teacher_completion_counts(int $courseid): array {
+        global $CFG;
 
         require_once($CFG->libdir . '/completionlib.php');
 
-        if (array_key_exists($courseid, self::$completioncounts)) {
-            return self::$completioncounts[$courseid];
+        if (array_key_exists($courseid, $this->completioncounts)) {
+            return $this->completioncounts[$courseid];
         }
 
         // Determine which CMs have completion enabled.
@@ -121,10 +123,10 @@ class completion_helper {
         }
 
         $counts = [];
-        $trackedids = self::get_tracked_userids($courseid);
+        $trackedids = $this->get_tracked_userids($courseid);
         if (!empty($cmids) && !empty($trackedids)) {
-            [$cmsql, $cmparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cmid');
-            [$usersql, $userparams] = $DB->get_in_or_equal($trackedids, SQL_PARAMS_NAMED, 'usr');
+            [$cmsql, $cmparams] = $this->db->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cmid');
+            [$usersql, $userparams] = $this->db->get_in_or_equal($trackedids, SQL_PARAMS_NAMED, 'usr');
 
             $params = array_merge($cmparams, $userparams, [
                 'complete' => COMPLETION_COMPLETE,
@@ -138,13 +140,13 @@ class completion_helper {
                        AND completionstate IN (:complete, :completepass)
                   GROUP BY coursemoduleid";
 
-            $records = $DB->get_records_sql($sql, $params);
+            $records = $this->db->get_records_sql($sql, $params);
             foreach ($records as $rec) {
                 $counts[(int) $rec->coursemoduleid] = (int) $rec->cnt;
             }
         }
 
-        self::$completioncounts[$courseid] = $counts;
+        $this->completioncounts[$courseid] = $counts;
         return $counts;
     }
 
@@ -158,7 +160,7 @@ class completion_helper {
      * @param int $courseid Course ID.
      * @return int Number of tracked users.
      */
-    public static function get_tracked_user_count(int $courseid): int {
-        return count(self::get_tracked_userids($courseid));
+    public function get_tracked_user_count(int $courseid): int {
+        return count($this->get_tracked_userids($courseid));
     }
 }

@@ -77,7 +77,7 @@ class get_activity_descriptions extends external_api {
 
         $descriptions = [];
         foreach ($params['activitytypes'] as $type) {
-            $descdata = activity_description_manager::get_description_with_tag($type);
+            $descdata = \core\di::get(activity_description_manager::class)->get_description_with_tag($type);
 
             // Get activity icon and purpose.
             $icon = \core_course\output\activity_icon::from_modname($type);

@@ -25,6 +25,9 @@ namespace format_mimo;
  * @covers     \format_mimo\done_manager
  */
 final class done_manager_test extends \advanced_testcase {
+    /** @var done_manager Manager instance under test. */
+    private done_manager $donemanager;
+
     /**
      * Set up before each test.
      */
@@ -32,7 +35,7 @@ final class done_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
-        done_manager::reset_cache();
+        $this->donemanager = \core\di::get(done_manager::class);
     }
 
     /**
@@ -42,10 +45,10 @@ final class done_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        $this->assertFalse(done_manager::is_done($page->cmid));
+        $this->assertFalse($this->donemanager->is_done($page->cmid));
 
-        done_manager::set_done($page->cmid);
-        $this->assertTrue(done_manager::is_done($page->cmid));
+        $this->donemanager->set_done($page->cmid);
+        $this->assertTrue($this->donemanager->is_done($page->cmid));
     }
 
     /**
@@ -55,9 +58,9 @@ final class done_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::set_done($page->cmid);
-        done_manager::set_done($page->cmid); // Should not throw.
-        $this->assertTrue(done_manager::is_done($page->cmid));
+        $this->donemanager->set_done($page->cmid);
+        $this->donemanager->set_done($page->cmid); // Should not throw.
+        $this->assertTrue($this->donemanager->is_done($page->cmid));
     }
 
     /**
@@ -67,11 +70,11 @@ final class done_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::set_done($page->cmid);
-        $this->assertTrue(done_manager::is_done($page->cmid));
+        $this->donemanager->set_done($page->cmid);
+        $this->assertTrue($this->donemanager->is_done($page->cmid));
 
-        done_manager::unset_done($page->cmid);
-        $this->assertFalse(done_manager::is_done($page->cmid));
+        $this->donemanager->unset_done($page->cmid);
+        $this->assertFalse($this->donemanager->is_done($page->cmid));
     }
 
     /**
@@ -81,8 +84,8 @@ final class done_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::unset_done($page->cmid); // Should not throw.
-        $this->assertFalse(done_manager::is_done($page->cmid));
+        $this->donemanager->unset_done($page->cmid); // Should not throw.
+        $this->assertFalse($this->donemanager->is_done($page->cmid));
     }
 
     /**
@@ -94,10 +97,10 @@ final class done_manager_test extends \advanced_testcase {
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $page3 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::set_done($page1->cmid);
-        done_manager::set_done($page3->cmid);
+        $this->donemanager->set_done($page1->cmid);
+        $this->donemanager->set_done($page3->cmid);
 
-        $doneids = done_manager::get_done_cmids($course->id);
+        $doneids = $this->donemanager->get_done_cmids($course->id);
         $this->assertCount(2, $doneids);
         $this->assertContains($page1->cmid, $doneids);
         $this->assertContains($page3->cmid, $doneids);
@@ -113,10 +116,10 @@ final class done_manager_test extends \advanced_testcase {
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course1->id]);
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course2->id]);
 
-        done_manager::set_done($page1->cmid);
-        done_manager::set_done($page2->cmid);
+        $this->donemanager->set_done($page1->cmid);
+        $this->donemanager->set_done($page2->cmid);
 
-        $doneids1 = done_manager::get_done_cmids($course1->id);
+        $doneids1 = $this->donemanager->get_done_cmids($course1->id);
         $this->assertCount(1, $doneids1);
         $this->assertContains($page1->cmid, $doneids1);
     }
@@ -128,11 +131,11 @@ final class done_manager_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::set_done($page->cmid);
-        $this->assertTrue(done_manager::is_done($page->cmid));
+        $this->donemanager->set_done($page->cmid);
+        $this->assertTrue($this->donemanager->is_done($page->cmid));
 
-        done_manager::delete_for_cm($page->cmid);
-        $this->assertFalse(done_manager::is_done($page->cmid));
+        $this->donemanager->delete_for_cm($page->cmid);
+        $this->assertFalse($this->donemanager->is_done($page->cmid));
     }
 
     /**
@@ -143,13 +146,13 @@ final class done_manager_test extends \advanced_testcase {
         $page1 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $page2 = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
-        done_manager::set_done($page1->cmid);
-        done_manager::set_done($page2->cmid);
+        $this->donemanager->set_done($page1->cmid);
+        $this->donemanager->set_done($page2->cmid);
 
-        done_manager::delete_for_course($course->id);
+        $this->donemanager->delete_for_course($course->id);
 
-        $this->assertFalse(done_manager::is_done($page1->cmid));
-        $this->assertFalse(done_manager::is_done($page2->cmid));
+        $this->assertFalse($this->donemanager->is_done($page1->cmid));
+        $this->assertFalse($this->donemanager->is_done($page2->cmid));
     }
 
     /**
@@ -198,8 +201,8 @@ final class done_manager_test extends \advanced_testcase {
         $this->assertEquals(3, $trackable);
 
         // Mark page2 as done.
-        done_manager::set_done($page2->cmid);
-        $donecmids = done_manager::get_done_cmids($course->id);
+        $this->donemanager->set_done($page2->cmid);
+        $donecmids = $this->donemanager->get_done_cmids($course->id);
 
         // Filter trackable activities by excluding done ones (same logic as section.php).
         $countable = 0;

@@ -46,11 +46,12 @@ class activity_descriptions_form extends \moodleform {
         $mform = $this->_form;
 
         // Get all available activity types.
-        $availabletypes = activity_description_manager::get_available_activity_types();
-        $existingdescriptions = activity_description_manager::get_all_descriptions();
+        $descriptionmanager = \core\di::get(activity_description_manager::class);
+        $availabletypes = $descriptionmanager->get_available_activity_types();
+        $existingdescriptions = $descriptionmanager->get_all_descriptions();
 
         // Get all available tags for select.
-        $tagoptions = description_tag_manager::get_tags_for_select();
+        $tagoptions = \core\di::get(description_tag_manager::class)->get_tags_for_select();
 
         // Create lookup array for existing descriptions.
         $descriptionmap = [];

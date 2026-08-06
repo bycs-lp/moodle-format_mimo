@@ -43,7 +43,8 @@ class tag_preview_helper {
         $elements = [];
 
         // Get all tags (flat list).
-        $alltags = \format_mimo\tag_manager::get_all_tags();
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $alltags = $tagmanager->get_all_tags();
         if (empty($alltags)) {
             return $elements;
         }
@@ -58,22 +59,23 @@ class tag_preview_helper {
         $currentprofile = $course->activityprofile ?? 'primaryschool';
 
         // Get all profiles for passing image URLs to template data attributes.
-        $profiles = \format_mimo\profile_manager::get_all_profiles();
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        $profiles = $profilemanager->get_all_profiles();
 
         // Build tag preview items with profile data attributes.
         $tagpreviews = [];
         foreach ($alltags as $tag) {
-            $imageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $currentprofile);
+            $imageurl = $tagmanager->get_cardimage_url($tag, $currentprofile);
 
             // Collect per-profile image URLs, name overrides, and enabled flags.
             $profileimages = [];
             $profilenames = [];
             $profileenabled = [];
             foreach ($profiles as $profile) {
-                $profileimageurl = \format_mimo\tag_manager::get_cardimage_url($tag, $profile->name);
+                $profileimageurl = $tagmanager->get_cardimage_url($tag, $profile->name);
                 $profileimages[$profile->name] = $profileimageurl ? $profileimageurl->out(false) : null;
 
-                $pt = \format_mimo\profile_manager::get_profile_tag_for_profile($tag->id, $profile->id);
+                $pt = $profilemanager->get_profile_tag_for_profile($tag->id, $profile->id);
                 $profilenames[$profile->name] = ($pt && $pt->name !== null) ? $pt->name : $tag->name;
                 $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
             }

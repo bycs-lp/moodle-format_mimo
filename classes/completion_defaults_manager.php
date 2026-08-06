@@ -29,14 +29,29 @@ namespace format_mimo;
  */
 class completion_defaults_manager {
     /**
+     * Constructor with DI-injected dependencies.
+     *
+     * Obtain the shared instance via \core\di::get(completion_defaults_manager::class).
+     *
+     * @param \moodle_database $db Database instance.
+     * @param \core\clock $clock Clock instance.
+     */
+    public function __construct(
+        /** @var \moodle_database Database instance. */
+        private readonly \moodle_database $db,
+        /** @var \core\clock Clock instance. */
+        private readonly \core\clock $clock,
+    ) {
+    }
+
+    /**
      * Get the mimo completion default for a specific module type.
      *
      * @param int $moduleid The modules.id value (the activity module type).
      * @return \stdClass|null The default record, or null if no override is set.
      */
-    public static function get_default(int $moduleid): ?\stdClass {
-        global $DB;
-        $record = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
+    public function get_default(int $moduleid): ?\stdClass {
+        $record = $this->db->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         return $record ?: null;
     }
 
@@ -45,9 +60,8 @@ class completion_defaults_manager {
      *
      * @return array<int, \stdClass> Keyed by module id.
      */
-    public static function get_all_defaults(): array {
-        global $DB;
-        return $DB->get_records('format_mimo_compdefs', null, '', '*', 0, 0);
+    public function get_all_defaults(): array {
+        return $this->db->get_records('format_mimo_compdefs', null, '', '*', 0, 0);
     }
 
     /**
@@ -55,9 +69,8 @@ class completion_defaults_manager {
      *
      * @return array<int, \stdClass> Keyed by module id.
      */
-    public static function get_all_defaults_by_module(): array {
-        global $DB;
-        $records = $DB->get_records('format_mimo_compdefs');
+    public function get_all_defaults_by_module(): array {
+        $records = $this->db->get_records('format_mimo_compdefs');
         $result = [];
         foreach ($records as $record) {
             $result[$record->module] = $record;
@@ -73,23 +86,21 @@ class completion_defaults_manager {
      *   completion, completionview, completionusegrade, completionpassgrade,
      *   completionexpected, customrules (JSON string or null).
      */
-    public static function save_default(int $moduleid, $data): void {
-        global $DB;
-
+    public function save_default(int $moduleid, $data): void {
         $data = (object)$data;
-        $now = \core\di::get(\core\clock::class)->time();
+        $now = $this->clock->time();
 
-        $existing = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
+        $existing = $this->db->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         if ($existing) {
             $data->id = $existing->id;
             $data->module = $moduleid;
             $data->timemodified = $now;
-            $DB->update_record('format_mimo_compdefs', $data);
+            $this->db->update_record('format_mimo_compdefs', $data);
         } else {
             $data->module = $moduleid;
             $data->timecreated = $now;
             $data->timemodified = $now;
-            $DB->insert_record('format_mimo_compdefs', $data);
+            $this->db->insert_record('format_mimo_compdefs', $data);
         }
     }
 
@@ -98,9 +109,8 @@ class completion_defaults_manager {
      *
      * @param int $moduleid The modules.id value.
      */
-    public static function delete_default(int $moduleid): void {
-        global $DB;
-        $DB->delete_records('format_mimo_compdefs', ['module' => $moduleid]);
+    public function delete_default(int $moduleid): void {
+        $this->db->delete_records('format_mimo_compdefs', ['module' => $moduleid]);
     }
 
 
@@ -116,7 +126,7 @@ class completion_defaults_manager {
      * @param string $suffix The suffix used by the form (e.g. '_assign').
      * @return \stdClass The packed record suitable for save_default().
      */
-    public static function pack_form_data($formdata, string $suffix = ''): \stdClass {
+    public function pack_form_data($formdata, string $suffix = ''): \stdClass {
         $data = (array)$formdata;
 
         // Strip suffix from field names if present.
@@ -186,13 +196,13 @@ class completion_defaults_manager {
      *
      * @return bool True if defaults were created, false if table already had records.
      */
-    public static function initialize_default_completion_defaults(): bool {
-        global $CFG, $DB;
+    public function initialize_default_completion_defaults(): bool {
+        global $CFG;
 
         require_once($CFG->libdir . '/completionlib.php');
 
         // Guard: don't overwrite existing customizations.
-        if ($DB->record_exists('format_mimo_compdefs', [])) {
+        if ($this->db->record_exists('format_mimo_compdefs', [])) {
             return false;
         }
 
@@ -304,7 +314,7 @@ class completion_defaults_manager {
 
         foreach ($defaults as $modname => $config) {
             // Look up the module type id; skip if not installed.
-            $module = $DB->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
+            $module = $this->db->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
             if (!$module) {
                 continue;
             }
@@ -319,7 +329,7 @@ class completion_defaults_manager {
                 ? json_encode($config['customrules'])
                 : null;
 
-            self::save_default($module->id, $record);
+            $this->save_default($module->id, $record);
         }
 
         return true;

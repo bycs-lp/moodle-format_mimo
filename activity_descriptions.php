@@ -42,7 +42,8 @@ $mform = new activity_descriptions_form();
 if ($mform->is_cancelled()) {
     redirect($PAGE->url);
 } else if ($data = $mform->get_data()) {
-    $availabletypes = activity_description_manager::get_available_activity_types();
+    $descriptionmanager = \core\di::get(activity_description_manager::class);
+    $availabletypes = $descriptionmanager->get_available_activity_types();
 
     foreach ($availabletypes as $type) {
         $descfieldname = 'description_' . $type['name'];
@@ -59,10 +60,10 @@ if ($mform->is_cancelled()) {
 
             if (empty($description)) {
                 // Empty description - delete if exists.
-                activity_description_manager::delete_description($type['name']);
+                $descriptionmanager->delete_description($type['name']);
             } else {
                 // Save or update description.
-                activity_description_manager::save_description($type['name'], $description, $desctagid);
+                $descriptionmanager->save_description($type['name'], $description, $desctagid);
             }
         }
     }

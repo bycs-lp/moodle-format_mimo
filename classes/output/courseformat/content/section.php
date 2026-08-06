@@ -74,7 +74,7 @@ class section extends section_base {
         }
 
         // Get tags selected for this course.
-        $tags = \format_mimo\tag_manager::get_tags_for_course((int)$course->id);
+        $tags = \core\di::get(\format_mimo\tag_manager::class)->get_tags_for_course((int)$course->id);
 
         // Determine the section id for scoping filter bar and completion to this section
         // when multi-section mode is active.
@@ -136,7 +136,8 @@ class section extends section_base {
         }
 
         $tagids = array_map('intval', array_keys($tags));
-        $usage = \format_mimo\tag_manager::get_tag_usage_counts($courseid, $tagids, $sectionid);
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $usage = $tagmanager->get_tag_usage_counts($courseid, $tagids, $sectionid);
         $context = \core\context\course::instance($courseid);
 
         $filtertags = [];
@@ -152,7 +153,7 @@ class section extends section_base {
                 'name' => format_string($tag->name, true, ['context' => $context]),
                 'imageurl' => $filterurl ?: null,
                 'hasactivities' => $hasactivities,
-                'bgcolor' => \format_mimo\tag_manager::get_tag_accent_color($tag),
+                'bgcolor' => $tagmanager->get_tag_accent_color($tag),
             ];
         }
 
@@ -172,7 +173,7 @@ class section extends section_base {
     private function build_completion_status_data(\stdClass $course, ?int $sectionnum = null): \stdClass {
         $modinfo = get_fast_modinfo($course);
         $completioninfo = new \completion_info($course);
-        $donecmids = \format_mimo\done_manager::get_done_cmids($course->id);
+        $donecmids = \core\di::get(\format_mimo\done_manager::class)->get_done_cmids($course->id);
 
         $completedcount = 0;
         $incompletecount = 0;

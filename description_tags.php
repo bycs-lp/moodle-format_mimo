@@ -41,10 +41,11 @@ $PAGE->set_heading(get_string('desctagmanagement', 'format_mimo'));
 
 // Handle delete action (from AJAX).
 if ($delete && $confirm && confirm_sesskey()) {
-    $tag = description_tag_manager::get_tag($delete);
+    $desctagmanager = \core\di::get(description_tag_manager::class);
+    $tag = $desctagmanager->get_tag($delete);
     if ($tag) {
-        $usagecount = description_tag_manager::count_descriptions_with_tag($delete);
-        description_tag_manager::delete_tag($delete);
+        $usagecount = $desctagmanager->count_descriptions_with_tag($delete);
+        $desctagmanager->delete_tag($delete);
 
         if ($usagecount > 0) {
             $message = get_string('desctagdeletedwithusage', 'format_mimo', $usagecount);
@@ -71,7 +72,8 @@ echo html_writer::div(
 // Initialize JavaScript for dynamic forms.
 $PAGE->requires->js_call_amd('format_mimo/description_tag_management', 'init');
 
-$tags = description_tag_manager::get_all_tags();
+$desctagmanager = \core\di::get(description_tag_manager::class);
+$tags = $desctagmanager->get_all_tags();
 
 // Prepare template context.
 $templatecontext = [
@@ -81,7 +83,7 @@ $templatecontext = [
 
 if (!empty($tags)) {
     foreach ($tags as $tag) {
-        $usagecount = description_tag_manager::count_descriptions_with_tag($tag->id);
+        $usagecount = $desctagmanager->count_descriptions_with_tag($tag->id);
 
         $templatecontext['tags'][] = [
             'id' => $tag->id,

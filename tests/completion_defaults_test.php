@@ -42,6 +42,9 @@ final class completion_defaults_test extends \advanced_testcase {
     /** @var \stdClass Test course with mimo format and completion enabled */
     private $course;
 
+    /** @var completion_defaults_manager Manager instance under test. */
+    private completion_defaults_manager $defaultsmanager;
+
     /**
      * Set up before each test.
      */
@@ -50,6 +53,7 @@ final class completion_defaults_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        $this->defaultsmanager = \core\di::get(completion_defaults_manager::class);
 
         // Clear seeded completion defaults so CRUD tests start from a clean state.
         $DB->delete_records('format_mimo_compdefs');
@@ -83,10 +87,10 @@ final class completion_defaults_test extends \advanced_testcase {
         $moduleid = $this->get_module_id('assign');
 
         // Initially no default exists.
-        $this->assertNull(completion_defaults_manager::get_default($moduleid));
+        $this->assertNull($this->defaultsmanager->get_default($moduleid));
 
         // Save a default.
-        completion_defaults_manager::save_default($moduleid, [
+        $this->defaultsmanager->save_default($moduleid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 0,
             'completionusegrade' => 1,
@@ -96,7 +100,7 @@ final class completion_defaults_test extends \advanced_testcase {
         ]);
 
         // Retrieve it.
-        $default = completion_defaults_manager::get_default($moduleid);
+        $default = $this->defaultsmanager->get_default($moduleid);
         $this->assertNotNull($default);
         $this->assertEquals(COMPLETION_TRACKING_AUTOMATIC, (int)$default->completion);
         $this->assertEquals(1, (int)$default->completionusegrade);
@@ -113,7 +117,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $moduleid = $this->get_module_id('assign');
 
         // Save initial default.
-        completion_defaults_manager::save_default($moduleid, [
+        $this->defaultsmanager->save_default($moduleid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
             'completionusegrade' => 0,
@@ -123,7 +127,7 @@ final class completion_defaults_test extends \advanced_testcase {
         ]);
 
         // Update it.
-        completion_defaults_manager::save_default($moduleid, [
+        $this->defaultsmanager->save_default($moduleid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 1,
             'completionusegrade' => 0,
@@ -133,7 +137,7 @@ final class completion_defaults_test extends \advanced_testcase {
         ]);
 
         // Should only have one record.
-        $defaults = completion_defaults_manager::get_all_defaults_by_module();
+        $defaults = $this->defaultsmanager->get_all_defaults_by_module();
         $this->assertCount(1, $defaults);
         $this->assertEquals(COMPLETION_TRACKING_AUTOMATIC, (int)$defaults[$moduleid]->completion);
         $this->assertEquals(1, (int)$defaults[$moduleid]->completionview);
@@ -145,7 +149,7 @@ final class completion_defaults_test extends \advanced_testcase {
     public function test_delete_default(): void {
         $moduleid = $this->get_module_id('page');
 
-        completion_defaults_manager::save_default($moduleid, [
+        $this->defaultsmanager->save_default($moduleid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
             'completionusegrade' => 0,
@@ -154,11 +158,11 @@ final class completion_defaults_test extends \advanced_testcase {
             'customrules' => null,
         ]);
 
-        $this->assertNotNull(completion_defaults_manager::get_default($moduleid));
+        $this->assertNotNull($this->defaultsmanager->get_default($moduleid));
 
-        completion_defaults_manager::delete_default($moduleid);
+        $this->defaultsmanager->delete_default($moduleid);
 
-        $this->assertNull(completion_defaults_manager::get_default($moduleid));
+        $this->assertNull($this->defaultsmanager->get_default($moduleid));
     }
 
     /**
@@ -168,7 +172,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $assignid = $this->get_module_id('assign');
         $pageid = $this->get_module_id('page');
 
-        completion_defaults_manager::save_default($assignid, [
+        $this->defaultsmanager->save_default($assignid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 0,
             'completionusegrade' => 1,
@@ -176,7 +180,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'completionexpected' => 0,
             'customrules' => null,
         ]);
-        completion_defaults_manager::save_default($pageid, [
+        $this->defaultsmanager->save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
             'completionusegrade' => 0,
@@ -185,7 +189,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'customrules' => null,
         ]);
 
-        $all = completion_defaults_manager::get_all_defaults_by_module();
+        $all = $this->defaultsmanager->get_all_defaults_by_module();
         $this->assertCount(2, $all);
         $this->assertArrayHasKey($assignid, $all);
         $this->assertArrayHasKey($pageid, $all);
@@ -206,7 +210,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $pageid = $this->get_module_id('page');
 
         // Ensure NO mimo default exists.
-        completion_defaults_manager::delete_default($pageid);
+        $this->defaultsmanager->delete_default($pageid);
 
         // Clear any course/site completion defaults so core default is NONE.
         $DB->delete_records('course_completion_defaults', [
@@ -244,7 +248,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $pageid = $this->get_module_id('page');
 
         // Set a mimo override.
-        completion_defaults_manager::save_default($pageid, [
+        $this->defaultsmanager->save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
             'completionusegrade' => 0,
@@ -294,7 +298,7 @@ final class completion_defaults_test extends \advanced_testcase {
         $assignid = $this->get_module_id('assign');
         $pageid = $this->get_module_id('page');
 
-        completion_defaults_manager::save_default($assignid, [
+        $this->defaultsmanager->save_default($assignid, [
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
             'completionview' => 0,
             'completionusegrade' => 1,
@@ -302,7 +306,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'completionexpected' => 0,
             'customrules' => null,
         ]);
-        completion_defaults_manager::save_default($pageid, [
+        $this->defaultsmanager->save_default($pageid, [
             'completion' => COMPLETION_TRACKING_MANUAL,
             'completionview' => 0,
             'completionusegrade' => 0,
@@ -311,7 +315,7 @@ final class completion_defaults_test extends \advanced_testcase {
             'customrules' => null,
         ]);
 
-        $all = completion_defaults_manager::get_all_defaults();
+        $all = $this->defaultsmanager->get_all_defaults();
 
         $this->assertCount(2, $all);
     }
@@ -419,7 +423,7 @@ final class completion_defaults_test extends \advanced_testcase {
         ?array $expected = null,
         ?array $expectedcustom = null,
     ): void {
-        $record = completion_defaults_manager::pack_form_data($input, $suffix);
+        $record = $this->defaultsmanager->pack_form_data($input, $suffix);
 
         if ($expected !== null) {
             foreach ($expected as $field => $value) {
@@ -440,18 +444,18 @@ final class completion_defaults_test extends \advanced_testcase {
         global $DB;
 
         // The setUp() already wiped the table, so this should seed.
-        $this->assertTrue(completion_defaults_manager::initialize_default_completion_defaults());
+        $this->assertTrue($this->defaultsmanager->initialize_default_completion_defaults());
         $this->assertGreaterThan(0, $DB->count_records('format_mimo_compdefs'));
 
         $firstcount = $DB->count_records('format_mimo_compdefs');
 
         // Second call should be a no-op (guard on empty table).
-        $this->assertFalse(completion_defaults_manager::initialize_default_completion_defaults());
+        $this->assertFalse($this->defaultsmanager->initialize_default_completion_defaults());
         $this->assertSame($firstcount, $DB->count_records('format_mimo_compdefs'));
 
         // Spot-check an entry: 'assign' should be automatic + have customrules.
         $assignid = $this->get_module_id('assign');
-        $assign = completion_defaults_manager::get_default($assignid);
+        $assign = $this->defaultsmanager->get_default($assignid);
         $this->assertNotNull($assign);
         $this->assertEquals(COMPLETION_TRACKING_AUTOMATIC, (int) $assign->completion);
         $this->assertEquals(0, (int) $assign->completionusegrade);

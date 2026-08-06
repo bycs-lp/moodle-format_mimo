@@ -98,7 +98,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         if ($this->existingtags !== null) {
             return;
         }
-        $this->existingtags = \format_mimo\tag_manager::get_all_tags();
+        $this->existingtags = \core\di::get(\format_mimo\tag_manager::class)->get_all_tags();
         // Build positional pool: all existing tags in sortorder, as array values.
         $this->positionalpool = array_values($this->existingtags);
     }
@@ -150,7 +150,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $this->init_existing_tags();
 
         // Step 1: Fingerprint match (name + bgcolor + activitytype1-3).
-        $match = \format_mimo\tag_manager::find_tag_by_fingerprint($data, $this->matchedtagids);
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $match = $tagmanager->find_tag_by_fingerprint($data, $this->matchedtagids);
         if ($match) {
             $this->matchedtagids[] = $match->id;
             $this->set_mapping('format_mimo_tag', $oldid, $match->id);
@@ -169,7 +170,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
 
         // Step 2: Name match — same conceptual tag but properties changed by admin.
         // Trusts the instance's current values (admin's edits take precedence).
-        $namematch = \format_mimo\tag_manager::find_tag_by_name($data->name, $this->matchedtagids);
+        $namematch = $tagmanager->find_tag_by_name($data->name, $this->matchedtagids);
         if ($namematch) {
             $this->matchedtagids[] = $namematch->id;
             $this->set_mapping('format_mimo_tag', $oldid, $namematch->id);
@@ -288,7 +289,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             return;
         }
 
-        \format_mimo\tag_manager::assign_tag_to_cm($newcmid, $newtagid);
+        \core\di::get(\format_mimo\tag_manager::class)->assign_tag_to_cm($newcmid, $newtagid);
     }
 
     /**
@@ -304,7 +305,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             return;
         }
 
-        \format_mimo\done_manager::set_done($newcmid);
+        \core\di::get(\format_mimo\done_manager::class)->set_done($newcmid);
     }
 
     /**
@@ -347,10 +348,11 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         // Create the imported profile.
         $courseid = $this->task->get_courseid();
         $course = get_course($courseid);
-        $profile = \format_mimo\profile_manager::create_imported_profile($course->fullname);
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        $profile = $profilemanager->create_imported_profile($course->fullname);
 
         // Get all global profiles for disabling imported tags in them.
-        $globalprofiles = \format_mimo\profile_manager::get_global_profiles();
+        $globalprofiles = $profilemanager->get_global_profiles();
 
         // Build full profile_tag overrides for every matched tag.
         foreach ($this->overridedata as $info) {
@@ -359,8 +361,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             $matchtype = $info['match'];
 
             // Create profile_tag with full override values from backup.
-            $pt = \format_mimo\profile_manager::get_or_create_profile_tag($targetid, $profile->id);
-            \format_mimo\profile_manager::update_profile_tag($pt->id, [
+            $pt = $profilemanager->get_or_create_profile_tag($targetid, $profile->id);
+            $profilemanager->update_profile_tag($pt->id, [
                 'name' => $backupdata->name,
                 'bgcolor' => $backupdata->bgcolor ?? null,
                 'activitytype1' => $backupdata->activitytype1 ?? null,
@@ -371,10 +373,10 @@ class restore_format_mimo_plugin extends restore_format_plugin {
 
             // For newly created imported tags: disable in all global profiles.
             if ($matchtype === 'new') {
-                \format_mimo\tag_manager::bind_tag_to_course($targetid, $courseid);
+                \core\di::get(\format_mimo\tag_manager::class)->bind_tag_to_course($targetid, $courseid);
                 foreach ($globalprofiles as $gp) {
-                    $gpt = \format_mimo\profile_manager::get_or_create_profile_tag($targetid, $gp->id);
-                    \format_mimo\profile_manager::update_profile_tag($gpt->id, [
+                    $gpt = $profilemanager->get_or_create_profile_tag($targetid, $gp->id);
+                    $profilemanager->update_profile_tag($gpt->id, [
                         'enabled' => 0,
                     ]);
                 }
@@ -385,8 +387,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $allexisting = $this->existingtags ?? [];
         foreach ($allexisting as $etag) {
             if (!in_array((int) $etag->id, $this->matchedtagids, true)) {
-                $pt = \format_mimo\profile_manager::get_or_create_profile_tag($etag->id, $profile->id);
-                \format_mimo\profile_manager::update_profile_tag($pt->id, [
+                $pt = $profilemanager->get_or_create_profile_tag($etag->id, $profile->id);
+                $profilemanager->update_profile_tag($pt->id, [
                     'enabled' => 0,
                 ]);
             }
@@ -434,7 +436,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             'course_section'
         );
 
-        \format_mimo\tag_manager::clear_tag_cache();
-        \format_mimo\tag_manager::clear_mapping_cache();
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $tagmanager->clear_tag_cache();
+        $tagmanager->clear_mapping_cache();
     }
 }

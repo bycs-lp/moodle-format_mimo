@@ -36,6 +36,9 @@ final class section_image_manager_test extends \advanced_testcase {
     /** @var \stdClass Course fixture */
     private \stdClass $course;
 
+    /** @var section_image_manager Manager instance under test. */
+    private section_image_manager $imagemanager;
+
     /**
      * Common setup.
      */
@@ -43,6 +46,7 @@ final class section_image_manager_test extends \advanced_testcase {
         parent::setUp();
         $this->resetAfterTest();
         $this->setAdminUser();
+        $this->imagemanager = \core\di::get(section_image_manager::class);
         $this->course = $this->getDataGenerator()->create_course([
             'format' => 'mimo',
             'numsections' => 3,
@@ -88,7 +92,7 @@ final class section_image_manager_test extends \advanced_testcase {
      * get_filemanager_options returns the documented constraints.
      */
     public function test_get_filemanager_options(): void {
-        $options = section_image_manager::get_filemanager_options();
+        $options = $this->imagemanager->get_filemanager_options();
 
         $this->assertIsArray($options);
         $this->assertSame(1, $options['maxfiles']);
@@ -101,8 +105,8 @@ final class section_image_manager_test extends \advanced_testcase {
     public function test_has_image_and_url_when_empty(): void {
         $sectionid = $this->section_id(1);
 
-        $this->assertFalse(section_image_manager::has_image($this->course->id, $sectionid));
-        $this->assertNull(section_image_manager::get_image_url($this->course->id, $sectionid));
+        $this->assertFalse($this->imagemanager->has_image($this->course->id, $sectionid));
+        $this->assertNull($this->imagemanager->get_image_url($this->course->id, $sectionid));
     }
 
     /**
@@ -112,9 +116,9 @@ final class section_image_manager_test extends \advanced_testcase {
         $sectionid = $this->section_id(1);
         $this->create_section_image($sectionid);
 
-        $this->assertTrue(section_image_manager::has_image($this->course->id, $sectionid));
+        $this->assertTrue($this->imagemanager->has_image($this->course->id, $sectionid));
 
-        $url = section_image_manager::get_image_url($this->course->id, $sectionid);
+        $url = $this->imagemanager->get_image_url($this->course->id, $sectionid);
         $this->assertInstanceOf(\moodle_url::class, $url);
         $this->assertStringContainsString(section_image_manager::FILEAREA, $url->out(false));
     }
@@ -129,7 +133,7 @@ final class section_image_manager_test extends \advanced_testcase {
         $this->create_section_image($s1);
         $this->create_section_image($s2);
 
-        $urls = section_image_manager::get_image_urls_for_course($this->course->id);
+        $urls = $this->imagemanager->get_image_urls_for_course($this->course->id);
 
         $this->assertArrayHasKey($s1, $urls);
         $this->assertArrayHasKey($s2, $urls);
@@ -141,7 +145,7 @@ final class section_image_manager_test extends \advanced_testcase {
      * get_image_urls_for_course returns an empty array for a course with no section images.
      */
     public function test_get_image_urls_for_course_empty(): void {
-        $urls = section_image_manager::get_image_urls_for_course($this->course->id);
+        $urls = $this->imagemanager->get_image_urls_for_course($this->course->id);
         $this->assertSame([], $urls);
     }
 
@@ -154,10 +158,10 @@ final class section_image_manager_test extends \advanced_testcase {
         $this->create_section_image($s1);
         $this->create_section_image($s2);
 
-        section_image_manager::delete_image($this->course->id, $s1);
+        $this->imagemanager->delete_image($this->course->id, $s1);
 
-        $this->assertFalse(section_image_manager::has_image($this->course->id, $s1));
-        $this->assertTrue(section_image_manager::has_image($this->course->id, $s2));
+        $this->assertFalse($this->imagemanager->has_image($this->course->id, $s1));
+        $this->assertTrue($this->imagemanager->has_image($this->course->id, $s2));
     }
 
     /**
@@ -169,10 +173,10 @@ final class section_image_manager_test extends \advanced_testcase {
         $this->create_section_image($s1);
         $this->create_section_image($s2);
 
-        section_image_manager::delete_all_for_course($this->course->id);
+        $this->imagemanager->delete_all_for_course($this->course->id);
 
-        $this->assertFalse(section_image_manager::has_image($this->course->id, $s1));
-        $this->assertFalse(section_image_manager::has_image($this->course->id, $s2));
+        $this->assertFalse($this->imagemanager->has_image($this->course->id, $s1));
+        $this->assertFalse($this->imagemanager->has_image($this->course->id, $s2));
     }
 
     /**
@@ -184,7 +188,7 @@ final class section_image_manager_test extends \advanced_testcase {
         $sectionid = $this->section_id(1);
         $this->create_section_image($sectionid, 'prep.png');
 
-        $draftitemid = section_image_manager::prepare_draft($this->course->id, $sectionid);
+        $draftitemid = $this->imagemanager->prepare_draft($this->course->id, $sectionid);
         $this->assertIsInt($draftitemid);
         $this->assertGreaterThan(0, $draftitemid);
 
@@ -224,8 +228,8 @@ final class section_image_manager_test extends \advanced_testcase {
             'draft-bytes'
         );
 
-        section_image_manager::save_image($this->course->id, $sectionid, $draftitemid);
+        $this->imagemanager->save_image($this->course->id, $sectionid, $draftitemid);
 
-        $this->assertTrue(section_image_manager::has_image($this->course->id, $sectionid));
+        $this->assertTrue($this->imagemanager->has_image($this->course->id, $sectionid));
     }
 }

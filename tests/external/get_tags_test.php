@@ -37,25 +37,19 @@ use format_mimo\tag_manager;
  * @covers     \format_mimo\external\get_tags
  */
 final class get_tags_test extends \advanced_testcase {
+    /** @var tag_manager Tag manager instance. */
+    private tag_manager $tagmanager;
+
+    /** @var profile_manager Profile manager instance. */
+    private profile_manager $profilemanager;
+
     /**
      * Set up before each test.
      */
     protected function setUp(): void {
         parent::setUp();
-        // Reset static cache state left behind by other test classes in the same
-        // process. Tag and profile ids are reused between tests (sequences are
-        // reset), so stale entries would apply overrides from a previous test.
-        tag_manager::reset_caches();
-        profile_manager::clear_request_caches();
-    }
-
-    /**
-     * Clean up after each test.
-     */
-    protected function tearDown(): void {
-        tag_manager::reset_caches();
-        profile_manager::clear_request_caches();
-        parent::tearDown();
+        $this->tagmanager = \core\di::get(tag_manager::class);
+        $this->profilemanager = \core\di::get(profile_manager::class);
     }
 
     /**
@@ -75,11 +69,10 @@ final class get_tags_test extends \advanced_testcase {
         // then apply stale name overrides to them.
         $DB->delete_records('format_mimo_tags');
         $DB->delete_records('format_mimo_profile_tags');
-        tag_manager::reset_caches();
-        profile_manager::clear_request_caches();
+        $this->profilemanager->clear_request_caches();
 
-        tag_manager::create_tag('Alpha', 'a.svg', 'a-small.svg', 'page');
-        tag_manager::create_tag('Bravo', 'b.svg', 'b-small.svg', 'quiz');
+        $this->tagmanager->create_tag('Alpha', 'a.svg', 'a-small.svg', 'page');
+        $this->tagmanager->create_tag('Bravo', 'b.svg', 'b-small.svg', 'quiz');
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
 
@@ -114,7 +107,7 @@ final class get_tags_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        tag_manager::create_tag('Readable', 'r.svg', 'r-small.svg', 'page');
+        $this->tagmanager->create_tag('Readable', 'r.svg', 'r-small.svg', 'page');
 
         $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
         $student = $this->getDataGenerator()->create_user();

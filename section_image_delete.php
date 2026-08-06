@@ -39,7 +39,7 @@ require_sesskey();
 // Validate the section belongs to this course.
 $DB->get_record('course_sections', ['id' => $sectionid, 'course' => $courseid], 'id', MUST_EXIST);
 
-section_image_manager::delete_image($courseid, $sectionid);
+\core\di::get(section_image_manager::class)->delete_image($courseid, $sectionid);
 
 $returnurl = new moodle_url('/course/view.php', ['id' => $courseid, 'overview' => 1]);
 redirect($returnurl, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);

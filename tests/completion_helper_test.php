@@ -24,14 +24,16 @@ namespace format_mimo;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \format_mimo\completion_helper::get_teacher_completion_counts
  * @covers     \format_mimo\completion_helper::get_tracked_user_count
- * @covers     \format_mimo\completion_helper::reset_caches
  * @covers     \format_mimo\output\courseformat\content\section\cmitem::export_for_template
  * @covers     \format_mimo\output\courseformat\content
  */
 final class completion_helper_test extends \advanced_testcase {
+    /** @var completion_helper Helper instance under test. */
+    private completion_helper $completionhelper;
+
     protected function setUp(): void {
         parent::setUp();
-        completion_helper::reset_caches();
+        $this->completionhelper = \core\di::get(completion_helper::class);
     }
 
     /**
@@ -54,7 +56,7 @@ final class completion_helper_test extends \advanced_testcase {
             'completion' => COMPLETION_TRACKING_MANUAL,
         ]);
 
-        $counts = completion_helper::get_teacher_completion_counts($course->id);
+        $counts = $this->completionhelper->get_teacher_completion_counts($course->id);
         // The CM exists with completion enabled but nobody completed — should be absent or 0.
         $this->assertEquals(0, $counts[$page->cmid] ?? 0);
     }
@@ -109,7 +111,7 @@ final class completion_helper_test extends \advanced_testcase {
             'timemodified' => $now,
         ]);
 
-        $counts = completion_helper::get_teacher_completion_counts($course->id);
+        $counts = $this->completionhelper->get_teacher_completion_counts($course->id);
         $this->assertEquals(2, $counts[$page->cmid]);
     }
 
@@ -149,7 +151,7 @@ final class completion_helper_test extends \advanced_testcase {
             'timemodified' => $now,
         ]);
 
-        $counts = completion_helper::get_teacher_completion_counts($course->id);
+        $counts = $this->completionhelper->get_teacher_completion_counts($course->id);
         $this->assertEquals(1, $counts[$page1->cmid]);
         $this->assertEquals(0, $counts[$page2->cmid] ?? 0);
     }
@@ -173,7 +175,7 @@ final class completion_helper_test extends \advanced_testcase {
             'completion' => COMPLETION_TRACKING_NONE,
         ]);
 
-        $counts = completion_helper::get_teacher_completion_counts($course->id);
+        $counts = $this->completionhelper->get_teacher_completion_counts($course->id);
         // The CM should not appear in counts at all.
         $this->assertArrayNotHasKey($page->cmid, $counts);
     }
@@ -199,7 +201,7 @@ final class completion_helper_test extends \advanced_testcase {
         $generator->enrol_user($student2->id, $course->id, 'student');
         $generator->enrol_user($teacher->id, $course->id, 'editingteacher');
 
-        $count = completion_helper::get_tracked_user_count($course->id);
+        $count = $this->completionhelper->get_tracked_user_count($course->id);
         // Only students have moodle/course:isincompletionreports by default.
         $this->assertEquals(2, $count);
     }
@@ -234,12 +236,12 @@ final class completion_helper_test extends \advanced_testcase {
         ]);
 
         // Two successive calls should return the same result.
-        $counts1 = completion_helper::get_teacher_completion_counts($course->id);
-        $counts2 = completion_helper::get_teacher_completion_counts($course->id);
+        $counts1 = $this->completionhelper->get_teacher_completion_counts($course->id);
+        $counts2 = $this->completionhelper->get_teacher_completion_counts($course->id);
         $this->assertEquals($counts1, $counts2);
 
-        $tracked1 = completion_helper::get_tracked_user_count($course->id);
-        $tracked2 = completion_helper::get_tracked_user_count($course->id);
+        $tracked1 = $this->completionhelper->get_tracked_user_count($course->id);
+        $tracked2 = $this->completionhelper->get_tracked_user_count($course->id);
         $this->assertEquals($tracked1, $tracked2);
     }
 

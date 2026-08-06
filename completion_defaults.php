@@ -50,7 +50,7 @@ $PAGE->set_heading(get_string('completiondefaults', 'format_mimo'));
 if ($action === 'delete' && $modid) {
     if ($confirm) {
         require_sesskey();
-        \format_mimo\completion_defaults_manager::delete_default($modid);
+        \core\di::get(\format_mimo\completion_defaults_manager::class)->delete_default($modid);
         \core\notification::add(
             get_string('completiondefaultdeleted', 'format_mimo'),
             \core\notification::SUCCESS
@@ -78,7 +78,7 @@ if ($modid) {
     $course = get_course(SITEID);
 
     // Check if we have existing mimo defaults for this module type.
-    $mimodefaults = \format_mimo\completion_defaults_manager::get_default($modid);
+    $mimodefaults = \core\di::get(\format_mimo\completion_defaults_manager::class)->get_default($modid);
 
     // Build module info for the form (mimics core's structure).
     $moduleinfo = new stdClass();
@@ -104,8 +104,9 @@ if ($modid) {
 
     if ($data = $form->get_data()) {
         $suffix = $form->get_suffix();
-        $packed = \format_mimo\completion_defaults_manager::pack_form_data($data, $suffix);
-        \format_mimo\completion_defaults_manager::save_default($modid, $packed);
+        $defaultsmanager = \core\di::get(\format_mimo\completion_defaults_manager::class);
+        $packed = $defaultsmanager->pack_form_data($data, $suffix);
+        $defaultsmanager->save_default($modid, $packed);
         \core\notification::add(
             get_string('completiondefaultsaved', 'format_mimo'),
             \core\notification::SUCCESS
@@ -126,7 +127,7 @@ if ($modid) {
 // Main listing page: show all module types with their override status.
 $manager = new \core_completion\manager(SITEID);
 $allmodules = $manager->get_activities_and_resources(false);
-$mimodefaults = \format_mimo\completion_defaults_manager::get_all_defaults_by_module();
+$mimodefaults = \core\di::get(\format_mimo\completion_defaults_manager::class)->get_all_defaults_by_module();
 
 echo $OUTPUT->header();
 echo \format_mimo\admin_page_tabs::render('completiondefaults');

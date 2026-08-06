@@ -27,13 +27,13 @@
  */
 function xmldb_format_mimo_install() {
     // Initialize default tags.
-    \format_mimo\tag_manager::initialize_default_tags();
+    \core\di::get(\format_mimo\tag_manager::class)->initialize_default_tags();
     // Initialize default activity profiles (primaryschool, secondaryschool, foreignlanguage).
-    \format_mimo\profile_manager::initialize_default_profiles();
+    \core\di::get(\format_mimo\profile_manager::class)->initialize_default_profiles();
     // Initialize default description tags.
-    \format_mimo\description_tag_manager::initialize_default_description_tags();
+    \core\di::get(\format_mimo\description_tag_manager::class)->initialize_default_description_tags();
     // Initialize default activity descriptions for all activity types.
-    \format_mimo\activity_description_manager::initialize_default_activity_descriptions();
+    \core\di::get(\format_mimo\activity_description_manager::class)->initialize_default_activity_descriptions();
     // Initialize default completion overrides per module type.
-    \format_mimo\completion_defaults_manager::initialize_default_completion_defaults();
+    \core\di::get(\format_mimo\completion_defaults_manager::class)->initialize_default_completion_defaults();
 }

@@ -38,7 +38,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
 
     if ($oldversion < 2025112001) {
         // Initialize default tags if they don't exist.
-        \format_mimo\tag_manager::initialize_default_tags();
+        \core\di::get(\format_mimo\tag_manager::class)->initialize_default_tags();
 
         upgrade_plugin_savepoint(true, 2025112001, 'format', 'mimo');
     }
@@ -55,7 +55,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        $palette = \format_mimo\tag_manager::get_default_accent_palette();
+        $palette = \core\di::get(\format_mimo\tag_manager::class)->get_default_accent_palette();
         if (!empty($palette)) {
             $tags = $DB->get_records('format_mimo_tags', null, 'sortorder ASC, id ASC');
             $index = 0;
@@ -898,7 +898,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
 
     // Seed default completion overrides for all known activity types.
     if ($oldversion < 2026031500) {
-        \format_mimo\completion_defaults_manager::initialize_default_completion_defaults();
+        \core\di::get(\format_mimo\completion_defaults_manager::class)->initialize_default_completion_defaults();
 
         upgrade_plugin_savepoint(true, 2026031500, 'format', 'mimo');
     }
@@ -935,6 +935,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
     if ($oldversion < 2026061100) {
         // Step 1: Rename the old default profiles, preserving course assignments
         // (update_profile cascades the name change to course_format_options).
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
         $renames = [
             'explore' => 'primaryschool',
             'develop' => 'secondaryschool',
@@ -943,7 +944,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
         foreach ($renames as $oldname => $newname) {
             $profile = $DB->get_record('format_mimo_profiles', ['name' => $oldname]);
             if ($profile && !$DB->record_exists('format_mimo_profiles', ['name' => $newname])) {
-                \format_mimo\profile_manager::update_profile($profile->id, [
+                $profilemanager->update_profile($profile->id, [
                     'name' => $newname,
                     'displayname' => get_string('profile_' . $newname, 'format_mimo'),
                 ]);
@@ -969,7 +970,8 @@ function xmldb_format_mimo_upgrade($oldversion) {
 
         // Step 3: Migrate the old default base tags in place (preserving tag IDs
         // and activity assignments). Old names are matched in both install languages.
-        $definitions = \format_mimo\tag_manager::get_default_tag_definitions();
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $definitions = $tagmanager->get_default_tag_definitions();
         $oldnamemap = [
             0 => ['Lesen', 'Reading'],
             1 => ['Schreiben', 'Writing'],
@@ -983,7 +985,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
         $matched = [];
         foreach ($oldnamemap as $index => $oldnames) {
             foreach ($oldnames as $oldname) {
-                $tag = \format_mimo\tag_manager::find_tag_by_name($oldname, $matchedids);
+                $tag = $tagmanager->find_tag_by_name($oldname, $matchedids);
                 if ($tag) {
                     $def = $definitions[$index];
                     $tag->name = $def['name'];
@@ -1005,24 +1007,24 @@ function xmldb_format_mimo_upgrade($oldversion) {
             if (isset($matched[$index])) {
                 continue;
             }
-            if (\format_mimo\tag_manager::find_tag_by_name($def['name'])) {
+            if ($tagmanager->find_tag_by_name($def['name'])) {
                 continue;
             }
-            $tagid = \format_mimo\tag_manager::create_tag_from_default($def);
+            $tagid = $tagmanager->create_tag_from_default($def);
             $DB->set_field('format_mimo_tags', 'sortorder', $index, ['id' => $tagid]);
         }
 
         // Step 5: Re-apply the default per-profile overrides (names, activity
         // types, disabled tags) for the new school-type profiles.
-        \format_mimo\tag_manager::clear_tag_cache();
-        \format_mimo\profile_manager::clear_request_caches();
+        $tagmanager->clear_tag_cache();
+        $profilemanager->clear_request_caches();
         foreach ($renames as $newname) {
             $profile = $DB->get_record('format_mimo_profiles', ['name' => $newname]);
             if ($profile) {
-                \format_mimo\profile_manager::apply_default_profile_tag_overrides($newname, $profile->id);
+                $profilemanager->apply_default_profile_tag_overrides($newname, $profile->id);
             }
         }
-        \format_mimo\tag_manager::clear_tag_cache();
+        $tagmanager->clear_tag_cache();
 
         upgrade_plugin_savepoint(true, 2026061100, 'format', 'mimo');
     }
@@ -1033,7 +1035,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
     // game switched to automatic completion. Existing records are replaced.
     if ($oldversion < 2026061102) {
         $DB->delete_records('format_mimo_compdefs', []);
-        \format_mimo\completion_defaults_manager::initialize_default_completion_defaults();
+        \core\di::get(\format_mimo\completion_defaults_manager::class)->initialize_default_completion_defaults();
 
         upgrade_plugin_savepoint(true, 2026061102, 'format', 'mimo');
     }
@@ -1042,7 +1044,7 @@ function xmldb_format_mimo_upgrade($oldversion) {
     // for the white pill text. Only touches records still on the old default.
     if ($oldversion < 2026080500) {
         $DB->set_field('format_mimo_desc_tags', 'color', '#F9A825', ['color' => '#FFF176']);
-        \format_mimo\activity_description_manager::clear_cache();
+        \core\di::get(\format_mimo\activity_description_manager::class)->clear_cache();
 
         upgrade_plugin_savepoint(true, 2026080500, 'format', 'mimo');
     }
