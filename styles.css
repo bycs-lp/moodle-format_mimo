@@ -124,6 +124,10 @@
   padding-bottom: 1rem;
 }
 
+.mimo-bgdesign-wrapper .mimo-activities.mimo-activities-empty {
+  padding: 0;
+}
+
 @media (min-width: 992px) {
   body:not(.bulkenabled) .mimo-activities .col-12:nth-child(n+9),
   body:not(.bulkenabled) .mimo-activities li.col-12:nth-child(n+9) {
@@ -2153,6 +2157,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 
 .mimo-overview-btn__icon {
   flex-shrink: 0;
+  fill: #fff;
   stroke: #fff;
   stroke-width: 1px;
 }
@@ -2184,6 +2189,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 
 .mimo-back-btn__icon {
   flex-shrink: 0;
+  fill: #fff;
   stroke: #fff;
   stroke-width: 1px;
 }

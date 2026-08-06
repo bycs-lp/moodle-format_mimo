@@ -120,7 +120,7 @@
         </div>
         {{/filterbar.hasitems}}
         {{#cmlist}}
-        <ul class="section m-0 mimo-activities row g-3 {{styleclass}}{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}" data-for="cmlist" data-style="{{stylevariant}}" style="list-style: none;">
+        <ul class="section m-0 mimo-activities row g-3 {{styleclass}}{{#bgdesignclass}} {{bgdesignclass}}{{/bgdesignclass}}{{#hasinitialnext}} pagination-active{{/hasinitialnext}}{{^cms}} mimo-activities-empty{{/cms}}" data-for="cmlist" data-style="{{stylevariant}}" style="list-style: none;">
             {{! Edge dropzone: drop a card here to move it to the first position. Shown only while dragging. }}
             <li class="mimo-edge-dropzone" data-region="edge-dropzone" data-position="start" style="list-style: none;">
                 <div class="mimo-edge-dropzone-inner">{{#str}}dropzonefirst, format_mimo{{/str}}</div>

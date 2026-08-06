@@ -168,6 +168,13 @@ $activity-icon-colors: (
     }
     
 }
+
+// Empty wall: hide extra board padding when there are no activity cards.
+// Uses a template-provided class instead of :has for browser compatibility.
+.mimo-bgdesign-wrapper .mimo-activities.mimo-activities-empty {
+    padding: 0;
+}
+
 // Hide not when in bulkedit, duplicated activities would be hidden otherwise.
 body:not(.bulkenabled) .mimo-activities {
     // Hide activities beyond the first page by default (prevents flash on page load).
@@ -2722,6 +2729,7 @@ body.single-section-page.format-mimo-multisection-view {
 
 .mimo-overview-btn__icon {
     flex-shrink: 0;
+    fill: #fff; // Beat theme link-hover colors leaking into fill="currentColor".
     stroke: #fff;
     stroke-width: 1px;
 }
@@ -2756,6 +2764,7 @@ body.single-section-page.format-mimo-multisection-view {
 
 .mimo-back-btn__icon {
     flex-shrink: 0;
+    fill: #fff; // Beat theme link-hover colors leaking into fill="currentColor".
     stroke: #fff;
     stroke-width: 1px;
 }
