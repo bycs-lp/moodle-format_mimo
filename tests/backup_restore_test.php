@@ -325,6 +325,62 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
+     * Section overview card images must survive backup/restore.
+     *
+     * Regression test: the 'course_section' mappings are only created by the
+     * section tasks, which run after the course task. Restoring the images in
+     * after_execute_course() therefore silently skipped every file; they must
+     * be restored in after_restore_course() (final task) instead.
+     */
+    public function test_backup_and_restore_preserves_section_images(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course([
+            'format' => 'mimo',
+            'numsections' => 2,
+        ], ['createsections' => true]);
+
+        // Attach an image to section 2.
+        $sectionid = (int) $DB->get_field('course_sections', 'id', [
+            'course' => $course->id,
+            'section' => 2,
+        ]);
+        $fs = get_file_storage();
+        $fs->create_file_from_string(
+            [
+                'contextid' => \core\context\course::instance($course->id)->id,
+                'component' => section_image_manager::COMPONENT,
+                'filearea'  => section_image_manager::FILEAREA,
+                'itemid'    => $sectionid,
+                'filepath'  => '/',
+                'filename'  => 'wall.png',
+            ],
+            'fake image content'
+        );
+
+        $backupid = 'mimo_secimg_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Section image restored');
+
+        $newsectionid = (int) $DB->get_field('course_sections', 'id', [
+            'course' => $restoredcourseid,
+            'section' => 2,
+        ]);
+        $this->assertTrue(
+            section_image_manager::has_image($restoredcourseid, $newsectionid),
+            'Section image must be restored for the mapped section'
+        );
+
+        $url = section_image_manager::get_image_url($restoredcourseid, $newsectionid);
+        $this->assertNotNull($url);
+        $this->assertStringContainsString('wall.png', $url->out(false));
+    }
+
+    /**
      * Back up a course and extract it into the temp directory Moodle expects for restores.
      *
      * @param int $courseid course id to back up

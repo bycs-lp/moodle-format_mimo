@@ -336,12 +336,6 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             \format_mimo\profile_manager::FILEAREA_PROFILE_FILTERIMAGE,
             'format_mimo_profile_tag'
         );
-        // Section overview card images.
-        $this->add_related_files(
-            'format_mimo',
-            \format_mimo\section_image_manager::FILEAREA,
-            'course_section'
-        );
 
         // If all backup tags were recognized (fingerprint or name match), no imported
         // profile needed. The instance already has the right tags — either identical
@@ -425,9 +419,21 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     }
 
     /**
-     * Clear caches after full restore.
+     * Restore section image files and clear caches after full restore.
+     *
+     * Runs in the final task, after all section tasks have executed. The
+     * 'course_section' mappings do not exist yet in after_execute_course()
+     * (the course task runs before the section tasks), so restoring the
+     * section overview card images must happen here.
      */
     public function after_restore_course() {
+        // Section overview card images (itemid = course_sections.id).
+        $this->add_related_files(
+            'format_mimo',
+            \format_mimo\section_image_manager::FILEAREA,
+            'course_section'
+        );
+
         \format_mimo\tag_manager::clear_tag_cache();
         \format_mimo\tag_manager::clear_mapping_cache();
     }

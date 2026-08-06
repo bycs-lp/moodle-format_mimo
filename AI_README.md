@@ -139,8 +139,8 @@
     - **Cleanup benefit**: deleting an imported profile = delete its profile_tags. All overrides gone in one step.
   - **Profile_tag from backup**: applied for fingerprint- AND name-matched tags (same conceptual tag). Skipped for positional/new matches.
   - ID mapping: Sets `format_mimo_tag` mappings.
-  - `after_execute_course()`: Restores file areas including section images (uses core `course_section` mapping for ID remapping).
-  - `after_restore_course()`: Clears all caches.
+  - `after_execute_course()`: Restores tag/profile file areas (mappings for these are created within the course task itself).
+  - `after_restore_course()`: Restores section images (uses core `course_section` mapping for ID remapping) + clears all caches. **Timing invariant**: section tasks run AFTER the course task, so `course_section` mappings do not exist yet in `after_execute_course()` — section image files MUST be restored in `after_restore_course()` (dispatched by the final task).
 
 ## Workflows & Entry Points
 1. **Course creation**
@@ -354,7 +354,7 @@ This plugin demonstrates the hybrid approach:
 - `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
 - `tests/behat/style_management.feature` – style admin scenarios (legacy, may need update).
 - `tests/tag_manager_test.php` – tag CRUD, assignment, caching, profile-based filtering.
-- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, profile restore.
+- `tests/backup_restore_test.php` – 4 tests: basic cmtag restore, tag field preservation, profile restore, **section image restore (regression: must happen in `after_restore_course`)**.
 - `tests/observer_test.php` – 6+ tests: auto-tag, no-assignment scenarios, rejection (invalid tag, profile-disabled tag), module deletion cleanup, course deletion cleanup.
 
 ## Open Questions / TODO Hooks
