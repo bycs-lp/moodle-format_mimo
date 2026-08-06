@@ -2488,13 +2488,6 @@ body.single-section-page.format-mimo-multisection-view {
     > .bulkselect:not(.d-none) ~ .mimo-overview-card__visibility {
         padding-left: 28px;
     }
-
-    // Without the card's aspect-ratio, flex: 1 1 0 has no bounded space to grow
-    // into, so the image blows up to its natural size. Pin it to the same
-    // height used in the non-editing view.
-    .mimo-overview-card__sectionimage-wrap {
-        flex: 0 0 135px;
-    }
 }
 
 // flex: 0 0 auto keeps the title/summary at natural height so it never
@@ -2561,11 +2554,12 @@ body.single-section-page.format-mimo-multisection-view {
 
 /* Section overview card image — replaces miniwall when present. */
 .mimo-overview-card__sectionimage-wrap {
-    margin-top: auto;
     border-radius: 0.6rem;
     overflow: hidden;
-    flex: 1 1 0;
-    min-height: 135px;
+    // Width-derived height (≈ two rows of square minitiles) so proportions
+    // stay consistent regardless of the theme's content width.
+    flex: 0 0 auto;
+    aspect-ratio: 2 / 1;
 }
 
 .mimo-overview-card__sectionimage {
