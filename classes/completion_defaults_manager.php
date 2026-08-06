@@ -28,9 +28,6 @@ namespace format_mimo;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class completion_defaults_manager {
-    /** @var string The DB table for mimo completion defaults. */
-    const TABLE = 'format_mimo_compdefs';
-
     /**
      * Get the mimo completion default for a specific module type.
      *
@@ -39,7 +36,7 @@ class completion_defaults_manager {
      */
     public static function get_default(int $moduleid): ?\stdClass {
         global $DB;
-        $record = $DB->get_record(self::TABLE, ['module' => $moduleid]);
+        $record = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         return $record ?: null;
     }
 
@@ -50,7 +47,7 @@ class completion_defaults_manager {
      */
     public static function get_all_defaults(): array {
         global $DB;
-        return $DB->get_records(self::TABLE, null, '', '*', 0, 0);
+        return $DB->get_records('format_mimo_compdefs', null, '', '*', 0, 0);
     }
 
     /**
@@ -60,7 +57,7 @@ class completion_defaults_manager {
      */
     public static function get_all_defaults_by_module(): array {
         global $DB;
-        $records = $DB->get_records(self::TABLE);
+        $records = $DB->get_records('format_mimo_compdefs');
         $result = [];
         foreach ($records as $record) {
             $result[$record->module] = $record;
@@ -82,17 +79,17 @@ class completion_defaults_manager {
         $data = (object)$data;
         $now = \core\di::get(\core\clock::class)->time();
 
-        $existing = $DB->get_record(self::TABLE, ['module' => $moduleid]);
+        $existing = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         if ($existing) {
             $data->id = $existing->id;
             $data->module = $moduleid;
             $data->timemodified = $now;
-            $DB->update_record(self::TABLE, $data);
+            $DB->update_record('format_mimo_compdefs', $data);
         } else {
             $data->module = $moduleid;
             $data->timecreated = $now;
             $data->timemodified = $now;
-            $DB->insert_record(self::TABLE, $data);
+            $DB->insert_record('format_mimo_compdefs', $data);
         }
     }
 
@@ -103,7 +100,7 @@ class completion_defaults_manager {
      */
     public static function delete_default(int $moduleid): void {
         global $DB;
-        $DB->delete_records(self::TABLE, ['module' => $moduleid]);
+        $DB->delete_records('format_mimo_compdefs', ['module' => $moduleid]);
     }
 
 
@@ -195,7 +192,7 @@ class completion_defaults_manager {
         require_once($CFG->libdir . '/completionlib.php');
 
         // Guard: don't overwrite existing customizations.
-        if ($DB->record_exists(self::TABLE, [])) {
+        if ($DB->record_exists('format_mimo_compdefs', [])) {
             return false;
         }
 

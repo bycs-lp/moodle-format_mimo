@@ -27,9 +27,6 @@ namespace format_mimo;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class done_manager {
-    /** @var string Database table name. */
-    private const TABLE = 'format_mimo_cmdone';
-
     /**
      * Request-level cache of done cmids per course.
      *
@@ -73,7 +70,7 @@ class done_manager {
             return;
         }
         $sql = "SELECT d.cmid
-                  FROM {" . self::TABLE . "} d
+                  FROM {format_mimo_cmdone} d
                   JOIN {course_modules} cm ON cm.id = d.cmid
                  WHERE cm.course = :courseid";
         $records = $DB->get_records_sql($sql, ['courseid' => $courseid]);
@@ -138,7 +135,7 @@ class done_manager {
     public static function set_done(int $cmid): void {
         global $DB;
         if (!self::is_done($cmid)) {
-            $DB->insert_record(self::TABLE, (object) [
+            $DB->insert_record('format_mimo_cmdone', (object) [
                 'cmid' => $cmid,
                 'timecreated' => \core\di::get(\core\clock::class)->time(),
             ]);
@@ -156,7 +153,7 @@ class done_manager {
      */
     public static function unset_done(int $cmid): void {
         global $DB;
-        $DB->delete_records(self::TABLE, ['cmid' => $cmid]);
+        $DB->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
         $courseid = self::get_courseid_for_cm($cmid);
         if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
             unset(self::$donecache[$courseid][$cmid]);
@@ -182,7 +179,7 @@ class done_manager {
     public static function delete_for_cm(int $cmid): void {
         global $DB;
         $courseid = self::get_courseid_for_cm($cmid);
-        $DB->delete_records(self::TABLE, ['cmid' => $cmid]);
+        $DB->delete_records('format_mimo_cmdone', ['cmid' => $cmid]);
         unset(self::$cmcourse[$cmid]);
         if ($courseid !== 0 && isset(self::$donecache[$courseid])) {
             unset(self::$donecache[$courseid][$cmid]);
@@ -196,7 +193,7 @@ class done_manager {
      */
     public static function delete_for_course(int $courseid): void {
         global $DB;
-        $sql = "DELETE FROM {" . self::TABLE . "}
+        $sql = "DELETE FROM {format_mimo_cmdone}
                  WHERE cmid IN (SELECT id FROM {course_modules} WHERE course = :courseid)";
         $DB->execute($sql, ['courseid' => $courseid]);
         unset(self::$donecache[$courseid]);
