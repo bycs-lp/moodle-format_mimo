@@ -23,6 +23,8 @@
 
 import ModalForm from 'core_form/modalform';
 import {getString} from 'core/str';
+import ModalSaveCancel from 'core/modal_save_cancel';
+import ModalEvents from 'core/modal_events';
 
 /**
  * Initialise click handler on the overview grid.
@@ -44,6 +46,7 @@ export const init = () => {
         const courseid = parseInt(button.dataset.courseid, 10);
         const sectionid = parseInt(button.dataset.sectionid, 10);
         const sectionname = button.dataset.sectionname || '';
+        const hasimage = button.dataset.hasimage === '1';
 
         const title = await getString('sectionimage_upload_title', 'format_mimo', sectionname);
 
@@ -58,6 +61,51 @@ export const init = () => {
             window.location.reload();
         });
 
+        if (hasimage) {
+            modalForm.addEventListener(modalForm.events.LOADED, () => {
+                addDeleteButton(modalForm);
+            });
+        }
+
         modalForm.show();
+    });
+};
+
+/**
+ * Add a "Delete image" button to the modal footer, asking for confirmation before submitting.
+ *
+ * @param {ModalForm} modalForm the open modal form instance
+ */
+const addDeleteButton = async(modalForm) => {
+    const footer = modalForm.modal.getFooter()[0];
+    if (footer.querySelector('[data-action="delete-sectionimage"]')) {
+        return;
+    }
+
+    const deleteText = await getString('sectionimage_delete', 'format_mimo');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-outline-danger me-auto';
+    button.dataset.action = 'delete-sectionimage';
+    button.textContent = deleteText;
+    footer.prepend(button);
+
+    button.addEventListener('click', async() => {
+        const confirmModal = await ModalSaveCancel.create({
+            title: deleteText,
+            body: await getString('sectionimage_delete_confirm', 'format_mimo'),
+            buttons: {save: deleteText},
+        });
+
+        confirmModal.getRoot().on(ModalEvents.save, () => {
+            const form = modalForm.modal.getRoot()[0].querySelector('form');
+            const hidden = form.querySelector('[name="deleteimage"]');
+            hidden.value = '1';
+            form.requestSubmit();
+        });
+        confirmModal.getRoot().on(ModalEvents.hidden, () => {
+            confirmModal.destroy();
+        });
+        confirmModal.show();
     });
 };

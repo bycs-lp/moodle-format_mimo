@@ -101,7 +101,8 @@
                         data-action="section-image"
                         data-courseid="{{courseid}}"
                         data-sectionid="{{id}}"
-                        data-sectionname="{{name}}">
+                        data-sectionname="{{name}}"
+                        data-hasimage="{{#hassectionimage}}1{{/hassectionimage}}{{^hassectionimage}}0{{/hassectionimage}}">
                         {{#hassectionimage}}
                         {{#str}}sectionimage_change, format_mimo{{/str}}
                         {{/hassectionimage}}

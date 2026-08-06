@@ -48,6 +48,10 @@ class section_image_form extends dynamic_form {
         $mform->addElement('hidden', 'sectionid');
         $mform->setType('sectionid', PARAM_INT);
 
+        $mform->addElement('hidden', 'deleteimage');
+        $mform->setType('deleteimage', PARAM_BOOL);
+        $mform->setDefault('deleteimage', 0);
+
         $mform->addElement(
             'filepicker',
             'sectionimagefile',
@@ -138,6 +142,11 @@ class section_image_form extends dynamic_form {
         // Validate that the section belongs to this course.
         if (!$DB->record_exists('course_sections', ['id' => (int) $data->sectionid, 'course' => (int) $data->courseid])) {
             throw new \moodle_exception('sectionnotexist', 'error');
+        }
+
+        if (!empty($data->deleteimage)) {
+            section_image_manager::delete_image((int) $data->courseid, (int) $data->sectionid);
+            return ['result' => true];
         }
 
         section_image_manager::save_image((int) $data->courseid, (int) $data->sectionid, (int) $data->sectionimagefile);

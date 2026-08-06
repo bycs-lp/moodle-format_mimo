@@ -55,7 +55,7 @@
   - Accepted types: jpg, png, webp, svg.
   - Key methods: `get_image_url($courseid, $sectionid)`, `save_image($courseid, $sectionid, $draftitemid)`, `delete_image($courseid, $sectionid)`, `has_image($courseid, $sectionid)`, `delete_all_for_course($courseid)`.
   - When a section has an uploaded image, it replaces the miniwall tiles on the overview card.
-  - Upload/change UX: Dynamic form modal (`classes/form/section_image_form.php`, extends `dynamic_form`) opened via `amd/src/section_image_modal.js`. Teacher clicks an "Upload image" / "Change image" button on the overview card in editing mode. The filepicker in the modal handles upload, change, and removal.
+  - Upload/change UX: Dynamic form modal (`classes/form/section_image_form.php`, extends `dynamic_form`) opened via `amd/src/section_image_modal.js`. Teacher clicks an "Upload image" / "Change image" button on the overview card in editing mode. The filepicker in the modal handles upload and change; a hidden `deleteimage` field + a "Delete image" footer button (shown only when an image already exists, via `data-hasimage` on the trigger button) let the teacher remove the image — click opens a `core/modal_save_cancel` confirmation, then sets the hidden field and calls `form.requestSubmit()` so the existing dynamic-form ajax path handles it (`process_dynamic_submission()` short-circuits to `delete_image()` when `deleteimage` is truthy).
   - Cleanup: `course_section_deleted` and `course_deleted` observers remove orphaned images.
 - **Description tags system** (`classes/description_tag_manager.php` + `classes/activity_description_manager.php`)
   - Tables: `*_desc_tags` (name + color), `*_actdesc` (activity type descriptions with optional `desctagid`).
@@ -304,8 +304,8 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for mimo completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
-- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg). Extends `dynamic_form`.
-- `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode.
+- `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg) plus a hidden `deleteimage` field; `process_dynamic_submission()` deletes the image instead of saving when it's set. Extends `dynamic_form`.
+- `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode; adds a "Delete image" footer button (with confirmation) when an image already exists.
 - `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
 - `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
 - `classes/output/courseformat/content/activitychooserbutton.php` – tag chooser button (extends core_courseformat class, MDL-86337).
