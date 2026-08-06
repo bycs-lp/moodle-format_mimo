@@ -46,6 +46,7 @@ class get_activity_descriptions extends external_api {
      */
     public static function execute_parameters() {
         return new external_function_parameters([
+            'courseid' => new external_value(PARAM_INT, 'Course ID'),
             'activitytypes' => new external_multiple_structure(
                 new external_value(PARAM_ALPHANUMEXT, 'Activity type name'),
                 'List of activity types to get descriptions for',
@@ -57,22 +58,22 @@ class get_activity_descriptions extends external_api {
     /**
      * Get descriptions for specified activity types.
      *
+     * @param int $courseid Course ID
      * @param array $activitytypes List of activity type names
      * @return array Array of descriptions
      */
-    public static function execute(array $activitytypes) {
+    public static function execute($courseid, array $activitytypes) {
         global $PAGE;
 
         $params = self::validate_parameters(self::execute_parameters(), [
+            'courseid' => $courseid,
             'activitytypes' => $activitytypes,
         ]);
 
-        // Validate context — activity descriptions are site-wide, so use system context.
-        $context = \core\context\system::instance();
+        $context = \core\context\course::instance($params['courseid']);
         self::validate_context($context);
+        require_capability('moodle/course:manageactivities', $context);
 
-        // Set up a minimal context for rendering (required for external webservices).
-        $PAGE->set_context($context);
         $renderer = $PAGE->get_renderer('core');
 
         $descriptions = [];
@@ -87,7 +88,7 @@ class get_activity_descriptions extends external_api {
 
             $description = $descdata->description ?? '';
             if (!empty($description)) {
-                $description = format_text($description, FORMAT_HTML, ['context' => \core\context\system::instance()]);
+                $description = format_text($description, FORMAT_HTML, ['context' => $context]);
             }
 
             $descriptions[] = [
@@ -96,7 +97,7 @@ class get_activity_descriptions extends external_api {
                 'iconhtml' => $iconhtml,
                 'purpose' => $purposeclass,
                 'tagname' => !empty($descdata->tagname)
-                    ? format_string($descdata->tagname, true, ['context' => \core\context\system::instance()])
+                    ? format_string($descdata->tagname, true, ['context' => $context])
                     : '',
                 'tagcolor' => $descdata->tagcolor ?? '',
             ];

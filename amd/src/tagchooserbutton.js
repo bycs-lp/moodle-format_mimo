@@ -56,6 +56,7 @@ export const init = () => {
         e.preventDefault();
         const pending = new Pending('format_mimo/tagchooserbutton:showModal');
 
+        const courseId = tagLink.dataset.courseId;
         const tagId = tagLink.dataset.tagId;
         const tagName = tagLink.dataset.tagName;
         const activityType1 = tagLink.dataset.activityType1;
@@ -69,6 +70,7 @@ export const init = () => {
 
         // Show modal with 3 options
         await showActivityTypeModal(
+            courseId,
             tagId,
             tagName,
             activityType1,
@@ -87,6 +89,7 @@ export const init = () => {
 /**
  * Show a modal with activity type selection options.
  *
+ * @param {string} courseId The course ID
  * @param {string} tagId The tag ID
  * @param {string} tagName The tag name
  * @param {string} activityType1 First activity type
@@ -99,6 +102,7 @@ export const init = () => {
  * @param {string} sectionReturnId Section return ID (optional)
  */
 const showActivityTypeModal = async(
+    courseId,
     tagId,
     tagName,
     activityType1,
@@ -145,7 +149,7 @@ const showActivityTypeModal = async(
         if (typesToFetch.length > 0) {
             promises.push(Ajax.call([{
                 methodname: 'format_mimo_get_activity_descriptions',
-                args: {activitytypes: typesToFetch},
+                args: {courseid: courseId, activitytypes: typesToFetch},
             }])[0]);
         }
 

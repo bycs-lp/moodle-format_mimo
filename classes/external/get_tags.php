@@ -62,6 +62,7 @@ class get_tags extends external_api {
         ]);
 
         $context = \core\context\course::instance($params['courseid']);
+        // Validate_context() calls require_login(), enforcing enrolment; tags are visible to all participants.
         self::validate_context($context);
 
         $tags = \core\di::get(tag_manager::class)->get_tags_for_course($params['courseid']);

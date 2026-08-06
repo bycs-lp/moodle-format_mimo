@@ -128,14 +128,15 @@ final class external_get_activity_descriptions_test extends \advanced_testcase {
      * Test that the execute method returns proper structure.
      */
     public function test_execute_returns_valid_structure(): void {
-        global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
 
         // We just test with 'page' as it should exist in all Moodle installations.
         $activitytypes = ['page'];
 
-        $results = \format_mimo\external\get_activity_descriptions::execute($activitytypes);
+        $results = \format_mimo\external\get_activity_descriptions::execute($course->id, $activitytypes);
 
         $this->assertIsArray($results);
         $this->assertCount(1, $results);
@@ -152,5 +153,20 @@ final class external_get_activity_descriptions_test extends \advanced_testcase {
         $this->assertIsString($result['description']);
         $this->assertIsString($result['iconhtml']);
         $this->assertIsString($result['purpose']);
+    }
+
+    /**
+     * A user without moodle/course:manageactivities cannot fetch activity descriptions.
+     */
+    public function test_execute_requires_capability(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id, 'student');
+        $this->setUser($student);
+
+        $this->expectException(\required_capability_exception::class);
+        \format_mimo\external\get_activity_descriptions::execute($course->id, ['page']);
     }
 }

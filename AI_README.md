@@ -309,8 +309,8 @@ This plugin demonstrates the hybrid approach:
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
 - `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg) plus a hidden `deleteimage` field; `process_dynamic_submission()` deletes the image instead of saving when it's set. Extends `dynamic_form`.
 - `amd/src/section_image_modal.js` – opens the section image dynamic form modal from overview card buttons in editing mode; adds a "Delete image" footer button (with confirmation) when an image already exists.
-- `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags).
-- `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal.
+- `classes/external/get_tags.php` – webservice for fetching tags by course ID (returns profile-filtered tags); readable by any user with course access (validate_context's enrolment check only — no extra capability, since wall tags are visible to all participants).
+- `classes/external/get_activity_descriptions.php` – webservice for fetching activity descriptions with tag data for modal; course-scoped (`courseid` param), requires `moodle/course:manageactivities` since only editors see the tag/activity chooser.
 - `classes/output/courseformat/content/activitychooserbutton.php` – tag chooser button (extends core_courseformat class, MDL-86337).
 - `classes/output/courseformat/content/bulkedittools.php` – overrides core bulk edit tools to replace `availability` action with `mimoAvailability` (custom modal with Done option).
 - `classes/output/courseformat/content/cm/visibility.php` – overrides core visibility dropdown to add "Done" option (Show/Hide/Stealth/Done). Always visible in mimo format.
