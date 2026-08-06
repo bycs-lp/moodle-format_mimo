@@ -97,7 +97,8 @@ class observer {
 
     /**
      * Handle course_deleted event to clean up all section images, course_tags
-     * bindings, orphaned cmtags, imported tags, and imported profiles.
+     * bindings, orphaned cmtags, imported tags, imported profiles, and the
+     * remembered-section user preference.
      *
      * @param \core\event\course_deleted $event The event object
      */
@@ -130,6 +131,13 @@ class observer {
 
         // Clean up orphaned imported profiles (not referenced by any course).
         profile_manager::cleanup_orphaned_imported_profiles();
+
+        // Delete remembered-section preferences for all users.
+        $DB->delete_records_select(
+            'user_preferences',
+            'name = :prefname',
+            ['prefname' => 'format_mimo_lastsection_' . $courseid]
+        );
 
         tag_manager::clear_tag_cache();
         tag_manager::clear_mapping_cache();

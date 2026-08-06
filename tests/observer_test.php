@@ -334,6 +334,22 @@ final class observer_test extends \advanced_testcase {
     }
 
     /**
+     * Test that deleting a course removes the remembered-section user preference.
+     */
+    public function test_course_deleted_cleans_lastsection_preference(): void {
+        $user = $this->getDataGenerator()->create_user();
+        $this->setUser($user);
+        set_user_preference('format_mimo_lastsection_' . $this->course->id, 1);
+        $this->assertEquals('1', get_user_preferences('format_mimo_lastsection_' . $this->course->id));
+
+        $this->setAdminUser();
+        delete_course($this->course, false);
+
+        $this->setUser($user);
+        $this->assertNull(get_user_preferences('format_mimo_lastsection_' . $this->course->id));
+    }
+
+    /**
      * Deleting a section should delete any stored section image for that section
      * via the course_section_deleted observer.
      */

@@ -259,7 +259,7 @@ final class format_mimo_test extends \advanced_testcase {
     }
 
     /**
-     * delete_format_data removes orphan cmtag/cmdone rows and remembered-section prefs.
+     * delete_format_data removes orphan cmtag/cmdone rows.
      */
     public function test_delete_format_data_cleans_orphans(): void {
         global $DB;
@@ -272,23 +272,12 @@ final class format_mimo_test extends \advanced_testcase {
         $tagid = tag_manager::create_tag('Cleanup', 'c.svg', 'c-small.svg', 'page');
         tag_manager::assign_tag_to_cm($page->cmid, $tagid);
 
-        // User remembered-section preference should be removed as well.
-        $user = $this->getDataGenerator()->create_user();
-        $this->setUser($user);
-        set_user_preference('format_mimo_lastsection_' . $course->id, 1);
-        $this->assertEquals('1', get_user_preferences('format_mimo_lastsection_' . $course->id));
-
-        $this->setAdminUser();
-
         // Simulate core's deletion order: remove the course_modules first so cmtag becomes orphaned.
         $DB->delete_records('course_modules', ['course' => $course->id]);
 
         $this->assertTrue($DB->record_exists('format_mimo_cmtags', ['cmid' => $page->cmid]));
         $format->delete_format_data();
         $this->assertFalse($DB->record_exists('format_mimo_cmtags', ['cmid' => $page->cmid]));
-
-        $this->setUser($user);
-        $this->assertNull(get_user_preferences('format_mimo_lastsection_' . $course->id));
     }
 
     /**

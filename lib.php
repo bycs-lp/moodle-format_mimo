@@ -570,13 +570,6 @@ class format_mimo extends core_courseformat\base {
 
         \format_mimo\tag_manager::clear_mapping_cache();
         \format_mimo\tag_manager::clear_course_tags_cache($courseid);
-
-        // Clean up remembered-section preferences for all users.
-        $DB->delete_records_select(
-            'user_preferences',
-            'name = :prefname',
-            ['prefname' => 'format_mimo_lastsection_' . $courseid]
-        );
     }
 }
 
