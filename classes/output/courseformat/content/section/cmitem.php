@@ -113,6 +113,37 @@ class cmitem extends cmitem_base {
             }
             $data->cmformat->completion->hascompletion = true;
 
+            // Personal completion state — set for all users so the card's
+            // data-completed/data-overdue attributes match the server-side
+            // completion status counts (tag_filter.js recounts from them).
+            $completiondata = $completioninfo->get_data($cm, false);
+            if ($completiondata) {
+                $iscomplete = (
+                    $completiondata->completionstate == COMPLETION_COMPLETE ||
+                    $completiondata->completionstate == COMPLETION_COMPLETE_PASS
+                );
+                $data->cmformat->completion->iscomplete = $iscomplete;
+
+                // Check if overdue: not complete and a deadline has passed.
+                // Check completionexpected first, then module-specific due dates from customdata.
+                if (!$iscomplete) {
+                    $now = \core\di::get(\core\clock::class)->time();
+                    $deadline = 0;
+                    if (!empty($cm->completionexpected)) {
+                        $deadline = $cm->completionexpected;
+                    } else {
+                        $customdata = $cm->customdata;
+                        if (is_array($customdata)) {
+                            // Assign: duedate, quiz: timeclose.
+                            $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
+                        }
+                    }
+                    if ($deadline > 0 && $deadline < $now) {
+                        $data->cmformat->completion->isoverdue = true;
+                    }
+                }
+            }
+
             $coursecontext = \core\context\course::instance($cm->course);
             if (has_capability('report/progress:view', $coursecontext)) {
                 // Teacher view: show aggregated completion count with progress report link,
@@ -127,35 +158,6 @@ class cmitem extends cmitem_base {
                     '/report/progress/index.php',
                     ['course' => $cm->course]
                 ))->out(false);
-            } else {
-                // Student view: show personal completion state.
-                $completiondata = $completioninfo->get_data($cm, false);
-                if ($completiondata) {
-                    $iscomplete = (
-                        $completiondata->completionstate == COMPLETION_COMPLETE ||
-                        $completiondata->completionstate == COMPLETION_COMPLETE_PASS
-                    );
-                    $data->cmformat->completion->iscomplete = $iscomplete;
-
-                    // Check if overdue: not complete and a deadline has passed.
-                    // Check completionexpected first, then module-specific due dates from customdata.
-                    if (!$iscomplete) {
-                        $now = \core\di::get(\core\clock::class)->time();
-                        $deadline = 0;
-                        if (!empty($cm->completionexpected)) {
-                            $deadline = $cm->completionexpected;
-                        } else {
-                            $customdata = $cm->customdata;
-                            if (is_array($customdata)) {
-                                // Assign: duedate, quiz: timeclose.
-                                $deadline = (int) ($customdata['duedate'] ?? $customdata['timeclose'] ?? 0);
-                            }
-                        }
-                        if ($deadline > 0 && $deadline < $now) {
-                            $data->cmformat->completion->isoverdue = true;
-                        }
-                    }
-                }
             }
         }
 

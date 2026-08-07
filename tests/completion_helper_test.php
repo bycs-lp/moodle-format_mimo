@@ -299,6 +299,9 @@ final class completion_helper_test extends \advanced_testcase {
         $this->assertEquals(1, $data->cmformat->completion->completedcount);
         $this->assertEquals(1, $data->cmformat->completion->trackedtotal);
         $this->assertStringContainsString('report/progress/index.php', $data->cmformat->completion->reporturl);
+        // Personal completion state is also exported for teachers so the card's
+        // data-completed attribute matches the completion status counts.
+        $this->assertFalse($data->cmformat->completion->iscomplete);
     }
 
     /**
