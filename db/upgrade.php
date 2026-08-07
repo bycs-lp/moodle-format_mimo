@@ -29,7 +29,5 @@
  * @return bool result
  */
 function xmldb_format_mimo_upgrade($oldversion) {
-    global $DB;
-
     return true;
 }

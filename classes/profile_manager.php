@@ -969,7 +969,7 @@ class profile_manager {
      * @param string $profilename Profile name (e.g., 'primaryschool')
      * @param int $profileid Profile ID
      */
-    public function apply_default_profile_tag_overrides(string $profilename, int $profileid): void {
+    private function apply_default_profile_tag_overrides(string $profilename, int $profileid): void {
         $tagoverrides = $this->get_default_profile_tag_overrides()[$profilename] ?? [];
         if (empty($tagoverrides)) {
             return;

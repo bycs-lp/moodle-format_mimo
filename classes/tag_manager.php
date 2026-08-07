@@ -1081,7 +1081,7 @@ class tag_manager {
      * @param array $tag Definition from {@see get_default_tag_definitions()}
      * @return int ID of the created tag
      */
-    public function create_tag_from_default(array $tag): int {
+    private function create_tag_from_default(array $tag): int {
         $tagid = $this->create_tag(
             $tag['name'],
             $tag['cardimage'],
