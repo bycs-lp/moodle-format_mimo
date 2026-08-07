@@ -48,7 +48,7 @@ if ($ismultisection) {
         $modinfo = get_fast_modinfo($course);
         $sectioninfo = $modinfo->get_section_info($displaysection);
         if ($sectioninfo && $format->is_section_visible($sectioninfo)) {
-            set_user_preference('format_mimo_lastsection_' . $course->id, $displaysection);
+            set_user_preference('format_mimo_lastsection_' . $course->id, $sectioninfo->id);
         }
     } else {
         // No section param — check if user explicitly requested the overview.

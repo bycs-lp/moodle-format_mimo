@@ -86,14 +86,28 @@ class observer {
     }
 
     /**
-     * Handle course_section_deleted event to clean up section images.
+     * Handle course_section_deleted event to clean up section images and
+     * remembered-section user preferences pointing at the deleted section.
      *
      * @param \core\event\course_section_deleted $event The event object
      */
     public static function course_section_deleted(\core\event\course_section_deleted $event) {
+        global $DB;
+
         $courseid = $event->courseid;
         $sectionid = $event->objectid;
         \core\di::get(section_image_manager::class)->delete_image($courseid, $sectionid);
+
+        // The preference stores the section ID, so deletion can target it exactly.
+        // The value column is TEXT, so cross-DB comparison needs sql_compare_text().
+        $DB->delete_records_select(
+            'user_preferences',
+            'name = :prefname AND ' . $DB->sql_compare_text('value') . ' = :sectionid',
+            [
+                'prefname' => 'format_mimo_lastsection_' . $courseid,
+                'sectionid' => (string) $sectionid,
+            ]
+        );
     }
 
     /**

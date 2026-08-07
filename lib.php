@@ -391,9 +391,10 @@ class format_mimo extends core_courseformat\base {
     /**
      * Get the remembered section number for the current user, if valid.
      *
-     * Reads the user preference, validates the section exists and is visible,
-     * and returns the section number. Returns null if no preference is stored
-     * or the stored section is no longer valid.
+     * The preference stores the section ID (stable across reordering and
+     * deletion, unlike section numbers). Validates the section still exists
+     * and is visible, then returns its current section number. Returns null
+     * if no preference is stored or the stored section is no longer valid.
      *
      * @return int|null The remembered section number, or null.
      */
@@ -403,13 +404,10 @@ class format_mimo extends core_courseformat\base {
         if ($pref === null) {
             return null;
         }
-        $sectionnum = (int) $pref;
         $modinfo = get_fast_modinfo($course);
-        $sectioninfos = $modinfo->get_section_info_all();
-        foreach ($sectioninfos as $sectioninfo) {
-            if ($sectioninfo->section === $sectionnum && $this->is_section_visible($sectioninfo)) {
-                return $sectionnum;
-            }
+        $sectioninfo = $modinfo->get_section_info_by_id((int) $pref);
+        if ($sectioninfo && $this->is_section_visible($sectioninfo)) {
+            return $sectioninfo->sectionnum;
         }
         // Stored section no longer exists or is not visible — clear stale preference.
         unset_user_preference('format_mimo_lastsection_' . $course->id);
@@ -520,10 +518,10 @@ class format_mimo extends core_courseformat\base {
                 && $PAGE->cm
                 && (!defined('AJAX_SCRIPT') || AJAX_SCRIPT == '0')
         ) {
-            $sectionnum = $PAGE->cm->sectionnum;
-            if ($sectionnum > 0) {
+            if ($PAGE->cm->sectionnum > 0) {
                 $course = $this->get_course();
-                set_user_preference('format_mimo_lastsection_' . $course->id, $sectionnum);
+                // Store the section ID (stable across reordering), not the number.
+                set_user_preference('format_mimo_lastsection_' . $course->id, $PAGE->cm->section);
             }
         }
 

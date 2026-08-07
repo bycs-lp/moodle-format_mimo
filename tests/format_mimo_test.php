@@ -259,12 +259,13 @@ final class format_mimo_test extends \advanced_testcase {
         // No preference → null.
         $this->assertNull($format->get_remembered_section());
 
-        // Valid preference → returned as-is.
-        set_user_preference('format_mimo_lastsection_' . $course->id, 2);
+        // Valid preference (stored as section ID) → resolved to its section number.
+        $section2id = get_fast_modinfo($course)->get_section_info(2)->id;
+        set_user_preference('format_mimo_lastsection_' . $course->id, $section2id);
         $this->assertSame(2, $format->get_remembered_section());
 
         // Stale preference pointing at a non-existent section should be cleared.
-        set_user_preference('format_mimo_lastsection_' . $course->id, 99);
+        set_user_preference('format_mimo_lastsection_' . $course->id, 999999);
         $this->assertNull($format->get_remembered_section());
         $this->assertNull(get_user_preferences('format_mimo_lastsection_' . $course->id));
     }

@@ -391,6 +391,44 @@ final class observer_test extends \advanced_testcase {
     }
 
     /**
+     * Deleting a section should eagerly remove remembered-section preferences
+     * pointing at that section, while preferences for other sections survive.
+     */
+    public function test_course_section_deleted_cleans_lastsection_preference(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'numsections' => 3,
+        ]);
+        $modinfo = get_fast_modinfo($course);
+        $section2id = $modinfo->get_section_info(2)->id;
+        $section3id = $modinfo->get_section_info(3)->id;
+
+        $prefname = 'format_mimo_lastsection_' . $course->id;
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        set_user_preference($prefname, $section2id, $user1);
+        set_user_preference($prefname, $section3id, $user2);
+
+        // Delete section 2 (fires course_section_deleted).
+        $sectioninfo = get_fast_modinfo($course->id)->get_section_info(2);
+        $this->assertTrue(course_delete_section($course->id, $sectioninfo, true));
+        $this->assertFalse($DB->record_exists('course_sections', ['id' => $section2id]));
+
+        // Preference pointing at the deleted section is gone.
+        $this->assertFalse($DB->record_exists('user_preferences', [
+            'name' => $prefname,
+            'userid' => $user1->id,
+        ]));
+        // Preference for a different section survives.
+        $this->assertTrue($DB->record_exists('user_preferences', [
+            'name' => $prefname,
+            'userid' => $user2->id,
+        ]));
+    }
+
+    /**
      * course_deleted must also remove done-flags, course_tags bindings, and orphaned
      * imported tags / imported profiles in addition to cmtag rows.
      *
