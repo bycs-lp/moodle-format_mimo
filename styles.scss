@@ -4,16 +4,16 @@
 // ByDSLesen font family for activity descriptions.
 @font-face {
     font-family: "ByDSLesen";
-    src: url([[font:format_mimo|ByDSLesen-medium.ttf]]) format("truetype");
-    font-weight: 500;
+    src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
+    font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
     font-family: "ByDSLesen";
-    src: url([[font:format_mimo|ByDSLesen-thin.ttf]]) format("truetype");
-    font-weight: 300;
+    src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
+    font-weight: 500;
     font-style: normal;
     font-display: swap;
 }

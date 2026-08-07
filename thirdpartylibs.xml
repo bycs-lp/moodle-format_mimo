@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>fonts/PatrickHand-Regular.ttf</location>
+        <name>Patrick Hand</name>
+        <description>Handwriting font by Patrick Wagesreiter, distributed via Google Fonts. License text: fonts/OFL.txt</description>
+        <version>1.003</version>
+        <license>SIL OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+    <library>
+        <location>fonts/ByDSLesen-Regular.woff2</location>
+        <name>ByDS Lesen</name>
+        <description>Font for Bavarian Schools by Dunja Speckner. License text: fonts/OFL.txt</description>
+        <version>1.000</version>
+        <license>SIL OFL</license>
+        <licenseversion>1.1</licenseversion>
+    </library>
+</libraries>
