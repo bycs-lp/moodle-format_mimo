@@ -79,7 +79,8 @@
   - Request-level cache (`$donecache`, instance property) avoids repeated DB hits — primes entire course on first access.
   - Custom visibility class (`classes/output/courseformat/content/cm/visibility.php`): extends core visibility dropdown, adds "Done" option with `cm_done`/`cm_undone` state actions, always renders (so teachers can toggle from any state).
   - Custom state actions (`classes/courseformat/stateactions.php`): extends `core_courseformat\stateactions` with `cm_done()`, `cm_undone()` actions + overrides `cm_show()`/`cm_hide()`/`cm_stealth()` to clear done flag + overrides `cm_duplicate()` to copy tags to clones.
-  - Client-side mutations (`amd/src/mutations.js`): `MimoMutations` class extends `DefaultMutations` with `cmDone`/`cmUndone`/`cmShow`/`cmHide`/`cmStealth` that force-reload cmitems after action (needed because done↔show doesn't change `cm.visible`). Also registers `mimoAvailability` action handler.
+  - Custom state exporter (`classes/output/courseformat/state/cm.php`): adds `isdone` to the exported cm state (resolved via `get_output_classname('state\\cm')` for both initial `get_state` and `stateupdates`). This makes done changes flow through the reactive state instead of manual DOM reloads.
+  - Client-side mutations (`amd/src/mutations.js`): `MimoMutations` class extends `DefaultMutations` with `cmDone`/`cmUndone` (webservice call + `processUpdates` only — no DOM side effects). Also registers `mimoAvailability` action handler. The cmitem DOM reload happens reactively: `courseeditor_watcher.js` watches `cm.isdone:updated` and reloads the cmitem fragment (covers done↔show transitions where `cm.visible` doesn't change; visibility changes themselves are reloaded by core's `cm.visible:updated` watcher).
   - **Overdue indicator**: Activities with automatic completion that have a passed `completionexpected` date and are not yet complete show an hourglass icon on the card (student view). Done activities show the icon greyed out.
   - **Completion data-attribute invariant**: `cmitem.php` exports the *personal* `iscomplete`/`isoverdue` for ALL users (teachers included — the teacher aggregate badge is additional, gated by `isteacherview`). The card's `data-completed`/`data-overdue` attributes must always reflect personal state because `tag_filter.js` recounts pills and the completion star from them; otherwise the server-rendered star vanishes on filter bar init for `report/progress:view` users.
 - **Bulk edit availability modal** (`classes/output/courseformat/content/bulkedittools.php` + `templates/local/content/cm/availabilitymodal.mustache`)
@@ -295,6 +296,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/completion_defaults_manager.php` – CRUD for mimo completion defaults (compdefs table), comparison with core defaults, application to course modules, **default seeding** (`initialize_default_completion_defaults()` — 4-tier defaults for ~37 activity types).
 - `classes/done_manager.php` – CRUD for "done" flags (cmdone table). Instance class resolved via `\core\di::get()` with injected DB + clock; request-level cache with course-wide priming. Methods: `is_done()`, `set_done()`, `unset_done()`, `get_done_cmids()`, `delete_for_cm()`, `delete_for_course()`.
 - `classes/courseformat/stateactions.php` – custom state actions: `cm_done`/`cm_undone` (mark/unmark done), overrides `cm_show`/`cm_hide`/`cm_stealth` (clear done flag on visibility change), overrides `cm_duplicate` (copy tags to clones).
+- `classes/output/courseformat/state/cm.php` – cm state exporter adding `isdone` so the reactive state carries the done flag.
 - `classes/privacy/` – Privacy API provider.
 - `completion_defaults.php` – admin page for managing per-module-type completion default overrides.
 - `tag_management.php` – admin UI controller for tagsets (accordion) and tags, **promote actions for imported tags/profiles**.
@@ -326,8 +328,8 @@ This plugin demonstrates the hybrid approach:
 - `templates/description_tags_list.mustache` – table view for description tags management page.
 - `styles.scss` / `styles.css` – wall styling + profile-specific CSS + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching.
-- `amd/src/mutations.js` – custom course editor mutations: `MimoMutations` class (cmDone, cmUndone, cmShow, cmHide, cmStealth with forced DOM reload) + `mimoAvailabilityHandler` (custom bulk availability modal with Done option).
-- `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state and dispatches legacy DOM events for completion changes (used by tag_filter).
+- `amd/src/mutations.js` – custom course editor mutations: `MimoMutations` class (cmDone, cmUndone — webservice + processUpdates only) + `mimoAvailabilityHandler` (custom bulk availability modal with Done option).
+- `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state, dispatches legacy DOM events for completion changes (used by tag_filter), and reloads the cmitem fragment on `cm.isdone:updated` (done styling + visibility dropdown are backend rendered).
 - `amd/src/init_courseeditor_watcher.js` – initializer for the courseeditor_watcher component.
 - `amd/src/local/wall_state/wall_state.js` – per-section reactive store for wall UI state (filters, pagination, bulk mode, activity order).
 - `amd/src/local/wall_state/mutations.js` – mutations for the wall state reactive (filter changes, pagination, bulk toggle, reorder).

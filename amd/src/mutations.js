@@ -28,70 +28,10 @@
 import {getCurrentCourseEditor} from 'core_courseformat/courseeditor';
 import DefaultMutations from 'core_courseformat/local/courseeditor/mutations';
 import CourseActions from 'core_courseformat/local/content/actions';
-import Fragment from 'core/fragment';
 import Templates from 'core/templates';
-import Config from 'core/config';
-import Pending from 'core/pending';
 import ModalSaveCancel from 'core/modal_save_cancel';
 import ModalEvents from 'core/modal_events';
 import {getString} from 'core/str';
-
-/**
- * Reload a cmitem from the server and replace the DOM node.
- *
- * This follows the same pattern as core content.js _reloadCm to ensure
- * the full cmitem (including visibility dropdown) is re-rendered correctly.
- *
- * After DOM replacement, syncs the bulk-edit checkbox visibility with the
- * current reactive state. Core's _indexContents will create a full CmItem
- * component on the next state change (the new element lacks data-indexed).
- *
- * @param {number} cmId Course module id
- */
-const reloadCmItem = async(cmId) => {
-    const cmitem = document.querySelector(`li.activity[data-id="${cmId}"]`);
-    if (!cmitem) {
-        return;
-    }
-    const pending = new Pending('format_mimo/mutations:reloadCmItem:' + cmId);
-    const promise = Fragment.loadFragment(
-        'core_courseformat',
-        'cmitem',
-        Config.courseContextId,
-        {
-            id: cmId,
-            courseid: Config.courseId,
-        }
-    );
-    promise.then((html, js) => {
-        if (!document.contains(cmitem)) {
-            pending.resolve();
-            return false;
-        }
-        Templates.replaceNode(cmitem, html, js);
-        // Sync bulk-edit state on the freshly inserted DOM element.
-        // The new node has no reactive component yet (no data-indexed),
-        // so we manually show the checkbox if bulk mode is active.
-        const reactive = getCurrentCourseEditor();
-        const bulk = reactive.get('bulk');
-        if (bulk?.enabled) {
-            const newEl = document.querySelector(`li.activity[data-id="${cmId}"]`);
-            if (newEl) {
-                const bulkSelect = newEl.querySelector('[data-for="cmBulkSelect"]');
-                if (bulkSelect) {
-                    bulkSelect.classList.remove('d-none');
-                }
-                // Allow card-click selection (same as CmItem._refreshBulk).
-                newEl.dataset.action = 'toggleSelectionCm';
-                newEl.dataset.preventDefault = '1';
-            }
-        }
-        pending.resolve();
-        return true;
-    }).catch(() => {
-        pending.resolve();
-    });
-};
 
 class MimoMutations extends DefaultMutations {
 
@@ -111,8 +51,6 @@ class MimoMutations extends DefaultMutations {
         } finally {
             this.cmLock(stateManager, cmIds, false);
         }
-        // Reload each cmitem from the server so the visibility dropdown icon updates.
-        cmIds.forEach(id => reloadCmItem(id));
     };
 
     /**
@@ -131,44 +69,6 @@ class MimoMutations extends DefaultMutations {
         } finally {
             this.cmLock(stateManager, cmIds, false);
         }
-        // Reload each cmitem from the server so the visibility dropdown icon updates.
-        cmIds.forEach(id => reloadCmItem(id));
-    };
-
-    /**
-     * Show course modules — force reload to clear done styling.
-     *
-     * When switching from done→show, cm.visible doesn't change (both are visible)
-     * so core's _reloadCm watcher won't fire. We force a reload after the action.
-     *
-     * @param {StateManager} stateManager the current state manager
-     * @param {array} cmIds the list of cm ids
-     */
-    cmShow = async function(stateManager, cmIds) {
-        await this._cmBasicAction(stateManager, 'cm_show', cmIds);
-        cmIds.forEach(id => reloadCmItem(id));
-    };
-
-    /**
-     * Hide course modules — force reload to clear done styling.
-     *
-     * @param {StateManager} stateManager the current state manager
-     * @param {array} cmIds the list of cm ids
-     */
-    cmHide = async function(stateManager, cmIds) {
-        await this._cmBasicAction(stateManager, 'cm_hide', cmIds);
-        cmIds.forEach(id => reloadCmItem(id));
-    };
-
-    /**
-     * Stealth course modules — force reload to clear done styling.
-     *
-     * @param {StateManager} stateManager the current state manager
-     * @param {array} cmIds the list of cm ids
-     */
-    cmStealth = async function(stateManager, cmIds) {
-        await this._cmBasicAction(stateManager, 'cm_stealth', cmIds);
-        cmIds.forEach(id => reloadCmItem(id));
     };
 }
 

@@ -25,6 +25,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 import {BaseComponent} from 'core/reactive';
+import Fragment from 'core/fragment';
+import Templates from 'core/templates';
+import Config from 'core/config';
+import Pending from 'core/pending';
 
 /** Custom event names dispatched by this component. */
 export const EVENTS = {
@@ -58,6 +62,7 @@ export default class CourseEditorWatcher extends BaseComponent {
         return [
             {watch: 'bulk:updated', handler: this._bulkUpdated},
             {watch: 'cm:updated', handler: this._cmUpdated},
+            {watch: 'cm.isdone:updated', handler: this._cmDoneUpdated},
         ];
     }
 
@@ -126,5 +131,96 @@ export default class CourseEditorWatcher extends BaseComponent {
                 detail: {cmId, completed: isComplete},
             }));
         }
+    }
+
+    /**
+     * Handle done flag changes on a course module.
+     *
+     * The done styling and the visibility dropdown icon are backend rendered,
+     * so the cmitem is reloaded from the server when cm.isdone changes.
+     * Core's content component only reloads on visible/stealth changes, which
+     * don't fire for done↔show transitions.
+     *
+     * @param {object} param0 Event detail
+     * @param {object} param0.element The cm state object
+     * @private
+     */
+    _cmDoneUpdated({element}) {
+        const cmId = Number(element?.id);
+        if (!Number.isFinite(cmId) || cmId <= 0) {
+            return;
+        }
+        this._reloadCmItem(cmId);
+    }
+
+    /**
+     * Reload a cmitem from the server and replace the DOM node.
+     *
+     * This follows the same pattern as core content.js _reloadCm to ensure
+     * the full cmitem (including visibility dropdown) is re-rendered correctly.
+     *
+     * After DOM replacement, syncs the bulk-edit checkbox visibility with the
+     * current reactive state. Core's _indexContents will create a full CmItem
+     * component on the next state change (the new element lacks data-indexed).
+     *
+     * @param {number} cmId Course module id
+     * @private
+     */
+    _reloadCmItem(cmId) {
+        const cmitem = document.querySelector(`li.activity[data-id="${cmId}"]`);
+        if (!cmitem) {
+            return;
+        }
+        const pending = new Pending('format_mimo/courseeditor_watcher:reloadCmItem:' + cmId);
+        const promise = Fragment.loadFragment(
+            'core_courseformat',
+            'cmitem',
+            Config.courseContextId,
+            {
+                id: cmId,
+                courseid: Config.courseId,
+            }
+        );
+        promise.then((html, js) => {
+            // Another state change may have replaced the node meanwhile.
+            if (!document.contains(cmitem)) {
+                pending.resolve();
+                return false;
+            }
+            Templates.replaceNode(cmitem, html, js);
+            this._syncBulkCheckbox(cmId);
+            pending.resolve();
+            return true;
+        }).catch(() => {
+            pending.resolve();
+        });
+    }
+
+    /**
+     * Show the bulk-edit checkbox on a freshly inserted cmitem element.
+     *
+     * The new node has no reactive component yet (no data-indexed), so the
+     * checkbox is shown manually if bulk mode is active (same as
+     * CmItem._refreshBulk).
+     *
+     * @param {number} cmId Course module id
+     * @private
+     */
+    _syncBulkCheckbox(cmId) {
+        const bulk = this.reactive.get('bulk');
+        if (!bulk?.enabled) {
+            return;
+        }
+        const newEl = document.querySelector(`li.activity[data-id="${cmId}"]`);
+        if (!newEl) {
+            return;
+        }
+        const bulkSelect = newEl.querySelector('[data-for="cmBulkSelect"]');
+        if (bulkSelect) {
+            bulkSelect.classList.remove('d-none');
+        }
+        // Allow card-click selection (same as CmItem._refreshBulk).
+        newEl.dataset.action = 'toggleSelectionCm';
+        newEl.dataset.preventDefault = '1';
     }
 }
