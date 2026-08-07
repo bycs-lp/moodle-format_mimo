@@ -179,35 +179,33 @@ $activity-icon-colors: (
 body:not(.bulkenabled) .mimo-activities {
     // Hide activities beyond the first page by default (prevents flash on page load).
     // JavaScript will manage visibility based on screen size.
-    
+    // `:nth-child(... of .col-12)` counts only cards, ignoring non-card siblings
+    // such as the edge dropzones.
+
     // XL/LG: Hide beyond 8 (4 columns × 2 rows).
     @media (min-width: 992px) {
-        .col-12:nth-child(n+9),
-        li.col-12:nth-child(n+9) {
+        li:nth-child(n+9 of .col-12) {
             display: none;
         }
     }
-    
+
     // MD: Hide beyond 6 (3 columns × 2 rows).
     @media (min-width: 768px) and (max-width: 991px) {
-        .col-12:nth-child(n+7),
-        li.col-12:nth-child(n+7) {
+        li:nth-child(n+7 of .col-12) {
             display: none;
         }
     }
-    
+
     // SM: Hide beyond 4 (2 columns × 2 rows).
     @media (min-width: 576px) and (max-width: 767px) {
-        .col-12:nth-child(n+5),
-        li.col-12:nth-child(n+5) {
+        li:nth-child(n+5 of .col-12) {
             display: none;
         }
     }
-    
+
     // XS: Hide beyond 3 (1 column × 3 rows).
     @media (max-width: 575px) {
-        .col-12:nth-child(n+4),
-        li.col-12:nth-child(n+4) {
+        li:nth-child(n+4 of .col-12) {
             display: none;
         }
     }
