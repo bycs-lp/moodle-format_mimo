@@ -59,6 +59,10 @@ class content extends content_base {
 
         $data = parent::export_for_template($output);
 
+        // Since Moodle 5.3 core adds a collapse-all sections button; mimo's wall sections
+        // are not collapsible, so suppress it.
+        unset($data->collapsemenu);
+
         // Get the course format options.
         $activityprofile = $course->activityprofile ?? 'primaryschool';
 
