@@ -61,7 +61,7 @@ const collectNavItems = () => {
  * Initialize the compact navigation dropdown.
  *
  * Reads items from the hidden secondary nav bar, populates the header dropdown,
- * and removes the dropdown entirely if no items are found.
+ * and reveals it (the wrapper is rendered hidden) only if items are found.
  */
 export const init = () => {
     const dropdown = document.querySelector('[data-region="mimo-secondarynav-dropdown"]');
@@ -69,13 +69,15 @@ export const init = () => {
         return;
     }
 
+    const wrapper = dropdown.closest('.mimo-compact-nav');
     const items = collectNavItems();
 
     if (items.length === 0) {
-        // No nav items — remove the entire dropdown wrapper.
-        const wrapper = dropdown.closest('.mimo-compact-nav');
-        if (wrapper) {
-            wrapper.remove();
+        // No nav items — remove the (still hidden) dropdown including the
+        // header-action container Boost wraps it in, to avoid an empty gap.
+        const container = wrapper ? (wrapper.closest('.header-action') ?? wrapper) : null;
+        if (container) {
+            container.remove();
         }
         return;
     }
@@ -96,4 +98,8 @@ export const init = () => {
     });
 
     dropdown.appendChild(fragment);
+
+    if (wrapper) {
+        wrapper.removeAttribute('hidden');
+    }
 };

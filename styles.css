@@ -2144,7 +2144,6 @@ body.single-section-page.format-mimo-multisection-view #page-header {
   text-decoration: none;
   transition: background 0.2s ease, box-shadow 0.15s ease;
   flex-shrink: 0;
-  margin-right: 0.5rem;
 }
 .mimo-overview-btn:hover, .mimo-overview-btn:focus {
   background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
@@ -2176,7 +2175,6 @@ body.single-section-page.format-mimo-multisection-view #page-header {
   text-decoration: none;
   transition: background 0.2s ease, box-shadow 0.15s ease;
   flex-shrink: 0;
-  margin-right: 0.25rem;
 }
 .mimo-back-btn:hover, .mimo-back-btn:focus {
   background: color-mix(in srgb, var(--primary, #0073aa) 80%, #000);
@@ -2199,6 +2197,10 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 /* Compact secondary navigation — three-dot dropdown for students. */
 .format-mimo-compact-secondarynav .secondary-navigation {
   display: none !important;
+}
+
+.header-action:has(> .mimo-compact-nav[hidden]) {
+  display: none;
 }
 
 .mimo-compact-nav-btn {

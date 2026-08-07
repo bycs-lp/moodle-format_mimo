@@ -96,8 +96,16 @@ class page_setup {
         $page->add_body_class('format-mimo-compact-secondarynav');
         $menulabel = get_string('compactnav_menu', 'format_mimo');
         $dropdownid = 'mimo-compact-nav-' . $courseid;
+        // On activity pages students often have no secondary nav items, so start
+        // hidden and let compact_nav.js reveal the button once items are found.
+        // Course pages always have items, so render visible to avoid a pop-in.
+        // Note: $page->cm is still null here (set_cm() assigns it after
+        // set_course()), so detect activity pages via the script path.
+        global $SCRIPT;
+        $isactivitypage = $page->cm !== null || str_starts_with((string)$SCRIPT, '/mod/');
+        $hidden = $isactivitypage ? ' hidden' : '';
         $page->add_header_action(
-            '<div class="dropdown mimo-compact-nav">' .
+            '<div class="dropdown mimo-compact-nav"' . $hidden . '>' .
             '<button class="mimo-compact-nav-btn" type="button"' .
             ' id="' . $dropdownid . '" data-bs-toggle="dropdown"' .
             ' aria-expanded="false" title="' . s($menulabel) . '">' .

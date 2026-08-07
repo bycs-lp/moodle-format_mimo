@@ -175,7 +175,7 @@
 6. **Compact secondary navigation** (students only)
    - Users without `moodle/course:update` capability see a compact three-dot (kebab) dropdown in the header actions area instead of the full secondary navigation bar.
    - Body class `format-mimo-compact-secondarynav` hides `.secondary-navigation` via CSS. The nav is still rendered in the DOM so items are available.
-   - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mimo-secondarynav-dropdown"]`). If no items are found, the dropdown button is removed entirely.
+   - `compact_nav.js` reads visible nav links and overflow "More" items from the hidden bar and populates a Bootstrap dropdown (`[data-region="mimo-secondarynav-dropdown"]`). On activity pages (`$page->cm` set) the wrapper is rendered `hidden` and only revealed once items are found (students usually have none there — avoids a visible flicker); on course pages it renders visible immediately. With no items the wrapper is removed.
    - Teachers/editors with `moodle/course:update` always see the standard secondary navigation bar.
 
 ## Common Extension Tasks

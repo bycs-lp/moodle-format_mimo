@@ -2719,7 +2719,6 @@ body.single-section-page.format-mimo-multisection-view {
     text-decoration: none;
     transition: background 0.2s ease, box-shadow 0.15s ease;
     flex-shrink: 0;
-    margin-right: 0.5rem;
 
     &:hover,
     &:focus {
@@ -2754,7 +2753,6 @@ body.single-section-page.format-mimo-multisection-view {
     text-decoration: none;
     transition: background 0.2s ease, box-shadow 0.15s ease;
     flex-shrink: 0;
-    margin-right: 0.25rem;
 
     &:hover,
     &:focus {
@@ -2780,6 +2778,12 @@ body.single-section-page.format-mimo-multisection-view {
 /* Compact secondary navigation — three-dot dropdown for students. */
 .format-mimo-compact-secondarynav .secondary-navigation {
     display: none !important;
+}
+
+// Collapse the header-action wrapper while the dropdown is still hidden
+// (before compact_nav.js reveals or removes it) to avoid an empty ms-2 gap.
+.header-action:has(> .mimo-compact-nav[hidden]) {
+    display: none;
 }
 
 .mimo-compact-nav-btn {
