@@ -55,7 +55,7 @@ php admin/tool/behat/cli/run.php --tags=@format_mimo
 
 ## Requirements
 
-- Moodle 5.1+
+- Moodle 5.2+
 - PHP 8.2+
 
 ## License

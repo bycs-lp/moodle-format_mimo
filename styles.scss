@@ -20,7 +20,7 @@
 }
 
 // Icon-only visibility control - global override
-.visibility-icon-control {
+.format-mimo .visibility-icon-control {
     position: relative;
 
     .dropdown-toggle {
@@ -620,11 +620,11 @@ body:not(.bulkenabled) .mimo-activities {
 }
 
 // Dragging states.
-.col-12.dragging {
+.mimo-activities .col-12.dragging {
     opacity: 0.5;
 }
 
-.col-12.drag-over {
+.mimo-activities .col-12.drag-over {
     .mimo-card {
         border: 2px dashed #007bff;
         background: rgba(0, 123, 255, 0.05);
@@ -1259,7 +1259,7 @@ body.format-mimo-theme-colorful {
 }
 
 // Bulk selection styles for mimo cards.
-[data-for="cmitem"] {
+.format-mimo [data-for="cmitem"] {
     // When bulk mode is enabled, make the entire wrapper clickable.
     &[data-action="toggleSelectionCm"] {
         cursor: pointer;
@@ -1302,7 +1302,7 @@ body.format-mimo-theme-colorful {
 }
 
 // Ensure bulk actions don't interfere with dragging.
-.editing {
+body.format-mimo.editing {
     [data-for="cmitem"] {
         &.dragging {
             .bulkselect {
@@ -1477,7 +1477,7 @@ body.format-mimo {
 }
 
 /* Header actions: arrange side by side instead of stacked. */
-.header-actions-container {
+.format-mimo .header-actions-container {
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
@@ -1611,7 +1611,7 @@ body.format-mimo-distraction-free {
 }
 
 // Active tag image overlay - shown above pills when tag filter is active.
-.completion-status-tag-image {
+.mimo-completion-status .completion-status-tag-image {
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -1635,7 +1635,7 @@ body.format-mimo-distraction-free {
 }
 
 // Completion filter pills container.
-.completion-status-pills {
+.mimo-completion-status .completion-status-pills {
     display: flex;
     grid-column: 2;
     align-items: center;
@@ -1649,7 +1649,7 @@ body.format-mimo-distraction-free {
 }
 
 // Individual completion pill button.
-.completion-pill {
+.mimo-completion-status .completion-pill {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
@@ -1702,7 +1702,7 @@ body.format-mimo-distraction-free {
 }
 
 // Pill icon container - circular darker inset.
-.completion-pill-icon {
+.mimo-completion-status .completion-pill-icon {
     $icon-size: 26px;
     
     width: $icon-size;
@@ -1717,13 +1717,13 @@ body.format-mimo-distraction-free {
 }
 
 // Pill count number.
-.completion-pill-count {
+.mimo-completion-status .completion-pill-count {
     text-align: center;
     line-height: 1;
 }
 
 // No activities message.
-.completion-status-empty {
+.mimo-completion-status .completion-status-empty {
     padding: 0.75rem 1rem;
     background: rgba(220, 53, 69, 0.1);
     border-radius: 8px;
@@ -1797,7 +1797,7 @@ body.format-mimo-distraction-free {
 }
 
 // Completion star container (hidden until JS/mustache toggles `is-visible`).
-.completion-stars {
+.mimo-completion-status .completion-stars {
     display: none; // Hidden by default; shown via `is-visible` when all complete.
     position: relative;
     width: 32px;
@@ -2872,7 +2872,7 @@ body.single-section-page.format-mimo-multisection-view {
 }
 
 /* Tag management admin page. */
-.tag-management tr[data-tag-id] {
+.path-course-format-mimo .tag-management tr[data-tag-id] {
     &:hover [data-action="edit-tag"] {
         background-color: rgba(0, 0, 0, 0.06);
         border-radius: 0.25rem;

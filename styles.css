@@ -12,10 +12,10 @@
   padding: 2px;
 }
 
-.visibility-icon-control {
+.format-mimo .visibility-icon-control {
   position: relative;
 }
-.visibility-icon-control .dropdown-toggle {
+.format-mimo .visibility-icon-control .dropdown-toggle {
   background: transparent !important;
   border: none !important;
   padding: 0.25rem !important;
@@ -36,11 +36,11 @@
   white-space: nowrap;
   overflow: hidden;
 }
-.visibility-icon-control .dropdown-toggle:hover {
+.format-mimo .visibility-icon-control .dropdown-toggle:hover {
   background: rgba(0, 0, 0, 0.1) !important;
   color: #495057;
 }
-.visibility-icon-control .dropdown-toggle .icon {
+.format-mimo .visibility-icon-control .dropdown-toggle .icon {
   font-size: 1.25rem !important;
   line-height: 1 !important;
   text-indent: 0 !important;
@@ -49,11 +49,11 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
-.visibility-icon-control .dropdown-toggle::after {
+.format-mimo .visibility-icon-control .dropdown-toggle::after {
   content: none !important;
   display: none !important;
 }
-.visibility-icon-control .dropdown-menu {
+.format-mimo .visibility-icon-control .dropdown-menu {
   position: absolute !important;
   right: 0;
   top: 100%;
@@ -447,11 +447,11 @@
   z-index: 1100;
 }
 
-.col-12.dragging {
+.mimo-activities .col-12.dragging {
   opacity: 0.5;
 }
 
-.col-12.drag-over .mimo-card {
+.mimo-activities .col-12.drag-over .mimo-card {
   border: 2px dashed #007bff;
   background: rgba(0, 123, 255, 0.05);
 }
@@ -967,11 +967,11 @@ body.format-mimo-theme-colorful .mimo-filter-bar .filter-tag.active {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-[data-for=cmitem][data-action=toggleSelectionCm] {
+.format-mimo [data-for=cmitem][data-action=toggleSelectionCm] {
   cursor: pointer;
   user-select: none;
 }
-[data-for=cmitem].selected .mimo-card {
+.format-mimo [data-for=cmitem].selected .mimo-card {
   outline: 3px solid #0d6efd;
   outline-offset: 2px;
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
@@ -995,7 +995,7 @@ body.format-mimo-theme-colorful .mimo-filter-bar .filter-tag.active {
   outline-offset: 2px;
 }
 
-.editing [data-for=cmitem].dragging .bulkselect {
+body.format-mimo.editing [data-for=cmitem].dragging .bulkselect {
   display: none !important;
 }
 
@@ -1149,7 +1149,7 @@ body.format-mimo .course-content .divider .divider-content:hover {
 }
 
 /* Header actions: arrange side by side instead of stacked. */
-.header-actions-container {
+.format-mimo .header-actions-container {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -1259,7 +1259,7 @@ body.format-mimo-distraction-free #topofscroll {
   padding: 1rem 0;
 }
 
-.completion-status-tag-image {
+.mimo-completion-status .completion-status-tag-image {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -1271,16 +1271,16 @@ body.format-mimo-distraction-free #topofscroll {
   justify-content: center;
   border: 3px solid #fff;
 }
-.completion-status-tag-image[hidden] {
+.mimo-completion-status .completion-status-tag-image[hidden] {
   display: none;
 }
-.completion-status-tag-image .completion-status-tag-img {
+.mimo-completion-status .completion-status-tag-image .completion-status-tag-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.completion-status-pills {
+.mimo-completion-status .completion-status-pills {
   display: flex;
   grid-column: 2;
   align-items: center;
@@ -1293,7 +1293,7 @@ body.format-mimo-distraction-free #topofscroll {
   padding: 0.5rem 1rem;
 }
 
-.completion-pill {
+.mimo-completion-status .completion-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -1306,36 +1306,36 @@ body.format-mimo-distraction-free #topofscroll {
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
-.completion-pill:focus-visible {
+.mimo-completion-status .completion-pill:focus-visible {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
-.completion-pill.is-active {
+.mimo-completion-status .completion-pill.is-active {
   transform: scale(1.08);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
 }
-.completion-pill--complete {
+.mimo-completion-status .completion-pill--complete {
   background: color-mix(in srgb, var(--mimo-completion-complete) 65%, white);
   color: #fff;
 }
-.completion-pill--complete .completion-pill-icon {
+.mimo-completion-status .completion-pill--complete .completion-pill-icon {
   background: var(--mimo-completion-complete);
 }
-.completion-pill--complete.is-active {
+.mimo-completion-status .completion-pill--complete.is-active {
   background: color-mix(in srgb, var(--mimo-completion-complete) 80%, white);
 }
-.completion-pill--incomplete {
+.mimo-completion-status .completion-pill--incomplete {
   background: color-mix(in srgb, var(--mimo-completion-incomplete) 55%, white);
   color: #fff;
 }
-.completion-pill--incomplete .completion-pill-icon {
+.mimo-completion-status .completion-pill--incomplete .completion-pill-icon {
   background: var(--mimo-completion-incomplete);
 }
-.completion-pill--incomplete.is-active {
+.mimo-completion-status .completion-pill--incomplete.is-active {
   background: color-mix(in srgb, var(--mimo-completion-incomplete) 70%, white);
 }
 
-.completion-pill-icon {
+.mimo-completion-status .completion-pill-icon {
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -1347,12 +1347,12 @@ body.format-mimo-distraction-free #topofscroll {
   flex-shrink: 0;
 }
 
-.completion-pill-count {
+.mimo-completion-status .completion-pill-count {
   text-align: center;
   line-height: 1;
 }
 
-.completion-status-empty {
+.mimo-completion-status .completion-status-empty {
   padding: 0.75rem 1rem;
   background: rgba(220, 53, 69, 0.1);
   border-radius: 8px;
@@ -1360,7 +1360,7 @@ body.format-mimo-distraction-free #topofscroll {
   font-size: 0.9rem;
   text-align: center;
 }
-.completion-status-empty[hidden] {
+.mimo-completion-status .completion-status-empty[hidden] {
   display: none;
 }
 
@@ -1414,19 +1414,19 @@ body.format-mimo-distraction-free #topofscroll {
     transform: scale(0.6) translate(3px, 2px);
   }
 }
-.completion-stars {
+.mimo-completion-status .completion-stars {
   display: none;
   position: relative;
   width: 32px;
   height: 32px;
   margin-left: 0.5rem;
 }
-.completion-stars.is-visible {
+.mimo-completion-status .completion-stars.is-visible {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.completion-stars .star-icon {
+.mimo-completion-status .completion-stars .star-icon {
   font-size: 1.5rem;
   color: #ffd700;
   animation: mimo-sparkle-star 2s ease-in-out infinite;
@@ -1434,7 +1434,7 @@ body.format-mimo-distraction-free #topofscroll {
   position: relative;
   text-shadow: 0 0 5px rgba(255, 215, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5);
 }
-.completion-stars .star-rays {
+.mimo-completion-status .completion-stars .star-rays {
   position: absolute;
   top: 0;
   left: 0;
@@ -1442,7 +1442,7 @@ body.format-mimo-distraction-free #topofscroll {
   height: 100%;
   z-index: 1;
 }
-.completion-stars .star-rays::before, .completion-stars .star-rays::after {
+.mimo-completion-status .completion-stars .star-rays::before, .mimo-completion-status .completion-stars .star-rays::after {
   content: "";
   position: absolute;
   top: 0;
@@ -1453,11 +1453,11 @@ body.format-mimo-distraction-free #topofscroll {
   border-radius: 50%;
   animation: mimo-sparkle-rays 1.5s ease-in-out infinite;
 }
-.completion-stars .star-rays::after {
+.mimo-completion-status .completion-stars .star-rays::after {
   animation-delay: 0.75s;
   transform: scale(1.2);
 }
-.completion-stars .star-sparkles {
+.mimo-completion-status .completion-stars .star-sparkles {
   position: absolute;
   top: 0;
   left: 0;
@@ -1466,43 +1466,43 @@ body.format-mimo-distraction-free #topofscroll {
   z-index: 3;
   pointer-events: none;
 }
-.completion-stars .star-sparkles::before, .completion-stars .star-sparkles::after {
+.mimo-completion-status .completion-stars .star-sparkles::before, .mimo-completion-status .completion-stars .star-sparkles::after {
   content: "✦";
   position: absolute;
   font-size: 0.5rem;
   color: #fff;
   text-shadow: 0 0 4px rgba(255, 215, 0, 0.9);
 }
-.completion-stars .star-sparkles::before {
+.mimo-completion-status .completion-stars .star-sparkles::before {
   top: 0;
   right: 2px;
   animation: mimo-twinkle 2s ease-in-out infinite;
 }
-.completion-stars .star-sparkles::after {
+.mimo-completion-status .completion-stars .star-sparkles::after {
   top: 2px;
   left: 0;
   animation: mimo-twinkle 2s ease-in-out infinite 0.5s;
 }
-.completion-stars .star-sparkle-dot {
+.mimo-completion-status .completion-stars .star-sparkle-dot {
   position: absolute;
   font-size: 0.45rem;
   color: #fffacd;
   text-shadow: 0 0 3px rgba(255, 215, 0, 0.8);
 }
-.completion-stars .star-sparkle-dot:nth-of-type(1) {
+.mimo-completion-status .completion-stars .star-sparkle-dot:nth-of-type(1) {
   top: 0;
   left: 4px;
   animation: mimo-twinkle 2.2s ease-in-out infinite 0.3s;
 }
-.completion-stars .star-sparkle-dot:nth-of-type(2) {
+.mimo-completion-status .completion-stars .star-sparkle-dot:nth-of-type(2) {
   top: 4px;
   right: 0;
   animation: mimo-twinkle 1.8s ease-in-out infinite 0.8s;
 }
-.completion-stars.is-visible {
+.mimo-completion-status .completion-stars.is-visible {
   cursor: pointer;
 }
-.completion-stars.is-bursting .star-icon {
+.mimo-completion-status .completion-stars.is-bursting .star-icon {
   animation: mimo-star-punch 0.5s ease-out;
 }
 
@@ -2272,7 +2272,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 }
 
 /* Tag management admin page. */
-.tag-management tr[data-tag-id]:hover [data-action=edit-tag] {
+.path-course-format-mimo .tag-management tr[data-tag-id]:hover [data-action=edit-tag] {
   background-color: rgba(0, 0, 0, 0.06);
   border-radius: 0.25rem;
 }
