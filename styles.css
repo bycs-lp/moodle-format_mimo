@@ -1,19 +1,5 @@
 @charset "UTF-8";
 /* stylelint-disable */
-@font-face {
-  font-family: "ByDSLesen";
-  src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "ByDSLesen";
-  src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
 :root {
   --mimo-completion-complete: #5fc76d;
   --mimo-completion-incomplete: #cbbd93;
@@ -304,7 +290,7 @@
   container-type: inline-size;
 }
 .card.mimo-card .mimo-card-content .mimo-card-body .mimo-card-description {
-  font-family: "ByDSLesen", system-ui, sans-serif;
+  font-family: "ByDS Lesen", var(--bs-body-font-family, system-ui), sans-serif;
   font-size: clamp(1rem, 10cqw, 1.8rem);
   font-weight: 500;
   color: #666;

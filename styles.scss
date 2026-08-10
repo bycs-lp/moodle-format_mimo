@@ -1,22 +1,8 @@
 // Base styles for mimo card layout.
 /* stylelint-disable */
 
-// ByDSLesen font family for activity descriptions.
-@font-face {
-    font-family: "ByDSLesen";
-    src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "ByDSLesen";
-    src: url([[font:format_mimo|ByDSLesen-Regular.woff2]]) format("woff2");
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
+// "ByDS Lesen" is provided by theme_mebis via @font-face; on other themes the
+// stack falls back to the platform's body font.
 
 // Completion status colors - shared across badges and pills.
 :root {
@@ -420,7 +406,7 @@ body:not(.bulkenabled) .mimo-activities {
             container-type: inline-size;
 
             .mimo-card-description {
-                font-family: "ByDSLesen", system-ui, sans-serif;
+                font-family: "ByDS Lesen", var(--bs-body-font-family, system-ui), sans-serif;
                 font-size: clamp(1rem, 10cqw, 1.8rem);
                 font-weight: 500;
                 color: #666;

@@ -8,12 +8,5 @@
         <license>SIL OFL</license>
         <licenseversion>1.1</licenseversion>
     </library>
-    <library>
-        <location>fonts/ByDSLesen-Regular.woff2</location>
-        <name>ByDS Lesen</name>
-        <description>Font for Bavarian Schools by Dunja Speckner. License text: fonts/OFL.txt</description>
-        <version>1.000</version>
-        <license>SIL OFL</license>
-        <licenseversion>1.1</licenseversion>
-    </library>
+
 </libraries>
