@@ -111,7 +111,7 @@
                 <span class="sr-only">{{#str}}filterby, format_mimo{{/str}} {{name}}</span>
                 <span class="mimo-filterbar-symbol">
                     {{#imageurl}}
-                    <img src="{{imageurl}}" alt="{{name}}">
+                    <img src="{{imageurl}}" alt="">
                     {{/imageurl}}
                     <span class="mimo-filterbar-label">{{name}}</span>
                 </span>
@@ -184,9 +184,9 @@
                     type="button"
                     class="completion-pill completion-pill--complete"
                     data-action="completion-filter"
-                    data-completed="true"
+                    data-filter-value="true"
                     aria-pressed="false"
-                    aria-label="{{#str}}showcompletedactivities, format_mimo{{/str}}"
+                    aria-label="{{#str}}showcompletedactivities, format_mimo, {{completedcount}}{{/str}}"
                 >
                     <span class="completion-pill-icon" aria-hidden="true">
                         <i class="fa fa-check"></i>
@@ -197,9 +197,9 @@
                     type="button"
                     class="completion-pill completion-pill--incomplete"
                     data-action="completion-filter"
-                    data-completed="false"
+                    data-filter-value="false"
                     aria-pressed="false"
-                    aria-label="{{#str}}showincompleteactivities, format_mimo{{/str}}"
+                    aria-label="{{#str}}showincompleteactivities, format_mimo, {{incompletecount}}{{/str}}"
                 >
                     <span class="completion-pill-icon" aria-hidden="true">
                         <i class="fa fa-hourglass"></i>

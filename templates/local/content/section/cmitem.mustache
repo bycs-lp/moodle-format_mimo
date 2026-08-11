@@ -98,7 +98,7 @@
     {{! Tag Image at top }}
     <div class="mimo-card-image{{#imgplacement}} {{imgplacement}}{{/imgplacement}}{{#imgsize}} imgsize-{{imgsize}}{{/imgsize}}">
         {{#tagimage}}
-        <img src="{{tagimage}}" alt="{{tagname}}" class="w-100">
+        <img src="{{tagimage}}" alt="{{#str}}tagcategory, format_mimo, {{tagname}}{{/str}}" class="w-100">
         {{/tagimage}}
         {{^tagimage}}
         <div class="mimo-card-placeholder"></div>
@@ -121,19 +121,19 @@
         {{/isteacherview}}
         {{^isteacherview}}
         {{#iscomplete}}
-        <span class="badge-complete" title="{{#str}}completed, format_mimo{{/str}}">
-            <i class="fa fa-check"></i>
+        <span class="badge-complete" role="img" aria-label="{{#str}}completed, format_mimo{{/str}}" title="{{#str}}completed, format_mimo{{/str}}">
+            <i class="fa fa-check" aria-hidden="true"></i>
         </span>
         {{/iscomplete}}
         {{^iscomplete}}
         {{#isoverdue}}
-        <span class="badge-overdue" title="{{#str}}overdue, format_mimo{{/str}}">
-            <i class="fa fa-times"></i>
+        <span class="badge-overdue" role="img" aria-label="{{#str}}overdue, format_mimo{{/str}}" title="{{#str}}overdue, format_mimo{{/str}}">
+            <i class="fa fa-times" aria-hidden="true"></i>
         </span>
         {{/isoverdue}}
         {{^isoverdue}}
-        <span class="badge-incomplete" title="{{#str}}notcompleted, format_mimo{{/str}}">
-            <i class="fa fa-hourglass-half"></i>
+        <span class="badge-incomplete" role="img" aria-label="{{#str}}notcompleted, format_mimo{{/str}}" title="{{#str}}notcompleted, format_mimo{{/str}}">
+            <i class="fa fa-hourglass-half" aria-hidden="true"></i>
         </span>
         {{/isoverdue}}
         {{/iscomplete}}

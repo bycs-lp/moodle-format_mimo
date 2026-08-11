@@ -168,7 +168,7 @@
                 {{#hastracking}}
                 <div class="mimo-overview-card__footer" style="position: relative; z-index: 2;">
                     <a href="{{reporturl}}" class="mimo-overview-card__progress mimo-overview-card__progress--teacher{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}" aria-label="{{#str}}teacheroverviewprogress, format_mimo, {{completionpercent}}{{/str}}" title="{{#str}}teacheroverviewprogress, format_mimo, {{completionpercent}}{{/str}}">
-                        <span class="mimo-overview-card__progress-bar">
+                        <span class="mimo-overview-card__progress-bar" role="meter" aria-label="{{#str}}overviewprogresslabel, format_mimo{{/str}}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{completionpercent}}" aria-valuetext="{{#str}}teacheroverviewprogress, format_mimo, {{completionpercent}}{{/str}}">
                             <span class="mimo-overview-card__progress-fill" style="width: {{completionpercent}}%"></span>
                         </span>
                         <span class="mimo-overview-card__progress-text">{{completionpercent}}%{{#allcomplete}} <i class="fa fa-star mimo-overview-card__complete-star" aria-hidden="true"></i>{{/allcomplete}}</span>
@@ -215,7 +215,7 @@
                 {{#hastracking}}
                 <div class="mimo-overview-card__footer">
                     <span class="mimo-overview-card__progress{{#allcomplete}} mimo-overview-card__progress--complete{{/allcomplete}}">
-                        <span class="mimo-overview-card__progress-bar">
+                        <span class="mimo-overview-card__progress-bar" role="meter" aria-label="{{#str}}overviewprogresslabel, format_mimo{{/str}}" aria-valuemin="0" aria-valuemax="{{totaltracked}}" aria-valuenow="{{completedcount}}" aria-valuetext="{{#str}}overviewcompletionprogress, format_mimo, { "completed": "{{completedcount}}", "total": "{{totaltracked}}" }{{/str}}">
                             <span class="mimo-overview-card__progress-fill" style="width: {{#totaltracked}}calc({{completedcount}} / {{totaltracked}} * 100%){{/totaltracked}}"></span>
                         </span>
                         <span class="mimo-overview-card__progress-text">{{completedcount}} / {{totaltracked}}{{#allcomplete}} <i class="fa fa-star mimo-overview-card__complete-star" aria-hidden="true"></i>{{/allcomplete}}</span>

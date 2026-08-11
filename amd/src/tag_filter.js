@@ -366,7 +366,8 @@ const updateButtons = (bar, activeButton) => {
 const updateCompletionPills = (statusRegion, activeCompleted) => {
     const pills = statusRegion.querySelectorAll('[data-action="completion-filter"]');
     pills.forEach((pill) => {
-        const isActive = pill.dataset.completed === activeCompleted;
+        // data-filter-value is the pill's identity: which completion value it filters for.
+        const isActive = pill.dataset.filterValue === activeCompleted;
         pill.classList.toggle('is-active', isActive);
         pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
     });
@@ -417,8 +418,64 @@ const updateCompletionCounts = (statusRegion, items) => {
         incompleteEl.textContent = incompleteCount;
     }
 
+    updatePillLabels(statusRegion, completedCount, incompleteCount);
+
     // Update the completion stars display.
     updateCompletionStars(statusRegion, completedCount, totalWithCompletion);
+};
+
+/**
+ * Keep the pill aria-labels in sync with the visible counts so screen
+ * readers announce how many activities each filter would show.
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {number} completedCount - Number of completed activities
+ * @param {number} incompleteCount - Number of incomplete activities
+ * @returns {void}
+ */
+const updatePillLabels = (statusRegion, completedCount, incompleteCount) => {
+    const completePill = statusRegion.querySelector('.completion-pill--complete');
+    const incompletePill = statusRegion.querySelector('.completion-pill--incomplete');
+    if (completePill) {
+        getString('showcompletedactivities', 'format_mimo', completedCount).then((str) => {
+            completePill.setAttribute('aria-label', str);
+            return;
+        }).catch(() => {
+            // Keep the server-rendered label if string loading fails.
+        });
+    }
+    if (incompletePill) {
+        getString('showincompleteactivities', 'format_mimo', incompleteCount).then((str) => {
+            incompletePill.setAttribute('aria-label', str);
+            return;
+        }).catch(() => {
+            // Keep the server-rendered label if string loading fails.
+        });
+    }
+};
+
+/**
+ * Update the completion pills group label to reflect the active tag filter,
+ * e.g. "Filter activities in category 'Write' by status".
+ *
+ * @param {HTMLElement} statusRegion - Completion status region element
+ * @param {string} tagName - Active tag name, or empty string for no tag filter
+ * @returns {void}
+ */
+const updateCompletionGroupLabel = (statusRegion, tagName) => {
+    const group = statusRegion.querySelector('.completion-status-pills');
+    if (!group) {
+        return;
+    }
+    const promise = tagName
+        ? getString('completionfilterfortag', 'format_mimo', tagName)
+        : getString('completionfilter', 'format_mimo');
+    promise.then((str) => {
+        group.setAttribute('aria-label', str);
+        return;
+    }).catch(() => {
+        // Keep the previous label if string loading fails.
+    });
 };
 
 /**
@@ -732,6 +789,7 @@ const initFilterBar = (bar) => {
                 // Update tag image in completion status region.
                 if (statusRegion) {
                     updateActiveTagImage(statusRegion, filterState.activeTagImageUrl);
+                    updateCompletionGroupLabel(statusRegion, button ? button.dataset.tagName || '' : '');
                 }
             } else {
                 filterState.activeTag = '';
@@ -742,6 +800,7 @@ const initFilterBar = (bar) => {
                 // Hide tag image in completion status region.
                 if (statusRegion) {
                     updateActiveTagImage(statusRegion, '');
+                    updateCompletionGroupLabel(statusRegion, '');
                 }
 
                 syncFilterState(wallState, '', filterState.activeCompletion);
@@ -797,7 +856,7 @@ const initFilterBar = (bar) => {
                 const pill = event.target.closest('[data-action="completion-filter"]');
                 if (pill && statusRegion.contains(pill)) {
                     event.preventDefault();
-                    const completed = pill.dataset.completed;
+                    const completed = pill.dataset.filterValue;
                     if (filterState.activeCompletion === completed) {
                         setCompletionFilter('');
                     } else {
@@ -893,7 +952,7 @@ const initCompletionStatusOnly = (statusRegion) => {
             const pill = event.target.closest('[data-action="completion-filter"]');
             if (pill && statusRegion.contains(pill)) {
                 event.preventDefault();
-                const completed = pill.dataset.completed;
+                const completed = pill.dataset.filterValue;
                 if (filterState.activeCompletion === completed) {
                     setCompletionFilter('');
                 } else {
