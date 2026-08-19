@@ -33,12 +33,9 @@ class completion_defaults_manager {
      *
      * Obtain the shared instance via \core\di::get(completion_defaults_manager::class).
      *
-     * @param \moodle_database $db Database instance.
      * @param \core\clock $clock Clock instance.
      */
     public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
         /** @var \core\clock Clock instance. */
         private readonly \core\clock $clock,
     ) {
@@ -51,7 +48,9 @@ class completion_defaults_manager {
      * @return \stdClass|null The default record, or null if no override is set.
      */
     public function get_default(int $moduleid): ?\stdClass {
-        $record = $this->db->get_record('format_mimo_compdefs', ['module' => $moduleid]);
+        global $DB;
+
+        $record = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         return $record ?: null;
     }
 
@@ -61,7 +60,9 @@ class completion_defaults_manager {
      * @return array<int, \stdClass> Keyed by module id.
      */
     public function get_all_defaults(): array {
-        return $this->db->get_records('format_mimo_compdefs', null, '', '*', 0, 0);
+        global $DB;
+
+        return $DB->get_records('format_mimo_compdefs', null, '', '*', 0, 0);
     }
 
     /**
@@ -70,7 +71,9 @@ class completion_defaults_manager {
      * @return array<int, \stdClass> Keyed by module id.
      */
     public function get_all_defaults_by_module(): array {
-        $records = $this->db->get_records('format_mimo_compdefs');
+        global $DB;
+
+        $records = $DB->get_records('format_mimo_compdefs');
         $result = [];
         foreach ($records as $record) {
             $result[$record->module] = $record;
@@ -87,20 +90,22 @@ class completion_defaults_manager {
      *   completionexpected, customrules (JSON string or null).
      */
     public function save_default(int $moduleid, $data): void {
+        global $DB;
+
         $data = (object)$data;
         $now = $this->clock->time();
 
-        $existing = $this->db->get_record('format_mimo_compdefs', ['module' => $moduleid]);
+        $existing = $DB->get_record('format_mimo_compdefs', ['module' => $moduleid]);
         if ($existing) {
             $data->id = $existing->id;
             $data->module = $moduleid;
             $data->timemodified = $now;
-            $this->db->update_record('format_mimo_compdefs', $data);
+            $DB->update_record('format_mimo_compdefs', $data);
         } else {
             $data->module = $moduleid;
             $data->timecreated = $now;
             $data->timemodified = $now;
-            $this->db->insert_record('format_mimo_compdefs', $data);
+            $DB->insert_record('format_mimo_compdefs', $data);
         }
     }
 
@@ -110,7 +115,9 @@ class completion_defaults_manager {
      * @param int $moduleid The modules.id value.
      */
     public function delete_default(int $moduleid): void {
-        $this->db->delete_records('format_mimo_compdefs', ['module' => $moduleid]);
+        global $DB;
+
+        $DB->delete_records('format_mimo_compdefs', ['module' => $moduleid]);
     }
 
 
@@ -197,12 +204,12 @@ class completion_defaults_manager {
      * @return bool True if defaults were created, false if table already had records.
      */
     public function initialize_default_completion_defaults(): bool {
-        global $CFG;
+        global $CFG, $DB;
 
         require_once($CFG->libdir . '/completionlib.php');
 
         // Guard: don't overwrite existing customizations.
-        if ($this->db->record_exists('format_mimo_compdefs', [])) {
+        if ($DB->record_exists('format_mimo_compdefs', [])) {
             return false;
         }
 
@@ -314,7 +321,7 @@ class completion_defaults_manager {
 
         foreach ($defaults as $modname => $config) {
             // Look up the module type id; skip if not installed.
-            $module = $this->db->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
+            $module = $DB->get_record('modules', ['name' => $modname], 'id', IGNORE_MISSING);
             if (!$module) {
                 continue;
             }

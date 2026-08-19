@@ -40,19 +40,6 @@ class completion_helper {
     private array $trackeduserids = [];
 
     /**
-     * Constructor with DI-injected dependencies.
-     *
-     * Obtain the shared instance via \core\di::get(completion_helper::class).
-     *
-     * @param \moodle_database $db Database instance.
-     */
-    public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
-    ) {
-    }
-
-    /**
      * Get the list of user IDs whose completion is tracked in a course.
      *
      * "Tracked" means currently actively enrolled AND holding
@@ -103,7 +90,7 @@ class completion_helper {
      * @return array<int, int> Map of coursemoduleid => completed user count.
      */
     public function get_teacher_completion_counts(int $courseid): array {
-        global $CFG;
+        global $CFG, $DB;
 
         require_once($CFG->libdir . '/completionlib.php');
 
@@ -125,8 +112,8 @@ class completion_helper {
         $counts = [];
         $trackedids = $this->get_tracked_userids($courseid);
         if (!empty($cmids) && !empty($trackedids)) {
-            [$cmsql, $cmparams] = $this->db->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cmid');
-            [$usersql, $userparams] = $this->db->get_in_or_equal($trackedids, SQL_PARAMS_NAMED, 'usr');
+            [$cmsql, $cmparams] = $DB->get_in_or_equal($cmids, SQL_PARAMS_NAMED, 'cmid');
+            [$usersql, $userparams] = $DB->get_in_or_equal($trackedids, SQL_PARAMS_NAMED, 'usr');
 
             $params = array_merge($cmparams, $userparams, [
                 'complete' => COMPLETION_COMPLETE,
@@ -140,7 +127,7 @@ class completion_helper {
                        AND completionstate IN (:complete, :completepass)
                   GROUP BY coursemoduleid";
 
-            $records = $this->db->get_records_sql($sql, $params);
+            $records = $DB->get_records_sql($sql, $params);
             foreach ($records as $rec) {
                 $counts[(int) $rec->coursemoduleid] = (int) $rec->cnt;
             }

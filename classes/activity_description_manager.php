@@ -41,12 +41,9 @@ class activity_description_manager {
      *
      * Obtain the shared instance via \core\di::get(activity_description_manager::class).
      *
-     * @param \moodle_database $db Database instance.
      * @param \core\clock $clock Clock instance.
      */
     public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
         /** @var \core\clock Clock instance. */
         private readonly \core\clock $clock,
     ) {
@@ -58,6 +55,8 @@ class activity_description_manager {
      * @return array Array of stdClass objects with activitytype, description, and tag properties
      */
     public function get_all_descriptions(): array {
+        global $DB;
+
         $cache = \cache::make('format_mimo', 'activity_descriptions');
         $descriptions = $cache->get(self::CACHE_KEY);
 
@@ -70,7 +69,7 @@ class activity_description_manager {
                  LEFT JOIN {format_mimo_desc_tags} dt ON ad.desctagid = dt.id
                   ORDER BY ad.activitytype ASC";
 
-            $descriptions = $this->db->get_records_sql($sql);
+            $descriptions = $DB->get_records_sql($sql);
             $cache->set(self::CACHE_KEY, $descriptions);
         }
 
@@ -127,14 +126,16 @@ class activity_description_manager {
      * @return bool Success status
      */
     public function save_description(string $activitytype, string $description, ?int $desctagid = null): bool {
+        global $DB;
+
         $time = $this->clock->time();
-        $record = $this->db->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
+        $record = $DB->get_record('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($record) {
             $record->description = $description;
             $record->desctagid = $desctagid;
             $record->timemodified = $time;
-            $result = $this->db->update_record('format_mimo_actdesc', $record);
+            $result = $DB->update_record('format_mimo_actdesc', $record);
         } else {
             $record = new \stdClass();
             $record->activitytype = $activitytype;
@@ -142,7 +143,7 @@ class activity_description_manager {
             $record->desctagid = $desctagid;
             $record->timecreated = $time;
             $record->timemodified = $time;
-            $result = $this->db->insert_record('format_mimo_actdesc', $record);
+            $result = $DB->insert_record('format_mimo_actdesc', $record);
         }
 
         if ($result) {
@@ -159,7 +160,9 @@ class activity_description_manager {
      * @return bool Success status
      */
     public function delete_description(string $activitytype): bool {
-        $result = $this->db->delete_records('format_mimo_actdesc', ['activitytype' => $activitytype]);
+        global $DB;
+
+        $result = $DB->delete_records('format_mimo_actdesc', ['activitytype' => $activitytype]);
 
         if ($result) {
             $this->clear_cache();
@@ -227,8 +230,10 @@ class activity_description_manager {
      * @return bool Success
      */
     public function initialize_default_activity_descriptions(): bool {
+        global $DB;
+
         // Check if any descriptions already exist.
-        if ($this->db->record_exists('format_mimo_actdesc', [])) {
+        if ($DB->record_exists('format_mimo_actdesc', [])) {
             return true;
         }
 

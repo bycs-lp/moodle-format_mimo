@@ -38,12 +38,9 @@ class description_tag_manager {
      *
      * Obtain the shared instance via \core\di::get(description_tag_manager::class).
      *
-     * @param \moodle_database $db Database instance.
      * @param \core\clock $clock Clock instance.
      */
     public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
         /** @var \core\clock Clock instance. */
         private readonly \core\clock $clock,
     ) {
@@ -55,7 +52,9 @@ class description_tag_manager {
      * @return array Array of stdClass objects with id, name, color properties
      */
     public function get_all_tags(): array {
-        return $this->db->get_records('format_mimo_desc_tags', null, 'name ASC');
+        global $DB;
+
+        return $DB->get_records('format_mimo_desc_tags', null, 'name ASC');
     }
 
     /**
@@ -65,7 +64,9 @@ class description_tag_manager {
      * @return \stdClass|false Tag object or false if not found
      */
     public function get_tag(int $id) {
-        return $this->db->get_record('format_mimo_desc_tags', ['id' => $id]);
+        global $DB;
+
+        return $DB->get_record('format_mimo_desc_tags', ['id' => $id]);
     }
 
     /**
@@ -76,6 +77,8 @@ class description_tag_manager {
      * @return int The ID of the created tag
      */
     public function create_tag(string $name, string $color): int {
+        global $DB;
+
         $color = trim($color);
         if (!$this->is_valid_color($color)) {
             throw new \invalid_parameter_exception('Invalid hex color: ' . $color);
@@ -88,7 +91,7 @@ class description_tag_manager {
         $record->timecreated = $time;
         $record->timemodified = $time;
 
-        return $this->db->insert_record('format_mimo_desc_tags', $record);
+        return $DB->insert_record('format_mimo_desc_tags', $record);
     }
 
     /**
@@ -100,7 +103,9 @@ class description_tag_manager {
      * @return bool Success status
      */
     public function update_tag(int $id, string $name, string $color): bool {
-        $record = $this->db->get_record('format_mimo_desc_tags', ['id' => $id]);
+        global $DB;
+
+        $record = $DB->get_record('format_mimo_desc_tags', ['id' => $id]);
         if (!$record) {
             return false;
         }
@@ -114,7 +119,7 @@ class description_tag_manager {
         $record->color = $color;
         $record->timemodified = $this->clock->time();
 
-        $result = $this->db->update_record('format_mimo_desc_tags', $record);
+        $result = $DB->update_record('format_mimo_desc_tags', $record);
 
         // Activity description cache embeds description-tag name/color via LEFT JOIN,
         // so renames/recolours must invalidate it (delete_tag() already does this).
@@ -131,14 +136,16 @@ class description_tag_manager {
      * @return bool Success status
      */
     public function delete_tag(int $id): bool {
+        global $DB;
+
         // First, remove tag references from activity descriptions.
-        $this->db->set_field('format_mimo_actdesc', 'desctagid', null, ['desctagid' => $id]);
+        $DB->set_field('format_mimo_actdesc', 'desctagid', null, ['desctagid' => $id]);
 
         // Clear the activity descriptions cache.
         \core\di::get(activity_description_manager::class)->clear_cache();
 
         // Delete the tag.
-        return $this->db->delete_records('format_mimo_desc_tags', ['id' => $id]);
+        return $DB->delete_records('format_mimo_desc_tags', ['id' => $id]);
     }
 
     /**
@@ -148,7 +155,9 @@ class description_tag_manager {
      * @return int Number of activity descriptions using this tag
      */
     public function count_descriptions_with_tag(int $desctagid): int {
-        return $this->db->count_records('format_mimo_actdesc', ['desctagid' => $desctagid]);
+        global $DB;
+
+        return $DB->count_records('format_mimo_actdesc', ['desctagid' => $desctagid]);
     }
 
     /**
@@ -183,8 +192,10 @@ class description_tag_manager {
      * @return bool Success
      */
     public function initialize_default_description_tags(): bool {
+        global $DB;
+
         // Check if any description tags already exist.
-        if ($this->db->record_exists('format_mimo_desc_tags', [])) {
+        if ($DB->record_exists('format_mimo_desc_tags', [])) {
             return true;
         }
 

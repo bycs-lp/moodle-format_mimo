@@ -53,12 +53,9 @@ class tag_manager {
      *
      * Obtain the shared instance via \core\di::get(tag_manager::class).
      *
-     * @param \moodle_database $db Database instance.
      * @param \core\clock $clock Clock instance.
      */
     public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
         /** @var \core\clock Clock instance. */
         private readonly \core\clock $clock,
     ) {
@@ -319,12 +316,14 @@ class tag_manager {
      * @return array tagid => usage count
      */
     public function get_tag_usage_counts(int $courseid, array $tagids, ?int $sectionid = null): array {
+        global $DB;
+
         if (empty($tagids)) {
             return [];
         }
 
         $tagids = array_map('intval', $tagids);
-        [$insql, $params] = $this->db->get_in_or_equal($tagids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $DB->get_in_or_equal($tagids, SQL_PARAMS_NAMED);
         $params['courseid'] = $courseid;
 
         $sectionwhere = '';
@@ -339,7 +338,7 @@ class tag_manager {
                  WHERE cm.course = :courseid AND cmt.tagid $insql{$sectionwhere}
               GROUP BY cmt.tagid";
 
-        return $this->db->get_records_sql_menu($sql, $params);
+        return $DB->get_records_sql_menu($sql, $params);
     }
 
     /**
@@ -416,13 +415,15 @@ class tag_manager {
      * @return array Array of tag records sorted by sortorder
      */
     public function get_all_tags(): array {
+        global $DB;
+
         $this->init_caches();
 
         $cachekey = 'all_tags';
         $tags = $this->tagcache->get($cachekey);
 
         if ($tags === false) {
-            $tags = $this->db->get_records('format_mimo_tags', null, 'sortorder ASC, id ASC');
+            $tags = $DB->get_records('format_mimo_tags', null, 'sortorder ASC, id ASC');
             $this->tagcache->set($cachekey, $tags);
         }
 
@@ -439,6 +440,8 @@ class tag_manager {
      * @return array Array of resolved tag records enabled for this course's profile
      */
     public function get_tags_for_course(int $courseid): array {
+        global $DB;
+
         $this->init_caches();
 
         $cachekey = 'course_tags_' . $courseid;
@@ -465,7 +468,7 @@ class tag_manager {
         }
 
         // Get the course's activity profile.
-        $profilename = $this->db->get_field('course_format_options', 'value', [
+        $profilename = $DB->get_field('course_format_options', 'value', [
             'courseid' => $courseid,
             'format' => 'mimo',
             'name' => 'activityprofile',
@@ -542,8 +545,10 @@ class tag_manager {
         ?string $imgsize = 'normal',
         string $scope = 'global'
     ): int {
+        global $DB;
+
         // Get next sort order globally.
-        $maxsort = $this->db->get_field_sql(
+        $maxsort = $DB->get_field_sql(
             "SELECT MAX(sortorder) FROM {format_mimo_tags}"
         );
         $sortorder = ($maxsort !== null && $maxsort !== false) ? (int)$maxsort + 1 : 0;
@@ -564,7 +569,7 @@ class tag_manager {
         $record->timecreated = $now;
         $record->timemodified = $now;
 
-        $id = $this->db->insert_record('format_mimo_tags', $record);
+        $id = $DB->insert_record('format_mimo_tags', $record);
 
         // Purge the entire tag cache — per-course course_tags_* entries hold
         // resolved tag lists that must include this new tag immediately.
@@ -572,7 +577,7 @@ class tag_manager {
 
         // Cache the new tag record for subsequent get_tag() calls in this request.
         $this->init_caches();
-        $tag = $this->db->get_record('format_mimo_tags', ['id' => $id]);
+        $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
         if ($tag) {
             $this->tagcache->set('tag_' . $id, $tag);
         }
@@ -587,13 +592,15 @@ class tag_manager {
      * @return \stdClass|false Tag record or false
      */
     public function get_tag(int $id): \stdClass|false {
+        global $DB;
+
         $this->init_caches();
 
         $cachekey = 'tag_' . $id;
         $tag = $this->tagcache->get($cachekey);
 
         if ($tag === false) {
-            $tag = $this->db->get_record('format_mimo_tags', ['id' => $id]);
+            $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
             if ($tag) {
                 $this->tagcache->set($cachekey, $tag);
             }
@@ -610,6 +617,8 @@ class tag_manager {
      * @return bool Success
      */
     public function update_tag(int $id, array $data): bool {
+        global $DB;
+
         $record = new \stdClass();
         $record->id = $id;
         $record->timemodified = $this->clock->time();
@@ -621,7 +630,7 @@ class tag_manager {
             $record->$key = $value;
         }
 
-        $result = $this->db->update_record('format_mimo_tags', $record);
+        $result = $DB->update_record('format_mimo_tags', $record);
 
         // Purge entire tag cache — course_tags_* entries contain resolved tag data
         // (including bgcolor) that becomes stale when any base tag field changes.
@@ -637,14 +646,16 @@ class tag_manager {
      * @return bool Success
      */
     public function delete_tag(int $id): bool {
+        global $DB;
+
         // Collect affected cm mappings before deleting them, for targeted cache eviction.
-        $cmids = $this->db->get_fieldset_select('format_mimo_cmtags', 'cmid', 'tagid = :tagid', ['tagid' => $id]);
+        $cmids = $DB->get_fieldset_select('format_mimo_cmtags', 'cmid', 'tagid = :tagid', ['tagid' => $id]);
 
         // Delete all mappings for this tag.
-        $this->db->delete_records('format_mimo_cmtags', ['tagid' => $id]);
+        $DB->delete_records('format_mimo_cmtags', ['tagid' => $id]);
 
         // Delete course_tags bindings for this tag.
-        $this->db->delete_records('format_mimo_course_tags', ['tagid' => $id]);
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $id]);
 
         // Delete profile_tags records for this tag (includes profile-specific images).
         \core\di::get(profile_manager::class)->delete_profile_tags_for_tag($id);
@@ -655,7 +666,7 @@ class tag_manager {
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_CARDIMAGE, $id);
         $fs->delete_area_files($contextid, 'format_mimo', self::FILEAREA_FILTERIMAGE, $id);
 
-        $result = $this->db->delete_records('format_mimo_tags', ['id' => $id]);
+        $result = $DB->delete_records('format_mimo_tags', ['id' => $id]);
 
         // Purge entire tag cache — course_tags_* entries reference this tag.
         $this->clear_tag_cache();
@@ -679,19 +690,21 @@ class tag_manager {
      * @return bool Success
      */
     public function assign_tag_to_cm(int $cmid, int $tagid): bool {
+        global $DB;
+
         // Check if mapping already exists.
-        if ($this->db->record_exists('format_mimo_cmtags', ['cmid' => $cmid])) {
+        if ($DB->record_exists('format_mimo_cmtags', ['cmid' => $cmid])) {
             // Update existing mapping.
-            $record = $this->db->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
+            $record = $DB->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
             $record->tagid = $tagid;
-            $result = $this->db->update_record('format_mimo_cmtags', $record);
+            $result = $DB->update_record('format_mimo_cmtags', $record);
         } else {
             // Create new mapping.
             $record = new \stdClass();
             $record->cmid = $cmid;
             $record->tagid = $tagid;
             $record->timecreated = $this->clock->time();
-            $result = $this->db->insert_record('format_mimo_cmtags', $record);
+            $result = $DB->insert_record('format_mimo_cmtags', $record);
             $result = !empty($result);
         }
 
@@ -722,13 +735,15 @@ class tag_manager {
      * @return \stdClass|false Tag record or false
      */
     public function get_cm_tag(int $cmid): \stdClass|false {
+        global $DB;
+
         $this->init_caches();
 
         $cachekey = 'cm_' . $cmid;
         $tagid = $this->mappingcache->get($cachekey);
 
         if ($tagid === false) {
-            $mapping = $this->db->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
+            $mapping = $DB->get_record('format_mimo_cmtags', ['cmid' => $cmid]);
             if ($mapping) {
                 $tagid = $mapping->tagid;
                 $this->mappingcache->set($cachekey, $tagid);
@@ -776,7 +791,9 @@ class tag_manager {
      * @return bool Success
      */
     public function remove_cm_tag(int $cmid): bool {
-        $result = $this->db->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
+        global $DB;
+
+        $result = $DB->delete_records('format_mimo_cmtags', ['cmid' => $cmid]);
         // Write the "untagged" sentinel for this cm only (see get_cm_tag()),
         // leaving the rest of the site-wide mapping cache intact.
         $this->init_caches();
@@ -812,6 +829,8 @@ class tag_manager {
      * @return void
      */
     public function prime_cm_mappings(array $cmids): void {
+        global $DB;
+
         if (empty($cmids)) {
             return;
         }
@@ -832,7 +851,7 @@ class tag_manager {
 
         // Load all missing mappings in one query; default to the sentinel 0.
         $values = array_fill_keys(array_map(static fn($cmid) => 'cm_' . $cmid, $missing), 0);
-        $mappings = $this->db->get_records_list('format_mimo_cmtags', 'cmid', $missing, '', 'cmid, tagid');
+        $mappings = $DB->get_records_list('format_mimo_cmtags', 'cmid', $missing, '', 'cmid, tagid');
         foreach ($mappings as $mapping) {
             $values['cm_' . $mapping->cmid] = (int) $mapping->tagid;
         }
@@ -866,7 +885,9 @@ class tag_manager {
      * @param int $courseid Course ID
      */
     public function bind_tag_to_course(int $tagid, int $courseid): void {
-        if ($this->db->record_exists('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid])) {
+        global $DB;
+
+        if ($DB->record_exists('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid])) {
             return;
         }
 
@@ -874,7 +895,7 @@ class tag_manager {
         $record->courseid = $courseid;
         $record->tagid = $tagid;
         $record->timecreated = $this->clock->time();
-        $this->db->insert_record('format_mimo_course_tags', $record);
+        $DB->insert_record('format_mimo_course_tags', $record);
 
         $this->clear_course_tags_cache($courseid);
     }
@@ -886,7 +907,9 @@ class tag_manager {
      * @param int $courseid Course ID
      */
     public function unbind_tag_from_course(int $tagid, int $courseid): void {
-        $this->db->delete_records('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid]);
+        global $DB;
+
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $tagid, 'courseid' => $courseid]);
         $this->clear_course_tags_cache($courseid);
     }
 
@@ -898,8 +921,10 @@ class tag_manager {
      * @param int $tagid Tag ID
      */
     public function promote_tag_to_global(int $tagid): void {
-        $this->db->set_field('format_mimo_tags', 'scope', 'global', ['id' => $tagid]);
-        $this->db->delete_records('format_mimo_course_tags', ['tagid' => $tagid]);
+        global $DB;
+
+        $DB->set_field('format_mimo_tags', 'scope', 'global', ['id' => $tagid]);
+        $DB->delete_records('format_mimo_course_tags', ['tagid' => $tagid]);
         $this->clear_tag_cache();
     }
 
@@ -910,12 +935,14 @@ class tag_manager {
      * @return array Array of tag records keyed by tag ID
      */
     public function get_imported_tags_for_course(int $courseid): array {
+        global $DB;
+
         $sql = "SELECT t.*
                   FROM {format_mimo_tags} t
                   JOIN {format_mimo_course_tags} ct ON ct.tagid = t.id
                  WHERE ct.courseid = :courseid AND t.scope = :scope
               ORDER BY t.sortorder ASC, t.id ASC";
-        return $this->db->get_records_sql($sql, ['courseid' => $courseid, 'scope' => 'imported']);
+        return $DB->get_records_sql($sql, ['courseid' => $courseid, 'scope' => 'imported']);
     }
 
     /**
@@ -924,7 +951,9 @@ class tag_manager {
      * @param int $courseid Course ID
      */
     public function unbind_all_tags_from_course(int $courseid): void {
-        $this->db->delete_records('format_mimo_course_tags', ['courseid' => $courseid]);
+        global $DB;
+
+        $DB->delete_records('format_mimo_course_tags', ['courseid' => $courseid]);
         $this->clear_course_tags_cache($courseid);
     }
 
@@ -932,6 +961,8 @@ class tag_manager {
      * Clean up orphaned imported tags that have no course bindings and no cmtag references.
      */
     public function cleanup_orphaned_imported_tags(): void {
+        global $DB;
+
         $sql = "SELECT t.id
                   FROM {format_mimo_tags} t
                  WHERE t.scope = :scope
@@ -941,7 +972,7 @@ class tag_manager {
                    AND NOT EXISTS (
                        SELECT 1 FROM {format_mimo_cmtags} cmt WHERE cmt.tagid = t.id
                    )";
-        $orphans = $this->db->get_fieldset_sql($sql, ['scope' => 'imported']);
+        $orphans = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
 
         foreach ($orphans as $tagid) {
             $this->delete_tag($tagid);
@@ -959,6 +990,8 @@ class tag_manager {
      * @return \stdClass|null Matching tag record or null
      */
     public function find_tag_by_fingerprint(object $data, array $excludeids = []): ?\stdClass {
+        global $DB;
+
         $params = [];
         $conditions = ['name = :name'];
         $params['name'] = $data->name;
@@ -975,14 +1008,14 @@ class tag_manager {
         }
 
         if (!empty($excludeids)) {
-            [$insql, $inparams] = $this->db->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
+            [$insql, $inparams] = $DB->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
             $conditions[] = "id $insql";
             $params = array_merge($params, $inparams);
         }
 
         $where = implode(' AND ', $conditions);
         $sql = "SELECT * FROM {format_mimo_tags} WHERE $where ORDER BY sortorder ASC";
-        $records = $this->db->get_records_sql($sql, $params, 0, 1);
+        $records = $DB->get_records_sql($sql, $params, 0, 1);
 
         return $records ? reset($records) : null;
     }
@@ -998,18 +1031,20 @@ class tag_manager {
      * @return \stdClass|null Matching tag record or null
      */
     public function find_tag_by_name(string $name, array $excludeids = []): ?\stdClass {
+        global $DB;
+
         $params = ['name' => $name];
         $conditions = ['name = :name'];
 
         if (!empty($excludeids)) {
-            [$insql, $inparams] = $this->db->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
+            [$insql, $inparams] = $DB->get_in_or_equal($excludeids, SQL_PARAMS_NAMED, 'excl', false);
             $conditions[] = "id $insql";
             $params = array_merge($params, $inparams);
         }
 
         $where = implode(' AND ', $conditions);
         $sql = "SELECT * FROM {format_mimo_tags} WHERE $where ORDER BY sortorder ASC";
-        $records = $this->db->get_records_sql($sql, $params, 0, 1);
+        $records = $DB->get_records_sql($sql, $params, 0, 1);
 
         return $records ? reset($records) : null;
     }
@@ -1105,8 +1140,10 @@ class tag_manager {
      * @return bool Success
      */
     public function initialize_default_tags(): bool {
+        global $DB;
+
         // Check if any tags already exist.
-        if ($this->db->record_exists('format_mimo_tags', [])) {
+        if ($DB->record_exists('format_mimo_tags', [])) {
             return true; // Already initialized.
         }
 

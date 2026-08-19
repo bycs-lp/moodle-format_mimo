@@ -64,12 +64,9 @@ class profile_manager {
      *
      * Obtain the shared instance via \core\di::get(profile_manager::class).
      *
-     * @param \moodle_database $db Database instance.
      * @param \core\clock $clock Clock instance.
      */
     public function __construct(
-        /** @var \moodle_database Database instance. */
-        private readonly \moodle_database $db,
         /** @var \core\clock Clock instance. */
         private readonly \core\clock $clock,
     ) {
@@ -104,7 +101,9 @@ class profile_manager {
      * @return array Array of profile objects keyed by id
      */
     public function get_all_profiles(): array {
-        return $this->db->get_records('format_mimo_profiles', null, 'sortorder ASC, id ASC');
+        global $DB;
+
+        return $DB->get_records('format_mimo_profiles', null, 'sortorder ASC, id ASC');
     }
 
     /**
@@ -114,7 +113,9 @@ class profile_manager {
      * @return stdClass|null
      */
     public function get_profile(int $id): ?stdClass {
-        $record = $this->db->get_record('format_mimo_profiles', ['id' => $id]);
+        global $DB;
+
+        $record = $DB->get_record('format_mimo_profiles', ['id' => $id]);
         return $record ?: null;
     }
 
@@ -125,11 +126,13 @@ class profile_manager {
      * @return stdClass|null
      */
     public function get_profile_by_name(string $name): ?stdClass {
+        global $DB;
+
         if (isset($this->profilebynamecache[$name])) {
             return $this->profilebynamecache[$name];
         }
 
-        $record = $this->db->get_record('format_mimo_profiles', ['name' => $name]);
+        $record = $DB->get_record('format_mimo_profiles', ['name' => $name]);
         $result = $record ?: null;
         $this->profilebynamecache[$name] = $result;
         return $result;
@@ -150,8 +153,10 @@ class profile_manager {
         ?int $sortorder = null,
         string $scope = 'global',
     ): int {
+        global $DB;
+
         if ($sortorder === null) {
-            $maxorder = $this->db->get_field_sql(
+            $maxorder = $DB->get_field_sql(
                 "SELECT MAX(sortorder) FROM {format_mimo_profiles}"
             );
             $sortorder = ($maxorder ?? 0) + 1;
@@ -166,7 +171,7 @@ class profile_manager {
         $record->timecreated = $now;
         $record->timemodified = $now;
 
-        $id = $this->db->insert_record('format_mimo_profiles', $record);
+        $id = $DB->insert_record('format_mimo_profiles', $record);
         $this->profilebynamecache = [];
         return $id;
     }
@@ -179,13 +184,15 @@ class profile_manager {
      * @return bool
      */
     public function update_profile(int $id, array $data): bool {
+        global $DB;
+
         // If the internal name is being changed, cascade to course_format_options.
         if (isset($data['name'])) {
             $oldprofile = $this->get_profile($id);
             if ($oldprofile && $oldprofile->name !== $data['name']) {
                 // The value column is TEXT; direct equality breaks on Oracle/MSSQL.
-                $valcompare = $this->db->sql_compare_text('value', 255);
-                $this->db->set_field_select(
+                $valcompare = $DB->sql_compare_text('value', 255);
+                $DB->set_field_select(
                     'course_format_options',
                     'value',
                     $data['name'],
@@ -207,7 +214,7 @@ class profile_manager {
             }
         }
 
-        $result = $this->db->update_record('format_mimo_profiles', $record);
+        $result = $DB->update_record('format_mimo_profiles', $record);
         $this->profilebynamecache = [];
         return $result;
     }
@@ -219,17 +226,19 @@ class profile_manager {
      * @return bool
      */
     public function delete_profile(int $id): bool {
+        global $DB;
+
         // Delete associated profile tag files.
-        $profiletags = $this->db->get_records('format_mimo_profile_tags', ['profileid' => $id]);
+        $profiletags = $DB->get_records('format_mimo_profile_tags', ['profileid' => $id]);
         foreach ($profiletags as $pt) {
             $this->delete_profile_tag_files($pt->id);
         }
 
         // Delete profile tag records.
-        $this->db->delete_records('format_mimo_profile_tags', ['profileid' => $id]);
+        $DB->delete_records('format_mimo_profile_tags', ['profileid' => $id]);
 
         // Delete the profile.
-        $result = $this->db->delete_records('format_mimo_profiles', ['id' => $id]);
+        $result = $DB->delete_records('format_mimo_profiles', ['id' => $id]);
 
         // Courses referencing this profile have stale course_tags_* cache entries.
         \core\di::get(tag_manager::class)->clear_tag_cache();
@@ -264,7 +273,9 @@ class profile_manager {
      * @return stdClass
      */
     public function get_or_create_profile_tag(int $tagid, int $profileid): stdClass {
-        $record = $this->db->get_record('format_mimo_profile_tags', [
+        global $DB;
+
+        $record = $DB->get_record('format_mimo_profile_tags', [
             'tagid' => $tagid,
             'profileid' => $profileid,
         ]);
@@ -284,7 +295,7 @@ class profile_manager {
             $record->filterimage = null;
             $record->timecreated = $now;
             $record->timemodified = $now;
-            $record->id = $this->db->insert_record('format_mimo_profile_tags', $record);
+            $record->id = $DB->insert_record('format_mimo_profile_tags', $record);
             // Invalidate cached profile_tags for this profile.
             unset($this->profiletagscache[$profileid]);
         }
@@ -299,7 +310,9 @@ class profile_manager {
      * @return stdClass|null
      */
     public function get_profile_tag(int $id): ?stdClass {
-        $record = $this->db->get_record('format_mimo_profile_tags', ['id' => $id]);
+        global $DB;
+
+        $record = $DB->get_record('format_mimo_profile_tags', ['id' => $id]);
         return $record ?: null;
     }
 
@@ -310,7 +323,9 @@ class profile_manager {
      * @return array Array of profile_tags objects keyed by id
      */
     public function get_profile_tags_for_tag(int $tagid): array {
-        return $this->db->get_records('format_mimo_profile_tags', ['tagid' => $tagid]);
+        global $DB;
+
+        return $DB->get_records('format_mimo_profile_tags', ['tagid' => $tagid]);
     }
 
     /**
@@ -335,11 +350,13 @@ class profile_manager {
      * @param int $profileid Profile ID
      */
     private function prefetch_profile_tags(int $profileid): void {
+        global $DB;
+
         if (isset($this->profiletagscache[$profileid])) {
             return;
         }
 
-        $records = $this->db->get_records('format_mimo_profile_tags', ['profileid' => $profileid]);
+        $records = $DB->get_records('format_mimo_profile_tags', ['profileid' => $profileid]);
         $this->profiletagscache[$profileid] = [];
         foreach ($records as $record) {
             $this->profiletagscache[$profileid][$record->tagid] = $record;
@@ -357,6 +374,8 @@ class profile_manager {
      * @return bool
      */
     public function update_profile_tag(int $id, array $data): bool {
+        global $DB;
+
         $allowed = ['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'enabled', 'imgplacement', 'imgsize'];
         $record = new stdClass();
         $record->id = $id;
@@ -371,7 +390,7 @@ class profile_manager {
             }
         }
 
-        $result = $this->db->update_record('format_mimo_profile_tags', $record);
+        $result = $DB->update_record('format_mimo_profile_tags', $record);
 
         // Profile overrides (name, bgcolor, activity types, etc.) are baked into the
         // resolved course_tags_* cache entries.  Purge the tag cache so every course
@@ -391,12 +410,14 @@ class profile_manager {
      * @param int $tagid Tag ID
      */
     public function delete_profile_tags_for_tag(int $tagid): void {
-        $profiletags = $this->db->get_records('format_mimo_profile_tags', ['tagid' => $tagid]);
+        global $DB;
+
+        $profiletags = $DB->get_records('format_mimo_profile_tags', ['tagid' => $tagid]);
         foreach ($profiletags as $pt) {
             $this->delete_profile_tag_files($pt->id);
         }
 
-        $this->db->delete_records('format_mimo_profile_tags', ['tagid' => $tagid]);
+        $DB->delete_records('format_mimo_profile_tags', ['tagid' => $tagid]);
         $this->profiletagscache = [];
         $this->imageurlcache = [];
     }
@@ -555,6 +576,8 @@ class profile_manager {
         string $filearea,
         string $dbfield
     ): void {
+        global $DB;
+
         // Ensure profile_tags record exists.
         $profiletag = $this->get_or_create_profile_tag($tagid, $profileid);
 
@@ -571,8 +594,8 @@ class profile_manager {
         $file = $this->get_image_file($profiletag->id, $filearea);
         $filename = $file ? $file->get_filename() : null;
 
-        $this->db->set_field('format_mimo_profile_tags', $dbfield, $filename, ['id' => $profiletag->id]);
-        $this->db->set_field('format_mimo_profile_tags', 'timemodified', $this->clock->time(), ['id' => $profiletag->id]);
+        $DB->set_field('format_mimo_profile_tags', $dbfield, $filename, ['id' => $profiletag->id]);
+        $DB->set_field('format_mimo_profile_tags', 'timemodified', $this->clock->time(), ['id' => $profiletag->id]);
 
         // Image URLs are baked into the course_tags_* MUC cache.
         \core\di::get(tag_manager::class)->clear_tag_cache();
@@ -770,6 +793,8 @@ class profile_manager {
      * @return stdClass The created profile record (with id, name, displayname, scope)
      */
     public function create_imported_profile(string $coursename): stdClass {
+        global $DB;
+
         // Sanitize name to create a slug: lowercase, alphanum + underscore, max 40 chars.
         $slug = preg_replace('/[^a-z0-9_]/', '_', strtolower(trim($coursename)));
         $slug = preg_replace('/_+/', '_', $slug);
@@ -779,14 +804,14 @@ class profile_manager {
         // Ensure uniqueness by appending a counter if needed.
         $name = $basename;
         $counter = 1;
-        while ($this->db->record_exists('format_mimo_profiles', ['name' => $name])) {
+        while ($DB->record_exists('format_mimo_profiles', ['name' => $name])) {
             $name = $basename . '_' . $counter;
             $counter++;
         }
 
         $displayname = get_string('imported_profile_name', 'format_mimo', $coursename);
 
-        $maxorder = $this->db->get_field_sql(
+        $maxorder = $DB->get_field_sql(
             "SELECT MAX(sortorder) FROM {format_mimo_profiles}"
         );
         $sortorder = ($maxorder ?? 0) + 1;
@@ -799,7 +824,7 @@ class profile_manager {
         $record->sortorder = $sortorder;
         $record->timecreated = $now;
         $record->timemodified = $now;
-        $record->id = $this->db->insert_record('format_mimo_profiles', $record);
+        $record->id = $DB->insert_record('format_mimo_profiles', $record);
 
         return $record;
     }
@@ -812,16 +837,18 @@ class profile_manager {
      * @param int $profileid Profile ID
      */
     public function promote_profile_to_global(int $profileid): void {
+        global $DB;
+
         $now = $this->clock->time();
-        $this->db->set_field('format_mimo_profiles', 'scope', 'global', ['id' => $profileid]);
-        $this->db->set_field('format_mimo_profiles', 'timemodified', $now, ['id' => $profileid]);
+        $DB->set_field('format_mimo_profiles', 'scope', 'global', ['id' => $profileid]);
+        $DB->set_field('format_mimo_profiles', 'timemodified', $now, ['id' => $profileid]);
 
         // Promote any imported tags that have profile_tags records for this profile.
         $sql = "SELECT DISTINCT pt.tagid
                   FROM {format_mimo_profile_tags} pt
                   JOIN {format_mimo_tags} t ON t.id = pt.tagid
                  WHERE pt.profileid = :profileid AND t.scope = :scope";
-        $importedtagids = $this->db->get_fieldset_sql($sql, ['profileid' => $profileid, 'scope' => 'imported']);
+        $importedtagids = $DB->get_fieldset_sql($sql, ['profileid' => $profileid, 'scope' => 'imported']);
 
         $tagmanager = \core\di::get(tag_manager::class);
         foreach ($importedtagids as $tagid) {
@@ -837,11 +864,13 @@ class profile_manager {
      * An imported profile is orphaned when no course has it as their activityprofile.
      */
     public function cleanup_orphaned_imported_profiles(): void {
+        global $DB;
+
         // The course_format_options.value column is a text column on most DB engines
         // and cannot be compared directly; use sql_compare_text() for portability.
         // Explicit length: default (32) is shorter than possible profile names.
-        $valcompare = $this->db->sql_compare_text('cfo.value', 255);
-        $namecompare = $this->db->sql_compare_text('p.name', 255);
+        $valcompare = $DB->sql_compare_text('cfo.value', 255);
+        $namecompare = $DB->sql_compare_text('p.name', 255);
         $sql = "SELECT p.id
                   FROM {format_mimo_profiles} p
                  WHERE p.scope = :scope
@@ -851,7 +880,7 @@ class profile_manager {
                           AND cfo.name = 'activityprofile'
                           AND $valcompare = $namecompare
                    )";
-        $orphanids = $this->db->get_fieldset_sql($sql, ['scope' => 'imported']);
+        $orphanids = $DB->get_fieldset_sql($sql, ['scope' => 'imported']);
 
         foreach ($orphanids as $profileid) {
             $this->delete_profile((int) $profileid);
@@ -864,7 +893,9 @@ class profile_manager {
      * @return array Array of profile objects keyed by id
      */
     public function get_global_profiles(): array {
-        return $this->db->get_records('format_mimo_profiles', ['scope' => 'global'], 'sortorder ASC, id ASC');
+        global $DB;
+
+        return $DB->get_records('format_mimo_profiles', ['scope' => 'global'], 'sortorder ASC, id ASC');
     }
 
     /* ================= *
@@ -1018,6 +1049,8 @@ class profile_manager {
      * @param array $imagefields Associative array of 'cardimage' and/or 'filterimage' => filename
      */
     private function apply_default_profile_images(int $profiletagid, array $imagefields): void {
+        global $DB;
+
         $fileareamap = [
             'cardimage' => self::FILEAREA_PROFILE_CARDIMAGE,
             'filterimage' => self::FILEAREA_PROFILE_FILTERIMAGE,
@@ -1028,8 +1061,8 @@ class profile_manager {
                 continue;
             }
             $this->copy_default_profile_image($profiletagid, $filename, $fileareamap[$field]);
-            $this->db->set_field('format_mimo_profile_tags', $field, $filename, ['id' => $profiletagid]);
+            $DB->set_field('format_mimo_profile_tags', $field, $filename, ['id' => $profiletagid]);
         }
-        $this->db->set_field('format_mimo_profile_tags', 'timemodified', $this->clock->time(), ['id' => $profiletagid]);
+        $DB->set_field('format_mimo_profile_tags', 'timemodified', $this->clock->time(), ['id' => $profiletagid]);
     }
 }
