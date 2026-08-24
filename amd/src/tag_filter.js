@@ -366,7 +366,7 @@ const updateButtons = (bar, activeButton) => {
 const updateCompletionPills = (statusRegion, activeCompleted) => {
     const pills = statusRegion.querySelectorAll('[data-action="completion-filter"]');
     pills.forEach((pill) => {
-        // data-filter-value is the pill's identity: which completion value it filters for.
+        // The data-filter-value attribute is the pill's identity: which completion value it filters for.
         const isActive = pill.dataset.filterValue === activeCompleted;
         pill.classList.toggle('is-active', isActive);
         pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
