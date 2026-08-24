@@ -3,6 +3,8 @@
 :root {
   --mimo-completion-complete: #5fc76d;
   --mimo-completion-incomplete: #cbbd93;
+  --mimo-completion-complete-dark: color-mix(in srgb, var(--mimo-completion-complete) 50%, black);
+  --mimo-completion-incomplete-dark: color-mix(in srgb, var(--mimo-completion-incomplete) 50%, black);
 }
 
 .mimo-icon-done {
@@ -1298,7 +1300,7 @@ body.format-mimo-distraction-free #topofscroll {
   align-items: center;
   gap: 0.4rem;
   padding: 0.1rem 0.6rem 0.1rem 0.1rem;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 999px;
   font-size: 0.95rem;
   font-weight: 700;
@@ -1315,24 +1317,26 @@ body.format-mimo-distraction-free #topofscroll {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
 }
 .mimo-completion-status .completion-pill--complete {
-  background: color-mix(in srgb, var(--mimo-completion-complete) 65%, white);
-  color: #fff;
+  background: color-mix(in srgb, var(--mimo-completion-complete) 50%, white);
+  color: var(--mimo-completion-complete-dark);
+  border-color: var(--mimo-completion-complete-dark);
 }
 .mimo-completion-status .completion-pill--complete .completion-pill-icon {
-  background: var(--mimo-completion-complete);
+  background: var(--mimo-completion-complete-dark);
 }
 .mimo-completion-status .completion-pill--complete.is-active {
-  background: color-mix(in srgb, var(--mimo-completion-complete) 80%, white);
+  background: color-mix(in srgb, var(--mimo-completion-complete) 58%, white);
 }
 .mimo-completion-status .completion-pill--incomplete {
-  background: color-mix(in srgb, var(--mimo-completion-incomplete) 55%, white);
-  color: #fff;
+  background: color-mix(in srgb, var(--mimo-completion-incomplete) 50%, white);
+  color: var(--mimo-completion-incomplete-dark);
+  border-color: var(--mimo-completion-incomplete-dark);
 }
 .mimo-completion-status .completion-pill--incomplete .completion-pill-icon {
-  background: var(--mimo-completion-incomplete);
+  background: var(--mimo-completion-incomplete-dark);
 }
 .mimo-completion-status .completion-pill--incomplete.is-active {
-  background: color-mix(in srgb, var(--mimo-completion-incomplete) 70%, white);
+  background: color-mix(in srgb, var(--mimo-completion-incomplete) 58%, white);
 }
 
 .mimo-completion-status .completion-pill-icon {
@@ -1688,8 +1692,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
   background: #0f172a;
   border-color: #555;
 }
-.mimo-bgdesign-wrapper.mimo-bgdesign-darkmode .completion-status-pills .completion-pill,
-.mimo-bgdesign-wrapper.mimo-bgdesign-darkmode .completion-status-pills .completion-pill-icon {
+.mimo-bgdesign-wrapper.mimo-bgdesign-darkmode .completion-status-pills .completion-pill {
   color: #222 !important;
 }
 
