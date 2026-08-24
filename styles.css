@@ -172,6 +172,10 @@
   color: #6c757d;
   font-size: 1.1rem;
 }
+.mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.08);
+}
 .mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-complete,
 .mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-incomplete,
 .mimo-activities .activity.mimo-done .mimo-completion-badge.mimo-completion-greyed .badge-overdue {
@@ -499,6 +503,14 @@ body.editing.dragging .mimo-edge-dropzone {
   font-size: 20px;
   box-shadow: 0 10px 14px rgba(0, 0, 0, 0.12);
 }
+.mimo-completion-badge:has(.badge-complete) {
+  background: color-mix(in srgb, var(--mimo-completion-complete) 50%, white);
+  border-color: var(--mimo-completion-complete-dark);
+}
+.mimo-completion-badge:has(.badge-incomplete) {
+  background: color-mix(in srgb, var(--mimo-completion-incomplete) 50%, white);
+  border-color: var(--mimo-completion-incomplete-dark);
+}
 .mimo-completion-badge .badge-complete,
 .mimo-completion-badge .badge-incomplete {
   border-radius: 50%;
@@ -509,10 +521,10 @@ body.editing.dragging .mimo-edge-dropzone {
   height: 100%;
 }
 .mimo-completion-badge .badge-complete {
-  color: var(--mimo-completion-complete);
+  color: var(--mimo-completion-complete-dark);
 }
 .mimo-completion-badge .badge-incomplete {
-  color: var(--mimo-completion-incomplete);
+  color: var(--mimo-completion-incomplete-dark);
 }
 .mimo-completion-badge .badge-overdue {
   color: #dc3545;
