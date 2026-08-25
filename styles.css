@@ -297,10 +297,10 @@
 }
 .card.mimo-card .mimo-card-content .mimo-card-body .mimo-card-description {
   font-family: "ByDS Lesen", var(--bs-body-font-family, system-ui), sans-serif;
-  font-size: clamp(1rem, 10cqw, 1.8rem);
+  font-size: clamp(1rem, 9.2cqw, 1.8rem);
   font-weight: 500;
   color: #666;
-  line-height: 1.5;
+  line-height: 1.35;
   overflow: hidden;
   display: -webkit-box;
   line-clamp: 2;
@@ -1770,7 +1770,7 @@ body.single-section-page.format-mimo-multisection-view #page-header {
 .mimo-bgdesign-wrapper.mimo-bgdesign-pinnwand .mimo-card .mimo-card-body .mimo-card-description,
 .mimo-bgdesign-wrapper.mimo-bgdesign-paper .mimo-card .mimo-card-body .mimo-card-description {
   font-family: "Patrick Hand", system-ui, sans-serif;
-  font-size: clamp(0.95rem, 10cqw, 1.8rem);
+  font-size: clamp(0.95rem, 9.2cqw, 1.8rem);
   letter-spacing: 0.2px;
   color: #111827;
 }

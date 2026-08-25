@@ -414,10 +414,12 @@ body:not(.bulkenabled) .mimo-activities {
 
             .mimo-card-description {
                 font-family: "ByDS Lesen", var(--bs-body-font-family, system-ui), sans-serif;
-                font-size: clamp(1rem, 10cqw, 1.8rem);
+                // 2 clamped lines must fit the body's height share (~0.28 × card width):
+                // 2 × 1.35 × 9.2cqw ≈ 0.25 × width, leaving headroom for padding.
+                font-size: clamp(1rem, 9.2cqw, 1.8rem);
                 font-weight: 500;
                 color: #666;
-                line-height: 1.5;
+                line-height: 1.35;
                 overflow: hidden;
                 display: -webkit-box;
                 line-clamp: 2;
@@ -2280,7 +2282,7 @@ body.single-section-page.format-mimo-multisection-view {
 
             .mimo-card-description {
                 font-family: "Patrick Hand", system-ui, sans-serif;
-                font-size: clamp(.95rem, 10cqw, 1.8rem);
+                font-size: clamp(.95rem, 9.2cqw, 1.8rem);
                 letter-spacing: 0.2px;
                 color: #111827;
             }
