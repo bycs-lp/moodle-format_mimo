@@ -40,7 +40,11 @@ class format_mimo_generator extends component_generator_base {
         $record = (object)(array)$record;
 
         // Equal-tagset semantics: optional comma-separated set names the tag
-        // is enabled in (materialized rows). Not a table column.
+        // is enabled in (materialized rows). Not a table column. When the
+        // column is absent entirely, fixture tags are enabled in every global
+        // set (pre-equal-tagset behat behavior); an explicit empty value
+        // means disabled everywhere.
+        $hasenabledin = property_exists($record, 'enabledin');
         $enabledin = $record->enabledin ?? '';
         unset($record->enabledin);
 
@@ -84,8 +88,12 @@ class format_mimo_generator extends component_generator_base {
             $record->id = $DB->insert_record('format_mimo_tags', $record);
         }
 
-        if ($enabledin !== '') {
-            $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        if (!$hasenabledin) {
+            foreach ($profilemanager->get_global_profiles() as $profile) {
+                $profilemanager->materialize_profile_tag((int) $record->id, (int) $profile->id, [], true);
+            }
+        } else if ($enabledin !== '') {
             foreach (explode(',', $enabledin) as $pname) {
                 $profile = $profilemanager->get_profile_by_name(trim($pname));
                 if ($profile) {

@@ -104,9 +104,9 @@ Feature: Tag management in mimo format
   @javascript
   Scenario: Admin can delete tags that are disabled everywhere
     Given the following "format_mimo > tags" exist:
-      | name    | activitytype1 | activitytype2 |
-      | Biology | assign        | quiz          |
-      | Physics | assign        | forum         |
+      | name    | activitytype1 | activitytype2 | enabledin |
+      | Biology | assign        | quiz          |           |
+      | Physics | assign        | forum         |           |
     And I log in as "admin"
     And I am on site homepage
     And I visit "/course/format/mimo/tag_management.php"

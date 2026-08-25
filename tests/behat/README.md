@@ -104,9 +104,13 @@ Given the following "format_mimo > tagsets" exist:
 ### Tags:
 ```gherkin
 Given the following "format_mimo > tags" exist:
-  | tagset       | name    | activitytype1 | activitytype2 |
-  | Default Tags | Reading | page          | book          |
+  | name    | activitytype1 | activitytype2 | enabledin |
+  | Reading | page          | book          | base      |
 ```
+
+`enabledin` is a comma-separated list of tagset names the tag is enabled in.
+Omit the column entirely to enable the tag in all global tagsets; an explicit
+empty value means disabled everywhere.
 
 ### Course Module Tags:
 ```gherkin
