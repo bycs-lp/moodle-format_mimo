@@ -149,14 +149,21 @@ class format_mimo extends core_courseformat\base {
         $course = $this->get_course();
 
         if ($this->is_multisection_enabled()) {
-            if (array_key_exists('sr', $options) && !is_null($options['sr'])) {
+            if (!empty($options['pagesectionid'])) {
+                // Moodle 5.3+ passes the section id instead of the deprecated 'sr' number (MDL-86284).
+                $pagesection = $this->get_modinfo()->get_section_info_by_id((int) $options['pagesectionid'], IGNORE_MISSING);
+                $sectionno = $pagesection ? $pagesection->section : null;
+            } else if (array_key_exists('sr', $options) && !is_null($options['sr'])) {
                 $sectionno = $options['sr'];
             } else if (is_object($section)) {
                 $sectionno = $section->section;
             } else {
                 $sectionno = $section;
             }
-            if ((!empty($options['navigation']) || array_key_exists('sr', $options)) && $sectionno !== null) {
+            if (
+                (!empty($options['navigation']) || array_key_exists('sr', $options) || !empty($options['pagesectionid']))
+                && $sectionno !== null
+            ) {
                 // Use course/view.php with section parameter instead of course/section.php
                 // to preserve secondary navigation and keep users on the same page.
                 return new moodle_url('/course/view.php', ['id' => $course->id, 'section' => $sectionno]);

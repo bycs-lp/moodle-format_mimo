@@ -67,6 +67,8 @@ export const init = () => {
         const beforeMod = tagLink.dataset.beforemod;
         const sectionReturnNum = tagLink.dataset.sectionreturnnum;
         const sectionReturnId = tagLink.dataset.sectionreturnid;
+        // Only set on Moodle 5.3+, where the sr URL param is deprecated (MDL-86284).
+        const pageSectionId = tagLink.dataset.pagesectionid;
 
         // Show modal with 3 options
         await showActivityTypeModal(
@@ -80,7 +82,8 @@ export const init = () => {
             sectionId,
             beforeMod,
             sectionReturnNum,
-            sectionReturnId
+            sectionReturnId,
+            pageSectionId
         );
         pending.resolve();
     });
@@ -100,6 +103,7 @@ export const init = () => {
  * @param {string} beforeMod Module ID to insert before (optional)
  * @param {string} sectionReturnNum Section return number (optional)
  * @param {string} sectionReturnId Section return ID (optional)
+ * @param {string} pageSectionId Section ID for returnoptions on Moodle 5.3+ (optional)
  */
 const showActivityTypeModal = async(
     courseId,
@@ -112,7 +116,8 @@ const showActivityTypeModal = async(
     sectionId,
     beforeMod,
     sectionReturnNum,
-    sectionReturnId
+    sectionReturnId,
+    pageSectionId
 ) => {
     try {
         // Collect activity types to fetch descriptions for.
@@ -233,7 +238,7 @@ const showActivityTypeModal = async(
                 await openActivityChooser(sectionNum, sectionId, beforeMod, sectionReturnNum, sectionReturnId, tagId);
             } else {
                 // Navigate directly to the activity creation page
-                navigateToActivityCreation(activityType, sectionNum, beforeMod, sectionReturnNum, tagId);
+                navigateToActivityCreation(activityType, sectionNum, beforeMod, sectionReturnNum, pageSectionId, tagId);
             }
         });
 
@@ -265,10 +270,11 @@ const getActivityTypeLabel = async(activityType) => {
  * @param {string} activityType The activity module type
  * @param {string} sectionNum Section number
  * @param {string} beforeMod Module ID to insert before (optional)
- * @param {string} sectionReturnNum Section return number (optional)
+ * @param {string} sectionReturnNum Section return number (optional, Moodle 5.2)
+ * @param {string} pageSectionId Section ID for returnoptions (optional, Moodle 5.3+)
  * @param {string} tagId The tag ID to assign
  */
-const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, sectionReturnNum, tagId) => {
+const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, sectionReturnNum, pageSectionId, tagId) => {
     try {
         // Store tag ID in session via AJAX call
         await Ajax.call([{
@@ -285,7 +291,10 @@ const navigateToActivityCreation = async(activityType, sectionNum, beforeMod, se
         if (beforeMod) {
             url.searchParams.set('beforemod', beforeMod);
         }
-        if (sectionReturnNum) {
+        if (pageSectionId) {
+            // Moodle 5.3+: sr is deprecated and triggers a debugging() message (MDL-86284).
+            url.searchParams.set('returnoptions[pagesectionid]', pageSectionId);
+        } else if (sectionReturnNum) {
             url.searchParams.set('sr', sectionReturnNum);
         }
 

@@ -334,6 +334,16 @@ final class multisection_test extends \advanced_testcase {
     }
 
     /**
+     * Test that get_view_url resolves the pagesectionid option (Moodle 5.3+, MDL-86284).
+     */
+    public function test_view_url_multisection_pagesectionid(): void {
+        $sectioninfo = $this->format->get_modinfo()->get_section_info(2);
+        $url = $this->format->get_view_url(0, ['pagesectionid' => $sectioninfo->id]);
+        $this->assertStringContainsString('/course/view.php', $url->out(false));
+        $this->assertStringContainsString('section=2', $url->out(false));
+    }
+
+    /**
      * Test that get_view_url without navigation option returns plain course URL.
      */
     public function test_view_url_multisection_no_navigation(): void {

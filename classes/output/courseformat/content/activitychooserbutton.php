@@ -50,6 +50,13 @@ class activitychooserbutton extends activitychooserbutton_base {
         // Get the base data from parent.
         $data = parent::export_for_template($output);
 
+        // MDL-86284 (Moodle 5.3): the sr URL param is deprecated in favour of returnoptions[pagesectionid].
+        // Detect the new API by capability, not version, so one codebase serves 5.2 and 5.3+/main.
+        $format = course_get_format($this->section->course);
+        if (method_exists($format, 'get_return_options') && !empty($data->sectionreturnid)) {
+            $data->pagesectionid = $data->sectionreturnid;
+        }
+
         // Add tag information if tags are configured for this course.
         $courseid = $this->section->course;
 
