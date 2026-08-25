@@ -32,13 +32,14 @@ const SELECTORS = {
     TAG_ROW: 'tr[data-tag-id]',
     EDIT_LINK: '[data-action="edit-tag"]',
     DELETE_LINK: '[data-action="delete-tag"]',
+    TOGGLE_LINK: '[data-action="toggle-tag"]',
     CREATE_TAG: '[data-action="create-tag"]',
 };
 
 /** @type {Object} Per-tag per-profile resolved data. */
 let tagProfileData = {};
 
-/** @type {string} Currently active profile name ('' = Default). */
+/** @type {string} Currently active profile name. */
 let activeProfile = '';
 
 /** @type {string} Base URL for the tag management page. */
@@ -118,13 +119,6 @@ const switchProfile = (profileName) => {
     }
     window.history.replaceState(null, '', url.toString());
 
-    // Toggle create-tag button (only enabled in base view).
-    const isBase = profileName === '';
-    const createBtn = document.querySelector(SELECTORS.CREATE_TAG);
-    if (createBtn) {
-        createBtn.disabled = !isBase;
-    }
-
     // Update each tag row.
     document.querySelectorAll(SELECTORS.TAG_ROW).forEach((row) => {
         const tagId = row.dataset.tagId;
@@ -132,7 +126,7 @@ const switchProfile = (profileName) => {
         if (!profileData) {
             return;
         }
-        const data = profileData[profileName] || profileData[''];
+        const data = profileData[profileName];
         if (!data) {
             return;
         }
@@ -215,10 +209,20 @@ const updateRow = (row, data, tagId, profileName) => {
         editLink.href = editUrl.toString();
     }
 
-    // Show delete button only in base view (no profile selected).
-    const deleteLink = row.querySelector(SELECTORS.DELETE_LINK);
-    if (deleteLink) {
-        deleteLink.style.display = profileName === '' ? '' : 'none';
+    // Update toggle link URL and eye icon for the active set.
+    const toggleLink = row.querySelector(SELECTORS.TOGGLE_LINK);
+    if (toggleLink) {
+        const toggleUrl = new URL(toggleLink.href);
+        toggleUrl.searchParams.set('profile', profileName);
+        toggleLink.href = toggleUrl.toString();
+        const enabledIcon = toggleLink.querySelector('[data-region="toggle-icon-enabled"]');
+        const disabledIcon = toggleLink.querySelector('[data-region="toggle-icon-disabled"]');
+        if (enabledIcon) {
+            enabledIcon.classList.toggle('d-none', !data.enabled);
+        }
+        if (disabledIcon) {
+            disabledIcon.classList.toggle('d-none', !!data.enabled);
+        }
     }
 };
 

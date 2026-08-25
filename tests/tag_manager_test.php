@@ -153,7 +153,9 @@ final class tag_manager_test extends \advanced_testcase {
             $profileid = $profile->id;
         }
 
-        // Disable 'Quiz' tag for the explore profile.
+        // Enable Reading + Video, disable Quiz for the explore profile.
+        $this->profilemanager->materialize_profile_tag($tag1id, (int) $profileid, [], true);
+        $this->profilemanager->materialize_profile_tag($tag2id, (int) $profileid, [], true);
         $pt = $this->profilemanager->get_or_create_profile_tag($tag3id, $profileid);
         $this->profilemanager->update_profile_tag($pt->id, ['enabled' => 0]);
 
@@ -804,5 +806,73 @@ final class tag_manager_test extends \advanced_testcase {
 
         // Exclusion works.
         $this->assertNull($this->tagmanager->find_tag_by_name('OnlyName', [$id]));
+    }
+
+    /**
+     * A tag created in a set is enabled only there; other sets stay disabled.
+     */
+    public function test_create_tag_in_profile_enables_only_there(): void {
+        $profilea = $this->profilemanager->create_profile('seta', 'Set A');
+        $profileb = $this->profilemanager->create_profile('setb', 'Set B');
+
+        $tagid = $this->tagmanager->create_tag(
+            'Fresh',
+            null,
+            null,
+            'page',
+            null,
+            null,
+            '#123456',
+            'center',
+            'normal',
+            'global',
+            $profilea
+        );
+        $tag = $this->tagmanager->get_tag($tagid);
+
+        $resolveda = $this->profilemanager->resolve_tag_for_profile($tag, $profilea);
+        $resolvedb = $this->profilemanager->resolve_tag_for_profile($tag, $profileb);
+        $this->assertSame(1, (int) $resolveda->enabled);
+        $this->assertSame(0, (int) $resolvedb->enabled);
+    }
+
+    /**
+     * is_tag_disabled_everywhere treats missing rows and enabled=0 rows alike.
+     */
+    public function test_is_tag_disabled_everywhere(): void {
+        $profilea = $this->profilemanager->create_profile('dsa', 'DS A');
+        $tagid = $this->tagmanager->create_tag('Lonely', null, null, 'page');
+
+        // No rows at all → disabled everywhere.
+        $this->assertTrue($this->tagmanager->is_tag_disabled_everywhere($tagid));
+
+        $this->profilemanager->materialize_profile_tag($tagid, $profilea, [], true);
+        $this->assertFalse($this->tagmanager->is_tag_disabled_everywhere($tagid));
+
+        $this->profilemanager->materialize_profile_tag($tagid, $profilea, [], false);
+        $this->assertTrue($this->tagmanager->is_tag_disabled_everywhere($tagid));
+    }
+
+    /**
+     * Profile image resolution is strict per-set: no fallback to anchor areas.
+     */
+    public function test_profile_image_url_has_no_anchor_fallback(): void {
+        $this->profilemanager->create_profile('imgset', 'Img set');
+        $tagid = $this->tagmanager->create_tag('Pic', null, null, 'page');
+        $tag = $this->tagmanager->get_tag($tagid);
+
+        // Store an anchor-area card image.
+        $fs = get_file_storage();
+        $fs->create_file_from_string([
+            'contextid' => \core\context\system::instance()->id,
+            'component' => 'format_mimo',
+            'filearea' => tag_manager::FILEAREA_CARDIMAGE,
+            'itemid' => $tagid, 'filepath' => '/', 'filename' => 'card.png',
+        ], 'png');
+
+        // Legacy call (no profile): anchor image found.
+        $this->assertNotNull($this->tagmanager->get_cardimage_url($tag));
+        // Profile call: strict per-set — no fallback.
+        $this->assertNull($this->tagmanager->get_cardimage_url($tag, 'imgset'));
     }
 }

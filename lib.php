@@ -193,7 +193,7 @@ class format_mimo extends core_courseformat\base {
                 'type' => PARAM_ALPHANUMEXT,
             ],
             'activityprofile' => [
-                'default' => 'primaryschool',
+                'default' => \core\di::get(\format_mimo\profile_manager::class)->get_default_profile_name(),
                 'type' => PARAM_ALPHANUMEXT,
             ],
         ];
@@ -239,7 +239,7 @@ class format_mimo extends core_courseformat\base {
             }
             // Fallback to default if no profiles exist.
             if (empty($profileoptions)) {
-                $profileoptions['primaryschool'] = get_string('profile_primaryschool', 'format_mimo');
+                $profileoptions['base'] = get_string('profile_base', 'format_mimo');
             }
             $bgdesignoptions = [
                 'primary-school' => get_string('backgrounddesign_primaryschool', 'format_mimo'),

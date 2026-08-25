@@ -226,18 +226,14 @@ class tag_manager {
      * Build the display URL for the card image.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $profilename Optional profile name to get profile-specific image
+     * @param string|null $profilename Profile name for the set-specific image; null = anchor image
      * @return moodle_url|null
      */
     public function get_cardimage_url(\stdClass $tag, ?string $profilename = null): ?moodle_url {
-        // If profile specified, try to get profile-specific image first.
         if ($profilename !== null) {
-            $url = \core\di::get(profile_manager::class)->get_cardimage_url_by_name($tag->id, $profilename);
-            if ($url) {
-                return $url;
-            }
+            // Strict per-set images: no fallback to the anchor file area.
+            return \core\di::get(profile_manager::class)->get_cardimage_url_by_name($tag->id, $profilename);
         }
-        // Fall back to legacy image storage.
         return $this->get_image_url($tag, self::FILEAREA_CARDIMAGE);
     }
 
@@ -245,18 +241,13 @@ class tag_manager {
      * Build the display URL for the filter image area.
      *
      * @param \stdClass $tag Tag record
-     * @param string|null $profilename Optional profile name to get profile-specific image
+     * @param string|null $profilename Profile name for the set-specific image; null = anchor image
      * @return moodle_url|null
      */
     public function get_filterimage_url(\stdClass $tag, ?string $profilename = null): ?moodle_url {
-        // If profile specified, try to get profile-specific image first.
         if ($profilename !== null) {
-            $url = \core\di::get(profile_manager::class)->get_filterimage_url_by_name($tag->id, $profilename);
-            if ($url) {
-                return $url;
-            }
+            return \core\di::get(profile_manager::class)->get_filterimage_url_by_name($tag->id, $profilename);
         }
-        // Fall back to legacy image storage.
         return $this->get_image_url($tag, self::FILEAREA_FILTERIMAGE);
     }
 
@@ -473,16 +464,16 @@ class tag_manager {
             'format' => 'mimo',
             'name' => 'activityprofile',
         ]);
+        $profilemanager = \core\di::get(profile_manager::class);
         if (empty($profilename)) {
-            $profilename = 'primaryschool';
+            $profilename = $profilemanager->get_default_profile_name();
         }
 
         // Resolve profile ID.
-        $profilemanager = \core\di::get(profile_manager::class);
         $profile = $profilemanager->get_profile_by_name($profilename);
         if (!$profile) {
-            // Fallback to primaryschool if profile doesn't exist.
-            $profile = $profilemanager->get_profile_by_name('primaryschool');
+            // Stale option value — fall back to the site default profile.
+            $profile = $profilemanager->get_profile_by_name($profilemanager->get_default_profile_name());
         }
 
         if (!$profile) {
@@ -531,6 +522,7 @@ class tag_manager {
      * @param string|null $imgplacement Image placement (center or lower)
      * @param string|null $imgsize Image size (bigger, normal, or smaller)
      * @param string $scope Tag scope: 'global' or 'imported'
+     * @param int|null $createdinprofileid Profile the tag is created in; gets an enabled row
      * @return int ID of the created tag
      */
     public function create_tag(
@@ -543,7 +535,8 @@ class tag_manager {
         ?string $bgcolor = null,
         ?string $imgplacement = 'center',
         ?string $imgsize = 'normal',
-        string $scope = 'global'
+        string $scope = 'global',
+        ?int $createdinprofileid = null
     ): int {
         global $DB;
 
@@ -580,6 +573,13 @@ class tag_manager {
         $tag = $DB->get_record('format_mimo_tags', ['id' => $id]);
         if ($tag) {
             $this->tagcache->set('tag_' . $id, $tag);
+        }
+
+        // Equal-tagset semantics: the tag is only enabled in the set it was
+        // created in; all other sets have no row (= disabled).
+        if ($createdinprofileid !== null) {
+            \core\di::get(profile_manager::class)
+                ->materialize_profile_tag($id, $createdinprofileid, [], true);
         }
 
         return $id;
@@ -680,6 +680,21 @@ class tag_manager {
         }
 
         return $result;
+    }
+
+    /**
+     * Whether a tag is disabled in every tagset.
+     *
+     * Missing profile_tags rows count as disabled, so this is simply
+     * "no enabled row exists".
+     *
+     * @param int $tagid Tag ID
+     * @return bool
+     */
+    public function is_tag_disabled_everywhere(int $tagid): bool {
+        global $DB;
+
+        return !$DB->record_exists('format_mimo_profile_tags', ['tagid' => $tagid, 'enabled' => 1]);
     }
 
     /**

@@ -39,6 +39,11 @@ class format_mimo_generator extends component_generator_base {
         $this->tagcount++;
         $record = (object)(array)$record;
 
+        // Equal-tagset semantics: optional comma-separated set names the tag
+        // is enabled in (materialized rows). Not a table column.
+        $enabledin = $record->enabledin ?? '';
+        unset($record->enabledin);
+
         if (!isset($record->name)) {
             $record->name = 'Test Tag ' . $this->tagcount;
         }
@@ -77,6 +82,16 @@ class format_mimo_generator extends component_generator_base {
             }
 
             $record->id = $DB->insert_record('format_mimo_tags', $record);
+        }
+
+        if ($enabledin !== '') {
+            $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+            foreach (explode(',', $enabledin) as $pname) {
+                $profile = $profilemanager->get_profile_by_name(trim($pname));
+                if ($profile) {
+                    $profilemanager->materialize_profile_tag((int) $record->id, (int) $profile->id, [], true);
+                }
+            }
         }
 
         return $record;

@@ -153,7 +153,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
         $match = $tagmanager->find_tag_by_fingerprint($data, $this->matchedtagids);
         if ($match) {
-            $this->matchedtagids[] = $match->id;
+            $this->matchedtagids[] = (int) $match->id;
             $this->set_mapping('format_mimo_tag', $oldid, $match->id);
             $this->overridedata[$oldid] = [
                 'match' => 'fingerprint',
@@ -172,7 +172,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         // Trusts the instance's current values (admin's edits take precedence).
         $namematch = $tagmanager->find_tag_by_name($data->name, $this->matchedtagids);
         if ($namematch) {
-            $this->matchedtagids[] = $namematch->id;
+            $this->matchedtagids[] = (int) $namematch->id;
             $this->set_mapping('format_mimo_tag', $oldid, $namematch->id);
             $this->overridedata[$oldid] = [
                 'match' => 'name',
@@ -198,7 +198,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         }
 
         if ($posmatch) {
-            $this->matchedtagids[] = $posmatch->id;
+            $this->matchedtagids[] = (int) $posmatch->id;
             $this->set_mapping('format_mimo_tag', $oldid, $posmatch->id);
             $this->overridedata[$oldid] = [
                 'match' => 'positional',
@@ -360,25 +360,24 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             $backupdata = $info['backupdata'];
             $matchtype = $info['match'];
 
-            // Create profile_tag with full override values from backup.
-            $pt = $profilemanager->get_or_create_profile_tag($targetid, $profile->id);
-            $profilemanager->update_profile_tag($pt->id, [
-                'name' => $backupdata->name,
-                'bgcolor' => $backupdata->bgcolor ?? null,
-                'activitytype1' => $backupdata->activitytype1 ?? null,
-                'activitytype2' => $backupdata->activitytype2 ?? null,
-                'activitytype3' => $backupdata->activitytype3 ?? null,
-                'enabled' => 1,
-            ]);
+            // Fully materialized row: backup values win, anchor fills gaps
+            // (e.g. imgplacement/imgsize absent from old backups).
+            $values = ['name' => $backupdata->name];
+            foreach (
+                ['bgcolor', 'activitytype1', 'activitytype2', 'activitytype3',
+                    'imgplacement', 'imgsize'] as $field
+            ) {
+                if (isset($backupdata->$field) && $backupdata->$field !== '') {
+                    $values[$field] = $backupdata->$field;
+                }
+            }
+            $profilemanager->materialize_profile_tag((int) $targetid, (int) $profile->id, $values, true);
 
             // For newly created imported tags: disable in all global profiles.
             if ($matchtype === 'new') {
                 \core\di::get(\format_mimo\tag_manager::class)->bind_tag_to_course($targetid, $courseid);
                 foreach ($globalprofiles as $gp) {
-                    $gpt = $profilemanager->get_or_create_profile_tag($targetid, $gp->id);
-                    $profilemanager->update_profile_tag($gpt->id, [
-                        'enabled' => 0,
-                    ]);
+                    $profilemanager->materialize_profile_tag((int) $targetid, (int) $gp->id, [], false);
                 }
             }
         }
@@ -387,12 +386,41 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $allexisting = $this->existingtags ?? [];
         foreach ($allexisting as $etag) {
             if (!in_array((int) $etag->id, $this->matchedtagids, true)) {
-                $pt = $profilemanager->get_or_create_profile_tag($etag->id, $profile->id);
-                $profilemanager->update_profile_tag($pt->id, [
-                    'enabled' => 0,
-                ]);
+                $profilemanager->materialize_profile_tag((int) $etag->id, (int) $profile->id, [], false);
             }
         }
+
+        // Strict per-set images: give the imported profile its own copies of
+        // each tag's resolved image (restored backup file or target anchor).
+        $fs = get_file_storage();
+        $ctxid = \core\context\system::instance()->id;
+        $areas = [
+            [\format_mimo\tag_manager::FILEAREA_CARDIMAGE,
+                \format_mimo\profile_manager::FILEAREA_PROFILE_CARDIMAGE, 'cardimage'],
+            [\format_mimo\tag_manager::FILEAREA_FILTERIMAGE,
+                \format_mimo\profile_manager::FILEAREA_PROFILE_FILTERIMAGE, 'filterimage'],
+        ];
+        foreach ($this->overridedata as $info) {
+            $targetid = $info['targetid'];
+            $pt = $profilemanager->get_profile_tag_for_profile((int) $targetid, (int) $profile->id);
+            if (!$pt) {
+                continue;
+            }
+            foreach ($areas as [$anchorarea, $profilearea, $field]) {
+                $existingfiles = $fs->get_area_files($ctxid, 'format_mimo', $profilearea, $pt->id, 'itemid', false);
+                if (!empty($existingfiles)) {
+                    continue;
+                }
+                $anchorfiles = $fs->get_area_files($ctxid, 'format_mimo', $anchorarea, $targetid, 'itemid', false);
+                $anchorfile = reset($anchorfiles);
+                if (!$anchorfile) {
+                    continue;
+                }
+                $fs->create_file_from_storedfile(['filearea' => $profilearea, 'itemid' => $pt->id], $anchorfile);
+                $DB->set_field('format_mimo_profile_tags', $field, $anchorfile->get_filename(), ['id' => $pt->id]);
+            }
+        }
+        \core\di::get(\format_mimo\tag_manager::class)->clear_tag_cache();
 
         // Set the course's activity profile to the new imported profile.
         $DB->set_field_select(

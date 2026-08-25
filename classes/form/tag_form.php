@@ -52,145 +52,10 @@ class tag_form extends dynamic_form {
         $tagid = $this->optional_param('tagid', 0, PARAM_INT);
         $activitytypes = $this->get_activity_types();
 
-        if ($selectedprofileid) {
-            // Profile override mode: show only profile-specific fields.
-            $profile = \core\di::get(profile_manager::class)->get_profile($selectedprofileid);
-            if ($profile) {
-                $this->add_profile_section($mform, $profile, $activitytypes, $tagid);
-            }
-        } else {
-            // Base tag fields (only when no profile is selected).
-            $mform->addElement('header', 'basetagheader', get_string('basetagfields', 'format_mimo'));
-            $mform->setExpanded('basetagheader', true);
-
-            // Tag name.
-            $mform->addElement('text', 'name', get_string('tagname', 'format_mimo'), ['size' => 60]);
-            $mform->setType('name', PARAM_TEXT);
-            $mform->addRule('name', get_string('required'), 'required', null, 'client');
-
-            // Activity type 1.
-            $mform->addElement(
-                'select',
-                'activitytype1',
-                get_string('activitytype1', 'format_mimo'),
-                $activitytypes
-            );
-            $mform->setType('activitytype1', PARAM_TEXT);
-            $mform->addRule('activitytype1', get_string('required'), 'required', null, 'client');
-
-            // Activity type 2.
-            $activitytypes2 = ['' => get_string('selectactivitytype', 'format_mimo')] + $activitytypes;
-            $mform->addElement(
-                'select',
-                'activitytype2',
-                get_string('activitytype2', 'format_mimo'),
-                $activitytypes2
-            );
-            $mform->setType('activitytype2', PARAM_TEXT);
-
-            // Activity type 3.
-            $activitytypes3 = ['' => get_string('selectactivitytype', 'format_mimo')] + $activitytypes;
-            $mform->addElement(
-                'select',
-                'activitytype3',
-                get_string('activitytype3', 'format_mimo'),
-                $activitytypes3
-            );
-            $mform->setType('activitytype3', PARAM_TEXT);
-
-            // Image placement.
-            $placementoptions = [
-                $mform->createElement(
-                    'radio',
-                    'imgplacement',
-                    '',
-                    get_string('imgplacement_center', 'format_mimo'),
-                    'center'
-                ),
-                $mform->createElement(
-                    'radio',
-                    'imgplacement',
-                    '',
-                    get_string('imgplacement_lower', 'format_mimo'),
-                    'lower'
-                ),
-            ];
-            $mform->addGroup(
-                $placementoptions,
-                'imgplacementgroup',
-                get_string('imgplacement', 'format_mimo'),
-                ['<br>'],
-                false
-            );
-            $mform->setDefault('imgplacement', 'center');
-            $mform->setType('imgplacement', PARAM_TEXT);
-
-            // Image size.
-            $sizeoptions = [
-                $mform->createElement(
-                    'radio',
-                    'imgsize',
-                    '',
-                    get_string('imgsize_bigger', 'format_mimo'),
-                    'bigger'
-                ),
-                $mform->createElement(
-                    'radio',
-                    'imgsize',
-                    '',
-                    get_string('imgsize_normal', 'format_mimo'),
-                    'normal'
-                ),
-                $mform->createElement(
-                    'radio',
-                    'imgsize',
-                    '',
-                    get_string('imgsize_smaller', 'format_mimo'),
-                    'smaller'
-                ),
-            ];
-            $mform->addGroup(
-                $sizeoptions,
-                'imgsizegroup',
-                get_string('imgsize', 'format_mimo'),
-                ['<br>'],
-                false
-            );
-            $mform->setDefault('imgsize', 'normal');
-            $mform->setType('imgsize', PARAM_TEXT);
-
-            // Background color.
-            $tagmanager = \core\di::get(tag_manager::class);
-            $defaultcolor = $tagmanager->get_default_accent_palette()[0] ?? '#dcecff';
-            $mform->addElement(
-                'text',
-                'bgcolor',
-                get_string('tagbgcolor', 'format_mimo'),
-                ['size' => 8, 'type' => 'color']
-            );
-            $mform->setType('bgcolor', PARAM_TEXT);
-            $mform->setDefault('bgcolor', $defaultcolor);
-            $mform->addHelpButton('bgcolor', 'tagbgcolor', 'format_mimo');
-
-            // Card image (base).
-            $mform->addElement(
-                'filemanager',
-                'cardimagefile',
-                get_string('cardimage', 'format_mimo'),
-                null,
-                $tagmanager->get_image_filemanager_options()
-            );
-            $mform->addHelpButton('cardimagefile', 'cardimage', 'format_mimo');
-
-            // Filter image (base).
-            $mform->addElement(
-                'filemanager',
-                'filterimagefile',
-                get_string('filterimage', 'format_mimo'),
-                null,
-                $tagmanager->get_image_filemanager_options()
-            );
-            $mform->addHelpButton('filterimagefile', 'filterimage', 'format_mimo');
+        // The form always operates on one tagset (profile).
+        $profile = \core\di::get(profile_manager::class)->get_profile($selectedprofileid);
+        if ($profile) {
+            $this->add_profile_section($mform, $profile, $activitytypes, $tagid);
         }
 
         // Store profile IDs as hidden field for processing.
@@ -218,18 +83,7 @@ class tag_form extends dynamic_form {
         );
         $mform->setExpanded('profileheader_' . $profile->id, true);
 
-        // Enabled flag.
-        $mform->addElement(
-            'advcheckbox',
-            'profile_enabled_' . $profile->id,
-            get_string('profiletag_enabled', 'format_mimo'),
-            get_string('profiletag_enabled_desc', 'format_mimo'),
-            [],
-            [0, 1]
-        );
-        $mform->setDefault('profile_enabled_' . $profile->id, 1);
-
-        // Override: Tag name.
+        // Tag name.
         $mform->addElement(
             'text',
             'profile_name_' . $profile->id,
@@ -237,9 +91,10 @@ class tag_form extends dynamic_form {
             ['size' => 60]
         );
         $mform->setType('profile_name_' . $profile->id, PARAM_TEXT);
+        $mform->addRule('profile_name_' . $profile->id, get_string('required'), 'required', null, 'client');
         $mform->addHelpButton('profile_name_' . $profile->id, 'profiletag_name', 'format_mimo');
 
-        // Override: Background color.
+        // Background color.
         $mform->addElement(
             'text',
             'profile_bgcolor_' . $profile->id,
@@ -249,21 +104,21 @@ class tag_form extends dynamic_form {
         $mform->setType('profile_bgcolor_' . $profile->id, PARAM_TEXT);
         $mform->addHelpButton('profile_bgcolor_' . $profile->id, 'profiletag_bgcolor', 'format_mimo');
 
-        // Override: Activity types.
-        $overrideactivitytypes = ['' => get_string('inherit_from_base', 'format_mimo')] + $activitytypes;
+        // Activity types (type 1 required, 2/3 optional).
         $mform->addElement(
             'select',
             'profile_activitytype1_' . $profile->id,
             get_string('profiletag_activitytype1', 'format_mimo'),
-            $overrideactivitytypes
+            $activitytypes
         );
         $mform->setType('profile_activitytype1_' . $profile->id, PARAM_TEXT);
+        $mform->addRule('profile_activitytype1_' . $profile->id, get_string('required'), 'required', null, 'client');
 
         $mform->addElement(
             'select',
             'profile_activitytype2_' . $profile->id,
             get_string('profiletag_activitytype2', 'format_mimo'),
-            $overrideactivitytypes
+            $activitytypes
         );
         $mform->setType('profile_activitytype2_' . $profile->id, PARAM_TEXT);
 
@@ -271,13 +126,12 @@ class tag_form extends dynamic_form {
             'select',
             'profile_activitytype3_' . $profile->id,
             get_string('profiletag_activitytype3', 'format_mimo'),
-            $overrideactivitytypes
+            $activitytypes
         );
         $mform->setType('profile_activitytype3_' . $profile->id, PARAM_TEXT);
 
-        // Override: Image placement.
-        $overrideplacementoptions = [
-            '' => get_string('inherit_from_base', 'format_mimo'),
+        // Image placement.
+        $placementoptions = [
             'center' => get_string('imgplacement_center', 'format_mimo'),
             'lower' => get_string('imgplacement_lower', 'format_mimo'),
         ];
@@ -285,13 +139,13 @@ class tag_form extends dynamic_form {
             'select',
             'profile_imgplacement_' . $profile->id,
             get_string('profiletag_imgplacement', 'format_mimo'),
-            $overrideplacementoptions
+            $placementoptions
         );
         $mform->setType('profile_imgplacement_' . $profile->id, PARAM_TEXT);
+        $mform->setDefault('profile_imgplacement_' . $profile->id, 'center');
 
-        // Override: Image size.
-        $overridesizeoptions = [
-            '' => get_string('inherit_from_base', 'format_mimo'),
+        // Image size.
+        $sizeoptions = [
             'bigger' => get_string('imgsize_bigger', 'format_mimo'),
             'normal' => get_string('imgsize_normal', 'format_mimo'),
             'smaller' => get_string('imgsize_smaller', 'format_mimo'),
@@ -300,9 +154,10 @@ class tag_form extends dynamic_form {
             'select',
             'profile_imgsize_' . $profile->id,
             get_string('profiletag_imgsize', 'format_mimo'),
-            $overridesizeoptions
+            $sizeoptions
         );
         $mform->setType('profile_imgsize_' . $profile->id, PARAM_TEXT);
+        $mform->setDefault('profile_imgsize_' . $profile->id, 'normal');
 
         // Card image for this profile.
         $profilemanager = \core\di::get(profile_manager::class);
@@ -325,33 +180,21 @@ class tag_form extends dynamic_form {
         );
         $mform->addHelpButton('filterimage_profile_' . $profile->id, 'filterimage', 'format_mimo');
 
-        // Load existing override data if editing.
+        // Defaults: resolved values (anchor values for never-configured sets)
+        // when editing; palette default colour when creating.
         if ($tagid) {
-            $pt = $profilemanager->get_profile_tag_for_profile($tagid, $profile->id);
-            if ($pt) {
-                $mform->setDefault('profile_enabled_' . $profile->id, (int) $pt->enabled);
-                if ($pt->name !== null) {
-                    $mform->setDefault('profile_name_' . $profile->id, $pt->name);
-                }
-                if ($pt->bgcolor !== null) {
-                    $mform->setDefault('profile_bgcolor_' . $profile->id, $pt->bgcolor);
-                }
-                if ($pt->activitytype1 !== null) {
-                    $mform->setDefault('profile_activitytype1_' . $profile->id, $pt->activitytype1);
-                }
-                if ($pt->activitytype2 !== null) {
-                    $mform->setDefault('profile_activitytype2_' . $profile->id, $pt->activitytype2);
-                }
-                if ($pt->activitytype3 !== null) {
-                    $mform->setDefault('profile_activitytype3_' . $profile->id, $pt->activitytype3);
-                }
-                if ($pt->imgplacement !== null) {
-                    $mform->setDefault('profile_imgplacement_' . $profile->id, $pt->imgplacement);
-                }
-                if ($pt->imgsize !== null) {
-                    $mform->setDefault('profile_imgsize_' . $profile->id, $pt->imgsize);
-                }
-            }
+            $anchor = \core\di::get(tag_manager::class)->get_tag($tagid);
+            $resolved = $profilemanager->resolve_tag_for_profile($anchor, (int) $profile->id);
+            $mform->setDefault('profile_name_' . $profile->id, $resolved->name);
+            $mform->setDefault('profile_bgcolor_' . $profile->id, $resolved->bgcolor);
+            $mform->setDefault('profile_activitytype1_' . $profile->id, (string) $resolved->activitytype1);
+            $mform->setDefault('profile_activitytype2_' . $profile->id, (string) $resolved->activitytype2);
+            $mform->setDefault('profile_activitytype3_' . $profile->id, (string) $resolved->activitytype3);
+            $mform->setDefault('profile_imgplacement_' . $profile->id, $resolved->imgplacement ?? 'center');
+            $mform->setDefault('profile_imgsize_' . $profile->id, $resolved->imgsize ?? 'normal');
+        } else {
+            $defaultcolor = \core\di::get(tag_manager::class)->get_default_accent_palette()[0] ?? '#dcecff';
+            $mform->setDefault('profile_bgcolor_' . $profile->id, $defaultcolor);
         }
     }
 
@@ -396,64 +239,13 @@ class tag_form extends dynamic_form {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        // Check background color format.
-        $color = $data['bgcolor'] ?? '';
-        if (!empty($color) && !preg_match('/^#([0-9a-fA-F]{6})$/', $color)) {
-            $errors['bgcolor'] = get_string('invalidcolor', 'format_mimo');
-        }
-
-        // Check per-profile override bgcolor format (only for displayed profile).
+        // Check per-profile bgcolor format (only for displayed profile).
         $profileids = !empty($data['profileids']) ? explode(',', $data['profileids']) : [];
         foreach ($profileids as $profileid) {
             $fieldname = 'profile_bgcolor_' . $profileid;
             $overridecolor = $data[$fieldname] ?? '';
             if (!empty($overridecolor) && !preg_match('/^#([0-9a-fA-F]{6})$/', $overridecolor)) {
                 $errors[$fieldname] = get_string('invalidcolor', 'format_mimo');
-            }
-        }
-
-        // Check that the displayed profile has a card image (if a profile is selected),
-        // or that at least one profile has an image (when editing base only, check all profiles).
-        $tagid = $this->optional_param('tagid', 0, PARAM_INT);
-
-        if (!empty($profileids)) {
-            // Check if base already has a card image (draft or stored).
-            $basehasimage = false;
-            $basedraftid = $data['cardimagefile'] ?? 0;
-            if ($basedraftid) {
-                $basefileinfo = \file_get_draft_area_info($basedraftid);
-                if (!empty($basefileinfo['filecount'])) {
-                    $basehasimage = true;
-                }
-            }
-            if (!$basehasimage && $tagid && \core\di::get(tag_manager::class)->has_cardimage($tagid)) {
-                $basehasimage = true;
-            }
-
-            if (!$basehasimage) {
-                // No base image — check the profile override has one.
-                $hasimage = false;
-                foreach ($profileids as $profileid) {
-                    $fieldname = 'cardimage_profile_' . $profileid;
-                    $draftid = $data[$fieldname] ?? 0;
-                    $fileinfo = \file_get_draft_area_info($draftid);
-                    if (!empty($fileinfo['filecount'])) {
-                        $hasimage = true;
-                        break;
-                    }
-                    if ($tagid) {
-                        $profiletag = \core\di::get(profile_manager::class)
-                            ->get_profile_tag_for_profile($tagid, (int)$profileid);
-                        if ($profiletag && !empty($profiletag->cardimage)) {
-                            $hasimage = true;
-                            break;
-                        }
-                    }
-                }
-                if (!$hasimage) {
-                    $firstprofileid = reset($profileids);
-                    $errors['cardimage_profile_' . $firstprofileid] = get_string('atleastoneimage', 'format_mimo');
-                }
             }
         }
 
@@ -483,40 +275,18 @@ class tag_form extends dynamic_form {
         $tagid = $this->optional_param('tagid', 0, PARAM_INT);
         $selectedprofileid = $this->optional_param('selectedprofileid', 0, PARAM_INT);
 
-        $formdata = [];
-        $formdata['tagid'] = $tagid;
-        $formdata['selectedprofileid'] = $selectedprofileid;
-        $formdata['profileids'] = $selectedprofileid ? (string) $selectedprofileid : '';
+        $formdata = [
+            'tagid' => $tagid,
+            'selectedprofileid' => $selectedprofileid,
+            'profileids' => $selectedprofileid ? (string) $selectedprofileid : '',
+        ];
 
-        if ($tagid) {
-            $tagmanager = \core\di::get(tag_manager::class);
-            $tag = $tagmanager->get_tag($tagid);
-            if ($tag) {
-                if (!$selectedprofileid) {
-                    // Base mode: load all base tag fields.
-                    $formdata = array_merge($formdata, (array) $tag);
-                    $formdata['tagid'] = $tag->id;
-                }
-            }
-
-            if (!$selectedprofileid) {
-                // Base image drafts.
-                $formdata['cardimagefile'] = $tagmanager->prepare_cardimage_draft($tagid);
-                $formdata['filterimagefile'] = $tagmanager->prepare_filterimage_draft($tagid);
-            }
-
-            // Profile-specific image drafts.
-            if ($selectedprofileid) {
-                $profilemanager = \core\di::get(profile_manager::class);
-                $formdata['cardimage_profile_' . $selectedprofileid] =
-                    $profilemanager->prepare_cardimage_draft($tagid, $selectedprofileid);
-                $formdata['filterimage_profile_' . $selectedprofileid] =
-                    $profilemanager->prepare_filterimage_draft($tagid, $selectedprofileid);
-            }
-        } else if (!$selectedprofileid) {
-            // New tag (base mode only) - prepare empty draft areas.
-            $formdata['cardimagefile'] = 0;
-            $formdata['filterimagefile'] = 0;
+        if ($tagid && $selectedprofileid) {
+            $profilemanager = \core\di::get(profile_manager::class);
+            $formdata['cardimage_profile_' . $selectedprofileid] =
+                $profilemanager->prepare_cardimage_draft($tagid, $selectedprofileid);
+            $formdata['filterimage_profile_' . $selectedprofileid] =
+                $profilemanager->prepare_filterimage_draft($tagid, $selectedprofileid);
         }
 
         $this->set_data($formdata);
@@ -530,93 +300,55 @@ class tag_form extends dynamic_form {
     public function process_dynamic_submission() {
         $data = $this->get_data();
 
-        $savedprofileids = !empty($data->profileids) ? explode(',', $data->profileids) : [];
-
-        if (empty($savedprofileids)) {
-            // Base tag mode: update or create the base tag.
-            $tagmanager = \core\di::get(tag_manager::class);
-            if (!empty($data->tagid)) {
-                $tagmanager->update_tag(
-                    $data->tagid,
-                    [
-                        'name' => $data->name,
-                        'activitytype1' => $data->activitytype1,
-                        'activitytype2' => $data->activitytype2,
-                        'activitytype3' => $data->activitytype3,
-                        'bgcolor' => $data->bgcolor,
-                        'imgplacement' => $data->imgplacement,
-                        'imgsize' => $data->imgsize,
-                    ]
-                );
-                $currenttagid = $data->tagid;
-            } else {
-                $currenttagid = $tagmanager->create_tag(
-                    $data->name,
-                    null,
-                    null,
-                    $data->activitytype1,
-                    $data->activitytype2,
-                    $data->activitytype3,
-                    $data->bgcolor,
-                    $data->imgplacement,
-                    $data->imgsize
-                );
-            }
-
-            // Save base images.
-            if (isset($data->cardimagefile)) {
-                $tagmanager->save_cardimage_from_draft($currenttagid, (int)$data->cardimagefile);
-            }
-            if (isset($data->filterimagefile)) {
-                $tagmanager->save_filterimage_from_draft($currenttagid, (int)$data->filterimagefile);
-            }
-        } else {
-            // Profile override mode: tag must already exist.
-            $currenttagid = $data->tagid;
-        }
-
-        // Save profile-specific images and overrides (only for the displayed profile).
+        $profileid = (int) $data->selectedprofileid;
+        $tagmanager = \core\di::get(tag_manager::class);
         $profilemanager = \core\di::get(profile_manager::class);
-        foreach ($savedprofileids as $profileid) {
-            $cardfield = 'cardimage_profile_' . $profileid;
-            $filterfield = 'filterimage_profile_' . $profileid;
 
-            if (isset($data->$cardfield)) {
-                $profilemanager->save_cardimage_from_draft($currenttagid, (int)$profileid, (int)$data->$cardfield);
-            }
-            if (isset($data->$filterfield)) {
-                $profilemanager->save_filterimage_from_draft($currenttagid, (int)$profileid, (int)$data->$filterfield);
-            }
+        $values = [
+            'name' => $data->{'profile_name_' . $profileid},
+            'bgcolor' => $data->{'profile_bgcolor_' . $profileid},
+            'activitytype1' => $data->{'profile_activitytype1_' . $profileid},
+            'activitytype2' => $data->{'profile_activitytype2_' . $profileid} ?: null,
+            'activitytype3' => $data->{'profile_activitytype3_' . $profileid} ?: null,
+            'imgplacement' => $data->{'profile_imgplacement_' . $profileid},
+            'imgsize' => $data->{'profile_imgsize_' . $profileid},
+        ];
+
+        if (!empty($data->tagid)) {
+            // Edit: write this set's row only.
+            $currenttagid = (int) $data->tagid;
+            $profilemanager->materialize_profile_tag($currenttagid, $profileid, $values);
+        } else {
+            // Create: anchor row + enabled row in the creating set.
+            $currenttagid = $tagmanager->create_tag(
+                $values['name'],
+                null,
+                null,
+                $values['activitytype1'],
+                $values['activitytype2'],
+                $values['activitytype3'],
+                $values['bgcolor'],
+                $values['imgplacement'],
+                $values['imgsize'],
+                'global',
+                $profileid
+            );
         }
 
-        // Save profile-specific override fields.
-        foreach ($savedprofileids as $profileid) {
-            $overrides = [];
-            $fields = [
-                'name' => 'profile_name_',
-                'bgcolor' => 'profile_bgcolor_',
-                'activitytype1' => 'profile_activitytype1_',
-                'activitytype2' => 'profile_activitytype2_',
-                'activitytype3' => 'profile_activitytype3_',
-                'imgplacement' => 'profile_imgplacement_',
-                'imgsize' => 'profile_imgsize_',
-            ];
-
-            foreach ($fields as $key => $prefix) {
-                $fieldname = $prefix . $profileid;
-                if (isset($data->$fieldname)) {
-                    $overrides[$key] = $data->$fieldname !== '' ? $data->$fieldname : null;
-                }
+        // Per-set images (also mirrored to anchor areas on create for
+        // fingerprint/back-compat).
+        $cardfield = 'cardimage_profile_' . $profileid;
+        $filterfield = 'filterimage_profile_' . $profileid;
+        if (isset($data->$cardfield)) {
+            $profilemanager->save_cardimage_from_draft($currenttagid, $profileid, (int) $data->$cardfield);
+            if (empty($data->tagid)) {
+                $tagmanager->save_cardimage_from_draft($currenttagid, (int) $data->$cardfield);
             }
-
-            $enabledfield = 'profile_enabled_' . $profileid;
-            if (isset($data->$enabledfield)) {
-                $overrides['enabled'] = (int)$data->$enabledfield;
-            }
-
-            if (!empty($overrides)) {
-                $pt = $profilemanager->get_or_create_profile_tag($currenttagid, (int)$profileid);
-                $profilemanager->update_profile_tag($pt->id, $overrides);
+        }
+        if (isset($data->$filterfield)) {
+            $profilemanager->save_filterimage_from_draft($currenttagid, $profileid, (int) $data->$filterfield);
+            if (empty($data->tagid)) {
+                $tagmanager->save_filterimage_from_draft($currenttagid, (int) $data->$filterfield);
             }
         }
 

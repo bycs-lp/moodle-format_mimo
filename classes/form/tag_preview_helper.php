@@ -56,7 +56,8 @@ class tag_preview_helper {
         $output = $PAGE->get_renderer('format_mimo');
 
         // Get current activity profile for displaying correct images.
-        $currentprofile = $course->activityprofile ?? 'primaryschool';
+        $currentprofile = $course->activityprofile
+            ?? \core\di::get(\format_mimo\profile_manager::class)->get_default_profile_name();
 
         // Get all profiles for passing image URLs to template data attributes.
         $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
@@ -77,7 +78,8 @@ class tag_preview_helper {
 
                 $pt = $profilemanager->get_profile_tag_for_profile($tag->id, $profile->id);
                 $profilenames[$profile->name] = ($pt && $pt->name !== null) ? $pt->name : $tag->name;
-                $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 1;
+                // Missing row = disabled (equal-tagset semantics).
+                $profileenabled[$profile->name] = $pt ? (int) $pt->enabled : 0;
             }
 
             $tagpreviews[] = [

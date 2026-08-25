@@ -396,6 +396,81 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
+     * Imported profiles must get fully materialized rows and their own image
+     * copies (strict per-set images have no anchor fallback anymore).
+     */
+    public function test_imported_profile_rows_are_materialized_with_images(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+
+        // Clear preseeded tags so the positional match deterministically hits
+        // the tag created below.
+        $DB->delete_records('format_mimo_tags');
+        $DB->delete_records('format_mimo_profile_tags');
+        $this->tagmanager->clear_tag_cache();
+        $this->profilemanager->clear_request_caches();
+
+        $tagid = $this->tagmanager->create_tag(
+            'Original',
+            null,
+            null,
+            'page',
+            null,
+            null,
+            '#123123',
+            'center',
+        );
+
+        // Anchor card image.
+        $fs = get_file_storage();
+        $fs->create_file_from_string([
+            'contextid' => \core\context\system::instance()->id,
+            'component' => 'format_mimo',
+            'filearea' => tag_manager::FILEAREA_CARDIMAGE,
+            'itemid' => $tagid,
+            'filepath' => '/',
+            'filename' => 'anchor.png',
+        ], 'png');
+
+        $course = $generator->create_course(['format' => 'mimo']);
+        $page = $generator->create_module('page', ['course' => $course->id]);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        $backupid = 'mimo_imp_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        // Break fingerprint AND name match → positional match → imported profile.
+        $this->tagmanager->update_tag($tagid, ['name' => 'Renamed', 'bgcolor' => '#999999']);
+
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Imported profile restored');
+
+        $imported = null;
+        foreach ($this->profilemanager->get_all_profiles() as $p) {
+            if (($p->scope ?? '') === 'imported') {
+                $imported = $p;
+            }
+        }
+        $this->assertNotNull($imported, 'Imported profile expected');
+
+        $pt = $this->profilemanager->get_profile_tag_for_profile($tagid, (int) $imported->id);
+        $this->assertNotNull($pt);
+        // Fully materialized: no NULL holes.
+        $this->assertSame('Original', $pt->name);
+        $this->assertNotNull($pt->bgcolor);
+        $this->assertNotNull($pt->imgplacement);
+        $this->assertNotNull($pt->imgsize);
+        $this->assertSame(1, (int) $pt->enabled);
+
+        // Image copied into the imported profile's own area.
+        $url = $this->profilemanager->get_cardimage_url($tagid, (int) $imported->id);
+        $this->assertNotNull($url, 'Anchor image must be copied into the imported profile area');
+    }
+
+    /**
      * Back up a course and extract it into the temp directory Moodle expects for restores.
      *
      * @param int $courseid course id to back up

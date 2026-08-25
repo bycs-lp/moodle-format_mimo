@@ -74,7 +74,16 @@ final class get_tags_test extends \advanced_testcase {
         $this->tagmanager->create_tag('Alpha', 'a.svg', 'a-small.svg', 'page');
         $this->tagmanager->create_tag('Bravo', 'b.svg', 'b-small.svg', 'quiz');
 
-        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        // Enable both tags in an explicit set used by the course.
+        $profileid = $this->profilemanager->create_profile('wstagset', 'WS tag set');
+        foreach ($this->tagmanager->get_all_tags() as $tag) {
+            $this->profilemanager->materialize_profile_tag((int) $tag->id, $profileid, [], true);
+        }
+
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'activityprofile' => 'wstagset',
+        ]);
 
         $result = get_tags::execute($course->id);
 

@@ -29,5 +29,29 @@
  * @return bool result
  */
 function xmldb_format_mimo_upgrade($oldversion) {
+    if ($oldversion < 2026082500) {
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+
+        // Create the base profile as the first set. Collision rule: an
+        // existing profile literally named 'base' is adopted as-is.
+        if (!$profilemanager->get_profile_by_name('base')) {
+            global $DB;
+            $DB->execute('UPDATE {format_mimo_profiles} SET sortorder = sortorder + 1');
+            $profilemanager->create_profile('base', get_string('profile_base', 'format_mimo'), 0);
+        }
+
+        // Materialize every tag × profile pair with the pre-upgrade resolved
+        // values (missing rows resolved as enabled + inherited).
+        $profilemanager->materialize_all_profile_tags(true);
+
+        // Strict per-set images: preserve current appearance by copying
+        // resolved anchor images into profile file areas.
+        $profilemanager->copy_base_images_to_profile_tags();
+
+        \core\di::get(\format_mimo\tag_manager::class)->clear_tag_cache();
+
+        upgrade_plugin_savepoint(true, 2026082500, 'format', 'mimo');
+    }
+
     return true;
 }

@@ -64,12 +64,14 @@ class content extends content_base {
         unset($data->collapsemenu);
 
         // Get the course format options.
-        $activityprofile = $course->activityprofile ?? 'primaryschool';
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        $defaultprofile = $profilemanager->get_default_profile_name();
+        $activityprofile = $course->activityprofile ?? $defaultprofile;
 
-        // Validate profile exists in database, fallback to primaryschool if not.
-        $profile = \core\di::get(\format_mimo\profile_manager::class)->get_profile_by_name($activityprofile);
+        // Validate profile exists in database, fallback to the default profile if not.
+        $profile = $profilemanager->get_profile_by_name($activityprofile);
         if (!$profile) {
-            $activityprofile = 'primaryschool';
+            $activityprofile = $defaultprofile;
         }
 
         $data->stylevariant = $activityprofile;
@@ -111,12 +113,14 @@ class content extends content_base {
         $course = $format->get_course();
 
         $bgdesign = $course->backgrounddesign ?? 'primary-school';
-        $activityprofile = $course->activityprofile ?? 'primaryschool';
+        $profilemanager = \core\di::get(\format_mimo\profile_manager::class);
+        $defaultprofile = $profilemanager->get_default_profile_name();
+        $activityprofile = $course->activityprofile ?? $defaultprofile;
 
         // Validate profile.
-        $profile = \core\di::get(\format_mimo\profile_manager::class)->get_profile_by_name($activityprofile);
+        $profile = $profilemanager->get_profile_by_name($activityprofile);
         if (!$profile) {
-            $activityprofile = 'primaryschool';
+            $activityprofile = $defaultprofile;
         }
 
         $modinfo = get_fast_modinfo($course);

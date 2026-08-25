@@ -268,6 +268,8 @@ class profile_manager {
     /**
      * Get or create a profile_tags record for a tag/profile combination.
      *
+     * New rows are fully materialized from anchor values with enabled=0.
+     *
      * @param int $tagid Tag ID
      * @param int $profileid Profile ID
      * @return stdClass
@@ -279,28 +281,74 @@ class profile_manager {
             'tagid' => $tagid,
             'profileid' => $profileid,
         ]);
+        if ($record) {
+            return $record;
+        }
+        return $this->materialize_profile_tag($tagid, $profileid);
+    }
 
-        if (!$record) {
-            $now = $this->clock->time();
-            $record = new stdClass();
+    /**
+     * Upsert a fully materialized profile_tags row for a tag/profile pair.
+     *
+     * Field priority per override field: $values → existing non-NULL row value
+     * → anchor tag value. Enabled: explicit $enabled when non-null, otherwise
+     * the existing row's flag (0 for brand-new rows).
+     *
+     * @param int $tagid Tag ID
+     * @param int $profileid Profile ID
+     * @param array $values Optional explicit field values
+     * @param bool|null $enabled Explicit enabled flag, or null to keep/default
+     * @return stdClass The materialized profile_tags record
+     */
+    public function materialize_profile_tag(int $tagid, int $profileid, array $values = [], ?bool $enabled = null): stdClass {
+        global $DB;
+
+        $anchor = \core\di::get(tag_manager::class)->get_tag($tagid);
+        if (!$anchor) {
+            throw new \coding_exception('Cannot materialize profile tag for unknown tag ' . $tagid);
+        }
+
+        $existing = $DB->get_record('format_mimo_profile_tags', [
+            'tagid' => $tagid,
+            'profileid' => $profileid,
+        ]);
+
+        $fields = ['name', 'bgcolor', 'activitytype1', 'activitytype2', 'activitytype3', 'imgplacement', 'imgsize'];
+        $now = $this->clock->time();
+
+        $record = $existing ?: new stdClass();
+        foreach ($fields as $field) {
+            if (array_key_exists($field, $values)) {
+                $record->$field = $values[$field];
+            } else if (!isset($existing->$field)) {
+                $record->$field = $anchor->$field ?? null;
+            }
+        }
+        if ($record->bgcolor !== null) {
+            $record->bgcolor = \core\di::get(tag_manager::class)->normalize_hex_color($record->bgcolor);
+        }
+        if ($enabled !== null) {
+            $record->enabled = (int) $enabled;
+        } else if (!$existing) {
+            $record->enabled = 0;
+        }
+        $record->timemodified = $now;
+
+        if ($existing) {
+            $DB->update_record('format_mimo_profile_tags', $record);
+        } else {
             $record->tagid = $tagid;
             $record->profileid = $profileid;
-            $record->name = null;
-            $record->bgcolor = null;
-            $record->activitytype1 = null;
-            $record->activitytype2 = null;
-            $record->activitytype3 = null;
-            $record->enabled = 1;
             $record->cardimage = null;
             $record->filterimage = null;
             $record->timecreated = $now;
-            $record->timemodified = $now;
             $record->id = $DB->insert_record('format_mimo_profile_tags', $record);
-            // Invalidate cached profile_tags for this profile.
-            unset($this->profiletagscache[$profileid]);
         }
 
-        return $record;
+        unset($this->profiletagscache[$profileid]);
+        \core\di::get(tag_manager::class)->clear_tag_cache();
+
+        return $DB->get_record('format_mimo_profile_tags', ['id' => $record->id], '*', MUST_EXIST);
     }
 
     /**
@@ -431,7 +479,9 @@ class profile_manager {
      *
      * For each nullable override field (name, bgcolor, activitytype1-3, imgplacement, imgsize),
      * a non-NULL value in the profile_tags record replaces the base tag value.
-     * The enabled flag is always taken from the profile_tags record.
+     * The enabled flag is always taken from the profile_tags record; a missing
+     * profile_tags row resolves as disabled (anchor values are still returned
+     * for display purposes).
      *
      * @param stdClass $tag Base tag record
      * @param int $profileid Profile ID
@@ -442,7 +492,8 @@ class profile_manager {
 
         $pt = $this->get_profile_tag_for_profile($tag->id, $profileid);
         if (!$pt) {
-            $resolved->enabled = 1;
+            // No materialized row: the tag is not configured for this set.
+            $resolved->enabled = 0;
             return $resolved;
         }
 
@@ -898,6 +949,17 @@ class profile_manager {
         return $DB->get_records('format_mimo_profiles', ['scope' => 'global'], 'sortorder ASC, id ASC');
     }
 
+    /**
+     * Name of the site's default activity profile.
+     *
+     * @return string First global profile by sortorder, or '' when none exist.
+     */
+    public function get_default_profile_name(): string {
+        $profiles = $this->get_global_profiles();
+        $first = reset($profiles);
+        return $first ? $first->name : '';
+    }
+
     /* ================= *
      * Initialization.  *
      * ================= */
@@ -907,13 +969,22 @@ class profile_manager {
      * Called during plugin installation.
      */
     public function initialize_default_profiles(): void {
+        global $DB;
+
+        // The base set is always the first profile. Collision rule: an
+        // existing profile literally named 'base' is adopted as-is.
+        if (!$this->get_profile_by_name('base')) {
+            $DB->execute('UPDATE {format_mimo_profiles} SET sortorder = sortorder + 1');
+            $this->create_profile('base', get_string('profile_base', 'format_mimo'), 0);
+        }
+
         $defaults = [
             ['name' => 'primaryschool',
-                'displayname' => get_string('profile_primaryschool', 'format_mimo'), 'sortorder' => 0],
+                'displayname' => get_string('profile_primaryschool', 'format_mimo'), 'sortorder' => 1],
             ['name' => 'secondaryschool',
-                'displayname' => get_string('profile_secondaryschool', 'format_mimo'), 'sortorder' => 1],
+                'displayname' => get_string('profile_secondaryschool', 'format_mimo'), 'sortorder' => 2],
             ['name' => 'foreignlanguage',
-                'displayname' => get_string('profile_foreignlanguage', 'format_mimo'), 'sortorder' => 2],
+                'displayname' => get_string('profile_foreignlanguage', 'format_mimo'), 'sortorder' => 3],
         ];
 
         foreach ($defaults as $profile) {
@@ -926,6 +997,84 @@ class profile_manager {
                 $this->apply_default_profile_tag_overrides($profile['name'], $profileid);
             }
         }
+
+        // Equal-tagset invariant: every tag × profile pair gets a fully
+        // materialized row; fresh pairs are enabled (default tags are active
+        // in default sets).
+        $this->materialize_all_profile_tags(true);
+    }
+
+    /**
+     * Materialize profile_tags rows for every tag × profile combination.
+     *
+     * Existing rows keep their enabled flag and get NULL fields filled from
+     * the anchor; missing rows are created with enabled = $enablemissing
+     * (pre-materialization semantics treated missing rows as enabled).
+     *
+     * @param bool $enablemissing Enabled flag for rows that do not exist yet
+     */
+    public function materialize_all_profile_tags(bool $enablemissing = true): void {
+        $tags = \core\di::get(tag_manager::class)->get_all_tags();
+        foreach ($this->get_all_profiles() as $profile) {
+            foreach ($tags as $tag) {
+                $existing = $this->get_profile_tag_for_profile((int) $tag->id, (int) $profile->id);
+                $this->materialize_profile_tag(
+                    (int) $tag->id,
+                    (int) $profile->id,
+                    [],
+                    $existing ? null : $enablemissing
+                );
+            }
+        }
+    }
+
+    /**
+     * Copy anchor-area tag images into profile file areas that have none.
+     *
+     * One-time migration companion for strict per-set images: sets that
+     * previously displayed the anchor image via fallback keep their current
+     * appearance.
+     */
+    public function copy_base_images_to_profile_tags(): void {
+        global $DB;
+
+        $fs = get_file_storage();
+        $ctxid = \core\context\system::instance()->id;
+        $map = [
+            ['anchor' => tag_manager::FILEAREA_CARDIMAGE,
+                'profile' => self::FILEAREA_PROFILE_CARDIMAGE, 'field' => 'cardimage'],
+            ['anchor' => tag_manager::FILEAREA_FILTERIMAGE,
+                'profile' => self::FILEAREA_PROFILE_FILTERIMAGE, 'field' => 'filterimage'],
+        ];
+
+        $profiletags = $DB->get_records('format_mimo_profile_tags');
+        foreach ($profiletags as $pt) {
+            foreach ($map as $area) {
+                $profilefiles = $fs->get_area_files($ctxid, 'format_mimo', $area['profile'], $pt->id, 'itemid', false);
+                if (!empty($profilefiles)) {
+                    continue;
+                }
+                $anchorfiles = $fs->get_area_files($ctxid, 'format_mimo', $area['anchor'], $pt->tagid, 'itemid', false);
+                $anchorfile = reset($anchorfiles);
+                if (!$anchorfile) {
+                    continue;
+                }
+                $fs->create_file_from_storedfile([
+                    'filearea' => $area['profile'],
+                    'itemid' => $pt->id,
+                ], $anchorfile);
+                $DB->set_field(
+                    'format_mimo_profile_tags',
+                    $area['field'],
+                    $anchorfile->get_filename(),
+                    ['id' => $pt->id]
+                );
+            }
+        }
+
+        $this->imageurlcache = [];
+        $this->profiletagscache = [];
+        \core\di::get(tag_manager::class)->clear_tag_cache();
     }
 
     /**

@@ -52,8 +52,9 @@ const handleClick = (event) => {
         return;
     }
 
-    // Allow clicking anywhere on a tag row (except delete) to trigger edit.
-    if (!event.target.closest('[data-action="delete-tag"]')) {
+    // Allow clicking anywhere on a tag row to trigger edit, except on
+    // action links that navigate (delete, eye toggle, promote).
+    if (!event.target.closest('[data-action="delete-tag"], [data-action="toggle-tag"], [data-testid="promote-tag-button"]')) {
         const tagRow = event.target.closest('tr[data-tag-id]');
         if (tagRow) {
             event.preventDefault();

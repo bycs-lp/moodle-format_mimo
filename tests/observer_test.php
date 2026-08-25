@@ -64,9 +64,13 @@ final class observer_test extends \advanced_testcase {
             'page'
         );
 
-        // Create a course with mimo format.
+        // Create a course with mimo format, pinned to a set that enables the tag.
+        $profilemanager = \core\di::get(profile_manager::class);
+        $profileid = $profilemanager->create_profile('observerset', 'Observer set');
+        $profilemanager->materialize_profile_tag($this->tagid, $profileid, [], true);
         $this->course = $this->getDataGenerator()->create_course([
             'format' => 'mimo',
+            'activityprofile' => 'observerset',
         ]);
     }
 

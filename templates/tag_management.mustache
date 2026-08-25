@@ -26,7 +26,7 @@
     * hastags - Boolean if tags exist
     * tableheaders - Object with table header strings
     * profilebuttons - Array of profile button objects (name, displayname, active)
-    * tags - Array of tag objects (resolved for active profile)
+    * tags - Array of tag objects (resolved for active profile, incl. toggleurl, candelete)
     * disabledtext - Text for disabled badge
 
     Example context (json):
@@ -52,8 +52,7 @@
      data-management-url="{{managementurl}}"
      data-active-profile-id="{{activeprofileid}}">
     <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-        <button type="button" class="btn btn-primary" data-action="create-tag" data-testid="create-tag-button"
-                {{^isbaseview}}disabled{{/isbaseview}}>
+        <button type="button" class="btn btn-primary" data-action="create-tag" data-testid="create-tag-button">
             {{createtagtext}}
         </button>
         <span class="mx-2 text-muted">|</span>
@@ -146,7 +145,20 @@
                                                     {{#pix}}i/publish, core, {{promotetoglobaltext}}{{/pix}}
                                                 </a>
                                             {{/isimported}}
-                                            {{#isbaseview}}
+                                            <a href="{{toggleurl}}"
+                                               title="{{toggletitle}}"
+                                               class="btn btn-sm btn-icon"
+                                               data-action="toggle-tag"
+                                               data-testid="toggle-tag-button"
+                                               data-tag-id="{{id}}">
+                                                <span data-region="toggle-icon-enabled" {{#disabled}}class="d-none"{{/disabled}}>
+                                                    {{#pix}}t/hide, core, {{toggletitle}}{{/pix}}
+                                                </span>
+                                                <span data-region="toggle-icon-disabled" {{#enabled}}class="d-none"{{/enabled}}>
+                                                    {{#pix}}t/show, core, {{toggletitle}}{{/pix}}
+                                                </span>
+                                            </a>
+                                            {{#candelete}}
                                             <a href="{{deleteurl}}"
                                                title="{{deletetitle}}"
                                                class="btn btn-sm btn-icon"
@@ -156,7 +168,7 @@
                                                data-tag-name="{{name}}">
                                                 {{#pix}}t/delete, core, {{deletetitle}}{{/pix}}
                                             </a>
-                                            {{/isbaseview}}
+                                            {{/candelete}}
                                         </div>
                                     </td>
                                 </tr>

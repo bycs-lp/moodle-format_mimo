@@ -24,6 +24,7 @@
 
 namespace format_mimo\external;
 
+use format_mimo\profile_manager;
 use format_mimo\tag_manager;
 
 /**
@@ -53,9 +54,15 @@ final class assign_tag_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $tagid = $this->tagmanager->create_tag('External', 'e.svg', 'e-small.svg', 'page');
+        $profilemanager = \core\di::get(profile_manager::class);
+        $profileid = $profilemanager->create_profile('assignset', 'Assign set');
+        $profilemanager->materialize_profile_tag($tagid, $profileid, [], true);
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'activityprofile' => 'assignset',
+        ]);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         $result = assign_tag::execute($page->cmid, $tagid);
 

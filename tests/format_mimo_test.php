@@ -230,7 +230,7 @@ final class format_mimo_test extends \advanced_testcase {
 
         $before = (array) $format->get_format_options();
         $this->assertSame(0, (int) ($before['enablemultisection'] ?? 0));
-        $this->assertSame('primaryschool', $before['activityprofile'] ?? '');
+        $this->assertSame('base', $before['activityprofile'] ?? '');
 
         $changed = $format->update_course_format_options(
             ['enablemultisection' => 1, 'activityprofile' => 'alternate'],
@@ -299,9 +299,15 @@ final class format_mimo_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->setAdminUser();
 
-        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
-        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
         $tagid = $this->tagmanager->create_tag('Edit', 'e.svg', 'e-small.svg', 'page');
+        $profilemanager = \core\di::get(profile_manager::class);
+        $profileid = $profilemanager->create_profile('editset', 'Edit set');
+        $profilemanager->materialize_profile_tag($tagid, $profileid, [], true);
+        $course = $this->getDataGenerator()->create_course([
+            'format' => 'mimo',
+            'activityprofile' => 'editset',
+        ]);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
 
         // Non-mimo courses are a no-op.
         $topics = $this->getDataGenerator()->create_course(['format' => 'topics']);

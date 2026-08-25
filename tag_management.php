@@ -37,6 +37,14 @@ $profilename = optional_param('profile', '', PARAM_ALPHANUMEXT);
 $context = \core\context\system::instance();
 require_capability('moodle/site:config', $context);
 
+$tagmanager = \core\di::get(tag_manager::class);
+$profilemanager = \core\di::get(profile_manager::class);
+
+// Default view: the site's default tagset. Unknown profile names fall back too.
+if ($profilename === '' || !$profilemanager->get_profile_by_name($profilename)) {
+    $profilename = $profilemanager->get_default_profile_name();
+}
+
 $urlparams = [];
 if ($profilename !== '') {
     $urlparams['profile'] = $profilename;
@@ -45,11 +53,9 @@ $PAGE->set_url('/course/format/mimo/tag_management.php', $urlparams);
 $PAGE->set_title(get_string('tagmanagement', 'format_mimo'));
 $PAGE->set_heading(get_string('tagmanagement', 'format_mimo'));
 
-// Handle delete tag.
-$tagmanager = \core\di::get(tag_manager::class);
-$profilemanager = \core\di::get(profile_manager::class);
+// Handle delete tag (only allowed once the tag is disabled in every set).
 if ($action === 'deletetag' && confirm_sesskey()) {
-    if ($tagid) {
+    if ($tagid && $tagmanager->is_tag_disabled_everywhere($tagid)) {
         $tagmanager->delete_tag($tagid);
         redirect(
             $PAGE->url,
@@ -58,6 +64,23 @@ if ($action === 'deletetag' && confirm_sesskey()) {
             \core\output\notification::NOTIFY_SUCCESS
         );
     }
+    redirect(
+        $PAGE->url,
+        get_string('tagdelete_stillenabled', 'format_mimo'),
+        null,
+        \core\output\notification::NOTIFY_ERROR
+    );
+}
+
+// Handle per-set enable/disable toggle.
+if ($action === 'toggletag' && confirm_sesskey()) {
+    $toggleprofile = $profilemanager->get_profile_by_name($profilename);
+    if ($tagid && $toggleprofile) {
+        $current = $profilemanager->get_profile_tag_for_profile($tagid, (int) $toggleprofile->id);
+        $newstate = !($current && (int) $current->enabled === 1);
+        $profilemanager->materialize_profile_tag($tagid, (int) $toggleprofile->id, [], $newstate);
+    }
+    redirect($PAGE->url);
 }
 
 // Handle promote tag to global.
@@ -109,11 +132,6 @@ if ($profilename !== '') {
 
 // Build profile buttons.
 $profilebuttons = [];
-$profilebuttons[] = [
-    'name' => '',
-    'displayname' => get_string('basetagfields', 'format_mimo'),
-    'active' => ($profilename === ''),
-];
 foreach ($allprofiles as $profile) {
     $isimported = ($profile->scope ?? 'global') === 'imported';
     $profilebuttons[] = [
@@ -130,7 +148,7 @@ foreach ($allprofiles as $profile) {
 }
 
 // Build profile name → ID map for JS.
-$profileidmap = ['' => 0];
+$profileidmap = [];
 foreach ($allprofiles as $profile) {
     $profileidmap[$profile->name] = (int) $profile->id;
 }
@@ -140,19 +158,6 @@ $tagprofiledata = [];
 foreach ($tags as $tag) {
     $tagdata = [];
 
-    // Default view = base values.
-    $cardimgurl = $tagmanager->get_cardimage_url($tag);
-    $tagdata[''] = [
-        'name' => format_string($tag->name),
-        'cardimageurl' => $cardimgurl ? $cardimgurl->out(false) : '',
-        'bgcolor' => $tagmanager->get_tag_accent_color($tag),
-        'activitytype1' => $tag->activitytype1 ?: '-',
-        'activitytype2' => $tag->activitytype2 ?: '-',
-        'activitytype3' => $tag->activitytype3 ?: '-',
-        'enabled' => true,
-    ];
-
-    // Per-profile resolved views.
     foreach ($allprofiles as $profile) {
         $resolved = $profilemanager->resolve_tag_for_profile($tag, $profile->id);
         $profileimgurl = $tagmanager->get_cardimage_url($tag, $profile->name);
@@ -172,7 +177,10 @@ foreach ($tags as $tag) {
 // Build initial tag list for the selected profile.
 $templatetags = [];
 foreach ($tags as $tag) {
-    $data = $tagprofiledata[$tag->id][$profilename] ?? $tagprofiledata[$tag->id][''];
+    $data = $tagprofiledata[$tag->id][$profilename] ?? null;
+    if ($data === null) {
+        continue;
+    }
 
     $templatetags[] = [
         'id' => $tag->id,
@@ -185,9 +193,14 @@ foreach ($tags as $tag) {
         'enabled' => $data['enabled'],
         'disabled' => !$data['enabled'],
         'isimported' => ($tag->scope ?? 'global') === 'imported',
-        'isbaseview' => ($profilename === ''),
+        'candelete' => $tagmanager->is_tag_disabled_everywhere((int) $tag->id),
         'deleteurl' => (new moodle_url($PAGE->url, [
             'action' => 'deletetag',
+            'tagid' => $tag->id,
+            'sesskey' => sesskey(),
+        ]))->out(false),
+        'toggleurl' => (new moodle_url($PAGE->url, [
+            'action' => 'toggletag',
             'tagid' => $tag->id,
             'sesskey' => sesskey(),
         ]))->out(false),
@@ -198,12 +211,12 @@ foreach ($tags as $tag) {
         ]))->out(false),
         'edittitle' => get_string('edittag', 'format_mimo'),
         'deletetitle' => get_string('deletetag', 'format_mimo'),
+        'toggletitle' => get_string('toggletaginset', 'format_mimo'),
     ];
 }
 
 $templatecontext = [
     'createtagtext' => get_string('createtag', 'format_mimo'),
-    'isbaseview' => ($profilename === ''),
     'activeprofileid' => $activeprofileid,
     'notagstext' => get_string('notags', 'format_mimo'),
     'hastags' => !empty($tags),

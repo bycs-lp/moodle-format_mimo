@@ -423,7 +423,7 @@ final class profile_manager_test extends \advanced_testcase {
     }
 
     /**
-     * resolve_tag_for_profile without an override returns the base tag with enabled=1.
+     * resolve_tag_for_profile without a materialized row resolves as disabled.
      */
     public function test_resolve_tag_for_profile_no_override(): void {
         $profileid = $this->profilemanager->create_profile('resolve1', 'Resolve 1', 1);
@@ -432,9 +432,10 @@ final class profile_manager_test extends \advanced_testcase {
 
         $resolved = $this->profilemanager->resolve_tag_for_profile($tag, $profileid);
 
+        // Anchor values are still exposed for greyed-out display.
         $this->assertEquals('Base', $resolved->name);
         $this->assertEquals('#111111', $resolved->bgcolor);
-        $this->assertEquals(1, (int) $resolved->enabled);
+        $this->assertEquals(0, (int) $resolved->enabled);
     }
 
     /**
@@ -472,6 +473,7 @@ final class profile_manager_test extends \advanced_testcase {
         $t1 = $this->tagmanager->create_tag('Enabled One');
         $t2 = $this->tagmanager->create_tag('Disabled One');
 
+        $this->profilemanager->materialize_profile_tag($t1, $profileid, [], true);
         $pt = $this->profilemanager->get_or_create_profile_tag($t2, $profileid);
         $this->profilemanager->update_profile_tag($pt->id, ['enabled' => 0]);
 
@@ -496,6 +498,166 @@ final class profile_manager_test extends \advanced_testcase {
         $this->assertIsArray($options);
         $this->assertArrayHasKey('maxfiles', $options);
         $this->assertSame(1, $options['maxfiles']);
+    }
+
+    /**
+     * A tag without a row in a set is disabled but shows anchor values.
+     */
+    public function test_resolve_missing_row_is_disabled(): void {
+        $tagid = $this->tagmanager->create_tag('Solo', null, null, 'page');
+        $tag = $this->tagmanager->get_tag($tagid);
+        $profileid = $this->profilemanager->create_profile('emptyset', 'Empty set');
+
+        $resolved = $this->profilemanager->resolve_tag_for_profile($tag, $profileid);
+
+        $this->assertSame(0, (int) $resolved->enabled);
+        $this->assertSame('Solo', $resolved->name);
+    }
+
+    /**
+     * materialize_profile_tag fills every override field from the anchor.
+     */
+    public function test_materialize_profile_tag_fills_all_fields_from_anchor(): void {
+        $tagid = $this->tagmanager->create_tag('Anchor', null, null, 'page', 'quiz', null, '#112233', 'lower', 'bigger');
+        $profileid = $this->profilemanager->create_profile('mset', 'M set');
+
+        $pt = $this->profilemanager->materialize_profile_tag($tagid, $profileid);
+
+        $this->assertSame('Anchor', $pt->name);
+        $this->assertSame('#112233', $pt->bgcolor);
+        $this->assertSame('page', $pt->activitytype1);
+        $this->assertSame('quiz', $pt->activitytype2);
+        $this->assertSame('lower', $pt->imgplacement);
+        $this->assertSame('bigger', $pt->imgsize);
+        $this->assertSame(0, (int) $pt->enabled);
+    }
+
+    /**
+     * materialize_profile_tag applies explicit values and enabled flag; repeat
+     * calls keep existing state.
+     */
+    public function test_materialize_profile_tag_values_and_enabled_override(): void {
+        $tagid = $this->tagmanager->create_tag('Anchor2', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('mset2', 'M set 2');
+
+        $pt = $this->profilemanager->materialize_profile_tag(
+            $tagid,
+            $profileid,
+            ['name' => 'Renamed'],
+            true
+        );
+
+        $this->assertSame('Renamed', $pt->name);
+        $this->assertSame(1, (int) $pt->enabled);
+
+        // Second call keeps enabled and existing values when not overridden.
+        $pt2 = $this->profilemanager->materialize_profile_tag($tagid, $profileid);
+        $this->assertSame('Renamed', $pt2->name);
+        $this->assertSame(1, (int) $pt2->enabled);
+    }
+
+    /**
+     * materialize_profile_tag fills NULL holes in a legacy row without
+     * clobbering existing values.
+     */
+    public function test_materialize_fills_null_holes_in_existing_row(): void {
+        global $DB;
+        $tagid = $this->tagmanager->create_tag('Holey', null, null, 'page', null, null, '#445566');
+        $profileid = $this->profilemanager->create_profile('mset3', 'M set 3');
+        // Simulate a legacy NULL-holed row.
+        $DB->insert_record('format_mimo_profile_tags', (object) [
+            'tagid' => $tagid, 'profileid' => $profileid,
+            'name' => 'Kept', 'bgcolor' => null,
+            'activitytype1' => null, 'activitytype2' => null, 'activitytype3' => null,
+            'enabled' => 1, 'timecreated' => time(), 'timemodified' => time(),
+        ]);
+        $this->profilemanager->clear_request_caches();
+
+        $pt = $this->profilemanager->materialize_profile_tag($tagid, $profileid);
+
+        $this->assertSame('Kept', $pt->name);
+        $this->assertSame('#445566', $pt->bgcolor);
+        $this->assertSame('page', $pt->activitytype1);
+        $this->assertSame(1, (int) $pt->enabled);
+    }
+
+    /**
+     * get_default_profile_name returns the first global profile by sortorder.
+     */
+    public function test_get_default_profile_name_first_global_by_sortorder(): void {
+        global $DB;
+        $DB->delete_records('format_mimo_profiles');
+        $this->profilemanager->clear_request_caches();
+        $this->assertSame('', $this->profilemanager->get_default_profile_name());
+
+        $this->profilemanager->create_profile('second', 'Second', 5);
+        $this->profilemanager->create_profile('first', 'First', 1);
+        $this->profilemanager->create_profile('imp', 'Imported', 0, 'imported');
+
+        $this->assertSame('first', $this->profilemanager->get_default_profile_name());
+    }
+
+    /**
+     * initialize_default_profiles creates the base profile first with fully
+     * materialized, enabled rows for every tag.
+     */
+    public function test_initialize_default_profiles_creates_base_first(): void {
+        $this->tagmanager->initialize_default_tags();
+        $this->profilemanager->initialize_default_profiles();
+
+        $base = $this->profilemanager->get_profile_by_name('base');
+        $this->assertNotNull($base);
+        $this->assertSame('global', $base->scope);
+        $this->assertSame('base', $this->profilemanager->get_default_profile_name());
+
+        // Every tag has a fully materialized, enabled row in the base profile.
+        $tags = $this->tagmanager->get_all_tags();
+        $this->assertNotEmpty($tags);
+        foreach ($tags as $tag) {
+            $pt = $this->profilemanager->get_profile_tag_for_profile((int) $tag->id, (int) $base->id);
+            $this->assertNotNull($pt, "Tag {$tag->name} missing base row");
+            $this->assertNotNull($pt->name);
+            $this->assertNotNull($pt->activitytype1);
+            $this->assertSame(1, (int) $pt->enabled);
+        }
+    }
+
+    /**
+     * materialize_all_profile_tags creates missing rows for every combination.
+     */
+    public function test_materialize_all_profile_tags_fills_gaps(): void {
+        $profileid = $this->profilemanager->create_profile('gapset', 'Gap set');
+        $tagid = $this->tagmanager->create_tag('Gappy', null, null, 'page');
+
+        $this->profilemanager->materialize_all_profile_tags(true);
+
+        $pt = $this->profilemanager->get_profile_tag_for_profile($tagid, $profileid);
+        $this->assertNotNull($pt);
+        $this->assertSame('Gappy', $pt->name);
+        $this->assertSame(1, (int) $pt->enabled);
+    }
+
+    /**
+     * copy_base_images_to_profile_tags copies anchor images into empty profile areas.
+     */
+    public function test_copy_base_images_to_profile_tags(): void {
+        $this->profilemanager->create_profile('cpset', 'Copy set');
+        $tagid = $this->tagmanager->create_tag('WithImg', null, null, 'page');
+
+        $fs = get_file_storage();
+        $ctx = \core\context\system::instance()->id;
+        $fs->create_file_from_string([
+            'contextid' => $ctx, 'component' => 'format_mimo',
+            'filearea' => tag_manager::FILEAREA_CARDIMAGE,
+            'itemid' => $tagid, 'filepath' => '/', 'filename' => 'card.png',
+        ], 'png');
+
+        $this->profilemanager->materialize_all_profile_tags(true);
+        $this->profilemanager->copy_base_images_to_profile_tags();
+
+        $tag = $this->tagmanager->get_tag($tagid);
+        $url = $this->tagmanager->get_cardimage_url($tag, 'cpset');
+        $this->assertNotNull($url, 'Resolved base image was not copied into the profile area');
     }
 
     /* ==================================== *

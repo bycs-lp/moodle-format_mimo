@@ -69,7 +69,8 @@ const updateTagImages = (profileName) => {
         if (enabledJson) {
             try {
                 const enabledMap = JSON.parse(enabledJson);
-                const isEnabled = enabledMap[profileName] !== undefined ? !!enabledMap[profileName] : true;
+                // Missing entry = disabled (equal-tagset semantics).
+                const isEnabled = enabledMap[profileName] !== undefined ? !!enabledMap[profileName] : false;
                 itemElement.classList.toggle('d-none', !isEnabled);
             } catch (e) {
                 // Ignore parse errors.
