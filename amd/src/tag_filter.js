@@ -22,18 +22,12 @@
  */
 
 import Notification from 'core/notification';
+import {BaseComponent} from 'core/reactive';
 import {getWallState} from 'format_mimo/local/wall_state/wall_state';
 import {get_string as getString} from 'core/str';
 
 /** Duration in milliseconds for height transition animation. */
 const HEIGHT_TRANSITION_MS = 300;
-
-/** State object to track active filters across functions. */
-const filterState = {
-    activeTag: '',
-    activeTagImageUrl: '',
-    activeCompletion: '', // 'true', 'false', or '' (none)
-};
 
 /**
  * Selectors for sibling elements that should be included in the animated wrapper.
@@ -209,19 +203,6 @@ const animateContainerHeight = (container, applyChanges) => {
         unwrapElements();
         fadeInCards();
     }, HEIGHT_TRANSITION_MS);
-};
-
-/**
- * Dispatch filter state to the wall reactive so pagination can react.
- *
- * @param {Reactive} wallState - The wall state reactive instance
- * @param {string} activeTag - Active tag ID, or '' for no tag filter
- * @param {string} activeCompletion - Active completion value, or '' for no filter
- * @returns {void}
- */
-const syncFilterState = (wallState, activeTag, activeCompletion) => {
-    wallState.dispatch('setTagFilter', activeTag ? [activeTag] : []);
-    wallState.dispatch('setCompletionFilter', activeCompletion);
 };
 
 /**
@@ -657,335 +638,225 @@ const toggleNoActivitiesMessage = (statusRegion, show) => {
 };
 
 /**
- * Initialize the filter bar listeners and state management.
+ * Reactive component driving one filter bar and/or completion status region.
  *
- * Setup process:
- * 1. Locate activity container (next sibling or parent's descendant)
- * 2. Collect all activity items and preserve original DOM order
- * 3. Enable buttons that have activities with matching tags
- * 4. Attach click handler for filter toggling
- * 5. Initialize completion status region if present
- *
- * State management:
- * - filterState.activeTag: Currently selected tag ID (empty string = no filter)
- * - filterState.activeCompletion: Currently selected completion state ('true', 'false', or '')
- * - originalOrder: Array preserving initial activity sequence
- *
- * Reordering strategy:
- * - When filter active: Matching activities move to top, others follow
- * - When filter inactive: Restore originalOrder array sequence
- * - Uses DocumentFragment for efficient batch DOM manipulation
- *
- * Click behavior:
- * - Click active filter: Deactivates and shows all
- * - Click inactive filter: Activates and shows only matching
- * - Prevents default to avoid navigation
- *
- * @param {HTMLElement} bar - Filter bar element with [data-region="mimo-filterbar"]
- * @returns {void}
+ * The wall state reactive owns the filter state (filters.tags,
+ * filters.completion). Click handlers only dispatch mutations; the
+ * filters:updated watcher performs all DOM rendering idempotently. Activity
+ * items are re-queried on every render so cmitem fragment reloads (done
+ * toggles, visibility changes) never leave stale node references, and the
+ * unfiltered order is restored from state.activityOrder.ids so drag-drop
+ * reorders survive a filter round-trip.
  */
-const initFilterBar = (bar) => {
-    try {
-        const sibling = bar.nextElementSibling;
-        let activityContainer = null;
-        if (sibling && sibling.classList.contains('mimo-activities')) {
-            activityContainer = sibling;
-        } else {
-            activityContainer = bar.parentElement.querySelector('.mimo-activities');
-        }
+class FilterBar extends BaseComponent {
 
-        if (!activityContainer) {
-            return;
-        }
+    /**
+     * Component setup.
+     *
+     * @param {object} descriptor
+     * @param {HTMLElement|null} descriptor.bar filter bar, or null in
+     *     completion-status-only mode
+     * @param {HTMLElement} descriptor.container the .mimo-activities container
+     * @param {HTMLElement|null} descriptor.statusRegion completion status region
+     */
+    create(descriptor) {
+        this.bar = descriptor.bar;
+        this.container = descriptor.container;
+        this.statusRegion = descriptor.statusRegion;
+        /** @type {string} Last rendered tag id — render cache, never truth. */
+        this.renderedTag = '';
+    }
 
-        const sectionElement = activityContainer.closest('.section-item') || activityContainer;
-        const wallState = getWallState(sectionElement);
+    getWatchers() {
+        return [
+            {watch: 'filters:updated', handler: this._filtersUpdated},
+            {watch: 'completion:updated', handler: this._completionUpdated},
+        ];
+    }
 
-        const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
-        if (!activityItems.length) {
-            return;
-        }
-
-        const originalOrder = activityItems.slice();
-
-        // Find the completion status region.
-        const statusRegion = bar.parentElement.querySelector('[data-region="completion-status"]');
-
-        const restoreOriginalOrder = () => {
-            const fragment = document.createDocumentFragment();
-            originalOrder.forEach((item) => fragment.appendChild(item));
-            activityContainer.appendChild(fragment);
-        };
-
-        const reorderActivitiesByTag = (tagid) => {
-            const matching = [];
-            const remaining = [];
-            originalOrder.forEach((item) => {
-                if ((item.dataset.tagid || '') === tagid) {
-                    matching.push(item);
-                } else {
-                    remaining.push(item);
+    /**
+     * Register click handlers and paint the initial completion counts.
+     */
+    stateReady() {
+        if (this.bar) {
+            // Buttons mirror the server-side tag list for this section.
+            this.bar.querySelectorAll('[data-action="tag-filter"]').forEach((button) => {
+                if (button.dataset.hasactivities === '1') {
+                    button.disabled = false;
+                    button.classList.remove('is-empty');
                 }
             });
-            const fragment = document.createDocumentFragment();
-            matching.concat(remaining).forEach((item) => fragment.appendChild(item));
-            activityContainer.appendChild(fragment);
-        };
-
-        // Buttons mirror the server-side tag list for this section.
-        const filterButtons = Array.from(bar.querySelectorAll('[data-action="tag-filter"]'));
-        if (!filterButtons.length) {
-            return;
+            this.addEventListener(this.bar, 'click', this._barClicked);
         }
-
-        filterButtons.forEach((button) => {
-            const hasActivities = button.dataset.hasactivities === '1';
-            if (hasActivities) {
-                button.disabled = false;
-                button.classList.remove('is-empty');
-            }
-        });
-
-        /**
-         * Apply all active filters and update UI state with height animation.
-         *
-         * @returns {number} Count of visible items after filtering
-         */
-        const applyAllFilters = () => {
-            let visibleCount;
-
-            animateContainerHeight(activityContainer, () => {
-                if (filterState.activeTag || filterState.activeCompletion) {
-                    visibleCount = applyCombinedFilter(activityItems, filterState.activeTag, filterState.activeCompletion);
-                } else {
-                    clearFilterStyles(activityItems);
-                    visibleCount = activityItems.length;
-                }
-            });
-
-            // Update completion counts based on currently visible items.
-            if (statusRegion) {
-                updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
-                toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
-            }
-
-            return visibleCount;
-        };
-
-        /**
-         * Set or clear the tag filter.
-         *
-         * @param {string} tagid - Tag ID to filter by, or empty string to clear
-         * @param {HTMLElement|null} button - Button element that was clicked, or null
-         * @returns {void}
-         */
-        const setTagFilter = (tagid, button) => {
-            if (tagid) {
-                filterState.activeTag = tagid;
-                // Store the tag image URL from the button.
-                const img = button ? button.querySelector('img') : null;
-                filterState.activeTagImageUrl = img ? img.src : '';
-
-                syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
-                reorderActivitiesByTag(tagid);
-                updateButtons(bar, button);
-
-                // Update tag image in completion status region.
-                if (statusRegion) {
-                    updateActiveTagImage(statusRegion, filterState.activeTagImageUrl);
-                    updateCompletionGroupLabel(statusRegion, button ? button.dataset.tagName || '' : '');
-                }
-            } else {
-                filterState.activeTag = '';
-                filterState.activeTagImageUrl = '';
-                restoreOriginalOrder();
-                updateButtons(bar, null);
-
-                // Hide tag image in completion status region.
-                if (statusRegion) {
-                    updateActiveTagImage(statusRegion, '');
-                    updateCompletionGroupLabel(statusRegion, '');
-                }
-
-                syncFilterState(wallState, '', filterState.activeCompletion);
-            }
-
-            const visibleCount = applyAllFilters();
-
-            // Announce filter status to screen readers.
-            const tagName = button ? button.dataset.tagName || '' : '';
-            announceFilterStatus(tagName, visibleCount, activityItems.length);
-        };
-
-        /**
-         * Set or clear the completion filter.
-         *
-         * @param {string} completed - 'true', 'false', or '' to clear
-         * @returns {void}
-         */
-        const setCompletionFilter = (completed) => {
-            if (completed) {
-                filterState.activeCompletion = completed;
-            } else {
-                filterState.activeCompletion = '';
-            }
-            syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
-
-            if (statusRegion) {
-                updateCompletionPills(statusRegion, completed);
-            }
-
-            applyAllFilters();
-        };
-
-        // Tag filter click handler.
-        bar.addEventListener('click', (event) => {
-            const button = event.target.closest('[data-action="tag-filter"]');
-            if (button && bar.contains(button)) {
-                event.preventDefault();
-                if (!button.dataset.tagid) {
-                    return;
-                }
-                if (filterState.activeTag === button.dataset.tagid) {
-                    setTagFilter('', null);
-                } else {
-                    setTagFilter(button.dataset.tagid, button);
-                }
-            }
-        });
-
-        // Completion filter click handler.
-        if (statusRegion) {
-            statusRegion.addEventListener('click', (event) => {
-                const pill = event.target.closest('[data-action="completion-filter"]');
-                if (pill && statusRegion.contains(pill)) {
-                    event.preventDefault();
-                    const completed = pill.dataset.filterValue;
-                    if (filterState.activeCompletion === completed) {
-                        setCompletionFilter('');
-                    } else {
-                        setCompletionFilter(completed);
-                    }
-                }
-            });
-
+        if (this.statusRegion) {
+            this.addEventListener(this.statusRegion, 'click', this._pillClicked);
             // Initial update to show star if all activities are already complete.
-            updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
+            updateCompletionCounts(this.statusRegion, this._getItems(), '');
         }
-
-        // Listen for reactive completion state changes from the course editor watcher.
-        document.addEventListener('mimo:completionchange', () => {
-            if (statusRegion) {
-                updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
-            }
-        });
-    } catch (error) {
-        Notification.exception(error);
     }
-};
 
-/**
- * Initialize completion status region without a filter bar.
- *
- * Used when filtering is disabled but completion status is still shown.
- *
- * @param {HTMLElement} statusRegion - Completion status region element
- * @returns {void}
- */
-const initCompletionStatusOnly = (statusRegion) => {
-    try {
-        const activityContainer = statusRegion.parentElement.querySelector('.mimo-activities');
-        if (!activityContainer) {
+    /**
+     * Query the current activity items (fresh on every render — cmitem
+     * fragment reloads replace nodes).
+     *
+     * @returns {HTMLElement[]}
+     */
+    _getItems() {
+        return Array.from(this.container.querySelectorAll('li[data-id]'));
+    }
+
+    /**
+     * Toggle the tag filter from a filter bar click.
+     *
+     * @param {Event} event
+     */
+    _barClicked(event) {
+        const button = event.target.closest('[data-action="tag-filter"]');
+        if (!button || !this.bar.contains(button) || !button.dataset.tagid) {
             return;
         }
+        event.preventDefault();
+        const current = this.reactive.state.filters.tags[0] ?? '';
+        const tagid = button.dataset.tagid;
+        this.reactive.dispatch('setTagFilter', current === tagid ? [] : [tagid]);
+    }
 
-        const sectionElement = activityContainer.closest('.section-item') || activityContainer;
-        const wallState = getWallState(sectionElement);
-
-        const activityItems = Array.from(activityContainer.querySelectorAll('li[data-id]'));
-        if (!activityItems.length) {
+    /**
+     * Toggle the completion filter from a pill click.
+     *
+     * @param {Event} event
+     */
+    _pillClicked(event) {
+        const pill = event.target.closest('[data-action="completion-filter"]');
+        if (!pill || !this.statusRegion.contains(pill)) {
             return;
         }
+        event.preventDefault();
+        const value = pill.dataset.filterValue;
+        const current = this.reactive.state.filters.completion;
+        this.reactive.dispatch('setCompletionFilter', current === value ? '' : value);
+    }
 
-        /**
-         * Apply completion filter and update UI with height animation.
-         *
-         * @returns {number} Count of visible items after filtering
-         */
-        const applyAllFilters = () => {
-            let visibleCount;
+    /**
+     * Recount pills/star after a completion change (data attributes are
+     * already updated by courseeditor_watcher).
+     *
+     * @param {object} detail Watcher event detail
+     * @param {object} detail.state Full wall state
+     */
+    _completionUpdated({state}) {
+        if (this.statusRegion) {
+            updateCompletionCounts(this.statusRegion, this._getItems(),
+                state.filters.tags[0] ?? '');
+        }
+    }
 
-            animateContainerHeight(activityContainer, () => {
-                if (filterState.activeCompletion) {
-                    visibleCount = applyCombinedFilter(activityItems, '', filterState.activeCompletion);
-                } else {
-                    activityItems.forEach((item) => {
-                        item.hidden = false;
-                        item.classList.remove('is-filtered-out');
-                        item.style.removeProperty('display');
-                    });
-                    visibleCount = activityItems.length;
-                }
-            });
+    /**
+     * Render everything from the current filter state.
+     *
+     * @param {object} detail Watcher event detail
+     * @param {object} detail.state Full wall state
+     */
+    _filtersUpdated({state}) {
+        const activeTag = state.filters.tags[0] ?? '';
+        const activeCompletion = state.filters.completion;
+        const tagChanged = activeTag !== this.renderedTag;
+        this.renderedTag = activeTag;
 
-            updateCompletionCounts(statusRegion, activityItems, '');
-            toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
-
-            return visibleCount;
-        };
-
-        /**
-         * Set or clear the completion filter.
-         *
-         * @param {string} completed - 'true', 'false', or '' to clear
-         * @returns {void}
-         */
-        const setCompletionFilter = (completed) => {
-            if (completed) {
-                filterState.activeCompletion = completed;
+        // Reorder only on tag transitions — moving nodes on unrelated renders
+        // would reset focus and CSS animations.
+        if (tagChanged) {
+            if (activeTag) {
+                this._reorderByTag(activeTag);
             } else {
-                filterState.activeCompletion = '';
+                this._restoreOrder(state.activityOrder.ids);
             }
-            syncFilterState(wallState, filterState.activeTag, filterState.activeCompletion);
+        }
 
-            updateCompletionPills(statusRegion, completed);
-            applyAllFilters();
-        };
-
-        statusRegion.addEventListener('click', (event) => {
-            const pill = event.target.closest('[data-action="completion-filter"]');
-            if (pill && statusRegion.contains(pill)) {
-                event.preventDefault();
-                const completed = pill.dataset.filterValue;
-                if (filterState.activeCompletion === completed) {
-                    setCompletionFilter('');
-                } else {
-                    setCompletionFilter(completed);
-                }
+        const items = this._getItems();
+        let visibleCount;
+        animateContainerHeight(this.container, () => {
+            if (activeTag || activeCompletion) {
+                visibleCount = applyCombinedFilter(items, activeTag, activeCompletion);
+            } else {
+                clearFilterStyles(items);
+                visibleCount = items.length;
             }
         });
 
-        // Initial update to show star if all activities are already complete.
-        updateCompletionCounts(statusRegion, activityItems, '');
+        const activeButton = (activeTag && this.bar)
+            ? this.bar.querySelector(
+                `[data-action="tag-filter"][data-tagid="${CSS.escape(activeTag)}"]`)
+            : null;
 
-        // Listen for reactive completion state changes from the course editor watcher.
-        document.addEventListener('mimo:completionchange', () => {
-            updateCompletionCounts(statusRegion, activityItems, '');
-        });
-    } catch (error) {
-        Notification.exception(error);
+        if (this.bar) {
+            updateButtons(this.bar, activeButton);
+        }
+
+        if (this.statusRegion) {
+            updateCompletionPills(this.statusRegion, activeCompletion);
+            const img = activeButton ? activeButton.querySelector('img') : null;
+            updateActiveTagImage(this.statusRegion, img ? img.src : '');
+            updateCompletionGroupLabel(this.statusRegion,
+                activeButton ? activeButton.dataset.tagName || '' : '');
+            updateCompletionCounts(this.statusRegion, items, activeTag);
+            toggleNoActivitiesMessage(this.statusRegion, visibleCount === 0);
+        }
+
+        if (tagChanged) {
+            announceFilterStatus(activeButton ? activeButton.dataset.tagName || '' : '',
+                visibleCount, items.length);
+        }
     }
-};
+
+    /**
+     * Move activities matching the tag to the top (stable within groups).
+     *
+     * @param {string} tagid
+     */
+    _reorderByTag(tagid) {
+        const matching = [];
+        const remaining = [];
+        this._getItems().forEach((item) => {
+            if ((item.dataset.tagid || '') === tagid) {
+                matching.push(item);
+            } else {
+                remaining.push(item);
+            }
+        });
+        const fragment = document.createDocumentFragment();
+        matching.concat(remaining).forEach((item) => fragment.appendChild(item));
+        this.container.appendChild(fragment);
+    }
+
+    /**
+     * Restore the unfiltered order from the wall state's activity order
+     * (kept current by drag-drop reorders).
+     *
+     * @param {number[]} ids ordered cm ids
+     */
+    _restoreOrder(ids) {
+        const byId = new Map(this._getItems().map((item) => [Number(item.dataset.id), item]));
+        const fragment = document.createDocumentFragment();
+        ids.forEach((id) => {
+            const item = byId.get(id);
+            if (item) {
+                fragment.appendChild(item);
+                byId.delete(id);
+            }
+        });
+        // Items unknown to the stored order (e.g. freshly created) keep their position at the end.
+        byId.forEach((item) => fragment.appendChild(item));
+        this.container.appendChild(fragment);
+    }
+}
 
 /**
  * Initialize all filter bars and completion status regions in the page.
  *
- * Scans for all elements with [data-region="mimo-filterbar"]
- * and initializes filtering functionality for each.
- *
- * Also initializes standalone completion status regions (without filter bar).
- *
- * Typically one filter bar per course section, but supports multiple.
+ * Creates one FilterBar component per [data-region="mimo-filterbar"] (which
+ * also adopts the sibling completion status region) and one per standalone
+ * completion status region (when filtering is disabled).
  *
  * @returns {void}
  */
@@ -993,31 +864,65 @@ export const init = () => {
     // Register the one-shot firework click delegation (guarded internally).
     registerFireworkListener();
 
-    // Initialize filter bars (which also handle their associated completion status regions).
-    // Guard each element against double-initialization: the template {{#js}} block runs
-    // once per section render, including re-renders of surviving DOM nodes.
-    document
-        .querySelectorAll('[data-region="mimo-filterbar"]')
-        .forEach((bar) => {
-            if (bar.dataset.mimoFilterInit) {
+    /**
+     * Create a FilterBar component for one bar/status region pair.
+     *
+     * @param {HTMLElement|null} bar
+     * @param {HTMLElement} container
+     * @param {HTMLElement|null} statusRegion
+     */
+    const createComponent = (bar, container, statusRegion) => {
+        try {
+            if (!container.querySelector('li[data-id]')) {
                 return;
             }
-            bar.dataset.mimoFilterInit = '1';
-            initFilterBar(bar);
-        });
+            const sectionElement = container.closest('.section-item') || container;
+            new FilterBar({
+                element: bar ?? statusRegion,
+                reactive: getWallState(sectionElement),
+                bar,
+                container,
+                statusRegion,
+            });
+        } catch (error) {
+            Notification.exception(error);
+        }
+    };
 
-    // Initialize standalone completion status regions (when filtering is disabled).
-    document
-        .querySelectorAll('[data-region="completion-status"]')
-        .forEach((statusRegion) => {
-            if (statusRegion.dataset.mimoFilterInit) {
-                return;
-            }
-            // Skip if already initialized by a filter bar.
-            const parent = statusRegion.parentElement;
-            if (!parent || !parent.querySelector('[data-region="mimo-filterbar"]')) {
-                statusRegion.dataset.mimoFilterInit = '1';
-                initCompletionStatusOnly(statusRegion);
-            }
-        });
+    // Guard each element against double-initialization: the template {{#js}}
+    // block runs once per section render, including re-renders of surviving
+    // DOM nodes.
+    document.querySelectorAll('[data-region="mimo-filterbar"]').forEach((bar) => {
+        if (bar.dataset.mimoFilterInit) {
+            return;
+        }
+        bar.dataset.mimoFilterInit = '1';
+        const sibling = bar.nextElementSibling;
+        const container = (sibling && sibling.classList.contains('mimo-activities'))
+            ? sibling
+            : bar.parentElement.querySelector('.mimo-activities');
+        if (!container || !bar.querySelector('[data-action="tag-filter"]')) {
+            return;
+        }
+        const statusRegion = bar.parentElement.querySelector('[data-region="completion-status"]');
+        if (statusRegion) {
+            statusRegion.dataset.mimoFilterInit = '1';
+        }
+        createComponent(bar, container, statusRegion);
+    });
+
+    // Standalone completion status regions (when filtering is disabled).
+    document.querySelectorAll('[data-region="completion-status"]').forEach((statusRegion) => {
+        if (statusRegion.dataset.mimoFilterInit) {
+            return;
+        }
+        statusRegion.dataset.mimoFilterInit = '1';
+        const container = statusRegion.parentElement
+            ? statusRegion.parentElement.querySelector('.mimo-activities')
+            : null;
+        if (!container) {
+            return;
+        }
+        createComponent(null, container, statusRegion);
+    });
 };
