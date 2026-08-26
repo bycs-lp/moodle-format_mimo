@@ -336,7 +336,7 @@ This plugin demonstrates the hybrid approach:
 - `amd/src/local/wall_state/events.js` – custom event types and dispatch helpers for wall state changes.
 - `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags (event capturing phase).
 - `amd/src/tag_filter.js` – client-side tag filtering.
-- `amd/src/activity_pagination.js` – responsive pagination with swipe.
+- `amd/src/activity_pagination.js` – responsive pagination with swipe. The current page lives in the wall state (`pagination.page`); buttons/swipe dispatch `setPage` and a `pagination:updated` watcher renders (animated when a direction hint is set, direct otherwise).
 - `amd/src/activity_dragdrop.js` – drag and drop reordering. Includes edge dropzones (`EdgeDropzone` component, `[data-region="edge-dropzone"]` in section.mustache) for moving a card directly to first/last position of the section; shown only while a drag is active.
 - `amd/src/profile_image_switcher.js` – swaps tag images/names/visibility in course form when activity profile changes.
 - `amd/src/section_overview_actions.js` – section overview card delete + drag-and-drop reorder (editing mode). Uses `BaseComponent` + `DragDrop` from `core/reactive`. Whole card is drag surface; interactive children protected via `draggable="false"`. Calls `core_courseformat_update_course` with `section_delete` / `section_move_after`.

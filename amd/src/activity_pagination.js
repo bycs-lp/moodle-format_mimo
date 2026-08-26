@@ -133,12 +133,42 @@ export const init = () => {
     const prevBtn = document.getElementById('mimo-prev');
     const nextBtn = document.getElementById('mimo-next');
 
-    let currentPage = 0;
+    // The wall state reactive owns the current page (pagination.page).
+    const sectionElement = container.closest('.section-item') || container.closest('[data-sectionid]') || container;
+    const wallState = getWallState(sectionElement);
+
+    /**
+     * Read the current page from the wall state.
+     *
+     * @returns {number} Zero-based page index
+     */
+    const getCurrentPage = () => wallState.state.pagination.page;
+
     let isAnimating = false;
     let touchStartX = 0;
     let touchEndX = 0;
     let paginationEnabled = true;
     let filterActive = false;
+    /** @type {string|null} Animation direction hint for the next pagination:updated render. */
+    let pendingDirection = null;
+
+    /**
+     * Dispatch a page change to the wall state.
+     *
+     * The pagination:updated watcher performs the actual rendering; a
+     * direction hint enables the carousel animation for user navigation.
+     *
+     * @param {number} page - Zero-based page index
+     * @param {string|null} direction - 'next'|'prev' for animated navigation
+     * @returns {void}
+     */
+    const requestPage = (page, direction = null) => {
+        if (isAnimating || !paginationEnabled || page < 0 || page > getTotalPages() - 1) {
+            return;
+        }
+        pendingDirection = direction;
+        wallState.dispatch('setPage', page);
+    };
 
     /**
      * Get the list of visible activity cards (not hidden by filters).
@@ -208,7 +238,11 @@ export const init = () => {
      * @returns {void}
      */
     const recalculateForFilter = () => {
-        currentPage = 0;
+        if (getCurrentPage() !== 0) {
+            // The pagination:updated watcher renders page 0.
+            wallState.dispatch('setPage', 0);
+            return;
+        }
         showPageDirect();
         updateNavigationButtons();
     };
@@ -346,7 +380,7 @@ export const init = () => {
         }
 
         const itemsPerPage = getItemsPerPage();
-        const startIndex = currentPage * itemsPerPage;
+        const startIndex = getCurrentPage() * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
 
         if (filterActive) {
@@ -423,7 +457,7 @@ export const init = () => {
         const pending = new Pending('format_mimo/activity_pagination:showPage');
 
         const itemsPerPage = getItemsPerPage();
-        const startIndex = currentPage * itemsPerPage;
+        const startIndex = getCurrentPage() * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
 
         const containerRect = container.getBoundingClientRect();
@@ -630,12 +664,12 @@ export const init = () => {
         const totalPages = getTotalPages();
 
         if (prevBtn) {
-            const disablePrev = (currentPage === 0) || !paginationEnabled;
+            const disablePrev = (getCurrentPage() === 0) || !paginationEnabled;
             prevBtn.disabled = disablePrev;
             prevBtn.setAttribute('aria-disabled', disablePrev ? 'true' : 'false');
         }
         if (nextBtn) {
-            const disableNext = (currentPage >= totalPages - 1) || !paginationEnabled;
+            const disableNext = (getCurrentPage() >= totalPages - 1) || !paginationEnabled;
             nextBtn.disabled = disableNext;
             nextBtn.setAttribute('aria-disabled', disableNext ? 'true' : 'false');
         }
@@ -658,9 +692,9 @@ export const init = () => {
         if (paginationEnabled && totalPages > 1) {
             const visibleCards = getVisibleCards();
             const itemsPerPage = getItemsPerPage();
-            const startIndex = currentPage * itemsPerPage;
+            const startIndex = getCurrentPage() * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            announcePaginationStatus(currentPage, totalPages, startIndex, endIndex, visibleCards.length);
+            announcePaginationStatus(getCurrentPage(), totalPages, startIndex, endIndex, visibleCards.length);
         }
     };
 
@@ -680,23 +714,14 @@ export const init = () => {
 
     // Add event listeners to navigation buttons.
     prevBtn?.addEventListener('click', () => {
-        if (currentPage > 0 && !isAnimating) {
-            currentPage--;
-            showPage('prev');
-        }
+        requestPage(getCurrentPage() - 1, 'prev');
     });
 
     nextBtn?.addEventListener('click', () => {
-        if (currentPage < getTotalPages() - 1 && !isAnimating) {
-            currentPage++;
-            showPage('next');
-        }
+        requestPage(getCurrentPage() + 1, 'next');
     });
 
     // --- Reactive wall state integration ---
-    // Replace DOM event listeners with reactive watchers via a thin BaseComponent.
-    const sectionElement = container.closest('.section-item') || container.closest('[data-sectionid]') || container;
-    const wallState = getWallState(sectionElement);
 
     /**
      * Thin BaseComponent that watches wall state and delegates to closure functions.
@@ -708,9 +733,29 @@ export const init = () => {
         getWatchers() {
             return [
                 {watch: 'filters:updated', handler: this._filtersUpdated},
+                {watch: 'pagination:updated', handler: this._pageUpdated},
                 {watch: 'bulk:updated', handler: this._bulkUpdated},
                 {watch: 'activityOrder:updated', handler: this._orderUpdated},
             ];
+        }
+
+        /**
+         * React when the current page changes.
+         *
+         * Renders the new page; animates when a direction hint was set by
+         * user navigation (buttons, swipe), renders directly otherwise.
+         */
+        _pageUpdated() {
+            const direction = pendingDirection;
+            pendingDirection = null;
+            if (!paginationEnabled) {
+                return;
+            }
+            if (direction) {
+                showPage(direction);
+            } else {
+                showPageDirect();
+            }
         }
 
         /**
@@ -741,8 +786,12 @@ export const init = () => {
                 showAllActivities();
             } else if (!bulkEnabled && !paginationEnabled) {
                 paginationEnabled = true;
-                currentPage = 0;
-                enablePagination();
+                if (getCurrentPage() !== 0) {
+                    // The pagination:updated watcher renders page 0.
+                    wallState.dispatch('setPage', 0);
+                } else {
+                    enablePagination();
+                }
             }
         }
 
@@ -796,16 +845,10 @@ export const init = () => {
 
         if (diff > 0) {
             // Swiped left - go to next page.
-            if (currentPage < getTotalPages() - 1 && !isAnimating) {
-                currentPage++;
-                showPage('next');
-            }
+            requestPage(getCurrentPage() + 1, 'next');
         } else {
             // Swiped right - go to previous page.
-            if (currentPage > 0 && !isAnimating) {
-                currentPage--;
-                showPage('prev');
-            }
+            requestPage(getCurrentPage() - 1, 'prev');
         }
     };
 
@@ -834,8 +877,11 @@ export const init = () => {
             }
             // Recalculate and stay on current page if possible.
             const totalPages = getTotalPages();
-            if (currentPage >= totalPages) {
-                currentPage = Math.max(0, totalPages - 1);
+            const clamped = Math.min(getCurrentPage(), Math.max(0, totalPages - 1));
+            if (clamped !== getCurrentPage()) {
+                // The pagination:updated watcher renders the clamped page.
+                wallState.dispatch('setPage', clamped);
+                return;
             }
             showPageDirect();
         }, 250);

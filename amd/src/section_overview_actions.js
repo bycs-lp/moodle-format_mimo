@@ -50,7 +50,8 @@ const persistSectionMove = (sectionId, targetSectionId) => {
         },
     }])[0].catch((error) => {
         Notification.exception(error);
-        // Window.location.reload();
+        // Reload to restore the server-authoritative section order.
+        window.location.reload();
     });
 };
 
