@@ -76,8 +76,13 @@ function buildInitialState(sectionElement) {
  * @returns {Reactive} the wall state reactive instance
  */
 export function getWallState(sectionElement) {
-    // Use the section data-id or fall back to a generated key.
-    const key = sectionElement.dataset.id ?? sectionElement.id ?? 'default';
+    // Key on the section's stable data-id. The .section-item div has no
+    // server-side id — YUI assigns a random one lazily, so el.id would give
+    // early and late callers different keys (and thus different instances).
+    const key = sectionElement.dataset.id
+        || sectionElement.closest('[data-for="section"][data-id], li.section[data-id]')?.dataset.id
+        || sectionElement.id
+        || 'default';
 
     if (instances.has(key)) {
         return instances.get(key);
