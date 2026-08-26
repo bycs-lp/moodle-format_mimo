@@ -91,4 +91,22 @@ export default {
         state.activityOrder.ids = [...orderedIds];
         stateManager.setReadOnly(true);
     },
+
+    /**
+     * Record a completion change on a course module.
+     *
+     * Notification slice: the DOM data-completed attributes stay the counting
+     * truth; this only triggers completion:updated so consumers recount.
+     *
+     * @param {StateManager} stateManager
+     * @param {number} cmid course module id whose completion changed
+     * @param {boolean} completed new completion state
+     */
+    notifyCompletionChange(stateManager, cmid, completed) {
+        const state = stateManager.state;
+        stateManager.setReadOnly(false);
+        state.completion.cmid = cmid;
+        state.completion.completed = completed;
+        stateManager.setReadOnly(true);
+    },
 };

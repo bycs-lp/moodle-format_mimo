@@ -25,6 +25,7 @@
  *   pagination:    {page: number}
  *   bulk:          {enabled: boolean}
  *   activityOrder: {ids: number[]}
+ *   completion:    {cmid: number|null, completed: boolean|null}
  *
  * @module     format_mimo/local/wall_state/wall_state
  * @copyright  2025 Tobias Garske
@@ -64,6 +65,7 @@ function buildInitialState(sectionElement) {
         pagination: {page: 0},
         bulk: {enabled: false},
         activityOrder: {ids: readActivityOrderFromDOM(sectionElement)},
+        completion: {cmid: null, completed: null},
     };
 }
 
