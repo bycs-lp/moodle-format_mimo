@@ -26,9 +26,9 @@ Feature: Tag management in mimo format
     When I click on "[data-testid='create-tag-button']" "css_element"
     And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
-      | Override Tag Name        | Biology |
-      | Override Activity Type 1 | assign  |
-      | Override Activity Type 2 | quiz    |
+      | Tag Name        | Biology |
+      | Activity Type 1 | assign  |
+      | Activity Type 2 | quiz    |
     And I upload "course/format/mimo/pix/tags/explore_base.svg" file to "Card Image (Base)" filemanager
     And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
@@ -46,7 +46,7 @@ Feature: Tag management in mimo format
     And I click on "[data-testid='edit-tag-button']" "css_element" in the "[data-testid='tag-row'][data-tag-name='Biology']" "css_element"
     And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
-      | Override Tag Name | Advanced Biology |
+      | Tag Name | Advanced Biology |
     And I upload "course/format/mimo/pix/tags/read_base.svg" file to "Card Image (Base)" filemanager
     And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
