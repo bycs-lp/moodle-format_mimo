@@ -17,8 +17,8 @@
  * Course editor reactive bridge for mimo format.
  *
  * A BaseComponent that watches the core course editor reactive state and
- * bridges changes into the wall state reactive. Also dispatches legacy
- * DOM events for completion changes (tag_filter still uses these).
+ * bridges changes into the wall state reactive. Completion changes are
+ * bridged via the notifyCompletionChange mutation.
  *
  * @module     format_mimo/courseeditor_watcher
  * @copyright  2025 Tobias Garske
@@ -29,12 +29,6 @@ import Fragment from 'core/fragment';
 import Templates from 'core/templates';
 import Config from 'core/config';
 import Pending from 'core/pending';
-
-/** Custom event names dispatched by this component. */
-export const EVENTS = {
-    /** Activity completion state changed. Detail: {cmId: number, completed: boolean} */
-    COMPLETION_CHANGE: 'mimo:completionchange',
-};
 
 /**
  * Reactive bridge component that watches course editor state.
@@ -97,8 +91,8 @@ export default class CourseEditorWatcher extends BaseComponent {
      * Handle course module state updates.
      *
      * When a cm's completionstate changes, updates the data-completed
-     * attribute on the activity list item and dispatches a completion
-     * change event so tag_filter can recount.
+     * attribute on the activity list item and dispatches the
+     * notifyCompletionChange wall-state mutation so filter bars can recount.
      *
      * @param {object} param0 Event detail
      * @param {object} param0.element The cm state object
@@ -123,13 +117,10 @@ export default class CourseEditorWatcher extends BaseComponent {
         const isComplete = element.completionstate > 0;
         const newValue = isComplete ? 'true' : 'false';
 
-        // Only dispatch event if value actually changed.
+        // Only notify if the value actually changed.
         if (activityItem.dataset.completed !== newValue) {
             activityItem.dataset.completed = newValue;
-
-            document.dispatchEvent(new CustomEvent(EVENTS.COMPLETION_CHANGE, {
-                detail: {cmId, completed: isComplete},
-            }));
+            this.wallState?.dispatch('notifyCompletionChange', cmId, isComplete);
         }
     }
 
