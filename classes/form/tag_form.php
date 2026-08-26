@@ -204,29 +204,19 @@ class tag_form extends dynamic_form {
      * @return array Activity types
      */
     protected function get_activity_types() {
-        return [
-            '' => get_string('selectactivitytype', 'format_mimo'),
-            'assign' => get_string('pluginname', 'mod_assign'),
-            'book' => get_string('pluginname', 'mod_book'),
-            'choice' => get_string('pluginname', 'mod_choice'),
-            'data' => get_string('pluginname', 'mod_data'),
-            'feedback' => get_string('pluginname', 'mod_feedback'),
-            'folder' => get_string('pluginname', 'mod_folder'),
-            'forum' => get_string('pluginname', 'mod_forum'),
-            'glossary' => get_string('pluginname', 'mod_glossary'),
-            'h5pactivity' => get_string('pluginname', 'mod_h5pactivity'),
-            'imscp' => get_string('pluginname', 'mod_imscp'),
-            'label' => get_string('pluginname', 'mod_label'),
-            'lesson' => get_string('pluginname', 'mod_lesson'),
-            'lti' => get_string('pluginname', 'mod_lti'),
-            'page' => get_string('pluginname', 'mod_page'),
-            'quiz' => get_string('pluginname', 'mod_quiz'),
-            'resource' => get_string('pluginname', 'mod_resource'),
-            'scorm' => get_string('pluginname', 'mod_scorm'),
-            'url' => get_string('pluginname', 'mod_url'),
-            'wiki' => get_string('pluginname', 'mod_wiki'),
-            'workshop' => get_string('pluginname', 'mod_workshop'),
-        ];
+        // Modules that do not work in the wall format and are hidden from the activity chooser.
+        $excluded = ['label', 'unilabel', 'subsection'];
+
+        $modnames = [];
+        foreach (\core_plugin_manager::instance()->get_enabled_plugins('mod') as $modname) {
+            if (in_array($modname, $excluded)) {
+                continue;
+            }
+            $modnames[$modname] = get_string('pluginname', 'mod_' . $modname);
+        }
+        \core_collator::asort($modnames);
+
+        return ['' => get_string('selectactivitytype', 'format_mimo')] + $modnames;
     }
 
     /**
