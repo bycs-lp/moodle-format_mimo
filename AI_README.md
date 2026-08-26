@@ -329,13 +329,13 @@ This plugin demonstrates the hybrid approach:
 - `styles.scss` / `styles.css` – wall styling + profile-specific CSS + activity card styles + description tag pill styling.
 - `amd/src/tagchooserbutton.js` – tag chooser modal handler with activity description fetching.
 - `amd/src/mutations.js` – custom course editor mutations: `MimoMutations` class (cmDone, cmUndone — webservice + processUpdates only) + `mimoAvailabilityHandler` (custom bulk availability modal with Done option).
-- `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state, dispatches legacy DOM events for completion changes (used by tag_filter), and reloads the cmitem fragment on `cm.isdone:updated` (done styling + visibility dropdown are backend rendered).
+- `amd/src/courseeditor_watcher.js` – reactive bridge: watches core course editor state, bridges bulk and completion changes into the wall state (completion via `notifyCompletionChange` mutation after updating `data-completed`), and reloads the cmitem fragment on `cm.isdone:updated` (done styling + visibility dropdown are backend rendered).
 - `amd/src/init_courseeditor_watcher.js` – initializer for the courseeditor_watcher component.
-- `amd/src/local/wall_state/wall_state.js` – per-section reactive store for wall UI state (filters, pagination, bulk mode, activity order).
-- `amd/src/local/wall_state/mutations.js` – mutations for the wall state reactive (filter changes, pagination, bulk toggle, reorder).
+- `amd/src/local/wall_state/wall_state.js` – per-section reactive store for wall UI state (filters, pagination, bulk mode, activity order, completion-change notifications).
+- `amd/src/local/wall_state/mutations.js` – mutations for the wall state reactive (filter changes, pagination, bulk toggle, reorder, `notifyCompletionChange`).
 - `amd/src/local/wall_state/events.js` – custom event types and dispatch helpers for wall state changes.
 - `amd/src/tag_delete_confirm.js` – delete confirmation modals for tags (event capturing phase).
-- `amd/src/tag_filter.js` – client-side tag filtering.
+- `amd/src/tag_filter.js` – client-side tag filtering. One `FilterBar` BaseComponent per bar/status region on the wall state reactive; clicks only dispatch `setTagFilter`/`setCompletionFilter`, a `filters:updated` watcher renders idempotently (hide/show, reorder, buttons, pills, ARIA), `completion:updated` recounts pills/star. Items are re-queried per render; unfiltered order restored from `state.activityOrder.ids`.
 - `amd/src/activity_pagination.js` – responsive pagination with swipe. The current page lives in the wall state (`pagination.page`); buttons/swipe dispatch `setPage` and a `pagination:updated` watcher renders (animated when a direction hint is set, direct otherwise).
 - `amd/src/activity_dragdrop.js` – drag and drop reordering. Includes edge dropzones (`EdgeDropzone` component, `[data-region="edge-dropzone"]` in section.mustache) for moving a card directly to first/last position of the section; shown only while a drag is active.
 - `amd/src/profile_image_switcher.js` – swaps tag images/names/visibility in course form when activity profile changes.
