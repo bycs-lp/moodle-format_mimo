@@ -285,22 +285,24 @@ const clearFilterStyles = (items) => {
  * - Both filters use AND logic when combined
  *
  * @param {HTMLElement[]} items - Array of activity list item elements
+ * @param {string} activeTag - Active tag id, or '' for no tag filter
+ * @param {string} activeCompletion - 'true', 'false', or '' for no filter
  * @returns {number} Count of visible items after filtering
  */
-const applyCombinedFilter = (items) => {
+const applyCombinedFilter = (items, activeTag, activeCompletion) => {
     let visibleCount = 0;
     items.forEach((item) => {
         let matchesTag = true;
         let matchesCompletion = true;
 
         // Check tag filter if active.
-        if (filterState.activeTag) {
+        if (activeTag) {
             const itemTag = item.dataset.tagid || '';
-            matchesTag = (itemTag === filterState.activeTag);
+            matchesTag = (itemTag === activeTag);
         }
 
         // Check completion filter if active.
-        if (filterState.activeCompletion) {
+        if (activeCompletion) {
             // Done and overdue activities are excluded from completion filtering.
             if (item.dataset.done === 'true' || item.dataset.overdue === 'true') {
                 matchesCompletion = false;
@@ -308,7 +310,7 @@ const applyCombinedFilter = (items) => {
                 const itemCompleted = item.dataset.completed;
                 // Only filter items that have completion tracking.
                 if (itemCompleted !== undefined) {
-                    matchesCompletion = (itemCompleted === filterState.activeCompletion);
+                    matchesCompletion = (itemCompleted === activeCompletion);
                 } else {
                     // Items without completion tracking don't match completion filter.
                     matchesCompletion = false;
@@ -378,16 +380,18 @@ const updateCompletionPills = (statusRegion, activeCompleted) => {
  *
  * @param {HTMLElement} statusRegion - Completion status region element
  * @param {HTMLElement[]} items - Array of activity items to count from
+ * @param {string} activeTag - Active tag id, or '' (hidden items are skipped
+ *                             only while a tag filter is active)
  * @returns {void}
  */
-const updateCompletionCounts = (statusRegion, items) => {
+const updateCompletionCounts = (statusRegion, items, activeTag) => {
     let completedCount = 0;
     let incompleteCount = 0;
     let totalWithCompletion = 0;
 
     items.forEach((item) => {
         // Skip hidden items when a tag filter is active.
-        if (filterState.activeTag && item.hidden) {
+        if (activeTag && item.hidden) {
             return;
         }
         // Skip done activities — they don't count toward completion.
@@ -752,7 +756,7 @@ const initFilterBar = (bar) => {
 
             animateContainerHeight(activityContainer, () => {
                 if (filterState.activeTag || filterState.activeCompletion) {
-                    visibleCount = applyCombinedFilter(activityItems);
+                    visibleCount = applyCombinedFilter(activityItems, filterState.activeTag, filterState.activeCompletion);
                 } else {
                     clearFilterStyles(activityItems);
                     visibleCount = activityItems.length;
@@ -761,7 +765,7 @@ const initFilterBar = (bar) => {
 
             // Update completion counts based on currently visible items.
             if (statusRegion) {
-                updateCompletionCounts(statusRegion, activityItems);
+                updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
                 toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
             }
 
@@ -866,13 +870,13 @@ const initFilterBar = (bar) => {
             });
 
             // Initial update to show star if all activities are already complete.
-            updateCompletionCounts(statusRegion, activityItems);
+            updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
         }
 
         // Listen for reactive completion state changes from the course editor watcher.
         document.addEventListener('mimo:completionchange', () => {
             if (statusRegion) {
-                updateCompletionCounts(statusRegion, activityItems);
+                updateCompletionCounts(statusRegion, activityItems, filterState.activeTag);
             }
         });
     } catch (error) {
@@ -913,7 +917,7 @@ const initCompletionStatusOnly = (statusRegion) => {
 
             animateContainerHeight(activityContainer, () => {
                 if (filterState.activeCompletion) {
-                    visibleCount = applyCombinedFilter(activityItems);
+                    visibleCount = applyCombinedFilter(activityItems, '', filterState.activeCompletion);
                 } else {
                     activityItems.forEach((item) => {
                         item.hidden = false;
@@ -924,7 +928,7 @@ const initCompletionStatusOnly = (statusRegion) => {
                 }
             });
 
-            updateCompletionCounts(statusRegion, activityItems);
+            updateCompletionCounts(statusRegion, activityItems, '');
             toggleNoActivitiesMessage(statusRegion, visibleCount === 0);
 
             return visibleCount;
@@ -962,11 +966,11 @@ const initCompletionStatusOnly = (statusRegion) => {
         });
 
         // Initial update to show star if all activities are already complete.
-        updateCompletionCounts(statusRegion, activityItems);
+        updateCompletionCounts(statusRegion, activityItems, '');
 
         // Listen for reactive completion state changes from the course editor watcher.
         document.addEventListener('mimo:completionchange', () => {
-            updateCompletionCounts(statusRegion, activityItems);
+            updateCompletionCounts(statusRegion, activityItems, '');
         });
     } catch (error) {
         Notification.exception(error);
