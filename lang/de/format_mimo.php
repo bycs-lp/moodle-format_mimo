@@ -159,7 +159,6 @@ $string['editsection'] = 'Abschnitt bearbeiten';
 $string['edittag'] = 'Tag bearbeiten';
 $string['filteractive'] = 'Filter aktiv';
 $string['filterbarlabel'] = 'Aktivitäten filtern';
-$string['filterbarnoactivities'] = 'Noch keine Aktivitäten verwenden diesen Tag';
 $string['filterby'] = 'Filtern nach';
 $string['filterimage'] = 'Filterbild (SVG)';
 $string['filterimage_for_profile'] = 'Filterbild ({$a})';

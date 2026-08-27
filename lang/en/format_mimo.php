@@ -157,7 +157,6 @@ $string['editsection'] = 'Edit section';
 $string['edittag'] = 'Edit Tag';
 $string['filteractive'] = 'Filter active';
 $string['filterbarlabel'] = 'Filter activities';
-$string['filterbarnoactivities'] = 'No activities use this tag yet';
 $string['filterby'] = 'Filter by';
 $string['filterimage'] = 'Filter image (SVG)';
 $string['filterimage_for_profile'] = 'Filter Image ({$a})';

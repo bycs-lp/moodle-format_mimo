@@ -54,13 +54,10 @@
             "hasitems": true,
             "label": "Filter activities",
             "styleclass": "",
-            "isediting": false,
-            "emptylabel": "No activities",
             "tags": [
                 {
                     "id": 1,
                     "name": "Tag 1",
-                    "hasactivities": true,
                     "bgcolor": "#3366cc",
                     "imageurl": ""
                 }
@@ -102,9 +99,8 @@
                 data-testid="filter-button"
                 data-tagid="{{id}}"
                 data-tag-name="{{name}}"
-                data-hasactivities="{{#hasactivities}}1{{/hasactivities}}{{^hasactivities}}0{{/hasactivities}}"
                 aria-pressed="false"
-                title="{{name}}{{^hasactivities}}{{#filterbar.isediting}} · {{filterbar.emptylabel}}{{/filterbar.isediting}}{{/hasactivities}}"
+                title="{{name}}"
                 style="{{#bgcolor}}--mimo-filter-accent: {{bgcolor}};{{/bgcolor}}"
                 disabled
             >

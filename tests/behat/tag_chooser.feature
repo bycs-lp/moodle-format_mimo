@@ -90,7 +90,7 @@ Feature: Tag-based activity chooser in mimo format
     Then I should see "Practice Assignment 1" in the ".mimo-activities" "css_element"
     And I turn editing mode off
     And I wait until "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Practice') and not(@disabled)]" "xpath_element" exists
-    And "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Practice') and @data-hasactivities='1']" "xpath_element" should exist
+    And "//button[contains(@class,'mimo-filterbar-button')][contains(@title,'Practice')]" "xpath_element" should exist
 
   @javascript
   Scenario: Multiple activities can have different tags

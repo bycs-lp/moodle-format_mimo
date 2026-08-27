@@ -45,7 +45,7 @@ Feature: Tag filtering in mimo format
     When I am on "Test Course 1" course homepage
     Then ".mimo-filterbar" "css_element" should exist
     And "button[title*='Practice']" "css_element" should exist
-    And "button[data-hasactivities='1']" "css_element" should exist
+    And "button[data-tag-name='Practice']" "css_element" should exist
 
   @javascript
   Scenario: Student can filter activities by tag

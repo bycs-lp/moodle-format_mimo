@@ -88,7 +88,7 @@ class section extends section_base {
             }
 
             if ($enablefiltering) {
-                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $isediting, $sectionid);
+                $filtertags = $this->build_filterbar_data($tags, (int)$course->id, $sectionid);
                 if (!empty($filtertags)) {
                     $bgdesign = $options['backgrounddesign'] ?? 'primary-school';
                     $filterbarstyle = self::get_filterbarstyle_for_bgdesign($bgdesign);
@@ -96,8 +96,6 @@ class section extends section_base {
                         'tags' => $filtertags,
                         'hasitems' => true,
                         'label' => get_string('filterbarlabel', 'format_mimo'),
-                        'emptylabel' => get_string('filterbarnoactivities', 'format_mimo'),
-                        'isediting' => $isediting,
                         'styleclass' => 'mimo-filterstyle-' . $filterbarstyle,
                     ];
                 }
@@ -119,16 +117,17 @@ class section extends section_base {
     /**
      * Build template data for the filter bar.
      *
+     * Only tags that are used by at least one activity are included,
+     * regardless of editing mode.
+     *
      * @param array $tags Tag records keyed by id
      * @param int $courseid Course ID
-     * @param bool $isediting Whether editing mode is enabled
      * @param int|null $sectionid Optional section id to scope tag usage counts
      * @return array
      */
     private function build_filterbar_data(
         array $tags,
         int $courseid,
-        bool $isediting,
         ?int $sectionid = null
     ): array {
         if (empty($tags)) {
@@ -143,8 +142,7 @@ class section extends section_base {
         $filtertags = [];
         foreach ($tags as $tag) {
             $filterurl = $tag->cached_filterimage_url ?? null;
-            $hasactivities = !empty($usage[$tag->id]);
-            if (!$isediting && !$hasactivities) {
+            if (empty($usage[$tag->id])) {
                 continue;
             }
 
@@ -152,7 +150,6 @@ class section extends section_base {
                 'id' => $tag->id,
                 'name' => format_string($tag->name, true, ['context' => $context]),
                 'imageurl' => $filterurl ?: null,
-                'hasactivities' => $hasactivities,
                 'bgcolor' => $tagmanager->get_tag_accent_color($tag),
             ];
         }

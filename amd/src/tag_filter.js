@@ -679,12 +679,11 @@ class FilterBar extends BaseComponent {
      */
     stateReady() {
         if (this.bar) {
-            // Buttons mirror the server-side tag list for this section.
+            // Buttons mirror the server-side tag list for this section; only
+            // tags with activities are rendered, so enable them all once JS is up.
             this.bar.querySelectorAll('[data-action="tag-filter"]').forEach((button) => {
-                if (button.dataset.hasactivities === '1') {
-                    button.disabled = false;
-                    button.classList.remove('is-empty');
-                }
+                button.disabled = false;
+                button.classList.remove('is-empty');
             });
             this.addEventListener(this.bar, 'click', this._barClicked);
         }
