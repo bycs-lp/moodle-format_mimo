@@ -258,7 +258,7 @@
 .card.mimo-card .mimo-card-content .mimo-card-image .mimo-tag-pill {
   position: absolute;
   right: 0.5rem;
-  bottom: 0.6rem;
+  bottom: -0.35rem;
   background: rgba(255, 255, 255, 0.95);
   color: #111827;
   font-size: 0.65rem;
@@ -489,8 +489,8 @@ body.editing.dragging .mimo-edge-dropzone {
 
 .mimo-completion-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 9px;
+  right: 8px;
   z-index: 12;
   width: 42px;
   height: 42px;
