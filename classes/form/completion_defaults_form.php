@@ -25,8 +25,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace format_mimo\form;
+
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->dirroot . '/completion/classes/edit_base_form.php');
 require_once($CFG->dirroot . '/completion/classes/defaultedit_form.php');
 
@@ -40,7 +43,7 @@ require_once($CFG->dirroot . '/completion/classes/defaultedit_form.php');
  * @copyright  2025 Tobias Garske
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_mimo_completion_defaults_form extends core_completion_defaultedit_form {
+class completion_defaults_form extends \core_completion_defaultedit_form {
     /**
      * Form definition.
      *

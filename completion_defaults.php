@@ -28,7 +28,6 @@
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->dirroot . '/course/format/mimo/classes/form/completion_defaults_form.php');
 
 // Parameters.
 $modid = optional_param('modid', 0, PARAM_INT);
@@ -87,7 +86,7 @@ if ($modid) {
     $moduleinfo->formattedname = get_string('modulename', $module->name);
     $moduleinfo->canmanage = true;
 
-    $form = new format_mimo_completion_defaults_form(
+    $form = new \format_mimo\form\completion_defaults_form(
         new moodle_url($pageurl, ['modid' => $modid]),
         [
             'course' => $course,

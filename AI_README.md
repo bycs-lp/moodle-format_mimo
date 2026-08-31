@@ -306,7 +306,7 @@ This plugin demonstrates the hybrid approach:
 - `classes/form/tag_form.php` – dynamic form for tag create/edit; always operates on ONE tagset (`selectedprofileid` > 0). No inherit options, no enabled checkbox; create inserts the anchor + an enabled row in the creating set, edit writes only the active set's row via `materialize_profile_tag()`.
 - `classes/form/tagset_form.php` – mform for tagset create/edit.
 - `classes/form/description_tag_form.php` – mform for description tag create/edit with color validation.
-- `classes/form/completion_defaults_form.php` – mform extending core's `defaultedit_form` for mimo completion overrides.
+- `classes/form/completion_defaults_form.php` – namespaced form (`format_mimo\form\completion_defaults_form`, extends `\core_completion_defaultedit_form`) for mimo completion overrides.
 - `classes/form/activity_descriptions_form.php` – mform with dropdowns for assigning tags to activity types.
 - `classes/section_image_manager.php` – section overview card image CRUD. File area `sectionimage` in course context, section ID as itemid. No DB table — file existence is truth. Methods: `get_image_url()`, `save_image()`, `delete_image()`, `has_image()`, `delete_all_for_course()`.
 - `classes/form/section_image_form.php` – dynamic form (modal) with filepicker for uploading/changing section images (jpg, png, webp, svg) plus a hidden `deleteimage` field; `process_dynamic_submission()` deletes the image instead of saving when it's set. Extends `dynamic_form`.
