@@ -73,6 +73,17 @@ class section extends section_base {
             $data->cmlist->hasinitialnext = ($activitycount > self::INITIAL_PAGINATION_THRESHOLD);
         }
 
+        // Empty wall message: the user sees no activities and is not editing.
+        // Core's cmlist only contains cms visible to this user, so an all-hidden
+        // wall counts as empty for students.
+        if (!$isediting && empty($data->cmlist->cms)) {
+            $data->emptywall = (object) [
+                'isteacher' => $PAGE->user_allowed_editing(),
+                'contextid' => $PAGE->context->id,
+                'pageurl' => $PAGE->url->out(false),
+            ];
+        }
+
         // Get tags selected for this course.
         $tags = \core\di::get(\format_mimo\tag_manager::class)->get_tags_for_course((int)$course->id);
 

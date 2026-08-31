@@ -69,6 +69,11 @@
             "allcomplete": false,
             "total": 3
         },
+        "emptywall": {
+            "isteacher": true,
+            "contextid": 25,
+            "pageurl": "/course/view.php?id=2"
+        },
         "styleclass": "",
         "stylevariant": "default",
         "bgdesignclass": "",
@@ -133,6 +138,24 @@
                 <div class="mimo-edge-dropzone-inner">{{#str}}dropzonelast, format_mimo{{/str}}</div>
             </li>
         </ul>
+        {{#emptywall}}
+        {{! Empty wall: teacher gets a CTA that enables edit mode, students an info text. }}
+        <div class="mimo-emptywall" data-region="mimo-emptywall">
+            {{#isteacher}}
+            <p class="mimo-emptywall-text">{{#str}}emptywallteacher, format_mimo{{/str}}</p>
+            <form method="post" action="{{config.wwwroot}}/editmode.php">
+                <input type="hidden" name="setmode" value="1">
+                <input type="hidden" name="context" value="{{contextid}}">
+                <input type="hidden" name="pageurl" value="{{pageurl}}">
+                <input type="hidden" name="sesskey" value="{{config.sesskey}}">
+                <button type="submit" class="btn btn-primary">{{#str}}emptywallteachercta, format_mimo{{/str}}</button>
+            </form>
+            {{/isteacher}}
+            {{^isteacher}}
+            <p class="mimo-emptywall-text">{{#str}}emptywallstudent, format_mimo{{/str}}</p>
+            {{/isteacher}}
+        </div>
+        {{/emptywall}}
         <div class="mimo-navigation-wrapper {{styleclass}}" data-style="{{stylevariant}}" role="navigation" aria-label="{{#str}}paginationnavigation, format_mimo{{/str}}">
             {{! Pagination navigation }}
             <div

@@ -116,6 +116,24 @@
   padding: 0;
 }
 
+.mimo-emptywall {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+.mimo-emptywall .mimo-emptywall-text {
+  margin: 0;
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.mimo-activities-empty ~ .mimo-navigation-wrapper {
+  display: none;
+}
+
 @media (min-width: 992px) {
   body:not(.bulkenabled) .mimo-activities li:nth-child(n+9 of .col-12) {
     display: none;

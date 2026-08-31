@@ -164,6 +164,28 @@ $activity-icon-colors: (
     padding: 0;
 }
 
+// Empty wall message: centered info text (+ teacher CTA) on the empty board.
+.mimo-emptywall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem 1rem;
+    text-align: center;
+
+    .mimo-emptywall-text {
+        margin: 0;
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+}
+
+// Hide the (disabled) pagination arrows on empty walls. General sibling
+// combinator: the empty-wall message sits between the board and the nav wrapper.
+.mimo-activities-empty ~ .mimo-navigation-wrapper {
+    display: none;
+}
+
 // Hide not when in bulkedit, duplicated activities would be hidden otherwise.
 body:not(.bulkenabled) .mimo-activities {
     // Hide activities beyond the first page by default (prevents flash on page load).

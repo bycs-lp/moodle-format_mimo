@@ -168,6 +168,7 @@
    - **Multi-section mode — overview**: Shows a card grid of all sections. Each card displays section name, optional custom image (replaces miniwall when uploaded), activity mini-tiles (when no image), and completion progress bar. In editing mode: teachers can upload/change section images, delete sections (confirmation modal with activity count warning), and reorder sections via drag-and-drop (whole card is drag surface, interactive elements take priority via `draggable="false"`). Clicking a card navigates to `?section=N`. Shown on first visit (no stored preference) or when the home button is clicked (`?overview=1`).
    - **Multi-section mode — single wall**: Shows one section's wall. A home button appears in the page header, navigating to the overview (`?overview=1`, which clears the stored preference). Visiting a wall stores the section ID in the user's preference (`format_mimo_lastsection_{courseid}`). Returning to the plain course URL auto-redirects to the stored wall.
    - **Sticky wall behavior**: User preference `format_mimo_lastsection_{courseid}` tracks the last-visited section by **section ID**. Set on wall visit and activity page view. Cleared on home button click. Validated on read (deleted/hidden sections fall through to overview). Eagerly deleted by the `course_section_deleted` observer and cleaned up when the course is deleted.
+   - **Empty wall**: when the user sees no activities and is not editing, the wall shows a centered message (`div.mimo-emptywall`, exported as `emptywall` by the section exporter). Users with `$PAGE->user_allowed_editing()` get a CTA button that POSTs to `/editmode.php` (setmode=1, context, pageurl, sesskey) and lands back on the same wall with editing on; other users get an informational text. Empty is user-relative (all-hidden wall = empty for students). Pagination arrows are hidden via `.mimo-activities-empty ~ .mimo-navigation-wrapper`.
    - Optional filter bar (enabled via course option) lists tags with usage counts; clicking filters the visible cards.
 5. **Course index drawer**
    - Disabled in single-section mode (`uses_course_index()` returns `false`).
@@ -354,6 +355,7 @@ This plugin demonstrates the hybrid approach:
 - `db/caches.php` – cache definitions (tagconfigurations, activitytagmappings, activity_descriptions).
 - `tests/behat/tag_management.feature` – 6 scenarios for tag/tagset CRUD (create, edit, delete).
 - `tests/behat/activity_tag_edit.feature` – 4 scenarios for changing/removing tags on activities via the module edit form.
+- `tests/behat/empty_wall.feature` – 4 scenarios for the empty wall message (teacher CTA enables edit mode, student info text, all-hidden wall, non-empty wall).
 - `tests/behat/style_variants.feature` – 2 scenarios for style variant selection during course creation.
 - `tests/behat/style_management.feature` – style admin scenarios (legacy, may need update).
 - `tests/tag_manager_test.php` – tag CRUD, assignment, caching, profile-based filtering.
