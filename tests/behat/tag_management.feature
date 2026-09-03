@@ -29,7 +29,7 @@ Feature: Tag management in mimo format
       | Tag Name        | Biology |
       | Activity Type 1 | assign  |
       | Activity Type 2 | quiz    |
-    And I upload "course/format/mimo/pix/tags/explore_base.svg" file to "Card Image (Base)" filemanager
+    And I upload "course/format/mimo/pix/tags/base_receive.png" file to "Card Image (Base)" filemanager
     And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Biology"
@@ -47,7 +47,7 @@ Feature: Tag management in mimo format
     And I wait until "[data-region='modal']" "css_element" exists
     And I set the following fields to these values:
       | Tag Name | Advanced Biology |
-    And I upload "course/format/mimo/pix/tags/read_base.svg" file to "Card Image (Base)" filemanager
+    And I upload "course/format/mimo/pix/tags/base_inform.png" file to "Card Image (Base)" filemanager
     And I click on "Save changes" "button" in the "[data-region='modal']" "css_element"
     And I wait until the page is ready
     Then I should see "Advanced Biology"

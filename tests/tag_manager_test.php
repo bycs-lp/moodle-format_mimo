@@ -421,9 +421,9 @@ final class tag_manager_test extends \advanced_testcase {
 
         $this->tagmanager->initialize_default_tags();
 
-        // Verify 12 default tags were created.
+        // Verify 14 default tags were created.
         $tags = $this->tagmanager->get_all_tags();
-        $this->assertCount(12, $tags);
+        $this->assertCount(14, $tags);
 
         // Verify the full set of default tag names in one strict comparison.
         $tagnames = array_column($tags, 'name');
@@ -432,6 +432,7 @@ final class tag_manager_test extends \advanced_testcase {
             get_string('tag_base_apply', 'format_mimo'),
             get_string('tag_base_compose', 'format_mimo'),
             get_string('tag_base_cooperate', 'format_mimo'),
+            get_string('tag_base_discuss', 'format_mimo'),
             get_string('tag_base_inform', 'format_mimo'),
             get_string('tag_base_listen', 'format_mimo'),
             get_string('tag_base_practise', 'format_mimo'),
@@ -439,6 +440,7 @@ final class tag_manager_test extends \advanced_testcase {
             get_string('tag_base_produce', 'format_mimo'),
             get_string('tag_base_project', 'format_mimo'),
             get_string('tag_base_receive', 'format_mimo'),
+            get_string('tag_base_reflect', 'format_mimo'),
             get_string('tag_base_research', 'format_mimo'),
             get_string('tag_base_test', 'format_mimo'),
         ];
@@ -460,9 +462,9 @@ final class tag_manager_test extends \advanced_testcase {
         $this->tagmanager->initialize_default_tags();
         $this->tagmanager->initialize_default_tags();
 
-        // Should still only have 12 tags.
+        // Should still only have 14 tags.
         $tags = $this->tagmanager->get_all_tags();
-        $this->assertCount(12, $tags);
+        $this->assertCount(14, $tags);
     }
 
     /**

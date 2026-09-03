@@ -1103,6 +1103,8 @@ class profile_manager {
                 9 => ['name' => get_string('tag_partnerwork', 'format_mimo')],
                 10 => ['name' => get_string('tag_groupproject', 'format_mimo')],
                 11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
+                12 => ['enabled' => 0],
+                13 => ['enabled' => 0],
             ],
             'secondaryschool' => [
                 0 => ['name' => get_string('tag_inform', 'format_mimo')],
@@ -1117,6 +1119,8 @@ class profile_manager {
                 9 => ['name' => get_string('tag_cooperate', 'format_mimo')],
                 10 => ['name' => get_string('tag_projectwork', 'format_mimo')],
                 11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
+                12 => ['enabled' => 0],
+                13 => ['enabled' => 0],
             ],
             'foreignlanguage' => [
                 0 => ['name' => get_string('tag_reading', 'format_mimo')],
@@ -1135,6 +1139,8 @@ class profile_manager {
                 9 => ['name' => get_string('tag_cooperate', 'format_mimo')],
                 10 => ['name' => get_string('tag_projectwork', 'format_mimo')],
                 11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
+                12 => ['enabled' => 0],
+                13 => ['enabled' => 0],
             ],
         ];
     }

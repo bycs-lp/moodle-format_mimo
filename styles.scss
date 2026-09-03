@@ -2268,6 +2268,14 @@ body.single-section-page.format-mimo-multisection-view {
 }
 
 // --- SHARED: Pinnwand + Paper note / post-it card styles ---
+@font-face {
+    font-family: "Patrick Hand";
+    src: url([[font:format_mimo|PatrickHand-Regular.ttf]]) format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 .mimo-bgdesign-wrapper.mimo-bgdesign-pinnwand,
 .mimo-bgdesign-wrapper.mimo-bgdesign-paper {
     .mimo-card {
@@ -2295,7 +2303,7 @@ body.single-section-page.format-mimo-multisection-view {
             background: #ffffff;
 
             .mimo-card-description {
-                font-family: "ByDS Lesen", var(--bs-body-font-family, system-ui), sans-serif;
+                font-family: "Patrick Hand", system-ui, sans-serif;
                 font-size: clamp(.95rem, 9.2cqw, 1.8rem);
                 letter-spacing: 0.2px;
                 color: #111827;
