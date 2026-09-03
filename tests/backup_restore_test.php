@@ -201,11 +201,12 @@ final class backup_restore_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
         $tagid = $this->tagmanager->create_tag('Profile Tag');
+        $this->profilemanager->create_profile('optionprofile', 'Option Profile');
 
         // Create a course with a specific activity profile.
         $course = $generator->create_course([
             'format' => 'mimo',
-            'activityprofile' => 'secondaryschool',
+            'activityprofile' => 'optionprofile',
         ]);
         $page = $generator->create_module('page', ['course' => $course->id]);
         $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
@@ -221,7 +222,7 @@ final class backup_restore_test extends \advanced_testcase {
             'format' => 'mimo',
             'name' => 'activityprofile',
         ]);
-        $this->assertEquals('secondaryschool', $restoredprofile);
+        $this->assertEquals('optionprofile', $restoredprofile);
     }
 
     /**
