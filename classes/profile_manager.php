@@ -979,8 +979,8 @@ class profile_manager {
         }
 
         $defaults = [
-            ['name' => 'primaryschool',
-                'displayname' => get_string('profile_primaryschool', 'format_mimo'), 'sortorder' => 1],
+            ['name' => 'primary_horst',
+                'displayname' => get_string('profile_primary_horst', 'format_mimo'), 'sortorder' => 1],
             ['name' => 'secondaryschool',
                 'displayname' => get_string('profile_secondaryschool', 'format_mimo'), 'sortorder' => 2],
             ['name' => 'foreignlanguage',
@@ -1090,20 +1090,32 @@ class profile_manager {
      */
     private function get_default_profile_tag_overrides(): array {
         return [
-            'primaryschool' => [
-                0 => ['name' => get_string('tag_reading', 'format_mimo')],
-                1 => ['name' => get_string('tag_writing', 'format_mimo')],
-                2 => ['name' => get_string('tag_calculate', 'format_mimo')],
-                3 => ['name' => get_string('tag_play', 'format_mimo')],
-                4 => ['name' => get_string('tag_inform', 'format_mimo')],
-                5 => ['name' => get_string('tag_show', 'format_mimo'), 'activitytype3' => 'hvp'],
-                6 => ['name' => get_string('tag_design', 'format_mimo')],
-                7 => ['name' => get_string('tag_investigate', 'format_mimo')],
-                8 => ['name' => get_string('tag_listen', 'format_mimo')],
-                9 => ['name' => get_string('tag_partnerwork', 'format_mimo')],
-                10 => ['name' => get_string('tag_groupproject', 'format_mimo')],
-                11 => ['name' => get_string('tag_testyourself', 'format_mimo')],
-                12 => ['enabled' => 0],
+            'primary_horst' => [
+                0 => ['name' => get_string('tag_reading', 'format_mimo'),
+                    'cardimage' => 'horst_reading.png', 'filterimage' => 'horst_reading.png'],
+                1 => ['name' => get_string('tag_writing', 'format_mimo'),
+                    'cardimage' => 'horst_writing.png', 'filterimage' => 'horst_writing.png'],
+                2 => ['name' => get_string('tag_calculate', 'format_mimo'),
+                    'cardimage' => 'horst_calculate.png', 'filterimage' => 'horst_calculate.png'],
+                3 => ['name' => get_string('tag_play', 'format_mimo'),
+                    'cardimage' => 'horst_play.png', 'filterimage' => 'horst_play.png'],
+                4 => ['enabled' => 0],
+                5 => ['name' => get_string('tag_show', 'format_mimo'), 'activitytype3' => 'hvp',
+                    'cardimage' => 'horst_show.png', 'filterimage' => 'horst_show.png'],
+                6 => ['name' => get_string('tag_design', 'format_mimo'),
+                    'cardimage' => 'horst_design.png', 'filterimage' => 'horst_design.png'],
+                7 => ['name' => get_string('tag_investigate', 'format_mimo'),
+                    'cardimage' => 'horst_investigate.png', 'filterimage' => 'horst_investigate.png'],
+                8 => ['name' => get_string('tag_listen', 'format_mimo'),
+                    'cardimage' => 'horst_listen.png', 'filterimage' => 'horst_listen.png'],
+                9 => ['name' => get_string('tag_partnerwork', 'format_mimo'),
+                    'cardimage' => 'horst_partnerwork.png', 'filterimage' => 'horst_partnerwork.png'],
+                10 => ['name' => get_string('tag_groupproject', 'format_mimo'),
+                    'cardimage' => 'horst_groupproject.png', 'filterimage' => 'horst_groupproject.png'],
+                11 => ['name' => get_string('tag_testyourself', 'format_mimo'),
+                    'cardimage' => 'horst_testyourself.png', 'filterimage' => 'horst_testyourself.png'],
+                12 => ['name' => get_string('tag_discuss', 'format_mimo'),
+                    'cardimage' => 'horst_discuss.png', 'filterimage' => 'horst_discuss.png'],
                 13 => ['enabled' => 0],
             ],
             'secondaryschool' => [
@@ -1152,7 +1164,7 @@ class profile_manager {
      * works during installation as well as during upgrades.  Missing tags are
      * skipped silently.
      *
-     * @param string $profilename Profile name (e.g., 'primaryschool')
+     * @param string $profilename Profile name (e.g., 'primary_horst')
      * @param int $profileid Profile ID
      */
     private function apply_default_profile_tag_overrides(string $profilename, int $profileid): void {

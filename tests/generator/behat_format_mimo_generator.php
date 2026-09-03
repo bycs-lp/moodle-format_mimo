@@ -190,7 +190,7 @@ class behat_format_mimo_generator extends behat_generator_base {
      * Removes the preseeded default base tags so that scenarios defining their
      * own tags get a deterministic tag universe. The profile overrides rename
      * the defaults (e.g. "Inform (Base)" is displayed as "Reading" in the
-     * primaryschool profile), which collides with common scenario tag names in
+     * primary_horst profile), which collides with common scenario tag names in
      * the tag chooser dropdown and the filter bar.
      *
      * @param array $data
