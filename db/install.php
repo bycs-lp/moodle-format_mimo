@@ -28,7 +28,7 @@
 function xmldb_format_mimo_install() {
     // Initialize default tags.
     \core\di::get(\format_mimo\tag_manager::class)->initialize_default_tags();
-    // Initialize default activity profiles (primary_horst, base_symbols, foreignlanguage).
+    // Initialize default activity profiles (base_symbols, primary_horst, foreignlanguage_english).
     \core\di::get(\format_mimo\profile_manager::class)->initialize_default_profiles();
     // Initialize default description tags.
     \core\di::get(\format_mimo\description_tag_manager::class)->initialize_default_description_tags();
