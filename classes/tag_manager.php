@@ -1134,19 +1134,72 @@ class tag_manager {
     }
 
     /**
+     * Fallback module names for suggested activity types that may not be installed.
+     *
+     * Maps a preferred (typically third-party) module to an alternative that is
+     * used during default tag seeding when the preferred module is missing.
+     */
+    private const ACTIVITYTYPE_FALLBACKS = [
+        'hvp' => 'h5pactivity',
+    ];
+
+    /**
+     * Sanitize a trio of suggested activity types against the installed modules.
+     *
+     * Types whose module is not installed are replaced by their fallback (see
+     * {@see self::ACTIVITYTYPE_FALLBACKS}) when that one is installed, otherwise
+     * dropped. The remaining types are de-duplicated and shifted up so that
+     * empty slots always trail.
+     *
+     * @param string|null $type1 First suggested activity type
+     * @param string|null $type2 Second suggested activity type
+     * @param string|null $type3 Third suggested activity type
+     * @return array Three-element list [activitytype1, activitytype2, activitytype3]
+     */
+    public function sanitize_default_activitytypes(?string $type1, ?string $type2, ?string $type3): array {
+        $installed = core_component::get_plugin_list('mod');
+
+        $resolved = [];
+        foreach ([$type1, $type2, $type3] as $type) {
+            if ($type === null || $type === '') {
+                continue;
+            }
+            if (!isset($installed[$type])) {
+                $type = self::ACTIVITYTYPE_FALLBACKS[$type] ?? null;
+                if ($type === null || !isset($installed[$type])) {
+                    continue;
+                }
+            }
+            if (!in_array($type, $resolved, true)) {
+                $resolved[] = $type;
+            }
+        }
+
+        return array_pad($resolved, 3, null);
+    }
+
+    /**
      * Create a base tag from a default definition, including bundled images.
      *
      * @param array $tag Definition from {@see get_default_tag_definitions()}
      * @return int ID of the created tag
      */
     private function create_tag_from_default(array $tag): int {
+        // Suggested activity types may reference modules not installed on this
+        // instance; resolve fallbacks or drop them before persisting.
+        [$type1, $type2, $type3] = $this->sanitize_default_activitytypes(
+            $tag['activitytype1'],
+            $tag['activitytype2'],
+            $tag['activitytype3']
+        );
+
         $tagid = $this->create_tag(
             $tag['name'],
             $tag['cardimage'],
             $tag['filterimage'],
-            $tag['activitytype1'],
-            $tag['activitytype2'],
-            $tag['activitytype3'],
+            $type1,
+            $type2,
+            $type3,
             $tag['bgcolor'],
             'center'
         );

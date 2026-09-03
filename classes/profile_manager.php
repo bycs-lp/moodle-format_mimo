@@ -1215,6 +1215,20 @@ class profile_manager {
                 }
             }
 
+            // Suggested activity types may reference modules not installed on this
+            // instance. Merge the override on top of the base definition, then
+            // sanitize the full trio (fallbacks, drop missing, shift up) and write
+            // all three slots explicitly so no gaps remain.
+            $typefields = ['activitytype1', 'activitytype2', 'activitytype3'];
+            if (array_intersect_key($datafields, array_flip($typefields))) {
+                $merged = [];
+                foreach ($typefields as $field) {
+                    $merged[] = $datafields[$field] ?? $definitions[$tagindex][$field] ?? null;
+                }
+                [$datafields['activitytype1'], $datafields['activitytype2'], $datafields['activitytype3']] =
+                    $tagmanager->sanitize_default_activitytypes(...$merged);
+            }
+
             // Fresh rows materialize as disabled, so the enabled flag must be passed
             // explicitly here: default tags are active in their own default set.
             $enabled = !array_key_exists('enabled', $overrides) || !empty($overrides['enabled']);

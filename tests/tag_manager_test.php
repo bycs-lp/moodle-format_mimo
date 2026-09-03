@@ -877,4 +877,44 @@ final class tag_manager_test extends \advanced_testcase {
         // Profile call: strict per-set — no fallback.
         $this->assertNull($this->tagmanager->get_cardimage_url($tag, 'imgset'));
     }
+
+    /**
+     * Test sanitizing suggested activity types against installed modules.
+     */
+    public function test_sanitize_default_activitytypes(): void {
+        // Installed modules pass through unchanged.
+        $this->assertSame(
+            ['page', 'quiz', 'forum'],
+            $this->tagmanager->sanitize_default_activitytypes('page', 'quiz', 'forum')
+        );
+
+        // Unknown module without fallback is dropped; remaining types shift up.
+        $this->assertSame(
+            ['quiz', 'forum', null],
+            $this->tagmanager->sanitize_default_activitytypes('nonexistentmod', 'quiz', 'forum')
+        );
+
+        // Nulls and empty strings are compacted away.
+        $this->assertSame(
+            ['page', null, null],
+            $this->tagmanager->sanitize_default_activitytypes(null, '', 'page')
+        );
+
+        // Duplicates (after resolution) are removed.
+        $this->assertSame(
+            ['quiz', null, null],
+            $this->tagmanager->sanitize_default_activitytypes('quiz', 'quiz', null)
+        );
+
+        // All missing yields three empty slots.
+        $this->assertSame(
+            [null, null, null],
+            $this->tagmanager->sanitize_default_activitytypes('fakemod1', 'fakemod2', null)
+        );
+
+        // The hvp fallback resolves to whichever of the two is installed (core
+        // h5pactivity is always present; hvp only on instances that ship it).
+        [$first] = $this->tagmanager->sanitize_default_activitytypes('hvp', null, null);
+        $this->assertContains($first, ['hvp', 'h5pactivity']);
+    }
 }
