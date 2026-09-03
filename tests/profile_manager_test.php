@@ -623,6 +623,38 @@ final class profile_manager_test extends \advanced_testcase {
     }
 
     /**
+     * Every seeded default profile must end up usable: its tags enabled (unless
+     * the overrides disable them on purpose) and each enabled tag showing an
+     * image. Regression test — override-seeded rows used to stay disabled and
+     * the base set used to end up with no artwork at all, because fresh
+     * profile_tags rows materialize as disabled and image resolution is strict
+     * per set with no fallback to the anchor file area.
+     */
+    public function test_initialize_default_profiles_seeds_enabled_tags_with_images(): void {
+        $this->tagmanager->initialize_default_tags();
+        $this->profilemanager->initialize_default_profiles();
+
+        $tags = $this->tagmanager->get_all_tags();
+
+        foreach ($this->profilemanager->get_global_profiles() as $profile) {
+            $enabledcount = 0;
+            foreach ($tags as $tag) {
+                $pt = $this->profilemanager->get_profile_tag_for_profile((int) $tag->id, (int) $profile->id);
+                $this->assertNotNull($pt, "Tag {$tag->name} missing row in {$profile->name}");
+                if (!$pt->enabled) {
+                    continue;
+                }
+                $enabledcount++;
+                $this->assertNotNull(
+                    $this->profilemanager->get_cardimage_url((int) $tag->id, (int) $profile->id),
+                    "Tag {$tag->name} has no card image in profile {$profile->name}"
+                );
+            }
+            $this->assertGreaterThan(0, $enabledcount, "Profile {$profile->name} has no enabled tags");
+        }
+    }
+
+    /**
      * materialize_all_profile_tags creates missing rows for every combination.
      */
     public function test_materialize_all_profile_tags_fills_gaps(): void {

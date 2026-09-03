@@ -1002,6 +1002,10 @@ class profile_manager {
         // materialized row; fresh pairs are enabled (default tags are active
         // in default sets).
         $this->materialize_all_profile_tags(true);
+
+        // Image resolution is strict per set, so sets without their own artwork
+        // (notably `base`) need the anchor images copied into their file areas.
+        $this->copy_base_images_to_profile_tags();
     }
 
     /**
@@ -1199,7 +1203,6 @@ class profile_manager {
             if (!$tag) {
                 continue;
             }
-            $pt = $this->get_or_create_profile_tag($tag->id, $profileid);
 
             // Separate image fields from non-image fields.
             $imagefields = [];
@@ -1212,10 +1215,10 @@ class profile_manager {
                 }
             }
 
-            // Apply non-image overrides (name, bgcolor, activity types, etc.).
-            if (!empty($datafields)) {
-                $this->update_profile_tag($pt->id, $datafields);
-            }
+            // Fresh rows materialize as disabled, so the enabled flag must be passed
+            // explicitly here: default tags are active in their own default set.
+            $enabled = !array_key_exists('enabled', $overrides) || !empty($overrides['enabled']);
+            $pt = $this->materialize_profile_tag((int) $tag->id, $profileid, $datafields, $enabled);
 
             // Copy image files from pix/tags/ and update DB fields.
             if (!empty($imagefields)) {
