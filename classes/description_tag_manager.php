@@ -200,10 +200,10 @@ class description_tag_manager {
         }
 
         $defaults = [
-            ['name' => get_string('desctag_input', 'format_mimo'), 'color' => '#FFF176'],
-            ['name' => get_string('desctag_practice', 'format_mimo'), 'color' => '#81C784'],
-            ['name' => get_string('desctag_share', 'format_mimo'), 'color' => '#CE93D8'],
-            ['name' => get_string('desctag_think', 'format_mimo'), 'color' => '#64B5F6'],
+            ['name' => get_string('desctag_input', 'format_mimo'), 'color' => '#F4C159'],
+            ['name' => get_string('desctag_practice', 'format_mimo'), 'color' => '#9AC154'],
+            ['name' => get_string('desctag_share', 'format_mimo'), 'color' => '#AA5D9E'],
+            ['name' => get_string('desctag_think', 'format_mimo'), 'color' => '#59B0CA'],
         ];
 
         foreach ($defaults as $tag) {

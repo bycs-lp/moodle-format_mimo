@@ -1108,11 +1108,11 @@ class tag_manager {
                 'bgcolor' => '#fbeaf1'],
             8 => ['name' => get_string('tag_base_listen', 'format_mimo'),
                 'cardimage' => 'base_listen.png', 'filterimage' => 'base_listen.png',
-                'activitytype1' => 'page', 'activitytype2' => 'resource', 'activitytype3' => 'hvp',
+                'activitytype1' => 'page', 'activitytype2' => 'resource', 'activitytype3' => null,
                 'bgcolor' => '#fbeaf1'],
             9 => ['name' => get_string('tag_base_cooperate', 'format_mimo'),
                 'cardimage' => 'base_cooperate.png', 'filterimage' => 'base_cooperate.png',
-                'activitytype1' => 'board', 'activitytype2' => 'forum', 'activitytype3' => 'wiki',
+                'activitytype1' => 'board', 'activitytype2' => 'forum', 'activitytype3' => 'glossary',
                 'bgcolor' => '#f0edfc'],
             10 => ['name' => get_string('tag_base_project', 'format_mimo'),
                 'cardimage' => 'base_project.png', 'filterimage' => 'base_project.png',
@@ -1141,6 +1141,7 @@ class tag_manager {
      */
     private const ACTIVITYTYPE_FALLBACKS = [
         'hvp' => 'h5pactivity',
+        'kanban' => 'forum',
     ];
 
     /**
