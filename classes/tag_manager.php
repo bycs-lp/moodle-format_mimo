@@ -1087,7 +1087,7 @@ class tag_manager {
                 'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
                 'bgcolor' => '#fffbe5'],
             3 => ['name' => get_string('tag_base_practise', 'format_mimo'),
-                'cardimage' => 'base_practise.png', 'filterimage' => 'base_practise.png',
+                'cardimage' => 'base_practice.png', 'filterimage' => 'base_practice.png',
                 'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
                 'bgcolor' => '#fffbe5'],
             4 => ['name' => get_string('tag_base_receive', 'format_mimo'),
