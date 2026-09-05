@@ -1,4 +1,4 @@
-# mimo wall Course Format
+# Mimo wall Course Format
 
 A modern Moodle course format that displays activities in a card-based wall layout with tagging, filtering, and pagination.
 
