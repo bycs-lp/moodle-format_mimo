@@ -25,11 +25,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actdesc_aichat'] = 'Lernende chatten mit einem KI-Assistenten, um Themen zu erkunden oder Hilfe zu erhalten.';
-$string['actdesc_assign'] = 'Lernende geben Arbeiten als Audio, Bild oder Text ab – zum Kommentieren und Bewerten.';
+$string['actdesc_assign'] = 'Lernende geben Arbeiten als Audio, Bild oder Text ab, diese werden dann von der Lehrkraft kommentiert oder bewertet.';
 $string['actdesc_bigbluebuttonbn'] = 'Live-Videounterricht mit der Klasse – mit Folien, Chat und Bildschirmfreigabe.';
 $string['actdesc_board'] = 'Lernende heften Texte, Links und Bilder an eine gemeinsame Pinnwand. Eignet sich gut für Peer Feedback.';
-$string['actdesc_book'] = 'Längere Inhalte als Buch mit Kapiteln, das Lernende Seite für Seite lesen.';
-$string['actdesc_checklist'] = 'Eine Aufgabenliste, auf der Lernende erledigte Punkte selbst abhaken.';
+$string['actdesc_book'] = 'Längere Inhalte (Texte, Link, Bilder, Audio, Video) als Buch mit Kapiteln, das Lernende Seite für Seite lesen.';
+$string['actdesc_checklist'] = 'Eine Aufgabenliste, auf der erledigte Punkte nach Aktivitätsabschlus automatisch oder von dem Lernenden selbst abgehakt werden.';
 $string['actdesc_choice'] = 'Eine einzelne Frage mit Antwortoptionen – gut für schnelle Abstimmungen in der Klasse.';
 $string['actdesc_data'] = 'Lernende füllen eine gemeinsame, durchsuchbare Sammlung mit Einträgen (z. B. Buchtipps).';
 $string['actdesc_feedback'] = 'Eine Umfrage, mit der Antworten der Lernenden gesammelt werden – auf Wunsch anonym.';
@@ -50,7 +50,7 @@ $string['actdesc_lti'] = 'Bindet ein externes Lernwerkzeug ein – Lernende nutz
 $string['actdesc_moodleoverflow'] = 'Ein Frage-Antwort-Forum, in dem die besten Antworten nach oben gewählt werden.';
 $string['actdesc_mootimeter'] = 'Live-Umfragen und Wortwolken im Unterricht – Ergebnisse erscheinen sofort.';
 $string['actdesc_mootyper'] = 'Lernende trainieren das Zehnfingersystem mit Übungen und Geschwindigkeitstests.';
-$string['actdesc_page'] = 'Eine einfache Seite, auf der multimediale Inhalte zur Verfügung gestellt werden können.';
+$string['actdesc_page'] = 'Eine einfache Seite, auf der multimediale Inhalte wie Texte, Bilder, Audios, Videos, ... zur Verfügung gestellt werden können.';
 $string['actdesc_qbank'] = 'Sammelt und ordnet Quizfragen zur Wiederverwendung in Tests dieses Kurses.';
 $string['actdesc_quiz'] = 'Ein selbst auswertender Test mit vielen Fragetypen – Lernende sehen sofort Ergebnisse.';
 $string['actdesc_ratingallocate'] = 'Lernende geben Wunschprioritäten ab (z. B. Themen) und werden fair zugeteilt.';
