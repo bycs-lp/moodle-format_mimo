@@ -1085,8 +1085,9 @@ class profile_manager {
      * Keyed by profile name → default tag definition index (see
      * {@see tag_manager::get_default_tag_definitions()}) → override fields.
      * Supports: name, bgcolor, activitytype1-3, enabled, imgplacement, imgsize,
-     * cardimage, filterimage.  Image fields trigger a file copy from pix/tags/
-     * into the profile file area.
+     * cardimage, filterimage.  Anything not listed here is inherited from the
+     * tag definition.  Image fields trigger a file copy from pix/tags/ into the
+     * profile file area.
      *
      * @return array
      */
@@ -1094,30 +1095,42 @@ class profile_manager {
         return [
             'primary_horst' => [
                 0 => ['name' => get_string('tag_reading', 'format_mimo'),
-                    'cardimage' => 'horst_reading.png', 'filterimage' => 'horst_reading.png'],
+                    'cardimage' => 'horst_reading.png', 'filterimage' => 'horst_reading.png',
+                    'imgsize' => 'bigger'],
                 1 => ['name' => get_string('tag_writing', 'format_mimo'),
-                    'cardimage' => 'horst_writing.png', 'filterimage' => 'horst_writing.png'],
+                    'cardimage' => 'horst_writing.png', 'filterimage' => 'horst_writing.png',
+                    'imgsize' => 'bigger'],
                 2 => ['name' => get_string('tag_calculate', 'format_mimo'),
-                    'cardimage' => 'horst_calculate.png', 'filterimage' => 'horst_calculate.png'],
+                    'cardimage' => 'horst_calculate.png', 'filterimage' => 'horst_calculate.png',
+                    'imgsize' => 'bigger'],
                 3 => ['name' => get_string('tag_play', 'format_mimo'),
-                    'cardimage' => 'horst_play.png', 'filterimage' => 'horst_play.png'],
+                    'cardimage' => 'horst_play.png', 'filterimage' => 'horst_play.png',
+                    'imgsize' => 'bigger'],
                 4 => ['enabled' => 0],
                 5 => ['name' => get_string('tag_show', 'format_mimo'), 'activitytype3' => 'glossary',
-                    'cardimage' => 'horst_show.png', 'filterimage' => 'horst_show.png'],
+                    'cardimage' => 'horst_show.png', 'filterimage' => 'horst_show.png',
+                    'imgsize' => 'bigger', 'imgplacement' => 'center'],
                 6 => ['name' => get_string('tag_design', 'format_mimo'), 'activitytype2' => 'glossary',
-                    'cardimage' => 'horst_design.png', 'filterimage' => 'horst_design.png'],
+                    'cardimage' => 'horst_design.png', 'filterimage' => 'horst_design.png',
+                    'imgsize' => 'bigger', 'imgplacement' => 'center'],
                 7 => ['name' => get_string('tag_investigate', 'format_mimo'),
-                    'cardimage' => 'horst_investigate.png', 'filterimage' => 'horst_investigate.png'],
+                    'cardimage' => 'horst_investigate.png', 'filterimage' => 'horst_investigate.png',
+                    'imgsize' => 'bigger'],
                 8 => ['name' => get_string('tag_listen', 'format_mimo'),
-                    'cardimage' => 'horst_listen.png', 'filterimage' => 'horst_listen.png'],
+                    'cardimage' => 'horst_listen.png', 'filterimage' => 'horst_listen.png',
+                    'imgsize' => 'bigger'],
                 9 => ['name' => get_string('tag_partnerwork', 'format_mimo'),
-                    'cardimage' => 'horst_partnerwork.png', 'filterimage' => 'horst_partnerwork.png'],
+                    'cardimage' => 'horst_partnerwork.png', 'filterimage' => 'horst_partnerwork.png',
+                    'imgsize' => 'bigger'],
                 10 => ['name' => get_string('tag_groupproject', 'format_mimo'),
-                    'cardimage' => 'horst_groupproject.png', 'filterimage' => 'horst_groupproject.png'],
+                    'cardimage' => 'horst_groupproject.png', 'filterimage' => 'horst_groupproject.png',
+                    'imgsize' => 'bigger'],
                 11 => ['name' => get_string('tag_testyourself', 'format_mimo'),
-                    'cardimage' => 'horst_testyourself.png', 'filterimage' => 'horst_testyourself.png'],
+                    'cardimage' => 'horst_testyourself.png', 'filterimage' => 'horst_testyourself.png',
+                    'imgsize' => 'bigger'],
                 12 => ['name' => get_string('tag_discuss', 'format_mimo'),
-                    'cardimage' => 'horst_discuss.png', 'filterimage' => 'horst_discuss.png'],
+                    'cardimage' => 'horst_discuss.png', 'filterimage' => 'horst_discuss.png',
+                    'imgsize' => 'bigger'],
                 13 => ['enabled' => 0],
             ],
             // Same names, colours and activity types as the base set; only the artwork differs.

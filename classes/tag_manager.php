@@ -1069,67 +1069,69 @@ class tag_manager {
      *
      * The array index doubles as the default sort order and is referenced by
      * {@see profile_manager::apply_default_profile_tag_overrides()}.
+     * Anchor values propagate to every default profile unless that profile
+     * overrides them.
      *
-     * @return array List of tag definitions (name, images, activity types, bgcolor)
+     * @return array List of tag definitions (name, images, activity types, bgcolor, image placement)
      */
     public function get_default_tag_definitions(): array {
         return [
             0 => ['name' => get_string('tag_base_inform', 'format_mimo'),
                 'cardimage' => 'base_inform.png', 'filterimage' => 'base_inform.png',
                 'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#fbeaf1'],
+                'bgcolor' => '#fbeaf1', 'imgplacement' => 'lower'],
             1 => ['name' => get_string('tag_base_compose', 'format_mimo'),
                 'cardimage' => 'base_compose.png', 'filterimage' => 'base_compose.png',
                 'activitytype1' => 'assign', 'activitytype2' => 'forum', 'activitytype3' => null,
-                'bgcolor' => '#eaf5fb'],
+                'bgcolor' => '#eaf5fb', 'imgplacement' => 'lower'],
             2 => ['name' => get_string('tag_base_apply', 'format_mimo'),
                 'cardimage' => 'base_apply.png', 'filterimage' => 'base_apply.png',
                 'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
-                'bgcolor' => '#fffbe5'],
+                'bgcolor' => '#fffbe5', 'imgplacement' => 'lower'],
             3 => ['name' => get_string('tag_base_practise', 'format_mimo'),
                 'cardimage' => 'base_practice.png', 'filterimage' => 'base_practice.png',
                 'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
-                'bgcolor' => '#fffbe5'],
+                'bgcolor' => '#fffbe5', 'imgplacement' => 'lower'],
             4 => ['name' => get_string('tag_base_receive', 'format_mimo'),
                 'cardimage' => 'base_receive.png', 'filterimage' => 'base_receive.png',
                 'activitytype1' => 'assign', 'activitytype2' => 'page', 'activitytype3' => null,
-                'bgcolor' => '#fbeaf1'],
+                'bgcolor' => '#fbeaf1', 'imgplacement' => 'lower'],
             5 => ['name' => get_string('tag_base_present', 'format_mimo'),
                 'cardimage' => 'base_present.png', 'filterimage' => 'base_present.png',
                 'activitytype1' => 'forum', 'activitytype2' => 'board', 'activitytype3' => null,
-                'bgcolor' => '#eaf5fb'],
+                'bgcolor' => '#eaf5fb', 'imgplacement' => 'lower'],
             6 => ['name' => get_string('tag_base_produce', 'format_mimo'),
                 'cardimage' => 'base_produce.png', 'filterimage' => 'base_produce.png',
                 'activitytype1' => 'assign', 'activitytype2' => 'forum', 'activitytype3' => null,
-                'bgcolor' => '#eaf5fb'],
+                'bgcolor' => '#eaf5fb', 'imgplacement' => 'lower'],
             7 => ['name' => get_string('tag_base_research', 'format_mimo'),
                 'cardimage' => 'base_research.png', 'filterimage' => 'base_research.png',
                 'activitytype1' => 'page', 'activitytype2' => 'url', 'activitytype3' => null,
-                'bgcolor' => '#fbeaf1'],
+                'bgcolor' => '#fbeaf1', 'imgplacement' => 'lower'],
             8 => ['name' => get_string('tag_base_listen', 'format_mimo'),
                 'cardimage' => 'base_listen.png', 'filterimage' => 'base_listen.png',
                 'activitytype1' => 'page', 'activitytype2' => 'resource', 'activitytype3' => null,
-                'bgcolor' => '#fbeaf1'],
+                'bgcolor' => '#fbeaf1', 'imgplacement' => 'lower'],
             9 => ['name' => get_string('tag_base_cooperate', 'format_mimo'),
                 'cardimage' => 'base_cooperate.png', 'filterimage' => 'base_cooperate.png',
                 'activitytype1' => 'board', 'activitytype2' => 'forum', 'activitytype3' => 'glossary',
-                'bgcolor' => '#f0edfc'],
+                'bgcolor' => '#f0edfc', 'imgplacement' => 'lower'],
             10 => ['name' => get_string('tag_base_project', 'format_mimo'),
                 'cardimage' => 'base_project.png', 'filterimage' => 'base_project.png',
                 'activitytype1' => 'kanban', 'activitytype2' => null, 'activitytype3' => null,
-                'bgcolor' => '#ece9ff'],
+                'bgcolor' => '#ece9ff', 'imgplacement' => 'lower'],
             11 => ['name' => get_string('tag_base_test', 'format_mimo'),
                 'cardimage' => 'base_test.png', 'filterimage' => 'base_test.png',
                 'activitytype1' => 'hvp', 'activitytype2' => 'quiz', 'activitytype3' => null,
-                'bgcolor' => '#f1f1f5'],
+                'bgcolor' => '#f1f1f5', 'imgplacement' => 'lower'],
             12 => ['name' => get_string('tag_base_discuss', 'format_mimo'),
                 'cardimage' => 'base_discuss.png', 'filterimage' => 'base_discuss.png',
                 'activitytype1' => 'forum', 'activitytype2' => 'board', 'activitytype3' => null,
-                'bgcolor' => '#f0edfc'],
+                'bgcolor' => '#f0edfc', 'imgplacement' => 'lower'],
             13 => ['name' => get_string('tag_base_reflect', 'format_mimo'),
                 'cardimage' => 'base_reflect.png', 'filterimage' => 'base_reflect.png',
                 'activitytype1' => 'journal', 'activitytype2' => 'forum', 'activitytype3' => null,
-                'bgcolor' => '#f1f1f5'],
+                'bgcolor' => '#f1f1f5', 'imgplacement' => 'lower'],
         ];
     }
 
@@ -1202,7 +1204,8 @@ class tag_manager {
             $type2,
             $type3,
             $tag['bgcolor'],
-            'center'
+            $tag['imgplacement'] ?? 'center',
+            $tag['imgsize'] ?? 'normal'
         );
 
         $this->copy_default_image($tagid, $tag['cardimage'], self::FILEAREA_CARDIMAGE);
