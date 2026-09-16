@@ -53,5 +53,23 @@ function xmldb_format_mimo_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026082500, 'format', 'mimo');
     }
 
+    if ($oldversion < 2026091600) {
+        require_once(__DIR__ . '/upgradelib.php');
+
+        // Bring installations seeded before 1.0.2 in line with the current
+        // defaults. Only values still equal to the former defaults are touched.
+        format_mimo_upgrade_refresh_default_images(['base_practise.png' => 'base_practice.png']);
+        format_mimo_upgrade_default_tag_values();
+        format_mimo_upgrade_delete_default_profile('foreignlanguage_english');
+        format_mimo_upgrade_description_tags([
+            '#FFF176' => '#F4C159',
+            '#81C784' => '#9AC154',
+            '#CE93D8' => '#AA5D9E',
+            '#64B5F6' => '#59B0CA',
+        ]);
+
+        upgrade_plugin_savepoint(true, 2026091600, 'format', 'mimo');
+    }
+
     return true;
 }
