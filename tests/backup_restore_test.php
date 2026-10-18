@@ -535,6 +535,103 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
+     * Duplicating a single activity restores it without the course tags, so the
+     * original tag must be reused on the same site.
+     */
+    public function test_duplicate_single_activity_keeps_cm_tag(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $tagid = $this->tagmanager->create_tag('Duplicate Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('dupset', 'Duplicate set');
+        $this->profilemanager->materialize_profile_tag($tagid, $profileid, [], true);
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo', 'activityprofile' => 'dupset']);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        // Use the core duplication, which does not run the mimo state actions.
+        $newcm = \core_courseformat\formatactions::cm($course->id)->duplicate($page->cmid);
+
+        $this->assertNotEquals($page->cmid, $newcm->id);
+        $newtag = $this->tagmanager->get_cm_tag($newcm->id);
+        $this->assertNotFalse($newtag);
+        $this->assertEquals($tagid, $newtag->id);
+    }
+
+    /**
+     * Importing a single activity into another course keeps the tag only if the
+     * tag is available in the target course.
+     */
+    public function test_import_single_activity_keeps_cm_tag_only_if_available(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $tagid = $this->tagmanager->create_tag('Import Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('importset', 'Import set');
+        $this->profilemanager->materialize_profile_tag($tagid, $profileid, [], true);
+        $this->profilemanager->create_profile('otherset', 'Other set');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'importset']);
+        $sameprofilecourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'importset']);
+        $otherprofilecourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'otherset']);
+        $page = $generator->create_module('page', ['course' => $course->id]);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        // The tag is enabled in the profile of the target course.
+        $newcmid = $this->import_activity_into_course((int) $page->cmid, (int) $sameprofilecourse->id);
+        $newtag = $this->tagmanager->get_cm_tag($newcmid);
+        $this->assertNotFalse($newtag);
+        $this->assertEquals($tagid, $newtag->id);
+
+        // The tag is not enabled in the profile of the target course.
+        $newcmid = $this->import_activity_into_course((int) $page->cmid, (int) $otherprofilecourse->id);
+        $this->assertFalse($this->tagmanager->get_cm_tag($newcmid));
+    }
+
+    /**
+     * Import a single activity into an existing course, like duplicating it to another course.
+     *
+     * @param int $cmid course module to import
+     * @param int $targetcourseid course to import the activity into
+     * @return int id of the new course module
+     */
+    private function import_activity_into_course(int $cmid, int $targetcourseid): int {
+        global $DB;
+
+        $userid = get_admin()->id;
+        $bc = new \backup_controller(
+            \backup::TYPE_1ACTIVITY,
+            $cmid,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $userid
+        );
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+        $this->backupdirs[] = $backupid;
+
+        $rc = new \restore_controller(
+            $backupid,
+            $targetcourseid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $userid,
+            \backup::TARGET_EXISTING_ADDING
+        );
+        $rc->execute_precheck();
+        $rc->execute_plan();
+        $rc->destroy();
+
+        return (int) $DB->get_field_sql(
+            'SELECT MAX(id) FROM {course_modules} WHERE course = :courseid',
+            ['courseid' => $targetcourseid]
+        );
+    }
+
+    /**
      * Ensure we do not leave temporary backup directories around between tests.
      */
     protected function tearDown(): void {
