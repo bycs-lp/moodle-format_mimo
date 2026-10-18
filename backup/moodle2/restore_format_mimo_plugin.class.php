@@ -285,11 +285,21 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $newcmid = $this->get_mappingid('course_module', $data->cmid);
         $newtagid = $this->get_mappingid('format_mimo_tag', $data->tagid);
 
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+
+        // Reuse the original tag on the same site, e.g. for duplication.
+        if (!$newtagid && $this->task->is_samesite()) {
+            $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
+            if ($tagmanager->get_tag((int) $data->tagid) && isset($coursetags[$data->tagid])) {
+                $newtagid = (int) $data->tagid;
+            }
+        }
+
         if (!$newcmid || !$newtagid) {
             return;
         }
 
-        \core\di::get(\format_mimo\tag_manager::class)->assign_tag_to_cm($newcmid, $newtagid);
+        $tagmanager->assign_tag_to_cm($newcmid, $newtagid);
     }
 
     /**
