@@ -559,10 +559,28 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
-     * Importing a single activity into another course keeps the tag only if the
-     * tag is available in the target course.
+     * Backup types for importing content into another course.
+     *
+     * Neither an activity nor a section backup contains the tag definitions,
+     * so the restore has to resolve the original tag on the same site.
+     *
+     * @return array
      */
-    public function test_import_single_activity_keeps_cm_tag_only_if_available(): void {
+    public static function import_type_provider(): array {
+        return [
+            'single activity' => [\backup::TYPE_1ACTIVITY],
+            'single section' => [\backup::TYPE_1SECTION],
+        ];
+    }
+
+    /**
+     * Importing an activity or section into another course keeps the tag only if the
+     * tag is available in the target course.
+     *
+     * @dataProvider import_type_provider
+     * @param string $type backup type
+     */
+    public function test_import_keeps_cm_tag_only_if_available(string $type): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -575,34 +593,87 @@ final class backup_restore_test extends \advanced_testcase {
         $course = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'importset']);
         $sameprofilecourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'importset']);
         $otherprofilecourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'otherset']);
-        $page = $generator->create_module('page', ['course' => $course->id]);
+        $page = $generator->create_module('page', ['course' => $course->id, 'section' => 1]);
         $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
 
         // The tag is enabled in the profile of the target course.
-        $newcmid = $this->import_activity_into_course((int) $page->cmid, (int) $sameprofilecourse->id);
+        $newcmid = $this->import_into_course($type, (int) $page->cmid, (int) $sameprofilecourse->id);
         $newtag = $this->tagmanager->get_cm_tag($newcmid);
         $this->assertNotFalse($newtag);
         $this->assertEquals($tagid, $newtag->id);
 
         // The tag is not enabled in the profile of the target course.
-        $newcmid = $this->import_activity_into_course((int) $page->cmid, (int) $otherprofilecourse->id);
+        $newcmid = $this->import_into_course($type, (int) $page->cmid, (int) $otherprofilecourse->id);
         $this->assertFalse($this->tagmanager->get_cm_tag($newcmid));
     }
 
     /**
-     * Import a single activity into an existing course, like duplicating it to another course.
+     * An imported tag bound only to the source course is handled like any other tag
+     * when importing into another course: the profile of the target course decides.
      *
-     * @param int $cmid course module to import
-     * @param int $targetcourseid course to import the activity into
+     * @dataProvider import_type_provider
+     * @param string $type backup type
+     */
+    public function test_import_imported_tag_depends_on_target_profile(string $type): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Like after restoring a course with an unknown tag: the imported tag is only
+        // enabled in the imported profile of the source course.
+        $tagid = $this->tagmanager->create_tag('Experiment', activitytype1: 'page', scope: 'imported');
+        $sourceprofileid = $this->profilemanager->create_profile('imported_source', 'Imported source', null, 'imported');
+        $this->profilemanager->materialize_profile_tag($tagid, $sourceprofileid, [], true);
+        $disabledprofileid = $this->profilemanager->create_profile('disabledset', 'Disabled set');
+        $this->profilemanager->materialize_profile_tag($tagid, $disabledprofileid, [], false);
+        // An admin enabled the imported tag in a global profile without promoting it.
+        $enabledprofileid = $this->profilemanager->create_profile('enabledset', 'Enabled set');
+        $this->profilemanager->materialize_profile_tag($tagid, $enabledprofileid, [], true);
+
+        $generator = $this->getDataGenerator();
+        $source = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'imported_source']);
+        $this->tagmanager->bind_tag_to_course($tagid, (int) $source->id);
+        $disabledcourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'disabledset']);
+        $enabledcourse = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'enabledset']);
+        $page = $generator->create_module('page', ['course' => $source->id, 'section' => 1]);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        // The tag is disabled in the profile of the target course: it is dropped.
+        $newcmid = $this->import_into_course($type, (int) $page->cmid, (int) $disabledcourse->id);
+        $this->assertFalse($this->tagmanager->get_cm_tag($newcmid));
+
+        // The tag is enabled in the profile of the target course: it is kept,
+        // although it is only bound to the source course.
+        $newcmid = $this->import_into_course($type, (int) $page->cmid, (int) $enabledcourse->id);
+        $newtag = $this->tagmanager->get_cm_tag($newcmid);
+        $this->assertNotFalse($newtag);
+        $this->assertEquals($tagid, $newtag->id);
+        $this->assertArrayNotHasKey(
+            $tagid,
+            $this->tagmanager->get_imported_tags_for_course((int) $enabledcourse->id),
+            'The import must not bind the tag to the target course'
+        );
+    }
+
+    /**
+     * Import an activity or its section into an existing course, like duplicating it to another course.
+     *
+     * @param string $type backup type, backup::TYPE_1ACTIVITY or backup::TYPE_1SECTION
+     * @param int $cmid course module to import, or whose section to import
+     * @param int $targetcourseid course to import into
      * @return int id of the new course module
      */
-    private function import_activity_into_course(int $cmid, int $targetcourseid): int {
+    private function import_into_course(string $type, int $cmid, int $targetcourseid): int {
         global $DB;
+
+        $backupitemid = $cmid;
+        if ($type === \backup::TYPE_1SECTION) {
+            $backupitemid = (int) $DB->get_field('course_modules', 'section', ['id' => $cmid], MUST_EXIST);
+        }
 
         $userid = get_admin()->id;
         $bc = new \backup_controller(
-            \backup::TYPE_1ACTIVITY,
-            $cmid,
+            $type,
+            $backupitemid,
             \backup::FORMAT_MOODLE,
             \backup::INTERACTIVE_NO,
             \backup::MODE_IMPORT,
@@ -623,12 +694,16 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $rc->execute_precheck();
         $rc->execute_plan();
-        $rc->destroy();
 
-        return (int) $DB->get_field_sql(
-            'SELECT MAX(id) FROM {course_modules} WHERE course = :courseid',
-            ['courseid' => $targetcourseid]
-        );
+        $newcmid = null;
+        $oldcontextid = \core\context\module::instance($cmid)->id;
+        foreach ($rc->get_plan()->get_tasks() as $task) {
+            if ($task instanceof \restore_activity_task && $task->get_old_contextid() == $oldcontextid) {
+                $newcmid = $task->get_moduleid();
+            }
+        }
+        $rc->destroy();
+        return $newcmid;
     }
 
     /**

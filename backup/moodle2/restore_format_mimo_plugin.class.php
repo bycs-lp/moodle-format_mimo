@@ -287,11 +287,16 @@ class restore_format_mimo_plugin extends restore_format_plugin {
 
         $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
 
-        // Reuse the original tag on the same site, e.g. for duplication.
+        // If the backup source is only a section or a course, the mapping is not available.
+        // Reuse the original tag in this case.
         if (!$newtagid && $this->task->is_samesite()) {
-            $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
-            if ($tagmanager->get_tag((int) $data->tagid) && isset($coursetags[$data->tagid])) {
-                $newtagid = (int) $data->tagid;
+            if ($this->task->get_courseid() == $this->task->get_info()->original_course_id) {
+                $newtagid = $data->tagid;
+            } else {
+                $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
+                if (isset($coursetags[$data->tagid])) {
+                    $newtagid = $data->tagid;
+                }
             }
         }
 
