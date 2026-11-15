@@ -226,9 +226,9 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
-     * Fingerprint-matched restore: a tag with identical name/bgcolor/activitytypes
-     * already exists on the target site, so the restore logic must reuse it
-     * instead of creating a duplicate imported tag.
+     * Fingerprint-matched restore: the tag was deleted and recreated with identical
+     * name/bgcolor/activitytypes since the backup, so it has a new id. The restore logic
+     * must reuse it instead of creating a duplicate imported tag.
      */
     public function test_restore_reuses_tag_by_fingerprint(): void {
         global $DB;
@@ -258,6 +258,20 @@ final class backup_restore_test extends \advanced_testcase {
 
         $backupid = 'mimo_fp_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        // Recreate the tag, so it cannot be matched by id.
+        $this->tagmanager->delete_tag($tagid);
+        $tagid = $this->tagmanager->create_tag(
+            'Fingerprint Match',
+            null,
+            null,
+            'page',
+            'forum',
+            null,
+            '#a1b2c3',
+            'center',
+        );
+
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'FP restored');
 
         // No duplicate tag has been created: the existing one was reused.
@@ -267,7 +281,7 @@ final class backup_restore_test extends \advanced_testcase {
             'Fingerprint match must reuse the existing tag, not insert a duplicate',
         );
 
-        // The restored course module is bound to the pre-existing tag id.
+        // The restored course module is bound to the recreated tag id.
         $restoredtagid = $DB->get_field_sql(
             "SELECT cmt.tagid
                FROM {format_mimo_cmtags} cmt
@@ -276,12 +290,13 @@ final class backup_restore_test extends \advanced_testcase {
             ['courseid' => $restoredcourseid],
         );
         $this->assertSame($tagid, (int) $restoredtagid);
+        $this->assertSame(0, $DB->count_records('format_mimo_profiles', ['scope' => 'imported']));
     }
 
     /**
-     * Name-only match after an admin edit: the backup tag has a different colour
-     * from the target tag. Fingerprint match fails but name match succeeds, so the
-     * restore reuses the target tag and the admin's edit is preserved.
+     * Name-only match: the tag was deleted and recreated with the same name but a different
+     * colour since the backup, so it has a new id. Fingerprint match fails but name match
+     * succeeds, so the restore reuses the recreated tag and the admin's colour is preserved.
      */
     public function test_restore_reuses_tag_by_name_after_admin_edit(): void {
         global $DB;
@@ -291,8 +306,8 @@ final class backup_restore_test extends \advanced_testcase {
 
         $generator = $this->getDataGenerator();
 
-        // Create the tag with the ORIGINAL colour, back up, then change the colour
-        // on the target site. On restore only the name still matches.
+        // Create the tag with the ORIGINAL colour, back up, then recreate it with another
+        // colour. On restore only the name still matches.
         $tagid = $this->tagmanager->create_tag(
             'Name Match',
             null,
@@ -311,8 +326,18 @@ final class backup_restore_test extends \advanced_testcase {
         $backupid = 'mimo_nm_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
 
-        // Admin changes the tag colour after the backup was made.
-        $this->tagmanager->update_tag($tagid, ['bgcolor' => '#999999']);
+        // Admin recreates the tag with another colour after the backup was made.
+        $this->tagmanager->delete_tag($tagid);
+        $tagid = $this->tagmanager->create_tag(
+            'Name Match',
+            null,
+            null,
+            'page',
+            null,
+            null,
+            '#999999',
+            'center',
+        );
 
         $restoredcourseid = $this->restore_course_from_backup($backupid, 'NM restored');
 
@@ -323,7 +348,7 @@ final class backup_restore_test extends \advanced_testcase {
             'Name match must reuse the existing tag, not insert a duplicate',
         );
 
-        // The restored cmtag points to the pre-existing tag.
+        // The restored cmtag points to the recreated tag.
         $restoredtagid = (int) $DB->get_field_sql(
             "SELECT cmt.tagid
                FROM {format_mimo_cmtags} cmt
@@ -333,7 +358,7 @@ final class backup_restore_test extends \advanced_testcase {
         );
         $this->assertSame($tagid, $restoredtagid);
 
-        // ...and the admin's post-backup colour edit is preserved (not overwritten).
+        // ...and the admin's post-backup colour is preserved (not overwritten).
         $this->assertSame(
             '#999999',
             $DB->get_field('format_mimo_tags', 'bgcolor', ['id' => $tagid]),
@@ -443,6 +468,8 @@ final class backup_restore_test extends \advanced_testcase {
 
         $backupid = 'mimo_imp_' . random_string(6);
         $this->backup_course_to_tempdir((int) $course->id, $backupid);
+        // Positional matching is only used for backups from other sites.
+        $this->make_backup_foreign($backupid);
 
         // Break fingerprint AND name match → positional match → imported profile.
         $this->tagmanager->update_tag($tagid, ['name' => 'Renamed', 'bgcolor' => '#999999']);
@@ -469,6 +496,246 @@ final class backup_restore_test extends \advanced_testcase {
         // Image copied into the imported profile's own area.
         $url = $this->profilemanager->get_cardimage_url($tagid, (int) $imported->id);
         $this->assertNotNull($url, 'Anchor image must be copied into the imported profile area');
+    }
+
+    /**
+     * A tag deleted since the course backup was made must not be mapped to an unrelated
+     * tag (e.g. by position) when restoring on the same site. It is recreated as an
+     * imported tag instead, like an unknown tag from another site.
+     */
+    public function test_restore_on_same_site_recreates_tag_deleted_since_backup(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $keptid = $this->tagmanager->create_tag('Kept', null, null, 'page', null, null, '#111111');
+        $deletedid = $this->tagmanager->create_tag('Deleted', null, null, 'page', null, null, '#222222');
+        // Unused tag, a candidate for positional matching.
+        $unrelatedid = $this->tagmanager->create_tag('Unrelated', null, null, 'page', null, null, '#333333');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'mimo']);
+        $keptpage = $generator->create_module('page', ['course' => $course->id, 'name' => 'Kept page']);
+        $deletedpage = $generator->create_module('page', ['course' => $course->id, 'name' => 'Deleted page']);
+        $this->tagmanager->assign_tag_to_cm($keptpage->cmid, $keptid);
+        $this->tagmanager->assign_tag_to_cm($deletedpage->cmid, $deletedid);
+
+        $backupid = 'mimo_del_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        $this->tagmanager->delete_tag($deletedid);
+
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Deleted tag restored');
+
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_cmtags', ['tagid' => $unrelatedid]),
+            'The deleted tag must not be mapped to an unrelated tag'
+        );
+        $this->assert_recreated_as_imported_tag($restoredcourseid, 'Deleted', 'Deleted page');
+        $this->assertSame($keptid, $this->get_page_tagids($restoredcourseid)['Kept page']);
+    }
+
+    /**
+     * On a cloned site or after reinstalling the plugin, the id of a tag in the backup may belong
+     * to another tag. Such a tag must not be matched by id, as its creation time differs.
+     */
+    public function test_restore_on_same_site_does_not_match_other_tag_with_same_id(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $tagid = $this->tagmanager->create_tag('Original', null, null, 'page', null, null, '#123123');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'mimo']);
+        $page = $generator->create_module('page', ['course' => $course->id, 'name' => 'Original page']);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        $backupid = 'mimo_sameid_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        // Turn the tag into another tag with the same id.
+        $timecreated = (int) $DB->get_field('format_mimo_tags', 'timecreated', ['id' => $tagid]);
+        $DB->update_record('format_mimo_tags', (object) [
+            'id' => $tagid,
+            'name' => 'Other tag',
+            'bgcolor' => '#999999',
+            'timecreated' => $timecreated - DAYSECS,
+        ]);
+        $this->tagmanager->clear_tag_cache();
+
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Same id restored');
+
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_cmtags', ['tagid' => $tagid, 'cmid' => $this->get_page_cmid($restoredcourseid)]),
+            'The tag must not be mapped to another tag with the same id'
+        );
+        $this->assert_recreated_as_imported_tag($restoredcourseid, 'Original', 'Original page');
+    }
+
+    /**
+     * Assert that a backup tag was recreated as an imported tag for the restored course.
+     *
+     * @param int $courseid restored course
+     * @param string $tagname name of the tag in the backup
+     * @param string $pagename name of the page using the tag
+     */
+    private function assert_recreated_as_imported_tag(int $courseid, string $tagname, string $pagename): void {
+        global $DB;
+
+        $tag = $DB->get_record('format_mimo_tags', ['name' => $tagname, 'scope' => 'imported'], '*', MUST_EXIST);
+        $this->assertSame((int) $tag->id, $this->get_page_tagids($courseid)[$pagename]);
+        $this->assertArrayHasKey($tag->id, $this->tagmanager->get_imported_tags_for_course($courseid));
+
+        // The course uses an imported profile, in which the tag is available.
+        $profilename = $DB->get_field('course_format_options', 'value', [
+            'courseid' => $courseid,
+            'format' => 'mimo',
+            'name' => 'activityprofile',
+        ]);
+        $profile = $this->profilemanager->get_profile_by_name($profilename);
+        $this->assertSame('imported', $profile->scope);
+        $this->assertArrayHasKey($tag->id, $this->tagmanager->get_tags_for_course($courseid));
+    }
+
+    /**
+     * Get the id of the only page in a course.
+     *
+     * @param int $courseid course id
+     * @return int course module id
+     */
+    private function get_page_cmid(int $courseid): int {
+        global $DB;
+
+        return (int) $DB->get_field_sql(
+            "SELECT cm.id
+               FROM {course_modules} cm
+               JOIN {modules} m ON m.id = cm.module AND m.name = 'page'
+              WHERE cm.course = :courseid",
+            ['courseid' => $courseid],
+            MUST_EXIST
+        );
+    }
+
+    /**
+     * A tag renamed and recoloured by an admin since the course backup was made is recognised
+     * by its id when restoring on the same site, although neither fingerprint nor name match.
+     */
+    public function test_restore_on_same_site_recognises_edited_tag_by_id(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $tagid = $this->tagmanager->create_tag('Original', null, null, 'page', null, null, '#123123');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['format' => 'mimo']);
+        $page = $generator->create_module('page', ['course' => $course->id, 'name' => 'Edited page']);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        $backupid = 'mimo_edit_' . random_string(6);
+        $this->backup_course_to_tempdir((int) $course->id, $backupid);
+
+        // Break fingerprint and name match.
+        $this->tagmanager->update_tag($tagid, ['name' => 'Renamed', 'bgcolor' => '#999999']);
+        $tagcount = $DB->count_records('format_mimo_tags');
+
+        $restoredcourseid = $this->restore_course_from_backup($backupid, 'Edited tag restored');
+
+        $this->assertSame(['Edited page' => $tagid], $this->get_page_tagids($restoredcourseid));
+        $this->assertSame($tagcount, $DB->count_records('format_mimo_tags'), 'No tag must be created');
+        $this->assertSame(0, $DB->count_records('format_mimo_profiles', ['scope' => 'imported']));
+
+        // The admin's edits are preserved.
+        $tag = $DB->get_record('format_mimo_tags', ['id' => $tagid]);
+        $this->assertSame('Renamed', $tag->name);
+        $this->assertSame('#999999', $tag->bgcolor);
+    }
+
+    /**
+     * Restoring an old activity backup into its original course must not assign a tag
+     * that was deleted since the backup was made.
+     */
+    public function test_restore_activity_into_same_course_drops_deleted_tag(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $tagid = $this->tagmanager->create_tag('Deleted later', null, null, 'page');
+        $course = $this->getDataGenerator()->create_course(['format' => 'mimo']);
+        $page = $this->getDataGenerator()->create_module('page', ['course' => $course->id]);
+        $this->tagmanager->assign_tag_to_cm($page->cmid, $tagid);
+
+        $userid = get_admin()->id;
+        $bc = new \backup_controller(
+            \backup::TYPE_1ACTIVITY,
+            $page->cmid,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $userid
+        );
+        $backupid = $bc->get_backupid();
+        $bc->execute_plan();
+        $bc->destroy();
+        $this->backupdirs[] = $backupid;
+
+        $this->tagmanager->delete_tag($tagid);
+
+        $rc = new \restore_controller(
+            $backupid,
+            $course->id,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_IMPORT,
+            $userid,
+            \backup::TARGET_CURRENT_ADDING
+        );
+        $rc->execute_precheck();
+        $rc->execute_plan();
+        $newcmid = null;
+        foreach ($rc->get_plan()->get_tasks() as $task) {
+            if ($task instanceof \restore_activity_task) {
+                $newcmid = (int) $task->get_moduleid();
+                break;
+            }
+        }
+        $rc->destroy();
+
+        $this->assertNotNull($newcmid);
+        $this->assertFalse(
+            $DB->record_exists('format_mimo_cmtags', ['cmid' => $newcmid]),
+            'The deleted tag must not be assigned'
+        );
+    }
+
+    /**
+     * Get the tag ids of all pages in a course.
+     *
+     * @param int $courseid course id
+     * @return array tag id or null if untagged, keyed by page name, sorted by page name
+     */
+    private function get_page_tagids(int $courseid): array {
+        global $DB;
+
+        $records = $DB->get_records_sql(
+            "SELECT cm.id, p.name, cmt.tagid
+               FROM {course_modules} cm
+               JOIN {modules} m ON m.id = cm.module AND m.name = 'page'
+               JOIN {page} p ON p.id = cm.instance
+          LEFT JOIN {format_mimo_cmtags} cmt ON cmt.cmid = cm.id
+              WHERE cm.course = :courseid",
+            ['courseid' => $courseid]
+        );
+        $tagids = [];
+        foreach ($records as $record) {
+            $tagids[$record->name] = $record->tagid === null ? null : (int) $record->tagid;
+        }
+        ksort($tagids);
+        return $tagids;
     }
 
     /**
@@ -503,6 +770,32 @@ final class backup_restore_test extends \advanced_testcase {
         $bc->destroy();
 
         $this->backupdirs[] = $backupid;
+    }
+
+    /**
+     * Make an extracted backup look like it was created on another site.
+     *
+     * The restore compares the site identifier hash in moodle_backup.xml with the current site,
+     * see backup_general_helper::backup_is_samesite(). Changing it makes is_samesite() false,
+     * so the tag matching for foreign sites (fingerprint, name, position, new) is used.
+     *
+     * @param string $backupid directory name under temp/backup
+     */
+    private function make_backup_foreign(string $backupid): void {
+        global $CFG;
+
+        $file = $CFG->dataroot . '/temp/backup/' . $backupid . '/moodle_backup.xml';
+        $xml = file_get_contents($file);
+        $count = 0;
+        $xml = preg_replace(
+            '~<original_site_identifier_hash>[^<]*</original_site_identifier_hash>~',
+            '<original_site_identifier_hash>' . md5('another site') . '</original_site_identifier_hash>',
+            $xml,
+            -1,
+            $count
+        );
+        $this->assertSame(1, $count, 'The backup must contain exactly one site identifier hash');
+        file_put_contents($file, $xml);
     }
 
     /**
@@ -655,6 +948,165 @@ final class backup_restore_test extends \advanced_testcase {
     }
 
     /**
+     * Restoring a whole course into another existing course with "overwrite course configuration"
+     * restores the tag definitions, so the tags are mapped. Mapped tags must follow the same rule
+     * as activity imports: only tags available in the target course are kept.
+     */
+    public function test_restore_course_into_existing_course_keeps_only_available_tags(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $enabledtagid = $this->tagmanager->create_tag('Enabled Tag', null, null, 'page');
+        $disabledtagid = $this->tagmanager->create_tag('Disabled Tag', null, null, 'page');
+        $profileid = $this->profilemanager->create_profile('courseset', 'Course set');
+        $this->profilemanager->materialize_profile_tag($enabledtagid, $profileid, [], true);
+        $this->profilemanager->create_profile('targetset', 'Target set');
+
+        $generator = $this->getDataGenerator();
+        $source = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'courseset']);
+        $target = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'targetset']);
+        $enabledpage = $generator->create_module('page', ['course' => $source->id]);
+        $disabledpage = $generator->create_module('page', ['course' => $source->id]);
+        $this->tagmanager->assign_tag_to_cm($enabledpage->cmid, $enabledtagid);
+        // The tag was disabled in the profile after it had been assigned.
+        $this->tagmanager->assign_tag_to_cm($disabledpage->cmid, $disabledtagid);
+        $this->profilemanager->materialize_profile_tag($disabledtagid, $profileid, [], false);
+        // Warm the course tags cache of the target course with its old profile. Core changes
+        // the profile during the restore, so the restore must not use the stale cache.
+        $this->assertEmpty($this->tagmanager->get_tags_for_course((int) $target->id));
+
+        $cmids = $this->restore_course_into_existing_course(
+            (int) $source->id,
+            (int) $target->id,
+            \backup::MODE_GENERAL,
+            true
+        );
+
+        // Core overwrites the course format options, all tags were recognized, so no imported profile.
+        $this->assertEquals('courseset', $DB->get_field('course_format_options', 'value', [
+            'courseid' => $target->id,
+            'format' => 'mimo',
+            'name' => 'activityprofile',
+        ]));
+
+        $newtag = $this->tagmanager->get_cm_tag($cmids[$enabledpage->cmid]);
+        $this->assertNotFalse($newtag);
+        $this->assertEquals($enabledtagid, $newtag->id);
+        $this->assertFalse($this->tagmanager->get_cm_tag($cmids[$disabledpage->cmid]));
+    }
+
+    /**
+     * Importing a whole course into an existing course with the default settings does not restore
+     * the course configuration and tag definitions. The tags are resolved on the same site and
+     * checked against the profile of the target course, which must not be changed.
+     */
+    public function test_import_course_into_existing_course_keeps_target_profile(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $sharedtagid = $this->tagmanager->create_tag('Shared Tag', null, null, 'page');
+        $sourceonlytagid = $this->tagmanager->create_tag('Source Tag', null, null, 'page');
+        $sourceprofileid = $this->profilemanager->create_profile('sourceset', 'Source set');
+        $this->profilemanager->materialize_profile_tag($sharedtagid, $sourceprofileid, [], true);
+        $this->profilemanager->materialize_profile_tag($sourceonlytagid, $sourceprofileid, [], true);
+        $targetprofileid = $this->profilemanager->create_profile('targetset', 'Target set');
+        $this->profilemanager->materialize_profile_tag($sharedtagid, $targetprofileid, [], true);
+        $this->profilemanager->materialize_profile_tag($sourceonlytagid, $targetprofileid, [], false);
+
+        $generator = $this->getDataGenerator();
+        $source = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'sourceset']);
+        $target = $generator->create_course(['format' => 'mimo', 'activityprofile' => 'targetset']);
+        $sharedpage = $generator->create_module('page', ['course' => $source->id]);
+        $sourceonlypage = $generator->create_module('page', ['course' => $source->id]);
+        $this->tagmanager->assign_tag_to_cm($sharedpage->cmid, $sharedtagid);
+        $this->tagmanager->assign_tag_to_cm($sourceonlypage->cmid, $sourceonlytagid);
+        $profilecount = $DB->count_records('format_mimo_profiles');
+
+        $cmids = $this->restore_course_into_existing_course(
+            (int) $source->id,
+            (int) $target->id,
+            \backup::MODE_IMPORT,
+            false
+        );
+
+        // The target course keeps its profile and no imported profile is created.
+        $this->assertEquals('targetset', $DB->get_field('course_format_options', 'value', [
+            'courseid' => $target->id,
+            'format' => 'mimo',
+            'name' => 'activityprofile',
+        ]));
+        $this->assertEquals($profilecount, $DB->count_records('format_mimo_profiles'));
+
+        $newtag = $this->tagmanager->get_cm_tag($cmids[$sharedpage->cmid]);
+        $this->assertNotFalse($newtag);
+        $this->assertEquals($sharedtagid, $newtag->id);
+        $this->assertFalse($this->tagmanager->get_cm_tag($cmids[$sourceonlypage->cmid]));
+    }
+
+    /**
+     * Restore a whole course into an existing course, adding to its content.
+     *
+     * @param int $sourcecourseid course to back up
+     * @param int $targetcourseid existing course to restore into
+     * @param int $mode backup::MODE_GENERAL (restore from a backup file) or backup::MODE_IMPORT
+     * @param bool $overwriteconf whether to overwrite the course configuration of the target course
+     * @return array new course module ids, keyed by the old course module ids
+     */
+    private function restore_course_into_existing_course(
+        int $sourcecourseid,
+        int $targetcourseid,
+        int $mode,
+        bool $overwriteconf
+    ): array {
+        $userid = get_admin()->id;
+        if ($mode === \backup::MODE_GENERAL) {
+            $backupid = 'mimo_existing_' . random_string(6);
+            $this->backup_course_to_tempdir($sourcecourseid, $backupid);
+        } else {
+            $bc = new \backup_controller(
+                \backup::TYPE_1COURSE,
+                $sourcecourseid,
+                \backup::FORMAT_MOODLE,
+                \backup::INTERACTIVE_NO,
+                $mode,
+                $userid
+            );
+            $backupid = $bc->get_backupid();
+            $bc->execute_plan();
+            $bc->destroy();
+            $this->backupdirs[] = $backupid;
+        }
+
+        $rc = new \restore_controller(
+            $backupid,
+            $targetcourseid,
+            \backup::INTERACTIVE_NO,
+            $mode,
+            $userid,
+            \backup::TARGET_EXISTING_ADDING
+        );
+        if ($mode === \backup::MODE_GENERAL) {
+            $rc->get_plan()->get_setting('users')->set_value(false);
+        }
+        $rc->get_plan()->get_setting('overwrite_conf')->set_value($overwriteconf);
+        $rc->execute_precheck();
+        $rc->execute_plan();
+
+        $cmids = [];
+        foreach ($rc->get_plan()->get_tasks() as $task) {
+            if ($task instanceof \restore_activity_task) {
+                $cmids[$task->get_old_moduleid()] = (int) $task->get_moduleid();
+            }
+        }
+        $rc->destroy();
+        return $cmids;
+    }
+
+    /**
      * Import an activity or its section into an existing course, like duplicating it to another course.
      *
      * @param string $type backup type, backup::TYPE_1ACTIVITY or backup::TYPE_1SECTION
@@ -700,6 +1152,7 @@ final class backup_restore_test extends \advanced_testcase {
         foreach ($rc->get_plan()->get_tasks() as $task) {
             if ($task instanceof \restore_activity_task && $task->get_old_contextid() == $oldcontextid) {
                 $newcmid = $task->get_moduleid();
+                break;
             }
         }
         $rc->destroy();
