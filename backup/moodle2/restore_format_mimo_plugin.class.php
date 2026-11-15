@@ -286,17 +286,19 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $newtagid = $this->get_mappingid('format_mimo_tag', $data->tagid);
 
         $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $samecourse = $this->task->is_samesite() && $this->task->get_courseid() == $this->task->get_info()->original_course_id;
 
-        // If the backup source is only a section or a course, the mapping is not available.
-        // Reuse the original tag in this case.
+        // Section or activity backups do not contain the tag definitions, so mapping is not available.
+        // Reuse the original tag on the same site instead.
         if (!$newtagid && $this->task->is_samesite()) {
-            if ($this->task->get_courseid() == $this->task->get_info()->original_course_id) {
-                $newtagid = $data->tagid;
-            } else {
-                $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
-                if (isset($coursetags[$data->tagid])) {
-                    $newtagid = $data->tagid;
-                }
+            $newtagid = $data->tagid;
+        }
+
+        // Restoring into another non-empty course: keep only tags available there.
+        if ($newtagid && !$samecourse && $this->task->get_target() != backup::TARGET_NEW_COURSE) {
+            $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
+            if (!isset($coursetags[$newtagid])) {
+                $newtagid = null;
             }
         }
 
