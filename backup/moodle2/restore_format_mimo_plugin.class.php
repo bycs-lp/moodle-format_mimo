@@ -133,7 +133,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     }
 
     /**
-     * Restore tag definitions using fingerprint → name → positional → create matching.
+     * Restore tag definitions using id → fingerprint → name → positional → create matching.
+     * id is only used when timecreated is identical, positional mapping is only used for non-same-site restores.
      *
      * @param array $data raw backup data
      */
@@ -159,7 +160,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
                 $this->overridedata[$oldid] = [
                     'match' => 'id',
                     'targetid' => $oldid,
-                    'backupdata' => clone $data
+                    'backupdata' => clone $data,
                 ];
                 return;
             }
@@ -242,7 +243,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     /**
      * Restore per-profile tag overrides.
      *
-     * Only applied for fingerprint/name-matched tags (safe — same conceptual tag).
+     * Only applied for id/fingerprint/name-matched tags (safe — same conceptual tag).
      * Skipped for positional/new matches to avoid contaminating target profiles.
      *
      * @param array $data raw backup data
