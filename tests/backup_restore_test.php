@@ -16,6 +16,8 @@
 
 namespace format_mimo;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -870,9 +872,9 @@ final class backup_restore_test extends \advanced_testcase {
      * Importing an activity or section into another course keeps the tag only if the
      * tag is available in the target course.
      *
-     * @dataProvider import_type_provider
      * @param string $type backup type
      */
+    #[DataProvider('import_type_provider')]
     public function test_import_keeps_cm_tag_only_if_available(string $type): void {
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -904,9 +906,9 @@ final class backup_restore_test extends \advanced_testcase {
      * An imported tag bound only to the source course is handled like any other tag
      * when importing into another course: the profile of the target course decides.
      *
-     * @dataProvider import_type_provider
      * @param string $type backup type
      */
+    #[DataProvider('import_type_provider')]
     public function test_import_imported_tag_depends_on_target_profile(string $type): void {
         $this->resetAfterTest();
         $this->setAdminUser();
