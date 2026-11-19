@@ -1527,6 +1527,25 @@ body.format-mimo {
     gap: 0.25rem;
 }
 
+/* Small screens: wrap header actions below the title only when the title doesn't fit on one line. */
+@media (max-width: 575px) {
+    .format-mimo #page-header .d-flex:has(> .header-actions-container) {
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+    }
+
+    // Keeps .ms-auto, so the actions stay right-aligned when wrapped onto their own row.
+    .format-mimo #page-header .header-actions-container {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+
+        // Spacing comes from the container gap; hidden wrappers must not offset the first visible action.
+        .header-action {
+            margin-left: 0 !important;
+        }
+    }
+}
+
 /* Distraction-free mode toggle button in header actions. */
 .mimo-df-btn {
     display: inline-flex;
