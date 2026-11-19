@@ -99,8 +99,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
             return;
         }
         $this->existingtags = \core\di::get(\format_mimo\tag_manager::class)->get_all_tags();
-        // Build positional pool: all existing tags in sortorder, as array values.
-        $this->positionalpool = array_values($this->existingtags);
+        // Build positional pool: all existing tags in sortorder, as array values. Only used for non-same-site restores.
+        $this->positionalpool = $this->task->is_samesite() ? [] : array_values($this->existingtags);
     }
 
     /**
@@ -133,7 +133,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     }
 
     /**
-     * Restore tag definitions using fingerprint → name → positional → create matching.
+     * Restore tag definitions using id → fingerprint → name → positional → create matching.
+     * id is only used when timecreated is identical, positional mapping is only used for non-same-site restores.
      *
      * @param array $data raw backup data
      */
@@ -148,6 +149,22 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         unset($data->tagsetid);
 
         $this->init_existing_tags();
+
+        // Step 0: On the same site, tag ids are stable. Match by id in this case.
+        // To make sure that this is even correct after a re-installation, additionally check timestamps.
+        if ($this->task->is_samesite()) {
+            $existing = $this->existingtags[$oldid] ?? null;
+            if ($existing && isset($data->timecreated) && $existing->timecreated == $data->timecreated) {
+                $this->matchedtagids[] = (int) $oldid;
+                $this->set_mapping('format_mimo_tag', $oldid, $oldid);
+                $this->overridedata[$oldid] = [
+                    'match' => 'id',
+                    'targetid' => $oldid,
+                    'backupdata' => clone $data,
+                ];
+                return;
+            }
+        }
 
         // Step 1: Fingerprint match (name + bgcolor + activitytype1-3).
         $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
@@ -188,6 +205,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         }
 
         // Step 3: Positional match (next unmatched existing tag by sortorder).
+        // Positionalpool is empty on same-site restores.
         $posmatch = null;
         foreach ($this->positionalpool as $idx => $candidate) {
             if (!in_array((int) $candidate->id, $this->matchedtagids, true)) {
@@ -225,7 +243,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
     /**
      * Restore per-profile tag overrides.
      *
-     * Only applied for fingerprint/name-matched tags (safe — same conceptual tag).
+     * Only applied for id/fingerprint/name-matched tags (safe — same conceptual tag).
      * Skipped for positional/new matches to avoid contaminating target profiles.
      *
      * @param array $data raw backup data
@@ -240,7 +258,7 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $oldtagid = $data->tagid;
         if (
             isset($this->overridedata[$oldtagid])
-                && !in_array($this->overridedata[$oldtagid]['match'], ['fingerprint', 'name'])
+                && !in_array($this->overridedata[$oldtagid]['match'], ['id', 'fingerprint', 'name'])
         ) {
             // Skip profile_tag records for positional/new matches.
             return;
@@ -285,11 +303,28 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         $newcmid = $this->get_mappingid('course_module', $data->cmid);
         $newtagid = $this->get_mappingid('format_mimo_tag', $data->tagid);
 
+        $tagmanager = \core\di::get(\format_mimo\tag_manager::class);
+        $samecourse = $this->task->is_samesite() && $this->task->get_courseid() == $this->task->get_info()->original_course_id;
+
+        // Section or activity backups do not contain the tag definitions, so mapping is not available.
+        // Reuse the original tag on the same site instead.
+        if (!$newtagid && $this->task->is_samesite() && $tagmanager->get_tag($data->tagid)) {
+            $newtagid = $data->tagid;
+        }
+
+        // Restoring into another non-empty course: keep only tags available there.
+        if ($newtagid && !$samecourse && $this->task->get_target() != backup::TARGET_NEW_COURSE) {
+            $coursetags = $tagmanager->get_tags_for_course($this->task->get_courseid());
+            if (!isset($coursetags[$newtagid])) {
+                $newtagid = null;
+            }
+        }
+
         if (!$newcmid || !$newtagid) {
             return;
         }
 
-        \core\di::get(\format_mimo\tag_manager::class)->assign_tag_to_cm($newcmid, $newtagid);
+        $tagmanager->assign_tag_to_cm($newcmid, $newtagid);
     }
 
     /**
@@ -342,6 +377,8 @@ class restore_format_mimo_plugin extends restore_format_plugin {
         // profile needed. The instance already has the right tags — either identical
         // (fingerprint) or intentionally updated by admin (name match).
         if ($this->allrecognized) {
+            // Make sure the profile is reread in case of an entire course restore that overwrites the activityprofile.
+            \core\di::get(\format_mimo\tag_manager::class)->clear_course_tags_cache($this->task->get_courseid());
             return;
         }
 
