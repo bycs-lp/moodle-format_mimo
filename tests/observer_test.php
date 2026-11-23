@@ -295,7 +295,7 @@ final class observer_test extends \advanced_testcase {
         $this->assertNotFalse($cmtag, 'cmtag should exist before deletion');
 
         // Delete the module (this fires course_module_deleted event).
-        course_delete_module($module->cmid);
+        \core_courseformat\formatactions::cm($this->course)->delete($module->cmid);
 
         // Verify the cmtag record was cleaned up.
         $exists = $DB->record_exists('format_mimo_cmtags', ['cmid' => $module->cmid]);
