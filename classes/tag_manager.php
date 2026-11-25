@@ -27,7 +27,6 @@ namespace format_mimo;
 use core_component;
 use moodle_url;
 
-
 /**
  * Tag manager class for handling tag sets and tags.
  *

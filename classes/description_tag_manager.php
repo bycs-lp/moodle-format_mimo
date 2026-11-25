@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-
 /**
  * Manages description tags for activity type descriptions.
  *

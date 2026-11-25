@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-
 /**
  * Manages activity type descriptions for the tag chooser modal.
  *

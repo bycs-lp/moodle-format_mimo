@@ -16,7 +16,6 @@
 
 namespace format_mimo;
 
-
 use moodle_url;
 use tabobject;
 
