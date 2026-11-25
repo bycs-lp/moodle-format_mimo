@@ -24,7 +24,6 @@
 
 namespace format_mimo;
 
-
 /**
  * Test cases for description tag manager.
  *

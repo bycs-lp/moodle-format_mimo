@@ -30,7 +30,6 @@ namespace format_mimo;
 use moodle_url;
 use stdClass;
 
-
 /**
  * Activity profile manager class for handling activity profiles.
  *
